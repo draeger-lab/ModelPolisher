@@ -61,11 +61,62 @@ public class BiGGDB {
 
   /**
    * 
+   * @return
+   */
+  public Date getBiGGVersion() {
+    try {
+      return getDate("SELECT date_time FROM database_version");
+    } catch (SQLException exc) {
+      logger.warning(MessageFormat.format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    }
+    return null;
+  }
+
+  /**
+   * 
+   * @param modelBiGGid
+   * @param reactionBiGGid
+   * @return
+   */
+  public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
+    String query = "SELECT DISTINCT mr.subsystem\n"
+        + "FROM  reaction r, model m, model_reaction mr\n"
+        + "WHERE m.bigg_id = '%s' AND\n"
+        + "      r.bigg_id = '%s' AND\n"
+        + "      m.id = mr.model_id AND\n"
+        + "      r.id = mr.reaction_id AND\n"
+        + "      length(mr.subsystem) > 0";
+    List<String> list = new LinkedList<String>();
+    try {
+      ResultSet rst = conect.query(query, modelBiGGid, reactionBiGGid);
+      while (rst.next()) {
+        list.add(rst.getString(1));
+      }
+      rst.getStatement().close();
+    } catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return list;
+  }
+
+  /**
+   * 
    * @param biggId
    * @return
    */
-  public String getChemicalFormula(BiGGId biggId) {
-    return getString("SELECT TRIM(LTRIM(m.formula, '['''), ''']') FROM metabolite m, component c WHERE c.id = m.id AND c.bigg_id = '%s'", biggId.getAbbreviation());
+  public String getChemicalFormula(BiGGId biggId, String modelId) {
+    String query = "SELECT TRIM(LTRIM(m.formula, '['''), ''']') FROM metabolite m, component c WHERE c.id = m.id AND c.bigg_id = '%s'";
+    query = "SELECT mcc.formula\n" +
+        "FROM   component c,\n" +
+        "       compartmentalized_component cc,\n" +
+        "       model m,\n" +
+        "       model_compartmentalized_component mcc\n" +
+        "WHERE  c.id = cc.component_id AND\n" +
+        "       cc.id = mcc.compartmentalized_component_id AND\n" +
+        "       c.bigg_id = '%s' AND\n" +
+        "       m.bigg_id = '%s' AND\n" +
+        "       m.id = mcc.model_id;";
+    return getString(query, biggId.getAbbreviation(), modelId);
   }
 
   /**
@@ -75,6 +126,16 @@ public class BiGGDB {
    */
   public String getCompartmentName(BiGGId biggId) {
     return getString("SELECT name FROM compartment WHERE bigg_id = '%s'", biggId.getAbbreviation());
+  }
+
+  /**
+   * 
+   * @param biggId
+   * @return
+   * @throws SQLException
+   */
+  public String getComponentName(BiGGId biggId) throws SQLException {
+    return getString("SELECT name FROM component WHERE bigg_id = '%s'", biggId.getAbbreviation());
   }
 
   /**
@@ -91,16 +152,6 @@ public class BiGGDB {
    * 
    * @param biggId
    * @return
-   * @throws SQLException
-   */
-  public String getComponentName(BiGGId biggId) throws SQLException {
-    return getString("SELECT name FROM component WHERE bigg_id = '%s'", biggId.getAbbreviation());
-  }
-
-  /**
-   * 
-   * @param biggId
-   * @return
    */
   public String getComponentType(BiGGId biggId) {
     return getString("SELECT type FROM component WHERE bigg_id = '%s'", biggId.getAbbreviation());
@@ -108,12 +159,34 @@ public class BiGGDB {
 
   /**
    * 
+   * @param query
+   * @return
+   * @throws SQLException
+   */
+  private Date getDate(String query) throws SQLException {
+    ResultSet rst = conect.query(query);
+    Date result = rst.next() ? result = rst.getDate(1) : null;
+    rst.getStatement().close();
+    return result;
+  }
+
+  /**
+   * Here we get all possible MIRIAM annotation for Gene Labels, but we ignore
+   * all those entries that are not MIRIAM-compliant for now.
+   * 
    * @param label
    * @return
    */
   public List<Pair<String, String>> getGeneIds(String label) {
     List<Pair<String, String>> list = new LinkedList<Pair<String,String>>();
-    String query = "SELECT d.name, s.synonym FROM data_source d, synonym s, genome_region gr WHERE d.id = s.synonym_data_source_id AND s.ome_id = gr.id AND gr.bigg_id = '%s' AND d.name != 'old_id'";
+    String query = "SELECT d.name, s.synonym\n"
+        + "FROM  data_source d, synonym s, genome_region gr\n"
+        + "WHERE d.id = s.data_source_id AND\n"
+        + "      s.ome_id = gr.id AND\n"
+        + "      gr.bigg_id = '%s' AND\n"
+        + "      d.name != 'old_id' AND\n"
+        + "      d.name NOT LIKE 'refseq_%%' AND\n"
+        + "      d.name != 'locus_tag'";
     try {
       ResultSet rst = conect.query(query, label);
       while (rst.next()) {
@@ -124,6 +197,21 @@ public class BiGGDB {
       logger.warning(Utils.getMessage(exc));
     }
     return list;
+  }
+
+  /**
+   * 
+   * @param label
+   * @return
+   */
+  public String getGeneName(String label) {
+    String query = "SELECT s.synonym\n"
+        + "FROM  data_source d, synonym s, genome_region gr\n"
+        + "WHERE d.id = s.data_source_id AND\n"
+        + "      s.ome_id = gr.id AND\n"
+        + "      gr.bigg_id = '%s' AND\n"
+        + "      d.name = 'refseq_name'";
+    return getString(query, label);
   }
 
   /**
@@ -152,29 +240,6 @@ public class BiGGDB {
   private Integer getInt(String query, Object... args) throws SQLException {
     ResultSet rst = conect.query(query, args);
     Integer result = rst.next() ? result = rst.getInt(1) : null;
-    rst.getStatement().close();
-    return result;
-  }
-
-  /**
-   * 
-   * @param biggId
-   * @param type
-   * @return a list of external source together with external id.
-   * @throws SQLException
-   */
-  private List<String> getResourceURL(BiGGId biggId, String type) throws SQLException {
-    ResultSet rst = conect.query("SELECT CONCAT(url_prefix, s.synonym) AS url " +
-        "FROM  %s c, synonym s, data_source d " +
-        "WHERE c.id = s.ome_id AND" +
-        "      s.synonym_data_source_id = d.id AND" +
-        "      url_prefix IS NOT NULL AND" +
-        "      c.bigg_id = '%s'",
-        type, biggId.getAbbreviation());
-    List<String> result = new LinkedList<String>();
-    while (rst.next()) {
-      result.add(rst.getString(1));
-    }
     rst.getStatement().close();
     return result;
   }
@@ -251,6 +316,29 @@ public class BiGGDB {
 
   /**
    * 
+   * @param biggId
+   * @param type
+   * @return a list of external source together with external id.
+   * @throws SQLException
+   */
+  private List<String> getResourceURL(BiGGId biggId, String type) throws SQLException {
+    ResultSet rst = conect.query("SELECT CONCAT(url_prefix, s.synonym) AS url " +
+        "FROM  %s c, synonym s, data_source d " +
+        "WHERE c.id = s.ome_id AND" +
+        "      s.data_source_id = d.id AND" +
+        "      url_prefix IS NOT NULL AND" +
+        "      c.bigg_id = '%s'",
+        type, biggId.getAbbreviation());
+    List<String> result = new LinkedList<String>();
+    while (rst.next()) {
+      result.add(rst.getString(1));
+    }
+    rst.getStatement().close();
+    return result;
+  }
+
+  /**
+   * 
    * @param query
    * @param args
    * @return
@@ -288,12 +376,12 @@ public class BiGGDB {
    * @param biggId
    * @return
    */
-  public boolean isMetabolite(String biggId) {
+  public boolean isCompartment(String biggId) {
     try {
-      return getInt("SELECT COUNT(*) FROM component WHERE bigg_id = '%s'", biggId) > 0;
+      return getInt("SELECT COUNT(*) FROM compartment WHERE bigg_id = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a metabolite or not: {1}.",
+        "Could not determine if ''{0}'' is a compartment or not: {1}.",
         biggId, Utils.getMessage(exc)));
     }
     return false;
@@ -304,12 +392,12 @@ public class BiGGDB {
    * @param biggId
    * @return
    */
-  public boolean isCompartment(String biggId) {
+  public boolean isMetabolite(String biggId) {
     try {
-      return getInt("SELECT COUNT(*) FROM compartment WHERE bigg_id = '%s'", biggId) > 0;
+      return getInt("SELECT COUNT(*) FROM component WHERE bigg_id = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a compartment or not: {1}.",
+        "Could not determine if ''{0}'' is a metabolite or not: {1}.",
         biggId, Utils.getMessage(exc)));
     }
     return false;
@@ -348,6 +436,41 @@ public class BiGGDB {
         biggId, Utils.getMessage(exc)));
     }
     return false;
+  }
+
+  /**
+   * 
+   * @param biggId
+   * @param modelId
+   * @return
+   */
+  public Integer getCharge(String biggId, String modelId) {
+    String query = "SELECT mcc.charge\n" +
+        "FROM   component c,\n" +
+        "       compartmentalized_component cc,\n" +
+        "       model m,\n" +
+        "       model_compartmentalized_component mcc\n" +
+        "WHERE  c.id = cc.component_id AND\n" +
+        "       cc.id = mcc.compartmentalized_component_id AND\n" +
+        "       c.bigg_id = '%s' AND\n" +
+        "       m.bigg_id = '%s' AND\n" +
+        "       m.id = mcc.model_id";
+    String charge = getString(query, biggId, modelId);
+    if ((charge == null) || (charge.trim().length() == 0)) {
+      return null;
+    }
+    return charge != null ? Integer.valueOf(Integer.parseInt(charge)) : null;
+  }
+
+  /**
+   * 
+   * @param reactionId
+   * @return
+   */
+  public boolean isPseudoreaction(String reactionId) {
+    String query = "SELECT pseudoreaction FROM reaction WHERE bigg_id = '%s'";
+    String result = getString(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
+    return (result != null) && result.equals("t");
   }
 
 }

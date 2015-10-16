@@ -11,6 +11,6 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 ## Launch the program
-java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en ${DIR}/${pom.build.finalName} $@
+java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en ${DIR}/${pom.build.finalName}.jar $@
 
 exit 0

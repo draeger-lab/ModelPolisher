@@ -1,39 +1,146 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>edu.ucsd.sbrg</groupId>
   <artifactId>ModelPolisher</artifactId>
-  <version>1.0</version>
+  
+  <!-- Output to jar format -->
   <packaging>jar</packaging>
   
+  
+  <!-- =================================================================== -->
+  <!-- General project information                                         -->
+  <!-- =================================================================== -->
+  
+  <name>${project.artifactId}</name>
+  <version>1.0</version>
+  <url>https://github.com/SBRG/ModelPolisher/</url>
+  <inceptionYear>2014</inceptionYear>
+  <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
+
+  <properties>
+    <jdk.version>1.8</jdk.version>
+    <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+    <year>${maven.build.timestamp}</year><!-- This property is used for filtering the variable ${year} in some resource files -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.license.url>http://www.opensource.org/licenses/mit-license.php</project.license.url>
+    <junit.version>4.11</junit.version>
+  </properties>
+  
+  <organization>
+    <name>University of California, San Diego</name>
+    <url>http://sbrg.ucsd.edu</url>
+  </organization>
+  
+  <issueManagement>
+    <url>https://github.com/SBRG/ModelPolisher/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
+  
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>${project.license.url}</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <email>andraeger@ucsd.edu.com</email>
+      <name>Andreas Dräger</name>
+      <url>https://github.com/draeger</url>
+      <id>draeger</id>
+    </developer>
+  </developers>
+  
+  
+  <!-- =================================================================== -->
+  <!-- Dependencies                                                        -->
+  <!-- =================================================================== -->
+  
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.sbml</groupId>
+      <artifactId>JSBML</artifactId>
+      <version>2385</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <!-- To update or install this Non-MAVEN JAR file run -->
+      <!-- mvn install:install-file -Dfile=/path/to/sysbio.jar -DgroupId=de.zbit -DartifactId=SysBio -Dversion=REVISION_NUMBER -Dpackaging=jar -->
+      <!-- mvn install:install-file -Dfile=/path/to/sysbio.jar -DgroupId=org.sbml -DartifactId=JSBML -Dversion=REVISION_NUMBER -Dpackaging=jar -->
+      <groupId>de.zbit</groupId>
+      <artifactId>SysBio</artifactId>
+      <version>1381</version> <!-- SVN revision -->
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.4-1202-jdbc41</version>
+    </dependency>
+  </dependencies>
+  
+  
+  <!-- =================================================================== -->
+  <!-- Building                                                            -->
+  <!-- =================================================================== -->
+  
   <!-- To build the project run: -->
-  <!-- mvn clean compile templating:filter-sources assembly:single -->
+  <!-- mvn clean compile package assembly:single -->
   
   <build>
+    
+    <finalName>${project.artifactId}-${project.version}</finalName>
     <sourceDirectory>src</sourceDirectory>
     <scriptSourceDirectory>scripts</scriptSourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
+    
     <resources>
       <resource>
         <directory>resources</directory>
         <filtering>true</filtering>
       </resource>
     </resources>
+    
     <pluginManagement>
+    
       <plugins>
+      
+        <!-- Download source code in Eclipse, best practice [OPTIONAL!] -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>2.9</version>
+          <configuration>
+            <downloadSources>true</downloadSources>
+            <downloadJavadocs>false</downloadJavadocs>
+          </configuration>
+        </plugin>
+      
+        <!-- Set a JDK compiler level -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.3</version>
           <configuration>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>${jdk.version}</source>
+            <target>${jdk.version}</target>
           </configuration>
         </plugin>
+        
+        <!-- Assemble executable JAR -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.6</version>
           <configuration>
             <archive>
               <manifest>
@@ -47,6 +154,7 @@
             </descriptorRefs>
             <finalName>${project.artifactId}-${project.version}</finalName>
             <appendAssemblyId>false</appendAssemblyId>
+            <descriptor>assembly.xml</descriptor> <!-- Details of the assembly are described in this file -->
           </configuration>
           <executions>
             <execution>
@@ -60,80 +168,10 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>templating-maven-plugin</artifactId>
-          <version>1.0-alpha-3</version>
-          <executions>
-            <execution>
-              <id>filter-src</id>
-              <goals>
-                <goal>filter-sources</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
+        
       </plugins>
     </pluginManagement>
+    
   </build>
 
-  <name>ModelPolisher</name>
-  <url>http://maven.apache.org</url>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.sbml</groupId>
-      <artifactId>JSBML</artifactId>
-      <version>2362</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <!-- To update or install this Non-MAVEN JAR file run -->
-      <!-- mvn install:install-file -Dfile=/path/to/sysbio.jar -DgroupId=de.zbit -DartifactId=SysBio -Dversion=REVISION_NUMBER -Dpackaging=jar -->
-      <groupId>de.zbit</groupId>
-      <artifactId>SysBio</artifactId>
-      <version>1381</version> <!-- SVN revision -->
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>9.4-1202-jdbc41</version>
-    </dependency>
-  </dependencies>
-  <inceptionYear>September 27th 2015</inceptionYear>
-  <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
-  <organization>
-    <name>University of California, San Diego</name>
-    <url>https://github.com/SBRG/ModelPolisher</url>
-  </organization>
-  <issueManagement>
-    <url>https://github.com/SBRG/ModelPolisher/issues</url>
-    <system>GitHub Issues</system>
-  </issueManagement>
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-    <developers>
-    <developer>
-      <email>andraeger@ucsd.edu.com</email>
-      <name>Andreas Dräger</name>
-      <url>https://github.com/draeger</url>
-      <id>draeger</id>
-    </developer>
-  </developers>
 </project>
