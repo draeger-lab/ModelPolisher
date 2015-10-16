@@ -74,7 +74,6 @@ public class ModelPolisher extends Launcher {
     super(args);
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#commandLineMode(de.zbit.AppConf)
    */
@@ -144,7 +143,6 @@ public class ModelPolisher extends Launcher {
       exc.printStackTrace();
     }
   }
-
 
   /**
    * 
@@ -241,7 +239,6 @@ public class ModelPolisher extends Launcher {
     }
   }
 
-
   /**
    * 
    * @param bigg
@@ -279,7 +276,6 @@ public class ModelPolisher extends Launcher {
     }
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getCmdLineOptions()
    */
@@ -293,7 +289,6 @@ public class ModelPolisher extends Launcher {
     return options;
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getInteractiveOptions()
    */
@@ -305,7 +300,6 @@ public class ModelPolisher extends Launcher {
     return options;
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getInstitute()
    */
@@ -313,7 +307,6 @@ public class ModelPolisher extends Launcher {
   public String getInstitute() {
     return baseBundle.getString("INSTITUTE");
   }
-
 
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getLogPackages()
@@ -323,7 +316,6 @@ public class ModelPolisher extends Launcher {
     return new String[] {"edu.ucsd", "de.zbit"};
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getOrganization()
    */
@@ -331,7 +323,6 @@ public class ModelPolisher extends Launcher {
   public String getOrganization() {
     return baseBundle.getString("ORGANIZATION");
   }
-
 
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getProvider()
@@ -341,19 +332,17 @@ public class ModelPolisher extends Launcher {
     return baseBundle.getString("PROVIDER");
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getURLlicenseFile()
    */
   @Override
   public URL getURLlicenseFile() {
     try {
-      return new URL("http://creativecommons.org/licenses/by-nc-sa/4.0/");
+      return new URL(baseBundle.getString("LICENSE"));
     } catch (MalformedURLException exc) {
       return null;
     }
   }
-
 
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getURLOnlineUpdate()
@@ -388,24 +377,29 @@ public class ModelPolisher extends Launcher {
     return false;
   }
 
-
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getYearOfProgramRelease()
    */
   @Override
   public short getYearOfProgramRelease() {
-    return 2015;
+    try {
+      return Short.parseShort(baseBundle.getString("YEAR"));
+    } catch (NumberFormatException exc) {
+      return (short) Calendar.getInstance().get(Calendar.YEAR);
+    }
   }
-
 
   /* (non-Javadoc)
    * @see de.zbit.Launcher#getYearWhenProjectWasStarted()
    */
   @Override
   public short getYearWhenProjectWasStarted() {
-    return 2014;
+    try {
+      return Short.parseShort(baseBundle.getString("INCEPTION_YEAR"));
+    } catch (Throwable t) {
+      return (short) 2014;
+    }
   }
-
 
   /* (non-Javadoc)
    * @see de.zbit.Launcher#initGUI(de.zbit.AppConf)
@@ -414,7 +408,6 @@ public class ModelPolisher extends Launcher {
   public Window initGUI(AppConf appConf) {
     return null;
   }
-
 
   /**
    * @param args

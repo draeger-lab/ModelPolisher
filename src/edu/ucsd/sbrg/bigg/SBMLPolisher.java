@@ -62,6 +62,10 @@ import org.sbml.jsbml.ext.fbc.GeneProductRef;
 import org.sbml.jsbml.ext.fbc.LogicalOperator;
 import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.fbc.Or;
+import org.sbml.jsbml.ext.groups.Group;
+import org.sbml.jsbml.ext.groups.GroupsConstants;
+import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
+import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 import org.sbml.jsbml.util.Pair;
 import org.sbml.jsbml.util.ResourceManager;
@@ -163,7 +167,9 @@ public class SBMLPolisher {
   public boolean checkSpeciesReferences(ListOf<SpeciesReference> listOfSpeciesReference) {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
-      strict &= sr.isConstant() && sr.isSetStoichiometry() && !sr.isSetStoichiometryMath() && !Double.isNaN(sr.getValue()) && Double.isFinite(sr.getValue());
+      strict &= sr.isConstant() && sr.isSetStoichiometry()
+          && !sr.isSetStoichiometryMath() && !Double.isNaN(sr.getValue())
+          && Double.isFinite(sr.getValue());
     }
     return strict;
   }
@@ -262,6 +268,9 @@ public class SBMLPolisher {
    * @see <a href="https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">Structure of BiGG ids</a>
    */
   private BiGGId extractBiGGId(String id) {
+    if (id.matches(".*_copy\\d*")) {
+      return new BiGGId(id.substring(0, id.lastIndexOf('_')));
+    }
     return new BiGGId(id);
   }
 
@@ -409,8 +418,18 @@ public class SBMLPolisher {
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
-    if (!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None")) {
-      geneProduct.setName(label);
+    String geneName = bigg.getGeneName(label);
+    if (geneName != null) {
+      if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
+        logger.warning(MessageFormat.format(
+          "Updating gene product name from {0} to {1}.",
+          geneProduct.getName(), geneName));
+      }
+      geneProduct.setName(geneName);
+    } else {
+      if (!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None")) {
+        geneProduct.setName(label);
+      }
     }
   }
 
@@ -512,15 +531,6 @@ public class SBMLPolisher {
     //      history.setCreatedDate(date);
     //    }
 
-    String description = "";
-    try {
-      description = bigg.getModelDescription(model.getId());
-      if ((description != null) && (description.length() > 0)) {
-        description = XHTMLBuilder.p(description);
-      }
-    } catch (SQLException exc) {
-      logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-    }
     String organism = bigg.getOrganism(model.getId());
     Integer taxonId = bigg.getTaxonId(model.getId());
     if (taxonId != null) {
@@ -536,9 +546,9 @@ public class SBMLPolisher {
     name = name.replace("[organism]", organism);
     replacements.put("${title}", name);
     replacements.put("${organism}", organism);
-    replacements.put("${description}", description);
     replacements.put("${bigg_id}", model.getId());
     replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+    replacements.put("${bigg.timestamp}", MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
 
 
     try {
@@ -588,6 +598,25 @@ public class SBMLPolisher {
    */
   public void polish(Reaction r) {
     String id = r.getId();
+    if (id.matches(".*_[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*")) {
+      r.setSBOTerm(629); // biomass production
+    } else if (id.matches(".*_[Dd][Mm]_.*")) {
+      r.setSBOTerm(628); // demand reaction
+    } else if (id.matches(".*_[Ee][Xx]_.*")) {
+      r.setSBOTerm(627); // exchange reaction
+    } else if (id.matches(".*[Aa][Tt][Pp][Mm]")) {
+      r.setSBOTerm(630); // ATP maintenance
+    } else if (id.matches(".*_[Ss]([Ii][Nn])?[Kk]_.*")) {
+      r.setSBOTerm(632);
+      if (id.matches(".*_[Ss][Ii][Nn][Kk]_.*")) {
+        id = id.replaceAll("_[Ss][Ii][Nn][Kk]_", "_SK_");
+        r.setId(id);
+      }
+    } else if (bigg.isPseudoreaction(id)) {
+      r.setSBOTerm(631);
+    } else if (!omitGenericTerms) {
+      r.setSBOTerm(375); // generic process
+    }
     BiGGId biggId = extractBiGGId(id);
     if (biggId != null) {
       String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
@@ -641,17 +670,6 @@ public class SBMLPolisher {
       } else {
         r.setName(polishName(r.getName()));
       }
-      if (r.getId().matches(".*_[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*")) {
-        r.setSBOTerm(629); // biomass production
-      } else if (r.getId().matches(".*_[Dd][Mm]_.*")) {
-        r.setSBOTerm(628); // demand reaction
-      } else if (r.getId().matches(".*_[Ee][Xx]_.*")) {
-        r.setSBOTerm(627); // exchange reaction
-      } else if (r.getId().matches(".*[Aa][Tt][Pp][Mm]")) {
-        r.setSBOTerm(630); // ATP maintenance
-      } else if (!omitGenericTerms) {
-        r.setSBOTerm(375); // generic process
-      }
 
 
       FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -670,6 +688,29 @@ public class SBMLPolisher {
       }
       polishFluxBound(plugin.getLowerFluxBoundInstance());
       polishFluxBound(plugin.getUpperFluxBoundInstance());
+
+      Model model = r.getModel();
+      List<String> subsystems = bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
+      if (subsystems.size() > 0) {
+        String groupKey = "GROUP_FOR_NAME";
+        if (model.getUserObject(groupKey) == null) {
+          model.putUserObject(groupKey, new HashMap<String, Group>());
+        }
+        Map<String, Group> groupForName = (Map<String, Group>) model.getUserObject(groupKey);
+        for (String subsystem : subsystems) {
+          Group group;
+          if (groupForName.containsKey(subsystem)) {
+            group = groupForName.get(subsystem);
+          } else {
+            GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
+            group = groupsModelPlugin.createGroup("g" + (groupsModelPlugin.getGroupCount() + 1));
+            group.setName(subsystem);
+            groupForName.put(subsystem, group);
+          }
+          Member member = group.createMember();
+          member.setIdRef(r);
+        }
+      }
     }
 
     // This is a check if we are producing invalid SBML.
@@ -714,6 +755,7 @@ public class SBMLPolisher {
 
       }
     }
+
   }
 
   /**
@@ -762,8 +804,14 @@ public class SBMLPolisher {
         species.setBoundaryCondition(true);
       }
     }
+    checkCompartment(species);
+
     BiGGId biggId = extractBiGGId(id);
+    FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+
     if (biggId != null) {
+      Model model = species.getModel();
+
       CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
       if (biggId.isSetAbbreviation()) {
         if (!species.isSetName() || species.getName().equals(biggId.getAbbreviation() + "_" + biggId.getCompartmentCode())) {
@@ -818,22 +866,24 @@ public class SBMLPolisher {
         species.setCompartment(biggId.getCompartmentCode());
       }
 
-    }
-
-    checkCompartment(species);
-
-    FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-    if (!fbcSpecPlug.isSetChemicalFormula()) {
-      try {
-        fbcSpecPlug.setChemicalFormula(bigg.getChemicalFormula(biggId));
-      } catch (IllegalArgumentException exc) {
-        logger.severe(MessageFormat.format("Invalid chemical formula: {0}", Utils.getMessage(exc)));
+      if (!fbcSpecPlug.isSetChemicalFormula()) {
+        try {
+          fbcSpecPlug.setChemicalFormula(bigg.getChemicalFormula(biggId, model.getId()));
+        } catch (IllegalArgumentException exc) {
+          logger.severe(MessageFormat.format("Invalid chemical formula: {0}", Utils.getMessage(exc)));
+        }
       }
-    }
-    if (species.isSetCharge()) {
-      int charge = species.getCharge();
-      species.unsetCharge();
-      if (charge != 0) {
+
+      Integer charge = bigg.getCharge(biggId.getAbbreviation(), model.getId());
+      if (species.isSetCharge()) {
+        if ((charge != null) && (charge != species.getCharge())) {
+          logger.warning(MessageFormat.format(
+            "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
+            charge, species.getCharge(), species.getId()));
+        }
+        species.unsetCharge();
+      }
+      if ((charge != null) && (charge != 0)) {
         // If charge is set and charge = 0 -> this can mean it is only a default!
         fbcSpecPlug.setCharge(charge);
       }
@@ -878,7 +928,9 @@ public class SBMLPolisher {
         logger.warning(MessageFormat.format("Only one reaction should be the target of objective {0}.", objective.getId()));
       }
       for (FluxObjective fluxObjective : objective.getListOfFluxObjectives()) {
-        if (fluxObjective.isSetCoefficient() && !Double.isNaN(fluxObjective.getCoefficient()) && Double.isFinite(fluxObjective.getCoefficient())) {
+        if (fluxObjective.isSetCoefficient()
+            && !Double.isNaN(fluxObjective.getCoefficient())
+            && Double.isFinite(fluxObjective.getCoefficient())) {
           strict &= true;
         } else {
           logger.warning(MessageFormat.format("A flux objective for reaction {0} has an illegal coefficient value.", fluxObjective.getReaction()));

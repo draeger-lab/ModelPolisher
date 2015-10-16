@@ -21,22 +21,22 @@
             This is a metabolism model of ${organism} in
             <a href="http://sbml.org" target="_blank" title="Access the definition of the SBML file format.">SBML</a>&#160;format.
           </p>
-          ${description}
         </div>
     
         <div class="dc:provenance">
           The content of this model has been carefully created in a manual research
           effort.
           This file has been exported from the software
-          <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with a
-          <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based in-house application.
+          <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with the
+          <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based <a href="http://github.com/SBRG/ModelPolisher/" target="_blank" title="Access ModelPolisher on Github">ModelPolisher</a> application.
         </div>
     
         <div class="dc:publisher">
           This file has been produced by the 
-          <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;and
-          is currently hosted on <a href="http://dx.doi.org/10.1186/1471-2105-11-213" title="Access publication about BiGG knowledgebase." target="_blank">BiGG knowledgebase</a>&#160;and
-          identified by: <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG knowledgebase." target="_blank">${bigg_id}</a>.
+          <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;using
+          <a href="http://bigg.ucsd.edu" title="Access BiGG Models knowledgebase." target="_blank">BiGG Models knowledgebase</a>&#160;version of ${bigg.timestamp},
+          where it is currently hosted and identified by: 
+          <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG Models knowledgebase." target="_blank">${bigg_id}</a>.
         </div>
 
     <h2>Terms of use</h2>
@@ -45,7 +45,7 @@
         </div>
         <div class="dc:license">
           <p>
-            Redistribution and use of any part of this model from BiGG Database,
+            Redistribution and use of any part of this model from BiGG Models knowledgebase,
             with or without modification, are permitted provided that the
             following conditions are met:
             <ol>
@@ -61,21 +61,29 @@
             MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
           </p><p>
             For specific licensing terms about this particular model and regulations of
-            commercial use, see <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG knowledgebase." target="_blank">this model in BiGG database</a>.
+            commercial use, see <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG Models knowledgebase." target="_blank">this model in BiGG Models knowledgebase</a>.
           </p>
         </div>
           
         <h2>References</h2>
 
-        When using content from BiGG database in your research works, please cite
+        When using content from BiGG Models knowledgebase in your research works, please cite
         <dl>
+          <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA,
+              Ebrahim A, Palsson BO, and Lewis NE. (2015).
+              <dd>
+                BiGG Models: A platform for integrating, standardizing, and
+                sharing genome-scale models. <i>Accepted by Nucl Acids Res</i>.
+              </dd>
+          </dt>
+          <!--
           <dt>Schellenberger, J., Park, J. O., Conrad, T. C., and Palsson, B. &#216;.
-            (2010).<dd>
-            <a href="http://dx.doi.org/10.1186/1471-2105-11-213" target="_blank" title="Access publication about: BiGG knowledgebase">
+            (2010).
+            <dd><a href="http://dx.doi.org/10.1186/1471-2105-11-213" target="_blank" title="Access publication about: BiGG Models knowledgebase">
             BiGG: a Biochemical Genetic and Genomic knowledgebase of large scale
             metabolic reconstructions</a>, <i>BMC Bioinformatics</i>, 11:213.</dd>
           </dt>
-          <!--<dt>Ebrahim A., Lerman J. A., Palsson B. &#216;., and Hyduke D. R. (2013).<dd>
+          <dt>Ebrahim A., Lerman J. A., Palsson B. &#216;., and Hyduke D. R. (2013).<dd>
             <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about: COBRApy" target="_blank">COBRApy: COnstraints-Based Reconstruction and Analysis for Python</a>,
             <i>BMC Systems Biology</i>. 2013 Aug 8;7:74</dd></dt>
           <dt>Rodriguez N., Thomas A., Watanabe L., Vazirabad I.Y., Kofia V., G&#243;mez HF,
@@ -84,7 +92,8 @@
             Palsson B.&#216;., Hucka M., and Dr&#228;ger A. (2015).<dd>
             <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about: JSBML" target="_blank">JSBML 1.0: providing a smorgasbord of options to encode systems biology models</a>,
             <i>Bioinformatics</i>. 2015 May 29.</dd>
-          </dt>-->
+          </dt>
+          -->
         </dl>
         
         ${species_table}

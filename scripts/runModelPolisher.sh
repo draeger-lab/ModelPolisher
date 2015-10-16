@@ -23,6 +23,6 @@ OPTIONAL:
 --sbml-validation=true \
 --omit-generic-terms=false \
 --log-level=INFO \
---log-file=model_polisher.log 2>/dev/null
+--log-file=${DIR}/model_polisher.log 2>/dev/null
 
 exit 0
