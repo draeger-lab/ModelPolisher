@@ -362,7 +362,7 @@ public class BiGGId {
   }
 
   /**
-   * 
+   * Generates an actual BiGG id for this object.
    * @return
    */
   public String toBiGGId() {

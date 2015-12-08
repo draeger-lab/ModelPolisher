@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -593,22 +594,35 @@ public class SBMLPolisher {
     }
   }
 
+  private static final transient Pattern biomassCaseInsensitive = Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
+  private static final transient Pattern biomassCaseSensitive = Pattern.compile(".*BIOMASS.*");
+  private static final transient Pattern demandReaction = Pattern.compile(".*_[Dd][Mm]_.*");
+  private static final transient Pattern exchangeReaction = Pattern.compile(".*_[Ee][Xx]_.*");
+  private static final transient Pattern atpMaintennance = Pattern.compile(".*[Aa][Tt][Pp][Mm]");
+  private static final transient Pattern sinkReaction = Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
+  private static final transient Pattern sinkOldStyle = Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
+
   /**
    * @param r
    */
   public void polish(Reaction r) {
     String id = r.getId();
-    if (id.matches(".*_[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*")) {
+    if (biomassCaseInsensitive.matcher(id).matches()) {
       r.setSBOTerm(629); // biomass production
-    } else if (id.matches(".*_[Dd][Mm]_.*")) {
+      if (!biomassCaseSensitive.matcher(id).matches()) {
+        // in response to https://github.com/SBRG/bigg_models/issues/175
+        id = id.replaceAll("[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
+        r.setId(id);
+      }
+    } else if (demandReaction.matcher(id).matches()) {
       r.setSBOTerm(628); // demand reaction
-    } else if (id.matches(".*_[Ee][Xx]_.*")) {
+    } else if (exchangeReaction.matcher(id).matches()) {
       r.setSBOTerm(627); // exchange reaction
-    } else if (id.matches(".*[Aa][Tt][Pp][Mm]")) {
+    } else if (atpMaintennance.matcher(id).matches()) {
       r.setSBOTerm(630); // ATP maintenance
-    } else if (id.matches(".*_[Ss]([Ii][Nn])?[Kk]_.*")) {
+    } else if (sinkReaction.matcher(id).matches()) {
       r.setSBOTerm(632);
-      if (id.matches(".*_[Ss][Ii][Nn][Kk]_.*")) {
+      if (sinkOldStyle.matcher(id).matches()) {
         id = id.replaceAll("_[Ss][Ii][Nn][Kk]_", "_SK_");
         r.setId(id);
       }

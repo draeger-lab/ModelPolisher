@@ -238,9 +238,19 @@ public enum MIRIAM {
     try {
       miriam = catalog.trim().replace(" ", "").replaceAll("[/-]", "_");
       if (miriam.equalsIgnoreCase("CASNUMBER") || miriam.equalsIgnoreCase("CASID")) {
-        miriam = "CAS";
-      } else if (miriam.equalsIgnoreCase("CHEBIID")) {
-        miriam = "CHEBI";
+        return CAS;
+      } else if (miriam.equalsIgnoreCase("CHEBIID") || miriam.equalsIgnoreCase("ChEBI")) {
+        return CHEBI;
+      } else if (miriam.equalsIgnoreCase("KEGG")) {
+        return KEGGID;
+      } else if (miriam.equalsIgnoreCase("MetaCyc")) {
+        return METACYC;
+      } else if (miriam.equalsIgnoreCase("Reactome")) {
+        return REACTOME;
+      } else if (miriam.equalsIgnoreCase("BioPath")) {
+        return BIOPATH;
+      } else if (miriam.equalsIgnoreCase("NCBI Gene")) {
+        return GeneID;
       }
       return MIRIAM.valueOf(miriam);
     } catch (Throwable t) {

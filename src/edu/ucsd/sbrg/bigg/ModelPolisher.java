@@ -34,6 +34,7 @@ import org.sbml.jsbml.validator.SBMLValidator;
 
 import de.zbit.AppConf;
 import de.zbit.Launcher;
+import de.zbit.io.FileTools;
 import de.zbit.io.ZIPUtils;
 import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.ResourceManager;
@@ -44,6 +45,7 @@ import de.zbit.util.logging.OneLineFormatter;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
+import edu.ucsd.sbrg.cobra.COBRAparser;
 
 
 /**
@@ -163,7 +165,12 @@ public class ModelPolisher extends Launcher {
     long time = System.currentTimeMillis();
 
     logger.info(MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
-    SBMLDocument doc = SBMLReader.read(input);
+    SBMLDocument doc = null;
+    if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
+      doc = COBRAparser.read(input);
+    } else {
+      doc = SBMLReader.read(input);
+    }
     if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info("Trying to convert the model to Level 3 Version 2.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
@@ -228,14 +235,18 @@ public class ModelPolisher extends Launcher {
 
     SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
 
-    logger.info(MessageFormat.format(
-      "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
-      sbmlErrorLog.getErrorCount(), filename));
+    if (sbmlErrorLog != null) {
+      logger.info(MessageFormat.format(
+        "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
+        sbmlErrorLog.getErrorCount(), filename));
 
-    // printErrors
-    for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
-      SBMLError error = sbmlErrorLog.getError(j);
-      logger.warning(error.toString());
+      // printErrors
+      for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
+        SBMLError error = sbmlErrorLog.getError(j);
+        logger.warning(error.toString());
+      }
+    } else {
+      logger.info("No SBML validation possible, process terminated with errors.");
     }
   }
 
@@ -259,9 +270,14 @@ public class ModelPolisher extends Launcher {
       output.mkdir();
     }
     if (input.isFile()) {
-      if (SBFileFilter.isSBMLFile(input)) {
+      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+      if (SBFileFilter.isSBMLFile(input) || matFile) {
         if (output.isDirectory()) {
-          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + input.getName());
+          String fName = input.getName();
+          if (matFile) {
+            fName = FileTools.removeFileExtension(fName) + ".xml";
+          }
+          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
         polish(bigg, input, output, compressOutput, omitGenericTerms, modelNotesFile, documentTitlePattern, checkMassBalance, validateOutput);
       }
