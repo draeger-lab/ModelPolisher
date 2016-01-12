@@ -336,7 +336,7 @@ public class BiGGId {
    *        the prefix to set
    */
   public void setPrefix(String prefix) {
-    if (prefix.matches("[RrMm](_.*)?")) {
+    if (prefix.matches("[RrMmGg](_.*)?")) {
       // TODO refine the pattern.
       this.prefix = prefix;
     } else {

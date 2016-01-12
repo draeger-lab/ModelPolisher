@@ -26,7 +26,7 @@ public interface DBOptions extends KeyProvider {
   /**
    * 
    */
-  public static final Option<String>  PASSWD = new Option<String>("PASSWD", String.class, "Password", "");
+  public static final Option<String>  PASSWD = new Option<String>("PASSWD", String.class, "Password", (short) 2, "-p");
   /**
    * 
    */
