@@ -42,13 +42,13 @@
     
     
     <echo message="Determining the revision number of JSBML"/>
-    <!--<exec executable="svn" outputproperty="${jsbml.dir}/svninfo.xml">
-      <arg line="info ++xml ${jsbml.dir}"/>
+    <exec executable="svn" outputproperty="${jsbml.dir}/svninfo.xml">
+      <arg line="info --xml ${jsbml.dir}"/>
     </exec>
     <xmlproperty collapseAttributes="true">
       <propertyresource name="${jsbml.dir}/svninfo.xml"/>
-    </xmlproperty>-->
-    <property name="jsbml.revision" value="2439"/><!--${info.entry.revision}"/>-->
+    </xmlproperty>
+    <property name="jsbml.revision" value="${info.entry.revision}"/>
 
     <echo message="Compiling the entire JSBML project for revision ${jsbml.revision}"/>
     <delete dir="${jsbml.dir}/bin"/>

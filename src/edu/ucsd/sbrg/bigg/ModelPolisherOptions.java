@@ -111,6 +111,15 @@ public interface ModelPolisherOptions extends KeyProvider {
       "This XHTML file defines alternative model notes and makes them exchangeable.");
 
   /**
+   * This XHTML file defines alternative document notes and makes them
+   * exchangeable.
+   */
+  public static final Option<File> DOCUMENT_NOTES_FILE = new Option<File>(
+      "DOCUMENT_NOTES_FILE",
+      File.class,
+      "This XHTML file defines alternative document notes and makes them exchangeable.");
+
+  /**
    * Set this option to true if generic top-level annotations, such as 'process'
    * should not be applied. Not using those terms will reduce the size of the
    * resulting output file.

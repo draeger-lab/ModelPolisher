@@ -201,7 +201,23 @@ public enum MIRIAM {
         /**
          * 
          */
-        UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$"));
+        UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$")),
+        /**
+         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000383
+         */
+        INCHI(pairOf("inchi", "^InChI\\=1S\\/[A-Za-z0-9]+(\\/[cnpqbtmsih][A-Za-z0-9\\-\\+\\(\\)\\,]+)+$")),
+        /**
+         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000019
+         */
+        DOI(pairOf("doi", "^(doi\\:)?\\d{2}\\.\\d{4}.*$")),
+        /**
+         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000015
+         */
+        PUBMED(pairOf("pubmed", "^\\d+$")),
+        /**
+         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000004
+         */
+        EC_CODE(pairOf("ec-code", "^\\d+\\.-\\.-\\.-|\\d+\\.\\d+\\.-\\.-|\\d+\\.\\d+\\.\\d+\\.-|\\d+\\.\\d+\\.\\d+\\.(n)?\\d+$"));
 
   /**
    * 
@@ -241,7 +257,9 @@ public enum MIRIAM {
         return CAS;
       } else if (miriam.equalsIgnoreCase("CHEBIID") || miriam.equalsIgnoreCase("ChEBI")) {
         return CHEBI;
-      } else if (miriam.equalsIgnoreCase("KEGG")) {
+      } else if (miriam.equals("ec_code")) {
+        miriam = miriam.toUpperCase();
+      } else if (miriam.toUpperCase().startsWith("KEGG")) {
         return KEGGID;
       } else if (miriam.equalsIgnoreCase("MetaCyc")) {
         return METACYC;

@@ -84,9 +84,37 @@ import de.zbit.util.progressbar.ProgressBar;
 public class SBMLPolisher {
 
   /**
+   * 
+   */
+  private static final transient Pattern atpMaintennance = Pattern.compile(".*[Aa][Tt][Pp][Mm]");
+  /**
+   * 
+   */
+  private static final transient Pattern biomassCaseInsensitive = Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
+  /**
+   * 
+   */
+  private static final transient Pattern biomassCaseSensitive = Pattern.compile(".*BIOMASS.*");
+  /**
+   * 
+   */
+  private static final transient Pattern demandReaction = Pattern.compile(".*_[Dd][Mm]_.*");
+  /**
+   * 
+   */
+  private static final transient Pattern exchangeReaction = Pattern.compile(".*_[Ee][Xx]_.*");
+  /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+  /**
+   * 
+   */
+  private static final transient Pattern sinkOldStyle = Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
+  /**
+   * 
+   */
+  private static final transient Pattern sinkReaction = Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
 
   /**
    * 
@@ -118,10 +146,17 @@ public class SBMLPolisher {
    */
   private AbstractProgressBar progress;
 
+
   /**
    * 
    */
   private Map<String, String> replacements;
+
+
+  /**
+   * 
+   */
+  private String documentNotesFile = "SBMLDocumentNotes.html";
 
   /**
    * @param bigg
@@ -215,7 +250,6 @@ public class SBMLPolisher {
     return gpr;
   }
 
-
   /**
    * 
    * @param identifier
@@ -240,7 +274,6 @@ public class SBMLPolisher {
     gpr.setGeneProduct(id);
     return gpr;
   }
-
 
   /**
    * 
@@ -302,7 +335,6 @@ public class SBMLPolisher {
   public boolean isOmitGenericTerms() {
     return omitGenericTerms;
   }
-
   /**
    * @param location relative path to the resource from this class.
    * @param replacements
@@ -338,7 +370,6 @@ public class SBMLPolisher {
     }
     return sb.toString();
   }
-
   /**
    * @param c
    */
@@ -363,7 +394,6 @@ public class SBMLPolisher {
       c.setMetaId(c.getId());
     }
   }
-
   /**
    * 
    * @param geneProduct
@@ -433,7 +463,6 @@ public class SBMLPolisher {
       }
     }
   }
-
   /**
    * 
    * @param listOf
@@ -469,7 +498,6 @@ public class SBMLPolisher {
     }
     return compartmentId;
   }
-
   /**
    * 
    * @param model
@@ -583,7 +611,6 @@ public class SBMLPolisher {
 
     modelPlug.setStrict(strict);
   }
-
   /**
    * 
    * @param p
@@ -593,14 +620,6 @@ public class SBMLPolisher {
       p.setName(polishName(p.getId()));
     }
   }
-
-  private static final transient Pattern biomassCaseInsensitive = Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
-  private static final transient Pattern biomassCaseSensitive = Pattern.compile(".*BIOMASS.*");
-  private static final transient Pattern demandReaction = Pattern.compile(".*_[Dd][Mm]_.*");
-  private static final transient Pattern exchangeReaction = Pattern.compile(".*_[Ee][Xx]_.*");
-  private static final transient Pattern atpMaintennance = Pattern.compile(".*[Aa][Tt][Pp][Mm]");
-  private static final transient Pattern sinkReaction = Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
-  private static final transient Pattern sinkOldStyle = Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
 
   /**
    * @param r
@@ -792,7 +811,7 @@ public class SBMLPolisher {
 
     doc.setSBOTerm(624); // flux balance framework
     if (replacements.containsKey("${title}")) {
-      doc.appendNotes(parseNotes("SBMLDocumentNotes.html", replacements));
+      doc.appendNotes(parseNotes(documentNotesFile, replacements));
     }
 
     model.appendNotes(parseNotes(modelNotes , replacements));
@@ -1236,6 +1255,14 @@ public class SBMLPolisher {
       id = "G_" + id;
     }
     return id;
+  }
+
+  /**
+   * 
+   * @param documentNotesFile
+   */
+  public void setDocumentNotesFile(File documentNotesFile) {
+    this.documentNotesFile = documentNotesFile.getAbsolutePath();
   }
 
 }

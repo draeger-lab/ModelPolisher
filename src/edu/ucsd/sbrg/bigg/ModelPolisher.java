@@ -43,6 +43,7 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.logging.LogUtil;
 import de.zbit.util.logging.OneLineFormatter;
 import de.zbit.util.prefs.KeyProvider;
+import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
@@ -122,10 +123,8 @@ public class ModelPolisher extends Launcher {
         args.getProperty(DBOptions.DBNAME)));
 
       // Gives users the choice to pass an alternative model notes XHTML file to the program.
-      File modelNotesFile = null;
-      if (args.containsKey(ModelPolisherOptions.MODEL_NOTES_FILE)) {
-        modelNotesFile = new File(args.getProperty(ModelPolisherOptions.MODEL_NOTES_FILE));
-      }
+      File modelNotesFile = parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
+      File documentNotesFile = parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
       String documentTitlePattern = null;
       if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
         documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
@@ -137,7 +136,7 @@ public class ModelPolisher extends Launcher {
         new File(args.getProperty(IOOptions.OUTPUT)),
         ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE)),
         args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS),
-        modelNotesFile, documentTitlePattern,
+        documentNotesFile, modelNotesFile, documentTitlePattern,
         args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE),
         args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION));
 
@@ -147,12 +146,34 @@ public class ModelPolisher extends Launcher {
   }
 
   /**
+   * Scans the given command-line options for a specific file option and returns
+   * the corresponding file if it exists, {@code null} otherwise.
+   * 
+   * @param args
+   *        command-line options.
+   * @param option
+   *        a specific file option to look for.
+   * @return a {@link File} object that corresponds to a desired command-line
+   *         option, or {@code null} if it does not exist.
+   */
+  private File parseFileOption(SBProperties args, Option<File> option) {
+    if (args.containsKey(option)) {
+      File notesFile = new File(args.getProperty(option));
+      if ((notesFile != null) && notesFile.exists() && notesFile.canRead()) {
+        return notesFile;
+      }
+    }
+    return null;
+  }
+
+  /**
    * 
    * @param bigg
    * @param input
    * @param output
    * @param compressOutput !
    * @param omitGenericTerms
+   * @param documentNotesFile can be {@code null}.
    * @param modelNotesFile can be {@code null}.
    * @param documentTitlePattern can be {@code null} (then a default is used).
    * @param checkMassBalance
@@ -160,47 +181,53 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    * @throws IOException
    */
-  public void polish(BiGGDB bigg, File input, File output, Compression compressOutput, boolean omitGenericTerms, File modelNotesFile, String documentTitlePattern, boolean checkMassBalance, boolean validateOutput)
-      throws XMLStreamException, IOException {
+  public void polish(BiGGDB bigg, File input, File output,
+    Compression compressOutput, boolean omitGenericTerms,
+    File documentNotesFile, File modelNotesFile, String documentTitlePattern,
+    boolean checkMassBalance, boolean validateOutput)
+        throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-
-    logger.info(MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
+    logger.info(MessageFormat.format("Reading input file {0}.",
+      input.getAbsolutePath()));
     SBMLDocument doc = null;
     if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
       doc = COBRAparser.read(input);
     } else {
       doc = SBMLReader.read(input);
     }
-    if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+    if (!doc.isSetLevelAndVersion()
+        || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info("Trying to convert the model to Level 3 Version 2.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
-
     SBMLPolisher polisher = new SBMLPolisher(bigg);
     polisher.setCheckMassBalance(checkMassBalance);
     polisher.setOmitGenericTerms(omitGenericTerms);
+    if (documentNotesFile != null) {
+      polisher.setDocumentNotesFile(documentNotesFile);
+    }
     if (modelNotesFile != null) {
       polisher.setModelNotesFile(modelNotesFile);
     }
     if (documentTitlePattern != null) {
       polisher.setDocumentTitlePattern(documentTitlePattern);
     }
-
     doc = polisher.polish(doc);
-
-    // <?xml-stylesheet type="text/xsl" href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
-
-    logger.info(MessageFormat.format("Writing output file {0}", output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, ' ', (short) 2);
-    //SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
-
+    // <?xml-stylesheet type="text/xsl"
+    // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
+    logger.info(MessageFormat.format("Writing output file {0}",
+      output.getAbsolutePath()));
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
+      getVersionNumber(), ' ', (short) 2);
+    // SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
     if (compressOutput != Compression.NONE) {
       String fileExtension = compressOutput.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
       logger.info(MessageFormat.format("Packing archive file {0}", archive));
       switch (compressOutput) {
       case ZIP:
-        ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive, "SBML Archive", true);
+        ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive,
+          "SBML Archive", true);
         break;
       case GZIP:
         ZIPUtils.GZip(output.getAbsolutePath(), archive);
@@ -212,11 +239,11 @@ public class ModelPolisher extends Launcher {
         validate(archive);
       }
     }
-
     time = System.currentTimeMillis() - time;
     Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(time);
-    logger.info(MessageFormat.format("Done ({0,time,ss.sss} s).", calendar.getTime()));
+    logger.info(MessageFormat.format("Done ({0,time,ss.sss} s).",
+      calendar.getTime()));
   }
 
   /**
@@ -257,6 +284,7 @@ public class ModelPolisher extends Launcher {
    * @param output
    * @param compressOutput
    * @param omitGenericTerms
+   * @param documentNotesFile can be {@code null}
    * @param modelNotesFile can be {@code null}
    * @param documentTitlePattern can be {@code null}
    * @param validateOutput
@@ -264,13 +292,20 @@ public class ModelPolisher extends Launcher {
    * @throws IOException
    * @throws XMLStreamException
    */
-  public void batchProcess(BiGGDB bigg, File input, File output, ModelPolisherOptions.Compression compressOutput, boolean omitGenericTerms, File modelNotesFile, String documentTitlePattern, boolean checkMassBalance, boolean validateOutput) throws IOException, XMLStreamException {
-    if (!output.exists() && !output.isFile() && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format("Creating directory {0}.", output.getAbsolutePath()));
+  public void batchProcess(BiGGDB bigg, File input, File output,
+    ModelPolisherOptions.Compression compressOutput, boolean omitGenericTerms,
+    File documentNotesFile, File modelNotesFile, String documentTitlePattern,
+    boolean checkMassBalance, boolean validateOutput) throws IOException,
+    XMLStreamException {
+    if (!output.exists() && !output.isFile()
+        && !(input.isFile() && input.getName().equals(output.getName()))) {
+      logger.info(MessageFormat.format("Creating directory {0}.",
+        output.getAbsolutePath()));
       output.mkdir();
     }
     if (input.isFile()) {
-      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+      boolean matFile = SBFileFilter.hasFileType(input,
+        SBFileFilter.FileType.MAT_FILES);
       if (SBFileFilter.isSBMLFile(input) || matFile) {
         if (output.isDirectory()) {
           String fName = input.getName();
@@ -279,15 +314,21 @@ public class ModelPolisher extends Launcher {
           }
           output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
-        polish(bigg, input, output, compressOutput, omitGenericTerms, modelNotesFile, documentTitlePattern, checkMassBalance, validateOutput);
+        polish(bigg, input, output, compressOutput, omitGenericTerms,
+          documentNotesFile, modelNotesFile, documentTitlePattern,
+          checkMassBalance, validateOutput);
       }
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(MessageFormat.format("Cannot write to file {0}.", output.getAbsolutePath()));
+        throw new IOException(MessageFormat.format("Cannot write to file {0}.",
+          output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
-        File target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
-        batchProcess(bigg, file, target, compressOutput, omitGenericTerms, modelNotesFile, documentTitlePattern, checkMassBalance, validateOutput);
+        File target = new File(Utils.ensureSlash(output.getAbsolutePath())
+          + file.getName());
+        batchProcess(bigg, file, target, compressOutput, omitGenericTerms,
+          documentNotesFile, modelNotesFile, documentTitlePattern,
+          checkMassBalance, validateOutput);
       }
     }
   }
