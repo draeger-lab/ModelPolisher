@@ -18,7 +18,9 @@ package edu.ucsd.sbrg.bigg;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -343,8 +345,9 @@ public class SBMLPolisher {
    */
   private String parseNotes(String location, Map<String, String> replacements) throws IOException {
     StringBuilder sb = new StringBuilder();
-    try (InputStreamReader is = new InputStreamReader(getClass().getResourceAsStream(location));
-        BufferedReader br = new BufferedReader(is)) {
+    try (InputStream is = getClass().getResourceAsStream(location);
+        InputStreamReader isReader = new InputStreamReader((is != null) ? is : new FileInputStream(new File(location)));
+        BufferedReader br = new BufferedReader(isReader)) {
       String line;
       boolean start = false;
       while (br.ready() && ((line = br.readLine()) != null)) {
