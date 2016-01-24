@@ -98,7 +98,7 @@ public class PostgreSQLConnector {
     properties.setProperty(Keys.host.toString(), host);
     properties.setProperty(Keys.user.toString(), user);
     properties.setProperty(Keys.databaseName.toString(), dbName);
-    properties.setProperty(Keys.password.toString(), password);
+    properties.setProperty(Keys.password.toString(), password != null ? password : "");
     properties.setProperty(Keys.host.toString(), host);
     properties.setProperty(Keys.portNumber.toString(), Integer.toString(port));
     logger.fine(user + "@" + host + ":" + port + ", password=" + StringTools.fill(password.length(), '*'));

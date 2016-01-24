@@ -243,7 +243,8 @@ public class BiGGId {
         try {
           setTissueCode(elem);
         } catch (IllegalArgumentException exc) {
-          logger.fine(MessageFormat.format(
+          // This is not a problem, we have the chance to fix it right away.
+          logger.finer(MessageFormat.format(
             "Failed to correctly parse id ''{0}''. {1}",
             biggId, Utils.getMessage(exc)));
           if (isSetCompartmentCode()) {
@@ -269,7 +270,8 @@ public class BiGGId {
     try {
       setCompartmentCode(elem);
     } catch (IllegalArgumentException exc) {
-      logger.fine(MessageFormat.format(
+      // this is not a warning because we try to fix the problem right away.
+      logger.finer(MessageFormat.format(
         "Failed to correctly parse id ''{0}''. {1}",
         biggId, Utils.getMessage(exc)));
       if (elem.endsWith("-")) {

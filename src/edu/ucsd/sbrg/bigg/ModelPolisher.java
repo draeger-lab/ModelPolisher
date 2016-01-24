@@ -115,12 +115,13 @@ public class ModelPolisher extends Launcher {
     }
     try {
       // Connect to database and launch application:
+      String passwd = args.getProperty(DBOptions.PASSWD);
       BiGGDB bigg = new BiGGDB(new PostgreSQLConnector(
         args.getProperty(DBOptions.HOST),
         args.getIntProperty(DBOptions.PORT),
         args.getProperty(DBOptions.USER),
-        args.getProperty(DBOptions.PASSWD),
-        args.getProperty(DBOptions.DBNAME)));
+        passwd != null ? passwd : "",
+          args.getProperty(DBOptions.DBNAME)));
 
       // Gives users the choice to pass an alternative model notes XHTML file to the program.
       File modelNotesFile = parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
@@ -331,6 +332,28 @@ public class ModelPolisher extends Launcher {
           checkMassBalance, validateOutput);
       }
     }
+  }
+
+  /* (non-Javadoc)
+   * @see de.zbit.Launcher#getCitation(boolean)
+   */
+  @Override
+  public String getCitation(boolean HTMLstyle) {
+    if (HTMLstyle) {
+      return
+          "<dl>\n" +
+          "  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n" +
+          "    <dd>\n" +
+          "      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n" +
+          "      <a href=\"https://dx.doi.org/10.1093/nar/gkv1049\" target=\"_blank\"\n" +
+          "      title=\"Access the publication about BiGG Models knowledgebase\">doi:10.1093/nar/gkv1049</a>\n" +
+          "    </dd>\n" +
+          "  </dt>\n" +
+          "</dl>";
+    }
+    return "King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). " +
+    "BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, " +
+    "doi:10.1093/nar/gkv1049.";
   }
 
   /* (non-Javadoc)

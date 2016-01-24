@@ -19,8 +19,8 @@ public enum ModelFields {
    */
   author,
   /**
-   * The vector of metabolite concentration change rates (usually but not always
-   * all zero, i.e., steady-state):  <i>S &sdot; v = b</i>. Must have same
+   * The bound vector of metabolite concentration change rates (usually but not
+   * always all zero, i.e., steady-state): <i>S &sdot; v = b</i>. Must have same
    * dimension as {@link #mets}
    */
   b,
