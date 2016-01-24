@@ -54,6 +54,7 @@ import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.MIRIAM;
+import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -65,6 +66,7 @@ public class COBRAparser {
   private static final String GENE_PRODUCT_PREFIX = "G";
   private static final String REACTION_PREFIX = "R";
   private static final String METABOLITE_PREFIX = "M";
+
   /**
    * A {@link Logger} for this class.
    */
@@ -86,8 +88,48 @@ public class COBRAparser {
    * @throws IOException
    */
   public static SBMLDocument read(File matFile) throws IOException {
+    return read(matFile, false);
+  }
+
+  /**
+   * 
+   * @param matFile
+   * @param omitGenericTerms
+   * @return
+   * @throws IOException
+   */
+  public static SBMLDocument read(File matFile, boolean omitGenericTerms) throws IOException {
     COBRAparser parser = new COBRAparser();
+    parser.setOmitGenericTerms(omitGenericTerms);
     return parser.parse(matFile);
+  }
+
+  /**
+   * 
+   */
+  public COBRAparser() {
+    super();
+    setOmitGenericTerms(false);
+  }
+
+  /**
+   * 
+   */
+  private boolean omitGenericTerms;
+
+
+  /**
+   * @return the omitGenericTerms
+   */
+  public boolean getOmitGenericTerms() {
+    return omitGenericTerms;
+  }
+
+  /**
+   * @param omitGenericTerms the omitGenericTerms to set
+   */
+  public void setOmitGenericTerms(boolean omitGenericTerms) {
+    this.omitGenericTerms = omitGenericTerms;
   }
 
   /**
@@ -393,6 +435,13 @@ public class COBRAparser {
     MLSparse S = toMLSparse(struct.getField(ModelFields.S.name()));
     parseRxns(builder, rxns, rxnNames, rev, S, mets, lb, ub, rxnKeggID, ecNumbers, confidenceScores, citations, comments);
 
+    // parse gprs
+    MLCell grRules = toMLCell(struct, ModelFields.grRules);
+    for (int i = 0; i < grRules.getSize(); i++) {
+      String geneReactionRule = toString(grRules.get(i));
+      SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
+    }
+
     // parse subsystems
     MLCell subSystems = toMLCell(struct, ModelFields.subSystems);
     if ((subSystems != null) && (subSystems.getSize() > 0)) {
@@ -404,7 +453,13 @@ public class COBRAparser {
     obj.setType(Objective.Type.MAXIMIZE);
     MLChar csense = toMLChar(struct, ModelFields.csense);
     if (csense != null) {
-      // TODO: check if minimize
+      for (int i = 0; i < csense.getSize(); i++) {
+        char c = csense.getChar(0, i);
+        // TODO: only 'E' (equality) is supported for now!
+        if (c != 'E') {
+          logger.severe(MessageFormat.format("Unsupported nonequality relationship for metabolite with id ''{0}''.", model.getSpecies(i).getId()));
+        }
+      }
     }
 
     MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelFields.c);

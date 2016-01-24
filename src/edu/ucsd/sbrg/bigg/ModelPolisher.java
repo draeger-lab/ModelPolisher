@@ -192,7 +192,7 @@ public class ModelPolisher extends Launcher {
       input.getAbsolutePath()));
     SBMLDocument doc = null;
     if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
-      doc = COBRAparser.read(input);
+      doc = COBRAparser.read(input, omitGenericTerms);
     } else {
       doc = SBMLReader.read(input);
     }
