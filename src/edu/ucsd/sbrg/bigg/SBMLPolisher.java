@@ -267,7 +267,9 @@ public class SBMLPolisher {
     if (!model.containsUniqueNamedSBase(id)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
-        logger.severe(MessageFormat.format("The model does not contain a gene product with id ''{0}'', but reaction ''{1}'' uses this id in its gene-product association.", id, reactionId));
+        logger.warning(MessageFormat.format("Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.", id, reactionId));
+        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        gp = fbcPlug.createGeneProduct(id);
       } else {
         logger.info(MessageFormat.format("Updating the id of gene product ''{0}'' to ''{1}''.", gp.getId(), id));
         gp.setId(id);
@@ -428,10 +430,10 @@ public class SBMLPolisher {
         continue;
       }
       switch (miriam) {
-      case InterPro:
+      case interpro:
       case PDB:
       case UniProtKB_Swiss_Prot:
-      case UniProtKB_TrEMBL:
+      case uniprot:
         termIs.addResource(resource);
         break;
       default:
@@ -454,9 +456,11 @@ public class SBMLPolisher {
     }
     String geneName = bigg.getGeneName(label);
     if (geneName != null) {
-      if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
+      if (geneName.isEmpty()) {
+        logger.fine(MessageFormat.format("No gene name found in BiGG for label ''{0}''.", geneProduct.getName()));
+      } else if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
         logger.warning(MessageFormat.format(
-          "Updating gene product name from {0} to {1}.",
+          "Updating gene product name from ''{0}'' to ''{1}''.",
           geneProduct.getName(), geneName));
       }
       geneProduct.setName(geneName);
@@ -741,6 +745,7 @@ public class SBMLPolisher {
             GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
             group = groupsModelPlugin.createGroup("g" + (groupsModelPlugin.getGroupCount() + 1));
             group.setName(subsystem);
+            group.setKind(Group.Kind.partonomy);
             groupForName.put(subsystem, group);
           }
           Member member = group.createMember();

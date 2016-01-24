@@ -27,12 +27,20 @@ public enum MIRIAM {
   /**
    * 
    */
-  ASAP(pairOf("asap", "^[A-Za-z0-9-]+$")),
+  asap(pairOf("asap", "^[A-Za-z0-9-]+$")),
   /**
    * 
    */
-  //TODO
-  BIOPATH(),
+  /**
+   * https://www.molecular-networks.com/biopath3/biopath/mols/
+   * TODO: what is the actual pattern? using any character!
+   */
+  biopath_molecule(pairOf("https://www.molecular-networks.com/biopath3/biopath/mols/", ".*")),
+  /**
+   * https://www.molecular-networks.com/biopath3/biopath/rxn/
+   * TODO: what is the actual pattern? using any character!
+   */
+  biopath_reaction(pairOf("https://www.molecular-networks.com/biopath3/biopath/rxn/", ".*")),
   /**
    * 
    */
@@ -44,15 +52,15 @@ public enum MIRIAM {
   /**
    * 
    */
-  CCDS(pairOf("ccds", "^CCDS\\d+\\.\\d+$")),
+  ccds(pairOf("ccds", "^CCDS\\d+\\.\\d+$")),
   /**
    * 
    */
-  CHEBI(pairOf("chebi", "^CHEBI:\\d+$")),
+  chebi(pairOf("chebi", "^CHEBI:\\d+$")),
   /**
    * 
    */
-  EcoGene(pairOf("ecogene", "^EG\\d+$")),
+  ecogene(pairOf("ecogene", "^EG\\d+$")),
   /**
    * 
    */
@@ -77,23 +85,23 @@ public enum MIRIAM {
   /**
    * 
    */
-  GO(pairOf("go", "^GO:\\d{7}$")),
+  go(pairOf("go", "^GO:\\d{7}$")),
   /**
    * 
    */
-  GOA(pairOf("goa", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])$")),
+  goa(pairOf("goa", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])$")),
   /**
    * 
    */
-  HGNC(pairOf("hgnc", "^((HGNC|hgnc):)?\\d{1,5}$")),
+  hgnc(pairOf("hgnc", "^((HGNC|hgnc):)?\\d{1,5}$")),
   /**
    * 
    */
-  HMDB(pairOf("hmdb", "^HMDB\\d{5}$")),
+  hdmb(pairOf("hmdb", "^HMDB\\d{5}$")),
   /**
    * 
    */
-  HPRD(pairOf("hprd", "^\\d+$")),
+  hprd(pairOf("hprd", "^\\d+$")),
   /**
    * 
    */
@@ -101,12 +109,7 @@ public enum MIRIAM {
   /**
    * 
    */
-  //TODO: unclear which one to pick: IMGT HLA or LIGM
-  IMGT_GENE_DB(),
-  /**
-   * 
-   */
-  InterPro(pairOf("interpro", "^IPR\\d{6}$")),
+  interpro(pairOf("interpro", "^IPR\\d{6}$")),
   /**
    * 
    */
@@ -120,12 +123,21 @@ public enum MIRIAM {
     /**
      * 
      */
-    LIPIDMAPS(pairOf("lipidmaps", "^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$")),
+    lipidmaps(pairOf("lipidmaps", "^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$")),
+    /**
+     * http://metanetx.org/cgi-bin/mnxweb/chem_info?chem=
+     * TODO: what is the actual pattern? using any character!
+     */
+    mnx_chemical(pairOf("http://metanetx.org/cgi-bin/mnxweb/chem_info?chem=", ".*")),
+    /**
+     * http://metanetx.org/cgi-bin/mnxweb/equa_info?equa=
+     * TODO: what is the actual pattern? using any character!
+     */
+    mnx_equation(pairOf("http://metanetx.org/cgi-bin/mnxweb/equa_info?equa=", ".*")),
     /**
      * 
      */
-    //TODO: BioCyc is not MetaCyc!
-    METACYC(pairOf("biocyc", "^[A-Z-0-9]+(?<!CHEBI)(\\:)?[A-Za-z0-9+_.%-]+$")),
+    biocyc(pairOf("biocyc", "^[A-Z-0-9]+(?<!CHEBI)(\\:)?[A-Za-z0-9+_.%-]+$")),
     /**
      * The Mouse Genome Database (MGD) project includes data on gene
      * characterization, nomenclature, mapping, gene homologies among mammals,
@@ -138,7 +150,7 @@ public enum MIRIAM {
     //TODO: unclear which database is meant.
     MIM(),
     /**
-     * 
+     * Protein Data Bank
      */
     PDB(pairOf("pdb", "^[0-9][A-Za-z0-9]{3}$")),
     /**
@@ -158,27 +170,50 @@ public enum MIRIAM {
      * protein sequences derived from the paradigm strain <i>B. subtilis</i> 168,
      * linked to the relevant annotations and functional assignments.
      */
-    SubtiList(pairOf("subtilist", "^BG\\d+$")),
+    subtilist(pairOf("subtilist", "^BG\\d+$")),
     /**
-     * 
+     * Reactome
      */
-    REACTOME(pairOf("reactome", "^REACT_\\d+(\\.\\d+)?$")),
+    reactome(pairOf("reactome", "^REACT_\\d+(\\.\\d+)?$")),
+    /**
+     * RHEA
+     */
+    rhea(pairOf("rhea", "^\\d{5}$")),
     /**
      * 
      */
     REBASE(pairOf("rebase", "^\\d+$")),
     /**
-     * 
+     * The Reference Sequence (RefSeq) collection aims to provide a comprehensive,
+     * integrated, non-redundant set of sequences, including genomic DNA,
+     * transcript (RNA), and protein products.
      */
-    SEED(pairOf("seed", "^\\d+\\.\\d+$"), pairOf("seed.compound", "^cpd\\d+$")),
+    RefSeq(pairOf("refseq", "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{4}\\d+))(\\.\\d+)?$")),
+    /**
+     * Online Mendelian Inheritance in Man a catalog of human genes and genetic disorders.
+     */
+    omim(pairOf("omim", "^[*#+%^]?\\d{6}$")),
     /**
      * 
      */
-    SGD(pairOf("sgd", "^((S\\d+$)|(Y[A-Z]{2}\\d{3}[a-zA-Z](\\-[A-Z])?))$")),
+    seed(pairOf("seed", "^\\d+\\.\\d+$"), pairOf("seed.compound", "^cpd\\d+$")),
+    /**
+     * 
+     */
+    sgd(pairOf("sgd", "^((S\\d+$)|(Y[A-Z]{2}\\d{3}[a-zA-Z](\\-[A-Z])?))$")),
     /**
      * 
      */
     TubercuList(pairOf("myco.tuber", "^Rv\\d{4}(A|B|c)?$")),
+    /**
+     * The University of Minnesota Biocatalysis/Biodegradation Database (UM-BBD)
+     * contains information on microbial biocatalytic reactions and biodegradation
+     * pathways for primarily xenobiotic, chemical compounds. The goal of the
+     * UM-BBD is to provide information on microbial enzyme-catalyzed reactions
+     * that are important for biotechnology. This collection refers to compound
+     * information.
+     */
+    umbbd_compound(pairOf("umbbd.compound", "^c\\d+$")),
     /**
      * 
      */
@@ -186,38 +221,41 @@ public enum MIRIAM {
     UniProtKB_Swiss_Prot(
       pairOf("uniprot.isoform", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\-\\d+)$"),
       pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$"),
-      pairOf("unipathway", "^UPA\\d{5}$"),
       pairOf("ipi", "^IPI\\d{8}$")),
+
+      /**
+       * http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=
+       * TODO What is the actual pattern? Using any character!
+       */
+      unipathway_reaction(pairOf("http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=", ".*")),
+      /**
+       * UniPathway is a manually curated resource of enzyme-catalyzed and
+       * spontaneous chemical reactions. It provides a hierarchical representation
+       * of metabolic pathways and a controlled vocabulary for pathway annotation in
+       * UniProtKB. UniPathway data are cross-linked to existing metabolic resources
+       * such as ChEBI/Rhea, KEGG and MetaCyc. This collection references compounds.
+       */
+      uniprot(pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$")),
       /**
        * 
        */
-      //TODO this needs to be checked!!! Is this really the right resource?
-      //TODO: needs different qualifier!
-      UniProtKB_TrEMBL(
-        pairOf("uniprot.isoform", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\-\\d+)$"),
-        pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$"),
-        pairOf("unipathway", "^UPA\\d{5}$"),
-        pairOf("ipi", "^IPI\\d{8}$")),
-        /**
-         * 
-         */
-        UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$")),
-        /**
-         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000383
-         */
-        INCHI(pairOf("inchi", "^InChI\\=1S\\/[A-Za-z0-9]+(\\/[cnpqbtmsih][A-Za-z0-9\\-\\+\\(\\)\\,]+)+$")),
-        /**
-         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000019
-         */
-        DOI(pairOf("doi", "^(doi\\:)?\\d{2}\\.\\d{4}.*$")),
-        /**
-         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000015
-         */
-        PUBMED(pairOf("pubmed", "^\\d+$")),
-        /**
-         * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000004
-         */
-        EC_CODE(pairOf("ec-code", "^\\d+\\.-\\.-\\.-|\\d+\\.\\d+\\.-\\.-|\\d+\\.\\d+\\.\\d+\\.-|\\d+\\.\\d+\\.\\d+\\.(n)?\\d+$"));
+      UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$")),
+      /**
+       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000383
+       */
+      INCHI(pairOf("inchi", "^InChI\\=1S\\/[A-Za-z0-9]+(\\/[cnpqbtmsih][A-Za-z0-9\\-\\+\\(\\)\\,]+)+$")),
+      /**
+       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000019
+       */
+      DOI(pairOf("doi", "^(doi\\:)?\\d{2}\\.\\d{4}.*$")),
+      /**
+       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000015
+       */
+      PUBMED(pairOf("pubmed", "^\\d+$")),
+      /**
+       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000004
+       */
+      EC_CODE(pairOf("ec-code", "^\\d+\\.-\\.-\\.-|\\d+\\.\\d+\\.-\\.-|\\d+\\.\\d+\\.\\d+\\.-|\\d+\\.\\d+\\.\\d+\\.(n)?\\d+$"));
 
   /**
    * 
@@ -246,35 +284,20 @@ public enum MIRIAM {
 
   /**
    * 
+   */
+  private static final Map<String, MIRIAM> catalog2MIRIAM = new HashMap<String, MIRIAM>();
+
+  /**
+   * 
    * @param catalog
    * @return
    */
   public static MIRIAM toMIRIAM(String catalog) {
-    String miriam = null;
-    try {
-      miriam = catalog.trim().replace(" ", "").replaceAll("[/-]", "_");
-      if (miriam.equalsIgnoreCase("CASNUMBER") || miriam.equalsIgnoreCase("CASID")) {
-        return CAS;
-      } else if (miriam.equalsIgnoreCase("CHEBIID") || miriam.equalsIgnoreCase("ChEBI")) {
-        return CHEBI;
-      } else if (miriam.equals("ec_code")) {
-        miriam = miriam.toUpperCase();
-      } else if (miriam.toUpperCase().startsWith("KEGG")) {
-        return KEGGID;
-      } else if (miriam.equalsIgnoreCase("MetaCyc")) {
-        return METACYC;
-      } else if (miriam.equalsIgnoreCase("Reactome")) {
-        return REACTOME;
-      } else if (miriam.equalsIgnoreCase("BioPath")) {
-        return BIOPATH;
-      } else if (miriam.equalsIgnoreCase("NCBI Gene")) {
-        return GeneID;
-      }
-      return MIRIAM.valueOf(miriam);
-    } catch (Throwable t) {
+    MIRIAM m = catalog2MIRIAM.get(catalog);
+    if (m == null) {
+      logger.severe(MessageFormat.format("Unknown database ''{0}''.", catalog));
     }
-    logger.severe(MessageFormat.format("Unknown database ''{0}''.", catalog));
-    return null;
+    return m;
   }
 
   /**
@@ -285,7 +308,7 @@ public enum MIRIAM {
    */
   public static String toResourceURL(MIRIAM catalog, String identifier) {
     if (catalog != null) {
-      return catalog.getURL(catalog.checkId(identifier));
+      return catalog.getURL(identifier);
     }
     logger.severe(MessageFormat.format(
       "Entry ''{0}'' is not a valid identifier for database ''{1}''.",
@@ -308,11 +331,59 @@ public enum MIRIAM {
    */
   private Map<String, Pattern> catalogToIdPatterns;
 
+  static {
+    for (MIRIAM m : MIRIAM.values()) {
+
+      String miriam = m.toString().trim().replace(" ", "").replaceAll("[/-]", "_");
+      switch (m) {
+      case CAS:
+        catalog2MIRIAM.put("CASNUMBER", m);
+        catalog2MIRIAM.put("CASID", m);
+        break;
+      case chebi:
+        catalog2MIRIAM.put("CHEBIID", m);
+        catalog2MIRIAM.put("ChEBI", m);
+        break;
+      case EC_CODE:
+        catalog2MIRIAM.put("ec_code", m);
+        break;
+      case biopath_molecule:
+        catalog2MIRIAM.put("BioPath.molecule", m);
+        break;
+      case biopath_reaction:
+        catalog2MIRIAM.put("BioPath.reaction", m);
+        break;
+      case KEGGID:
+        catalog2MIRIAM.put("KEGG", m);
+        break;
+      case GeneID:
+        catalog2MIRIAM.put("NCBIGene", m);
+        break;
+      default:
+        break;
+      }
+
+      catalog2MIRIAM.put(miriam, m);
+      if (m.catalogToIdPatterns != null) {
+        for (String catalog : m.getCatalogs()) {
+          catalog2MIRIAM.put(catalog, m);
+        }
+      }
+    }
+  }
+
+  /**
+   * 
+   */
+  private MIRIAM() {
+  }
+
   /**
    * 
    * @param tpyes
    */
   private MIRIAM(Pair<String, String>... tpyes) {
+    this();
     catalogToIdPatterns = new HashMap<String, Pattern>();
     if (tpyes != null) {
       for (Pair<String, String> type : tpyes) {
@@ -358,7 +429,7 @@ public enum MIRIAM {
   public String checkId(String id) {
     id = id.trim();
     switch (this) {
-    case CHEBI:
+    case chebi:
       if (!id.startsWith("CHEBI:")) {
         return "CHEBI:" + id;
       }
@@ -368,7 +439,7 @@ public enum MIRIAM {
         return "GI:" + id;
       }
       break;
-    case GO:
+    case go:
       if (!id.startsWith("GO:")) {
         return "GO:" + id;
       }
@@ -378,7 +449,7 @@ public enum MIRIAM {
         return StringTools.firstLetterUpperCase(id);
       }
       break;
-    case REACTOME:
+    case reactome:
       if (!id.startsWith("REACT_")) {
         return "REACT_" + id;
       }
@@ -394,19 +465,30 @@ public enum MIRIAM {
    * @return
    */
   public String getURL(String id) {
-    if (catalogToIdPatterns.size() == 0) {
+    if ((catalogToIdPatterns == null) || (catalogToIdPatterns.size() == 0)) {
       logger.fine(MessageFormat.format(
         "Database ''{0}'' is not registered in MIRIAM. Cannot address identifier ''{1}''.",
         this, id));
     } else {
       id = checkId(id);
-      for (Map.Entry<String, Pattern> entry : catalogToIdPatterns.entrySet()) {
-        if (entry.getValue().matcher(id).matches()) {
-          return String.format(urlPattern, entry.getKey(), id);
+      switch (this) {
+      case biopath_molecule:
+      case biopath_reaction:
+      case mnx_chemical:
+      case mnx_equation:
+      case unipathway_reaction:
+        // TODO: In these cases we don't have patterns and cannot guarantee the correctness of the id!
+        return catalogToIdPatterns.keySet().iterator().next().toString() + id;
+      default:
+        for (Map.Entry<String, Pattern> entry : catalogToIdPatterns.entrySet()) {
+          if (entry.getValue().matcher(id).matches()) {
+            return String.format(urlPattern, entry.getKey(), id);
+          }
         }
-      }
-      if (this != BRENDA) {
-        logger.severe(MessageFormat.format("Invalid identifier ''{0}'' for database ''{1}''", id, this));
+        if (this != BRENDA) {
+          logger.severe(MessageFormat.format("Invalid identifier ''{0}'' for database ''{1}''", id, this));
+        }
+        break;
       }
     }
     return null;

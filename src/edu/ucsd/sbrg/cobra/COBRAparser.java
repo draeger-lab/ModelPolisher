@@ -188,8 +188,8 @@ public class COBRAparser {
           CVTerm term = new CVTerm();
           term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
           term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
-          addResource(metCHEBIID, i, term, MIRIAM.CHEBI);
-          addResource(metHMDB, i, term, MIRIAM.HMDB);
+          addResource(metCHEBIID, i, term, MIRIAM.chebi);
+          addResource(metHMDB, i, term, MIRIAM.hdmb);
           addResource(metInchiString, i, term, MIRIAM.INCHI);
           addResource(metKeggID, i, term, MIRIAM.KEGGID);
           addResource(metPubChemID,i, term, MIRIAM.PUBCHEMID);
@@ -330,7 +330,7 @@ public class COBRAparser {
       }
     }
     if (!newId.equals(id)) {
-      logger.warning(MessageFormat.format("Changed metabolite id from {0} to {1} in order to match the BiGG id specification.", id, newId));
+      logger.warning(MessageFormat.format("Changed metabolite id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.", id, newId));
     }
     return newId.toString();
   }
@@ -401,8 +401,11 @@ public class COBRAparser {
 
     FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     Objective obj = fbc.createObjective("obj");
-    // TODO: this could become a user option if minimize
     obj.setType(Objective.Type.MAXIMIZE);
+    MLChar csense = toMLChar(struct, ModelFields.csense);
+    if (csense != null) {
+      // TODO: check if minimize
+    }
 
     MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelFields.c);
     if (coefficients != null) {
@@ -516,6 +519,7 @@ public class COBRAparser {
       if (group == null) {
         group = groupsModelPlugin.createGroup();
         group.setName(name);
+        group.setKind(Group.Kind.partonomy);
         nameToGroup.put(name, group);
       }
       Member member = group.createMember();
@@ -541,6 +545,16 @@ public class COBRAparser {
    */
   private MLCell toMLCell(MLStructure struct, ModelFields field) {
     return toMLCell(struct.getField(field.name()));
+  }
+
+  /**
+   * 
+   * @param struct
+   * @param field
+   * @return
+   */
+  private MLChar toMLChar(MLStructure struct, ModelFields field) {
+    return toMLChar(struct.getField(field.name()));
   }
 
   /**
@@ -832,24 +846,51 @@ public class COBRAparser {
    * @return
    */
   private MLCell toMLCell(MLArray array) {
-    if ((array != null) && array.isCell()) {
-      MLCell cell = (MLCell) array;
-      return cell;
+    if (array != null) {
+      if (array.isCell()) {
+        return (MLCell) array;
+      }
+      logger.warning(MessageFormat.format(
+        "Expected data structure ''{1}'' to be of type cell, but received type {0}.",
+        MLArray.typeToString(array.getType()), array.getName()));
     }
-    logger.warning(MessageFormat.format("Expected data structure ''{1}'' to be of type cell, but received type {0}.", MLArray.typeToString(array.getType()), array.getName()));
     return null;
   }
+
+  /**
+   * 
+   * @param field
+   * @return
+   */
+  private MLChar toMLChar(MLArray array) {
+    if (array != null) {
+      if (array.isChar()) {
+        return (MLChar) array;
+      }
+      logger.warning(MessageFormat.format(
+        "Expected data structure ''{1}'' to be of type char, but received type {0}.",
+        MLArray.typeToString(array.getType()), array.getName()));
+    }
+    return null;
+  }
+
+
   /**
    * 
    * @param array
    * @return
    */
   private MLDouble toMLDouble(MLArray array) {
-    if (array.isDouble()) {
-      MLDouble real = (MLDouble) array;
-      return real;
+    if (array != null) {
+      if (array.isDouble()) {
+        MLDouble real = (MLDouble) array;
+        return real;
+      }
+      logger.warning(MessageFormat.format(
+        "Expected data structure ''{1}'' to be of type double, but received type {0}.",
+        MLArray.typeToString(array.getType()), array.getName()));
     }
-    throw new IllegalArgumentException(MessageFormat.format("Expected data structure ''{1}'' to be of type double, but received type {0}.", MLArray.typeToString(array.getType()), array.getName()));
+    return null;
   }
 
   /**

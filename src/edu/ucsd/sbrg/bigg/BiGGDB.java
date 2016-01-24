@@ -179,14 +179,13 @@ public class BiGGDB {
    */
   public List<Pair<String, String>> getGeneIds(String label) {
     List<Pair<String, String>> list = new LinkedList<Pair<String,String>>();
-    String query = "SELECT d.name, s.synonym\n"
+    String query = "SELECT d.bigg_id, s.synonym\n"
         + "FROM  data_source d, synonym s, genome_region gr\n"
         + "WHERE d.id = s.data_source_id AND\n"
         + "      s.ome_id = gr.id AND\n"
         + "      gr.bigg_id = '%s' AND\n"
-        + "      d.name != 'old_id' AND\n"
-        + "      d.name NOT LIKE 'refseq_%%' AND\n"
-        + "      d.name != 'locus_tag'";
+        + "      d.bigg_id != 'old_bigg_id' AND\n"
+        + "      d.bigg_id NOT LIKE 'refseq_%%'";
     try {
       ResultSet rst = conect.query(query, label);
       while (rst.next()) {
@@ -210,7 +209,7 @@ public class BiGGDB {
         + "WHERE d.id = s.data_source_id AND\n"
         + "      s.ome_id = gr.id AND\n"
         + "      gr.bigg_id = '%s' AND\n"
-        + "      d.name = 'refseq_name'";
+        + "      d.bigg_id = 'refseq_name'";
     return getString(query, label);
   }
 
