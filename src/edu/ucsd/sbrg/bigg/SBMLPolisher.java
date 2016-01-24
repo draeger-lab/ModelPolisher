@@ -78,6 +78,7 @@ import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import de.zbit.util.Utils;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -210,73 +211,6 @@ public class SBMLPolisher {
           && Double.isFinite(sr.getValue());
     }
     return strict;
-  }
-
-  /**
-   * 
-   * @param ast
-   * @param reactionId
-   * @param model
-   * @return
-   */
-  private Association convertToAssociation(ASTNode ast, String reactionId, Model model) {
-    int level = model.getLevel(), version = model.getVersion();
-    if (ast.isLogical()) {
-      LogicalOperator operator;
-      if (ast.getType() == ASTNode.Type.LOGICAL_AND) {
-        operator = new And(level, version);
-        if (!omitGenericTerms) {
-          operator.setSBOTerm(173); // AND
-        }
-      } else {
-        operator = new Or(level, version);
-        if (!omitGenericTerms) {
-          operator.setSBOTerm(174); // OR
-        }
-      }
-      for (ASTNode child : ast.getListOfNodes()) {
-        Association tmp = convertToAssociation(child, reactionId, model);
-        if (tmp.getClass().equals(operator.getClass())) {
-          // flatten binary trees to compact representation
-          LogicalOperator lo = (LogicalOperator) tmp;
-          for (int i = lo.getAssociationCount() - 1; i >= 0; i--) {
-            operator.addAssociation(lo.removeAssociation(i));
-          }
-        } else {
-          operator.addAssociation(tmp);
-        }
-      }
-      return operator;
-    }
-    GeneProductRef gpr = createGPR(ast.toString(), reactionId, model);
-    return gpr;
-  }
-
-  /**
-   * 
-   * @param identifier
-   * @param reactionId
-   * @param model
-   * @return
-   */
-  public GeneProductRef createGPR(String identifier, String reactionId, Model model) {
-    int level = model.getLevel(), version = model.getVersion();
-    GeneProductRef gpr = new GeneProductRef(level, version);
-    String id = updateGeneId(identifier);
-    // check if this id exists in the model
-    if (!model.containsUniqueNamedSBase(id)) {
-      GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
-      if (gp == null) {
-        logger.warning(MessageFormat.format("Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.", id, reactionId));
-        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        gp = fbcPlug.createGeneProduct(id);
-      } else {
-        logger.info(MessageFormat.format("Updating the id of gene product ''{0}'' to ''{1}''.", gp.getId(), id));
-        gp.setId(id);
-      }
-    }
-    gpr.setGeneProduct(id);
-    return gpr;
   }
 
   /**
@@ -414,7 +348,7 @@ public class SBMLPolisher {
     if (label == null) {
       return;
     }
-    id = updateGeneId(id);
+    id = SBMLUtils.updateGeneId(id);
     if (!id.equals(geneProduct.getId())) {
       geneProduct.setId(id);
     }
@@ -711,21 +645,7 @@ public class SBMLPolisher {
         r.setName(polishName(r.getName()));
       }
 
-
-      FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
-      String geneReactionRule = bigg.getGeneReactionRule(id, r.getModel().getId());
-      if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
-        try {
-          Association association = convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel());
-          if (!plugin.isSetGeneProductAssociation() || !association.equals(plugin.getGeneProductAssociation().getAssociation())) {
-            GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
-            gpa.setAssociation(association);
-            plugin.setGeneProductAssociation(gpa);
-          }
-        } catch (Throwable exc) {
-          logger.warning(MessageFormat.format("Could not parse ''{0}'' because of {1}", geneReactionRule, Utils.getMessage(exc)));
-        }
-      }
+      FBCReactionPlugin plugin = SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()), omitGenericTerms);
       polishFluxBound(plugin.getLowerFluxBoundInstance());
       polishFluxBound(plugin.getUpperFluxBoundInstance());
 
@@ -736,6 +656,7 @@ public class SBMLPolisher {
         if (model.getUserObject(groupKey) == null) {
           model.putUserObject(groupKey, new HashMap<String, Group>());
         }
+        @SuppressWarnings("unchecked")
         Map<String, Group> groupForName = (Map<String, Group>) model.getUserObject(groupKey);
         for (String subsystem : subsystems) {
           Group group;
@@ -1250,19 +1171,6 @@ public class SBMLPolisher {
    */
   public void setOmitGenericTerms(boolean omitGenericTerms) {
     this.omitGenericTerms = omitGenericTerms;
-  }
-
-  /**
-   * @param id
-   * @return
-   */
-  private String updateGeneId(String id) {
-    id = id.replace("-", "_");
-    //id = id.replace(".", "_AT");
-    if (!id.startsWith("G_")) {
-      id = "G_" + id;
-    }
-    return id;
   }
 
   /**
