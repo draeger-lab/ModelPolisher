@@ -5,6 +5,8 @@ package edu.ucsd.sbrg.util;
 
 import java.io.StringReader;
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.sbml.jsbml.ASTNode;
@@ -15,10 +17,13 @@ import org.sbml.jsbml.ext.fbc.Association;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
 import org.sbml.jsbml.ext.fbc.GeneProductRef;
+import org.sbml.jsbml.ext.fbc.ListOfObjectives;
 import org.sbml.jsbml.ext.fbc.LogicalOperator;
+import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
@@ -94,6 +99,7 @@ public class SBMLUtils {
         logger.warning(MessageFormat.format("Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.", id, reactionId));
         FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         gp = fbcPlug.createGeneProduct(id);
+        gp.setLabel(id);
       } else {
         logger.info(MessageFormat.format("Updating the id of gene product ''{0}'' to ''{1}''.", gp.getId(), id));
         gp.setId(id);
@@ -106,9 +112,8 @@ public class SBMLUtils {
   /**
    * @param r
    * @param geneReactionRule
-   * @return
    */
-  public static FBCReactionPlugin parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
+  public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
     FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
       try {
@@ -122,7 +127,37 @@ public class SBMLUtils {
         logger.warning(MessageFormat.format("Could not parse ''{0}'' because of {1}", geneReactionRule, Utils.getMessage(exc)));
       }
     }
-    return plugin;
+  }
+
+  /**
+   * 
+   * @param association
+   * @return
+   */
+  public static Set<String> setOfGeneLinks(Association association) {
+    Set<String> links = new HashSet<>();
+    if (association instanceof GeneProductRef) {
+      links.add(((GeneProductRef) association).getGeneProduct());
+    } else {
+      LogicalOperator operator = (LogicalOperator) association;
+      for (int i = 0; i < operator.getChildCount(); i++) {
+        links.addAll(setOfGeneLinks(operator.getAssociation(i)));
+      }
+    }
+    return links;
+  }
+
+  /**
+   * 
+   * @param geneProductAssociation
+   * @return
+   */
+  public static Set<String> setOfGeneLinks(
+    GeneProductAssociation geneProductAssociation) {
+    if (geneProductAssociation.isSetAssociation()) {
+      return setOfGeneLinks(geneProductAssociation.getAssociation());
+    }
+    return new HashSet<String>();
   }
 
   /**
@@ -136,6 +171,52 @@ public class SBMLUtils {
       id = "G_" + id;
     }
     return id;
+  }
+
+  /**
+   * @param oldId
+   * @param newId
+   * @param fbcModelPlug
+   */
+  public static void updateReactionRef(String oldId, String newId,
+    FBCModelPlugin fbcModelPlug) {
+    if ((fbcModelPlug != null) && fbcModelPlug.isSetListOfObjectives()) {
+      ListOfObjectives loo = fbcModelPlug.getListOfObjectives();
+      for (Objective objective : loo) {
+        if (objective.isSetListOfFluxObjectives()) {
+          for (FluxObjective fo : objective.getListOfFluxObjectives()) {
+            if (fo.getReaction().equals(oldId)) {
+              fo.setReaction(newId);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * 
+   * @param r
+   */
+  public static void setRequiredAttributes(Reaction r) {
+    // TODO: make defaults user settings or take from L2V5.
+    if (!r.isSetId()) {
+      logger.severe(MessageFormat.format(
+        "Found element of type {0} without defined id.", r.getElementName()));
+    }
+    if (!r.isSetFast()) {
+      r.setFast(false);
+    }
+    if (!r.isSetReversible()) {
+      r.setReversible(false);
+    }
+    if (!r.isSetMetaId() && ((r.getCVTermCount() > 0) || r.isSetHistory())) {
+      r.setMetaId(r.getId());
+    }
+    // TODO
+    //    if (!r.isSetSBOTerm()) {
+    //      r.setSBOTerm(SBO.getProcess());
+    //    }
   }
 
 }

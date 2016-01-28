@@ -27,6 +27,8 @@ import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.TidySBMLWriter;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
@@ -55,6 +57,7 @@ import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.MIRIAM;
 import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -141,6 +144,8 @@ public class COBRAparser {
   private SBMLDocument parse(File matFile) throws IOException {
     MatFileReader mfr = new MatFileReader(matFile);
     ModelBuilder builder = new ModelBuilder(3, 1);
+    SBMLDocument doc = builder.getSBMLDocument();
+    doc.addTreeNodeChangeListener(new UpdateListener());
     Map<String,MLArray> content = mfr.getContent();
     if (content.keySet().size() > 1) {
       logger.warning(MessageFormat.format(
@@ -153,7 +158,7 @@ public class COBRAparser {
       parseModel(builder, array);
       break;
     }
-    return builder.getSBMLDocument();
+    return doc;
   }
 
   /**
@@ -404,6 +409,12 @@ public class COBRAparser {
     Model model = builder.getModel();
     parseDescription(model, struct.getField(ModelFields.description.name()));
 
+    // Generate basic unit:
+    UnitDefinition ud = builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
+    ModelBuilder.buildUnit(ud, 1d, -3, Unit.Kind.MOLE, 1d);
+    ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
+    ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
+
     // parse metabolites
     MLCell mets = toMLCell(struct, ModelFields.mets);
     MLCell metNames = toMLCell(struct, ModelFields.metNames);
@@ -451,6 +462,7 @@ public class COBRAparser {
     FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     Objective obj = fbc.createObjective("obj");
     obj.setType(Objective.Type.MAXIMIZE);
+    fbc.getListOfObjectives().setActiveObjective(obj.getId());
     MLChar csense = toMLChar(struct, ModelFields.csense);
     if (csense != null) {
       for (int i = 0; i < csense.getSize(); i++) {
