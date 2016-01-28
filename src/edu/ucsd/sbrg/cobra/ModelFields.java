@@ -21,7 +21,16 @@ public enum ModelFields {
   /**
    * The bound vector of metabolite concentration change rates (usually but not
    * always all zero, i.e., steady-state): <i>S &sdot; v = b</i>. Must have same
-   * dimension as {@link #mets}
+   * dimension as {@link #mets}.
+   * <p>
+   * The mat files where the b vector isn't zero include constraints that couple
+   * the flux through the model's reactions to the BOF. These are mat files
+   * joining reconstructions of two or more species. These constraints are
+   * represented in the b and A fields.
+   * <p>
+   * If this cannot be expressed in SBML, then an error message would be
+   * appropriate. The SBML file would probably not result in a functional joined
+   * model though.
    */
   b,
   /**
@@ -44,11 +53,20 @@ public enum ModelFields {
    */
   comments,
   /**
-   * 
+   * Confidence scores must have the same dimension as the reactions. These are
+   * an optional input, but it provides additional information on the reaction
+   * content. Adding them as notes would be a good idea.
    */
   confidenceScores,
   /**
-   * Objective sense, i.e., to minimize or maximize the objective
+   * The csense field expresses equality constraints in the model. If this field
+   * is not defined in the reconstruction, equality constraints are assumed when
+   * performing the optimization. Its value is a {@link String} whose length
+   * must equal the number of metabolites. An 'E' at index <i>i</i> means that
+   * in this dimension <i>S &sdot; v = b</i> (equality), 'G' means &ge; greater
+   * than or equal to and an 'L' denotes &le;.
+   * 
+   * @see #osense
    */
   csense,
   /**
@@ -56,7 +74,9 @@ public enum ModelFields {
    */
   description,
   /**
-   * 
+   * The "disabled" field comes from the reconstruction tool rBioNet.
+   * The tool offers the option to disable certain reactions.
+   * If no reactions are disabled, then the "disabled" field in empty.
    */
   disabled,
   /**
@@ -139,6 +159,12 @@ public enum ModelFields {
    * Can be part of the {@link #description}.
    */
   organism,
+  /**
+   * Objective sense, i.e., to minimize or maximize the objective. This field
+   * can either be defined in the mat file itself or when performing an
+   * optimization function (e.g., optimizeCbModel).
+   */
+  osense,
   /**
    * A vector consisting of zeros and ones that translate to binary and determine
    * if the corresponding reaction of that index is reversible (1) or not (0).

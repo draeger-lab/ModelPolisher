@@ -47,6 +47,7 @@ import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 
 /**
@@ -194,7 +195,7 @@ public class ModelPolisher extends Launcher {
     if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
       doc = COBRAparser.read(input, omitGenericTerms);
     } else {
-      doc = SBMLReader.read(input);
+      doc = SBMLReader.read(input, new UpdateListener());
     }
     if (!doc.isSetLevelAndVersion()
         || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {

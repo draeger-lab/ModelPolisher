@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -35,7 +34,6 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.InitialAssignment;
@@ -52,24 +50,17 @@ import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.Variable;
-import org.sbml.jsbml.ext.fbc.And;
-import org.sbml.jsbml.ext.fbc.Association;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
-import org.sbml.jsbml.ext.fbc.LogicalOperator;
 import org.sbml.jsbml.ext.fbc.Objective;
-import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.ext.groups.Member;
-import org.sbml.jsbml.text.parser.CobraFormulaParser;
 import org.sbml.jsbml.util.Pair;
 import org.sbml.jsbml.util.ResourceManager;
 
@@ -86,6 +77,10 @@ import edu.ucsd.sbrg.util.SBMLUtils;
  */
 public class SBMLPolisher {
 
+  /**
+   * 
+   */
+  private static final transient Pattern defaultFluxBound = Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
   /**
    * 
    */
@@ -182,8 +177,14 @@ public class SBMLPolisher {
    * @param nsb
    */
   public void checkCompartment(NamedSBase nsb) {
-    if (((nsb instanceof Species) && !((Species) nsb).isSetCompartment())
-        || ((nsb instanceof Reaction) && !((Reaction) nsb).isSetCompartment())) {
+    if ((nsb instanceof Species) && !((Species) nsb).isSetCompartment()) {
+      BiGGId biggId = extractBiGGId(nsb.getId());
+      if (biggId.isSetCompartmentCode()) {
+        ((Species) nsb).setCompartment(biggId.getCompartmentCode());
+      } else {
+        return;
+      }
+    } else if ((nsb instanceof Reaction) && !((Reaction) nsb).isSetCompartment()) {
       return;
     }
     String cId = (nsb instanceof Species) ? ((Species) nsb).getCompartment() : ((Reaction) nsb).getCompartment();
@@ -326,11 +327,16 @@ public class SBMLPolisher {
     } else {
       c.setSBOTerm(410); // implicit compartment
       if (!c.isSetName()) {
+        // TODO: make the name of a compartment a user setting
         c.setName("default");
       }
     }
     if (!c.isSetMetaId() && (c.getCVTermCount() > 0)) {
       c.setMetaId(c.getId());
+    }
+    if (!c.isSetSpatialDimensions()) {
+      // TODO: check with biGG id, not for surfaces etc.
+      //c.setSpatialDimensions(3d);
     }
   }
   /**
@@ -563,9 +569,11 @@ public class SBMLPolisher {
   }
 
   /**
+   * 
    * @param r
+   * @return {@code true} if the given reaction qualifies for strict FBC.
    */
-  public void polish(Reaction r) {
+  public boolean polish(Reaction r) {
     String id = r.getId();
     if (biomassCaseInsensitive.matcher(id).matches()) {
       r.setSBOTerm(629); // biomass production
@@ -645,9 +653,7 @@ public class SBMLPolisher {
         r.setName(polishName(r.getName()));
       }
 
-      FBCReactionPlugin plugin = SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()), omitGenericTerms);
-      polishFluxBound(plugin.getLowerFluxBoundInstance());
-      polishFluxBound(plugin.getUpperFluxBoundInstance());
+      SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()), omitGenericTerms);
 
       Model model = r.getModel();
       List<String> subsystems = bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
@@ -673,6 +679,7 @@ public class SBMLPolisher {
           member.setIdRef(r);
         }
       }
+      SBMLUtils.setRequiredAttributes(r);
     }
 
     // This is a check if we are producing invalid SBML.
@@ -718,6 +725,35 @@ public class SBMLPolisher {
       }
     }
 
+    FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+    Parameter lb = rPlug.getLowerFluxBoundInstance();
+    Parameter ub = rPlug.getUpperFluxBoundInstance();
+    boolean strict = polishFluxBound(lb) && polishFluxBound(ub);
+    if (strict) {
+      strict &= checkBound(lb);
+      strict &= lb.isSetValue() && (lb.getValue() < Double.POSITIVE_INFINITY);
+      strict &= checkBound(ub);
+      strict &= ub.isSetValue() && (ub.getValue() > Double.NEGATIVE_INFINITY);
+      strict &= lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
+      if (!strict) {
+        logger.warning(MessageFormat.format("The flux bounds of reaction {0} can either not be resolved or they have illegal values.", r.getId()));
+      }
+    } else {
+      logger.warning(MessageFormat.format("Reaction {0} does not define both required flux bounds.", r.getId()));
+    }
+    if (strict && r.isSetListOfReactants()) {
+      strict &= checkSpeciesReferences(r.getListOfReactants());
+      if (!strict) {
+        logger.warning(MessageFormat.format("Some reactants in reaction {0} have an illegal stoichiometry", r.getId()));
+      }
+    }
+    if (strict && r.isSetListOfProducts()) {
+      strict &= checkSpeciesReferences(r.getListOfProducts());
+      if (!strict) {
+        logger.warning(MessageFormat.format("Some products in reaction {0} have an illegal stoichiometry", r.getId()));
+      }
+    }
+    return strict;
   }
 
   /**
@@ -765,11 +801,24 @@ public class SBMLPolisher {
         logger.warning(MessageFormat.format("Species ''{0}'' is supposed to be on the system''s boundary, but its boundary condition flag was not correctly set.", id));
         species.setBoundaryCondition(true);
       }
+    } else if (!species.isSetBoundaryCondition()) {
+      species.setBoundaryCondition(false);
     }
     checkCompartment(species);
 
     BiGGId biggId = extractBiGGId(id);
     FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+
+    /*
+     * Set mandatory attributes to default values
+     * TODO: make those maybe user settings.
+     */
+    if (!species.isSetHasOnlySubstanceUnits()) {
+      species.setHasOnlySubstanceUnits(true);
+    }
+    if (!species.isSetConstant()) {
+      species.setConstant(false);
+    }
 
     if (biggId != null) {
       Model model = species.getModel();
@@ -854,15 +903,18 @@ public class SBMLPolisher {
 
   /**
    * @param bound
+   * @return {@code true} if this method successfully updated the bound parameter.
    */
-  public void polishFluxBound(Parameter bound) {
-    if (bound != null) {
-      if (bound.getId().matches(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*")) {
-        bound.setSBOTerm(626); // default flux bound
-      } else {
-        bound.setSBOTerm(625); // flux bound
-      }
+  public boolean polishFluxBound(Parameter bound) {
+    if (bound == null) {
+      return false;
     }
+    if (defaultFluxBound.matcher(bound.getId()).matches()) {
+      bound.setSBOTerm(626); // default flux bound
+    } else {
+      bound.setSBOTerm(625); // flux bound
+    }
+    return true;
   }
 
   /**
@@ -978,36 +1030,8 @@ public class SBMLPolisher {
     boolean strict = true;
     for (int i = 0; i < model.getReactionCount(); i++) {
       Reaction r = model.getReaction(i);
+      strict &= polish(r);
       progress.DisplayBar(); //"Processing reaction " + r.getId());
-      polish(r);
-      FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
-      strict &= rPlug.isSetLowerFluxBound() && rPlug.isSetUpperFluxBound();
-      if (strict) {
-        Parameter lb = rPlug.getLowerFluxBoundInstance();
-        strict &= checkBound(lb);
-        strict &= lb.isSetValue() && (lb.getValue() < Double.POSITIVE_INFINITY);
-        Parameter ub = rPlug.getUpperFluxBoundInstance();
-        strict &= checkBound(ub);
-        strict &= ub.isSetValue() && (ub.getValue() > Double.NEGATIVE_INFINITY);
-        strict &= lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
-        if (!strict) {
-          logger.warning(MessageFormat.format("The flux bounds of reaction {0} can either not be resolved or they have illegal values.", r.getId()));
-        }
-      } else {
-        logger.warning(MessageFormat.format("Reaction {0} does not define both required flux bounds.", r.getId()));
-      }
-      if (strict && r.isSetListOfReactants()) {
-        strict &= checkSpeciesReferences(r.getListOfReactants());
-        if (!strict) {
-          logger.warning(MessageFormat.format("Some reactants in reaction {0} have an illegal stoichiometry", r.getId()));
-        }
-      }
-      if (strict && r.isSetListOfProducts()) {
-        strict &= checkSpeciesReferences(r.getListOfProducts());
-        if (!strict) {
-          logger.warning(MessageFormat.format("Some products in reaction {0} have an illegal stoichiometry", r.getId()));
-        }
-      }
     }
     return strict;
   }
