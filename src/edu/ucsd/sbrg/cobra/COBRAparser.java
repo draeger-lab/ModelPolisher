@@ -21,6 +21,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLException;
@@ -696,8 +697,14 @@ public class COBRAparser {
             MLArray cell = confidenceScores.get(j);
             if (cell instanceof MLDouble) {
               Double score = ((MLDouble) cell).get(0);
-              logger.info(MessageFormat.format("Reaction {1} has confident score {0,number,##}.", score, r.getId()));
-              // TODO:
+              logger.fine(MessageFormat.format("Reaction {1} has confident score {0,number,##}.", score, r.getId()));
+              builder.buildParameter(
+                "P_confidenceScore_of_" + SBMLtools.toSId(rId), // id
+                MessageFormat.format("Confidence score of reaction {0}", r.isSetName() ? r.getName() : r.getId()), // name
+                score, // value
+                true, // constant
+                Unit.Kind.DIMENSIONLESS // unit
+                  ).setSBOTerm(613); // TODO: there should be a specific term for confidence scores. Use "613 - reaction parameter" for now.
             } else {
               logger.warning(MessageFormat.format("Expected MLDouble, but received {0}.", cell.getClass().getSimpleName()));
             }
