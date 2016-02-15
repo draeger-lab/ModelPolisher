@@ -29,9 +29,6 @@ public enum MIRIAM {
    */
   asap(pairOf("asap", "^[A-Za-z0-9-]+$")),
   /**
-   * 
-   */
-  /**
    * https://www.molecular-networks.com/biopath3/biopath/mols/
    * TODO: what is the actual pattern? using any character!
    */
@@ -125,15 +122,23 @@ public enum MIRIAM {
      */
     lipidmaps(pairOf("lipidmaps", "^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$")),
     /**
-     * http://metanetx.org/cgi-bin/mnxweb/chem_info?chem=
-     * TODO: what is the actual pattern? using any character!
+     * MetaNetx integrates various information from genome-scale metabolic network
+     * reconstructions such as information on reactions, metabolites and
+     * compartments. This information undergoes a reconciliation process to
+     * minimise for discrepancies between different data sources, and makes the
+     * data accessible under a common namespace. This collection references
+     * chemical or metabolic components.
      */
-    mnx_chemical(pairOf("http://metanetx.org/cgi-bin/mnxweb/chem_info?chem=", ".*")),
+    mnx_chemical(pairOf("metanetx.chemical", "^MNXM\\d+$")),
     /**
-     * http://metanetx.org/cgi-bin/mnxweb/equa_info?equa=
-     * TODO: what is the actual pattern? using any character!
+     * MetaNetx integrates various information from genome-scale metabolic network
+     * reconstructions such as information on reactions, metabolites and
+     * compartments. This information undergoes a reconciliation process to
+     * minimise for discrepancies between different data sources, and makes the
+     * data accessible under a common namespace. This collection references
+     * reactions.
      */
-    mnx_equation(pairOf("http://metanetx.org/cgi-bin/mnxweb/equa_info?equa=", ".*")),
+    mnx_equation(pairOf("metanetx.reaction", "^MNXR\\d+$")),
     /**
      * 
      */
@@ -474,8 +479,6 @@ public enum MIRIAM {
       switch (this) {
       case biopath_molecule:
       case biopath_reaction:
-      case mnx_chemical:
-      case mnx_equation:
       case unipathway_reaction:
         // TODO: In these cases we don't have patterns and cannot guarantee the correctness of the id!
         return catalogToIdPatterns.keySet().iterator().next().toString() + id;
