@@ -80,39 +80,39 @@ public class SBMLPolisher {
   /**
    * 
    */
-  private static final transient Pattern defaultFluxBound = Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
+  public static final transient Pattern PATTERN_DEFAULT_FLUX_BOUND = Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
   /**
    * 
    */
-  private static final transient Pattern atpMaintennance = Pattern.compile(".*[Aa][Tt][Pp][Mm]");
+  public static final transient Pattern PATTERN_ATP_MAINTENANCE = Pattern.compile(".*[Aa][Tt][Pp][Mm]");
   /**
    * 
    */
-  private static final transient Pattern biomassCaseInsensitive = Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
+  public static final transient Pattern PATTERN_BIOMASS_CASE_INSENSITIVE = Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
   /**
    * 
    */
-  private static final transient Pattern biomassCaseSensitive = Pattern.compile(".*BIOMASS.*");
+  public static final transient Pattern PATTERN_BIOMASS_CASE_SENSITIVE = Pattern.compile(".*BIOMASS.*");
   /**
    * 
    */
-  private static final transient Pattern demandReaction = Pattern.compile(".*_[Dd][Mm]_.*");
+  public static final transient Pattern PATTERN_DEMAND_REACTION = Pattern.compile(".*_[Dd][Mm]_.*");
   /**
    * 
    */
-  private static final transient Pattern exchangeReaction = Pattern.compile(".*_[Ee][Xx]_.*");
+  public static final transient Pattern PATTERN_EXCHANGE_REACTION = Pattern.compile(".*_[Ee][Xx]_.*");
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+  public static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
   /**
    * 
    */
-  private static final transient Pattern sinkOldStyle = Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
+  public static final transient Pattern PATTERN_SINK_OLD_STYLE = Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
   /**
    * 
    */
-  private static final transient Pattern sinkReaction = Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
+  public static final transient Pattern PATTERN_SINK_REACTION = Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
 
   /**
    * 
@@ -575,22 +575,22 @@ public class SBMLPolisher {
    */
   public boolean polish(Reaction r) {
     String id = r.getId();
-    if (biomassCaseInsensitive.matcher(id).matches()) {
+    if (PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(id).matches()) {
       r.setSBOTerm(629); // biomass production
-      if (!biomassCaseSensitive.matcher(id).matches()) {
+      if (!PATTERN_BIOMASS_CASE_SENSITIVE.matcher(id).matches()) {
         // in response to https://github.com/SBRG/bigg_models/issues/175
         id = id.replaceAll("[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
         r.setId(id);
       }
-    } else if (demandReaction.matcher(id).matches()) {
+    } else if (PATTERN_DEMAND_REACTION.matcher(id).matches()) {
       r.setSBOTerm(628); // demand reaction
-    } else if (exchangeReaction.matcher(id).matches()) {
+    } else if (PATTERN_EXCHANGE_REACTION.matcher(id).matches()) {
       r.setSBOTerm(627); // exchange reaction
-    } else if (atpMaintennance.matcher(id).matches()) {
+    } else if (PATTERN_ATP_MAINTENANCE.matcher(id).matches()) {
       r.setSBOTerm(630); // ATP maintenance
-    } else if (sinkReaction.matcher(id).matches()) {
+    } else if (PATTERN_SINK_REACTION.matcher(id).matches()) {
       r.setSBOTerm(632);
-      if (sinkOldStyle.matcher(id).matches()) {
+      if (PATTERN_SINK_OLD_STYLE.matcher(id).matches()) {
         id = id.replaceAll("_[Ss][Ii][Nn][Kk]_", "_SK_");
         r.setId(id);
       }
@@ -909,7 +909,7 @@ public class SBMLPolisher {
     if (bound == null) {
       return false;
     }
-    if (defaultFluxBound.matcher(bound.getId()).matches()) {
+    if (PATTERN_DEFAULT_FLUX_BOUND.matcher(bound.getId()).matches()) {
       bound.setSBOTerm(626); // default flux bound
     } else {
       bound.setSBOTerm(625); // flux bound

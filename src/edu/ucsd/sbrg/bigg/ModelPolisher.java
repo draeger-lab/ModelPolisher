@@ -306,8 +306,7 @@ public class ModelPolisher extends Launcher {
       output.mkdir();
     }
     if (input.isFile()) {
-      boolean matFile = SBFileFilter.hasFileType(input,
-        SBFileFilter.FileType.MAT_FILES);
+      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
       if (SBFileFilter.isSBMLFile(input) || matFile) {
         if (output.isDirectory()) {
           String fName = input.getName();
