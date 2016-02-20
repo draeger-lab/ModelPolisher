@@ -24,6 +24,7 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.util.filters.NameFilter;
 
+import de.zbit.io.ZIPUtils;
 import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
@@ -161,6 +162,9 @@ public class ModelFix {
 
     logger.info(MessageFormat.format("Writing output file {0}.", out.getAbsolutePath()));
     TidySBMLWriter.write(doc, out, ModelPolisher.class.getName(), "1.1", ' ', (short) 2);
+    String archive = out.getAbsolutePath() + ".gz";
+    logger.info(MessageFormat.format("Packing archive file {0}.", archive));
+    ZIPUtils.GZip(out.getAbsolutePath(), archive);
     logger.info(MessageFormat.format("Done. Time elapsed: {0,number,integer} ms", System.currentTimeMillis() - time));
   }
 
@@ -168,7 +172,6 @@ public class ModelFix {
    * @param args
    */
   public static void main(String[] args) {
-    //Locale.setDefault(Locale.ENGLISH);
     LogUtil.initializeLogging("de.zbit", "edu.ucsd.sbrg");
     batchProcess(new File(args[0]), new File(args[1]));
   }

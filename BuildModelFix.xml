@@ -33,7 +33,6 @@
       <zipfileset excludes="META-INF/*.SF, META-INF/INDEX.LIST, META-INF/licenses/**" src="lib/sysbio-1388.jar">
         <exclude name="de/zbit/gui/**"/>
         <exclude name="de/zbit/kegg/**"/>
-        <exclude name="de/zbit/util/progressbar/**"/>
         <exclude name="org/argparser/**"/>
       </zipfileset>
     </jar>

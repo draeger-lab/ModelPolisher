@@ -15,7 +15,7 @@
   <!-- =================================================================== -->
   
   <name>${project.artifactId}</name>
-  <version>1.1</version>
+  <version>1.2</version>
   <url>https://github.com/SBRG/ModelPolisher/</url>
   <inceptionYear>2014</inceptionYear>
   <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
