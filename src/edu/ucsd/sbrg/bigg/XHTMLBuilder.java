@@ -33,11 +33,7 @@ public class XHTMLBuilder {
     sb.append("<table");
     if (attributes != null) {
       for (Map.Entry<String, String> entry : attributes.entrySet()) {
-        sb.append(' ');
-        sb.append(entry.getKey());
-        sb.append("=\"");
-        sb.append(entry.getValue());
-        sb.append('"');
+        appendAttribute(sb, entry);
       }
     }
     sb.append(">\n");
@@ -70,6 +66,31 @@ public class XHTMLBuilder {
     }
     sb.append("</table>\n");
     return sb.toString();
+  }
+
+  /**
+   * @param sb
+   * @param entry
+   */
+  public static void appendAttribute(StringBuilder sb,
+    Map.Entry<String, String> entry) {
+    appendAttribute(sb, entry.getKey(), entry.getValue());
+  }
+
+  /**
+   * 
+   * @param sb
+   * @param key
+   * @param value
+   */
+  public static void appendAttribute(StringBuilder sb, String key, String value) {
+    if ((sb.length() > 0) && (sb.charAt(sb.length() - 1) != ' ')) {
+      sb.append(' ');
+    }
+    sb.append(key);
+    sb.append("=\"");
+    sb.append(value);
+    sb.append('"');
   }
 
   /**

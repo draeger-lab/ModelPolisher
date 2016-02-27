@@ -69,6 +69,7 @@ import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import de.zbit.util.Utils;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.util.SBMLFix;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
@@ -165,8 +166,13 @@ public class SBMLPolisher {
   }
 
   /**
+   * Checks if a given bound parameter satisfies the required properties of a
+   * strict flux bound parameter: <li>not null <li>constant <li>defined value
+   * other than {@link Double#NaN}
+   * 
    * @param bound
-   * @return
+   * @return {@code true} if the given parameter can be used as a flux bound in
+   *         strict FBC models, {@code false} otherwise.
    */
   public boolean checkBound(Parameter bound) {
     return (bound != null) && bound.isConstant() && bound.isSetValue() && !Double.isNaN(bound.getValue());
@@ -191,10 +197,10 @@ public class SBMLPolisher {
     Model model = nsb.getModel();
     Compartment c = (Compartment) model.findUniqueNamedSBase(cId);
     if (c == null) {
-      logger.warning(MessageFormat.format("Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.",
+      logger.warning(MessageFormat.format(
+        "Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.",
         cId, nsb.getId(), nsb.getElementName()));
       c = model.createCompartment(cId);
-      c.setConstant(true);
       polish(c);
     }
   }
@@ -334,9 +340,15 @@ public class SBMLPolisher {
     if (!c.isSetMetaId() && (c.getCVTermCount() > 0)) {
       c.setMetaId(c.getId());
     }
+    if (!c.isSetConstant()) {
+      c.setConstant(true);
+    }
     if (!c.isSetSpatialDimensions()) {
       // TODO: check with biGG id, not for surfaces etc.
       //c.setSpatialDimensions(3d);
+    }
+    if (!c.isSetUnits()) {
+      // TODO: set compartment units.
     }
   }
   /**
@@ -538,13 +550,13 @@ public class SBMLPolisher {
     boolean strict = polishListOfReactions(model);
 
     if (strict && model.isSetListOfInitialAssignments()) {
-      strict = polishListOfInitialAssignments(model, strict);
+      strict &= polishListOfInitialAssignments(model, strict);
     }
 
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
 
     if (modelPlug.isSetListOfObjectives()) {
-      strict = polishListOfObjectives(strict, modelPlug);
+      strict &= polishListOfObjectives(strict, modelPlug);
     }
 
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
@@ -1003,8 +1015,12 @@ public class SBMLPolisher {
     } else {
       for (Objective objective : modelPlug.getListOfObjectives()) {
         progress.DisplayBar(); //"Processing objective " + objective.getId());
+        if (!objective.isSetListOfFluxObjectives()) {
+          Model model = modelPlug.getParent();
+          strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug);
+        }
         if (objective.isSetListOfFluxObjectives()) {
-          strict = polishListOfFluxObjectives(strict, objective);
+          strict &= polishListOfFluxObjectives(strict, objective);
         }
       }
     }

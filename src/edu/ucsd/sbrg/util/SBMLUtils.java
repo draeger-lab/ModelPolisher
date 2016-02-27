@@ -29,8 +29,9 @@ import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
 import de.zbit.util.Utils;
 
-
 /**
+ * A collection of helpful functions for dealing with SBML data structures.
+ * 
  * @author Andreas Dr&auml;ger
  *
  */
@@ -96,12 +97,16 @@ public class SBMLUtils {
     if (!model.containsUniqueNamedSBase(id)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
-        logger.warning(MessageFormat.format("Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.", id, reactionId));
+        logger.warning(MessageFormat.format(
+          "Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.",
+          id, reactionId));
         FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         gp = fbcPlug.createGeneProduct(id);
         gp.setLabel(id);
       } else {
-        logger.info(MessageFormat.format("Updating the id of gene product ''{0}'' to ''{1}''.", gp.getId(), id));
+        logger.info(MessageFormat.format(
+          "Updating the id of gene product ''{0}'' to ''{1}''.",
+          gp.getId(), id));
         gp.setId(id);
       }
     }
@@ -124,7 +129,9 @@ public class SBMLUtils {
           plugin.setGeneProductAssociation(gpa);
         }
       } catch (Throwable exc) {
-        logger.warning(MessageFormat.format("Could not parse ''{0}'' because of {1}", geneReactionRule, Utils.getMessage(exc)));
+        logger.warning(MessageFormat.format(
+          "Could not parse ''{0}'' because of {1}",
+          geneReactionRule, Utils.getMessage(exc)));
       }
     }
   }
