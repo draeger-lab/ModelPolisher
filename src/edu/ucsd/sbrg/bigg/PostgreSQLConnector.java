@@ -28,6 +28,8 @@ import java.util.logging.Logger;
 import org.sbml.jsbml.util.StringTools;
 
 /**
+ * PostgreSQL database helper class.
+ * 
  * @author Andreas Dr&auml;ger
  *
  */
@@ -101,7 +103,9 @@ public class PostgreSQLConnector {
     properties.setProperty(Keys.password.toString(), password != null ? password : "");
     properties.setProperty(Keys.host.toString(), host);
     properties.setProperty(Keys.portNumber.toString(), Integer.toString(port));
-    logger.fine(user + "@" + host + ":" + port + ", password=" + StringTools.fill(password.length(), '*'));
+    logger.fine(MessageFormat.format(
+      "{0}@{1}:{2}, password={3}",
+      user, host, port, StringTools.fill(password.length(), '*')));
   }
 
   /**
@@ -127,7 +131,9 @@ public class PostgreSQLConnector {
     String url = "jdbc:" + properties.getProperty(Keys.dbms.toString()) + "://" + getHost() + ":" + getPort() + "/" + getDatabaseName();
     connection = DriverManager.getConnection(url, properties);
     connection.setCatalog(properties.getProperty(Keys.databaseName.toString()));
-    logger.info(MessageFormat.format("Connected to SQL server {0}:{1,number,####} using database {2}.", getHost(), getPort(), getDatabaseName()));
+    logger.info(MessageFormat.format(
+      "Connected to SQL server {0}:{1,number,####} using database {2}.",
+      getHost(), getPort(), getDatabaseName()));
 
     return connection;
   }

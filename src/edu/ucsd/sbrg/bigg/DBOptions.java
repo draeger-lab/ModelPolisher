@@ -14,14 +14,17 @@ public interface DBOptions extends KeyProvider {
   /**
    * 
    */
+  @SuppressWarnings("unchecked")
   public static final Option<String>  HOST   = new Option<String>("HOST", String.class, "Host name", "localhost");
   /**
    * 
    */
+  @SuppressWarnings("unchecked")
   public static final Option<Integer> PORT   = new Option<Integer>("PORT", Integer.class, "Port", Integer.valueOf(5432)); // for MySQL it would be 3306
   /**
    * 
    */
+  @SuppressWarnings("unchecked")
   public static final Option<String>  USER   = new Option<String>("USER", String.class, "User name", System.getProperty("user.name"));
   /**
    * 
