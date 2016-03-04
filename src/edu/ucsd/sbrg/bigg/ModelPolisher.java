@@ -57,9 +57,51 @@ import edu.ucsd.sbrg.util.UpdateListener;
 public class ModelPolisher extends Launcher {
 
   /**
-   * Generated serial version identifier.
+   * Helper class to store all parameters for running ModelPolisher in batch mode.
+   * 
+   * @author Andreas Dr&auml;ger
    */
-  private static final long serialVersionUID = 7745344693995142413L;
+  private static final class Parameters {
+    /**
+     * @see ModelPolisherOptions#CHECK_MASS_BALANCE
+     */
+    Boolean checkMassBalance = null;
+    /**
+     * @see ModelPolisherOptions#COMPRESSION_TYPE
+     */
+    Compression compression = Compression.NONE;
+    /**
+     * Can be {@code null}
+     * @see ModelPolisherOptions#DOCUMENT_NOTES_FILE
+     */
+    File documentNotesFile = null;
+    /**
+     * Can be {@code null} (then a default is used).
+     * @see ModelPolisherOptions#DOCUMENT_TITLE_PATTERN
+     */
+    String documentTitlePattern = null;
+    /**
+     * @see ModelPolisherOptions#FLUX_COEFFICIENTS
+     */
+    double[] fluxCoefficients = null;
+    /**
+     * @see ModelPolisherOptions#FLUX_OBJECTIVES
+     */
+    String[] fluxObjectives = null;
+    /**
+     * Can be {@code null}
+     * @see ModelPolisherOptions#MODEL_NOTES_FILE
+     */
+    File modelNotesFile = null;
+    /**
+     * @see ModelPolisherOptions#OMIT_GENERIC_TERMS
+     */
+    Boolean omitGenericTerms = null;
+    /**
+     * @see ModelPolisherOptions#SBML_VALIDATION
+     */
+    Boolean sbmlValidation = null;
+  }
 
   /**
    * Localization support.
@@ -72,10 +114,80 @@ public class ModelPolisher extends Launcher {
   private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
 
   /**
+   * Generated serial version identifier.
+   */
+  private static final long serialVersionUID = 7745344693995142413L;
+
+  /**
+   * @param args
+   */
+  public static void main(String[] args) {
+    new ModelPolisher(args);
+  }
+
+  /**
    * @param args
    */
   public ModelPolisher(String... args) {
     super(args);
+  }
+
+  /* (non-Javadoc)
+   * @see de.zbit.Launcher#addCopyrightToSplashScreen()
+   */
+  @Override
+  protected boolean addCopyrightToSplashScreen() {
+    return false;
+  }
+
+  /* (non-Javadoc)
+   * @see de.zbit.Launcher#addVersionNumberToSplashScreen()
+   */
+  @Override
+  protected boolean addVersionNumberToSplashScreen() {
+    return false;
+  }
+
+  /**
+   * 
+   * @param bigg
+   * @param input
+   * @param output
+   * @param parameters
+   * @throws IOException
+   * @throws XMLStreamException
+   */
+  public void batchProcess(BiGGDB bigg, File input, File output, Parameters parameters) throws IOException,
+  XMLStreamException {
+
+    if (!output.exists() && !output.isFile()
+        && !(input.isFile() && input.getName().equals(output.getName()))) {
+      logger.info(MessageFormat.format("Creating directory {0}.",
+        output.getAbsolutePath()));
+      output.mkdir();
+    }
+    if (input.isFile()) {
+      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+      if (SBFileFilter.isSBMLFile(input) || matFile) {
+        if (output.isDirectory()) {
+          String fName = input.getName();
+          if (matFile) {
+            fName = FileTools.removeFileExtension(fName) + ".xml";
+          }
+          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
+        }
+        polish(bigg, input, output, parameters);
+      }
+    } else {
+      if (!output.isDirectory()) {
+        throw new IOException(MessageFormat.format("Cannot write to file {0}.",
+          output.getAbsolutePath()));
+      }
+      for (File file : input.listFiles()) {
+        File target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        batchProcess(bigg, file, target, parameters);
+      }
+    }
   }
 
   /* (non-Javadoc)
@@ -91,6 +203,13 @@ public class ModelPolisher extends Launcher {
          */
         OneLineFormatter formatter = new OneLineFormatter(false, false, false);
         /* (non-Javadoc)
+         * @see java.util.logging.StreamHandler#flush()
+         */
+        @Override
+        public synchronized void flush() {
+          System.out.flush();
+        }
+        /* (non-Javadoc)
          * @see java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
          */
         @Override
@@ -104,13 +223,6 @@ public class ModelPolisher extends Launcher {
               return;
             }
           }
-        }
-        /* (non-Javadoc)
-         * @see java.util.logging.StreamHandler#flush()
-         */
-        @Override
-        public synchronized void flush() {
-          System.out.flush();
         }
       }, getLogPackages());
     }
@@ -132,205 +244,41 @@ public class ModelPolisher extends Launcher {
         documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
       }
 
+      double[] coefficients = null;
+      if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
+        String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
+        String coeff[] = c.substring(1, c.length() - 1).split(",");
+        coefficients = new double[coeff.length];
+        for (int i = 0; i < coeff.length; i++) {
+          coefficients[i] = Double.parseDouble(coeff[i].trim());
+        }
+      }
+      String fObj[] = null;
+      if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
+        String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
+        fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
+      }
+
+      Parameters parameters = new Parameters();
+      parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
+      parameters.compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
+      parameters.documentNotesFile = documentNotesFile;
+      parameters.documentTitlePattern = documentTitlePattern;
+      parameters.fluxCoefficients = coefficients;
+      parameters.fluxObjectives = fObj;
+      parameters.modelNotesFile = modelNotesFile;
+      parameters.omitGenericTerms = args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
+      parameters.sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
+
       // run polishing operations in background and parallel.
       batchProcess(bigg,
         new File(args.getProperty(IOOptions.INPUT)),
         new File(args.getProperty(IOOptions.OUTPUT)),
-        ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE)),
-        args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS),
-        documentNotesFile, modelNotesFile, documentTitlePattern,
-        args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE),
-        args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION));
+        parameters);
+
 
     } catch (SBMLException | XMLStreamException | IOException | SQLException | ClassNotFoundException exc) {
       exc.printStackTrace();
-    }
-  }
-
-  /**
-   * Scans the given command-line options for a specific file option and returns
-   * the corresponding file if it exists, {@code null} otherwise.
-   * 
-   * @param args
-   *        command-line options.
-   * @param option
-   *        a specific file option to look for.
-   * @return a {@link File} object that corresponds to a desired command-line
-   *         option, or {@code null} if it does not exist.
-   */
-  private File parseFileOption(SBProperties args, Option<File> option) {
-    if (args.containsKey(option)) {
-      File notesFile = new File(args.getProperty(option));
-      if ((notesFile != null) && notesFile.exists() && notesFile.canRead()) {
-        return notesFile;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * 
-   * @param bigg
-   * @param input
-   * @param output
-   * @param compressOutput !
-   * @param omitGenericTerms
-   * @param documentNotesFile can be {@code null}.
-   * @param modelNotesFile can be {@code null}.
-   * @param documentTitlePattern can be {@code null} (then a default is used).
-   * @param checkMassBalance
-   * @param validateOutput
-   * @throws XMLStreamException
-   * @throws IOException
-   */
-  public void polish(BiGGDB bigg, File input, File output,
-    Compression compressOutput, boolean omitGenericTerms,
-    File documentNotesFile, File modelNotesFile, String documentTitlePattern,
-    boolean checkMassBalance, boolean validateOutput)
-        throws XMLStreamException, IOException {
-    long time = System.currentTimeMillis();
-    logger.info(MessageFormat.format("Reading input file {0}.",
-      input.getAbsolutePath()));
-    SBMLDocument doc = null;
-    if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
-      doc = COBRAparser.read(input, omitGenericTerms);
-    } else {
-      doc = SBMLReader.read(input, new UpdateListener());
-    }
-    if (!doc.isSetLevelAndVersion()
-        || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info("Trying to convert the model to Level 3 Version 2.");
-      org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
-    }
-    SBMLPolisher polisher = new SBMLPolisher(bigg);
-    polisher.setCheckMassBalance(checkMassBalance);
-    polisher.setOmitGenericTerms(omitGenericTerms);
-    if (documentNotesFile != null) {
-      polisher.setDocumentNotesFile(documentNotesFile);
-    }
-    if (modelNotesFile != null) {
-      polisher.setModelNotesFile(modelNotesFile);
-    }
-    if (documentTitlePattern != null) {
-      polisher.setDocumentTitlePattern(documentTitlePattern);
-    }
-    doc = polisher.polish(doc);
-    // <?xml-stylesheet type="text/xsl"
-    // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
-    logger.info(MessageFormat.format("Writing output file {0}",
-      output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
-      getVersionNumber(), ' ', (short) 2);
-    // SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
-    if (compressOutput != Compression.NONE) {
-      String fileExtension = compressOutput.getFileExtension();
-      String archive = output.getAbsolutePath() + "." + fileExtension;
-      logger.info(MessageFormat.format("Packing archive file {0}", archive));
-      switch (compressOutput) {
-      case ZIP:
-        ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive,
-          "SBML Archive", true);
-        break;
-      case GZIP:
-        ZIPUtils.GZip(output.getAbsolutePath(), archive);
-        break;
-      default:
-        break;
-      }
-      if (validateOutput) {
-        validate(archive);
-      }
-    }
-    time = System.currentTimeMillis() - time;
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(time);
-    logger.info(MessageFormat.format("Done ({0,time,ss.sss} s).",
-      calendar.getTime()));
-  }
-
-  /**
-   * 
-   * @param filename
-   */
-  private void validate(String filename) {
-    //org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u", compressedOutput});
-    String output = "xml";
-    String offcheck = "p,u";
-    HashMap<String, String> parameters = new HashMap<String, String>();
-    parameters.put("output", output);
-    parameters.put("offcheck", offcheck);
-
-    logger.info("Validating  " + filename + "\n");
-
-    SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
-
-    if (sbmlErrorLog != null) {
-      logger.info(MessageFormat.format(
-        "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
-        sbmlErrorLog.getErrorCount(), filename));
-
-      // printErrors
-      for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
-        SBMLError error = sbmlErrorLog.getError(j);
-        logger.warning(error.toString());
-      }
-    } else {
-      logger.info("No SBML validation possible, process terminated with errors.");
-    }
-  }
-
-  /**
-   * 
-   * @param bigg
-   * @param input
-   * @param output
-   * @param compressOutput
-   * @param omitGenericTerms
-   * @param documentNotesFile can be {@code null}
-   * @param modelNotesFile can be {@code null}
-   * @param documentTitlePattern can be {@code null}
-   * @param validateOutput
-   * @param checkMassBalance
-   * @throws IOException
-   * @throws XMLStreamException
-   */
-  public void batchProcess(BiGGDB bigg, File input, File output,
-    ModelPolisherOptions.Compression compressOutput, boolean omitGenericTerms,
-    File documentNotesFile, File modelNotesFile, String documentTitlePattern,
-    boolean checkMassBalance, boolean validateOutput) throws IOException,
-    XMLStreamException {
-    if (!output.exists() && !output.isFile()
-        && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format("Creating directory {0}.",
-        output.getAbsolutePath()));
-      output.mkdir();
-    }
-    if (input.isFile()) {
-      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
-      if (SBFileFilter.isSBMLFile(input) || matFile) {
-        if (output.isDirectory()) {
-          String fName = input.getName();
-          if (matFile) {
-            fName = FileTools.removeFileExtension(fName) + ".xml";
-          }
-          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
-        }
-        polish(bigg, input, output, compressOutput, omitGenericTerms,
-          documentNotesFile, modelNotesFile, documentTitlePattern,
-          checkMassBalance, validateOutput);
-      }
-    } else {
-      if (!output.isDirectory()) {
-        throw new IOException(MessageFormat.format("Cannot write to file {0}.",
-          output.getAbsolutePath()));
-      }
-      for (File file : input.listFiles()) {
-        File target = new File(Utils.ensureSlash(output.getAbsolutePath())
-          + file.getName());
-        batchProcess(bigg, file, target, compressOutput, omitGenericTerms,
-          documentNotesFile, modelNotesFile, documentTitlePattern,
-          checkMassBalance, validateOutput);
-      }
     }
   }
 
@@ -370,6 +318,14 @@ public class ModelPolisher extends Launcher {
   }
 
   /* (non-Javadoc)
+   * @see de.zbit.Launcher#getInstitute()
+   */
+  @Override
+  public String getInstitute() {
+    return baseBundle.getString("INSTITUTE");
+  }
+
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getInteractiveOptions()
    */
   @Override
@@ -378,14 +334,6 @@ public class ModelPolisher extends Launcher {
     options.add(DBOptions.class);
     options.add(ModelPolisherOptions.class);
     return options;
-  }
-
-  /* (non-Javadoc)
-   * @see de.zbit.Launcher#getInstitute()
-   */
-  @Override
-  public String getInstitute() {
-    return baseBundle.getString("INSTITUTE");
   }
 
   /* (non-Javadoc)
@@ -442,22 +390,6 @@ public class ModelPolisher extends Launcher {
   }
 
   /* (non-Javadoc)
-   * @see de.zbit.Launcher#addCopyrightToSplashScreen()
-   */
-  @Override
-  protected boolean addCopyrightToSplashScreen() {
-    return false;
-  }
-
-  /* (non-Javadoc)
-   * @see de.zbit.Launcher#addVersionNumberToSplashScreen()
-   */
-  @Override
-  protected boolean addVersionNumberToSplashScreen() {
-    return false;
-  }
-
-  /* (non-Javadoc)
    * @see de.zbit.Launcher#getYearOfProgramRelease()
    */
   @Override
@@ -490,10 +422,126 @@ public class ModelPolisher extends Launcher {
   }
 
   /**
+   * Scans the given command-line options for a specific file option and returns
+   * the corresponding file if it exists, {@code null} otherwise.
+   * 
    * @param args
+   *        command-line options.
+   * @param option
+   *        a specific file option to look for.
+   * @return a {@link File} object that corresponds to a desired command-line
+   *         option, or {@code null} if it does not exist.
    */
-  public static void main(String[] args) {
-    new ModelPolisher(args);
+  private File parseFileOption(SBProperties args, Option<File> option) {
+    if (args.containsKey(option)) {
+      File notesFile = new File(args.getProperty(option));
+      if ((notesFile != null) && notesFile.exists() && notesFile.canRead()) {
+        return notesFile;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 
+   * @param bigg
+   * @param input
+   * @param output
+   * @param parameters
+   * @throws XMLStreamException
+   * @throws IOException
+   */
+  public void polish(BiGGDB bigg, File input, File output, Parameters parameters)
+      throws XMLStreamException, IOException {
+    long time = System.currentTimeMillis();
+    logger.info(MessageFormat.format("Reading input file {0}.",
+      input.getAbsolutePath()));
+    SBMLDocument doc = null;
+    if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
+      doc = COBRAparser.read(input, parameters.omitGenericTerms);
+    } else {
+      doc = SBMLReader.read(input, new UpdateListener());
+    }
+    if (!doc.isSetLevelAndVersion()
+        || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+      logger.info("Trying to convert the model to Level 3 Version 2.");
+      org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
+    }
+    SBMLPolisher polisher = new SBMLPolisher(bigg);
+    polisher.setCheckMassBalance(parameters.checkMassBalance);
+    polisher.setOmitGenericTerms(parameters.omitGenericTerms);
+    if (parameters.documentNotesFile != null) {
+      polisher.setDocumentNotesFile(parameters.documentNotesFile);
+    }
+    if (parameters.modelNotesFile != null) {
+      polisher.setModelNotesFile(parameters.modelNotesFile);
+    }
+    if (parameters.documentTitlePattern != null) {
+      polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
+    }
+    polisher.setFluxCoefficients(parameters.fluxCoefficients);
+    polisher.setFluxObjectives(parameters.fluxObjectives);
+    doc = polisher.polish(doc);
+    // <?xml-stylesheet type="text/xsl"
+    // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
+    logger.info(MessageFormat.format("Writing output file {0}",
+      output.getAbsolutePath()));
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+    // SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
+    if (parameters.compression != Compression.NONE) {
+      String fileExtension = parameters.compression.getFileExtension();
+      String archive = output.getAbsolutePath() + "." + fileExtension;
+      logger.info(MessageFormat.format("Packing archive file {0}", archive));
+      switch (parameters.compression) {
+      case ZIP:
+        ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive,
+          "SBML Archive", true);
+        break;
+      case GZIP:
+        ZIPUtils.GZip(output.getAbsolutePath(), archive);
+        break;
+      default:
+        break;
+      }
+      if ((parameters.sbmlValidation != null) && parameters.sbmlValidation) {
+        validate(archive);
+      }
+    }
+    time = System.currentTimeMillis() - time;
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeInMillis(time);
+    logger.info(MessageFormat.format("Done ({0,time,ss.sss} s).", calendar.getTime()));
+  }
+
+  /**
+   * 
+   * @param filename
+   */
+  private void validate(String filename) {
+    //org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u", compressedOutput});
+    String output = "xml";
+    String offcheck = "p,u";
+    HashMap<String, String> parameters = new HashMap<String, String>();
+    parameters.put("output", output);
+    parameters.put("offcheck", offcheck);
+
+    logger.info("Validating  " + filename + "\n");
+
+    SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
+
+    if (sbmlErrorLog != null) {
+      logger.info(MessageFormat.format(
+        "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
+        sbmlErrorLog.getErrorCount(), filename));
+
+      // printErrors
+      for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
+        SBMLError error = sbmlErrorLog.getError(j);
+        logger.warning(error.toString());
+      }
+    } else {
+      logger.info("No SBML validation possible, process terminated with errors.");
+    }
   }
 
 }

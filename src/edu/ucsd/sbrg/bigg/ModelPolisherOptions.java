@@ -79,6 +79,26 @@ public interface ModelPolisherOptions extends KeyProvider {
       Boolean.TRUE);
 
   /**
+   * 
+   */
+  @SuppressWarnings("unchecked")
+  public static final Option<Double[]> FLUX_COEFFICIENTS = new Option<Double[]>(
+      "FLUX_COEFFICIENTS",
+      (Class<Double[]>) (new Double[0]).getClass(),
+      "The flux coefficients, a comma-separated list",
+      new Double[0]);
+
+  /**
+   * 
+   */
+  @SuppressWarnings("unchecked")
+  public static final Option<String[]> FLUX_OBJECTIVES = new Option<String[]>(
+      "FLUX_OBJECTIVES",
+      (Class<String[]>) (new String[0]).getClass(),
+      "The flux objectives, a colon-separated list",
+      new String[0]);
+
+  /**
    * Decides whether or not the output file should directly be compressed and if
    * so, which archive type should be used.
    */

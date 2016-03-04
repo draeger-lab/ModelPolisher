@@ -56,7 +56,7 @@ public class SBMLFix {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SBMLFix.class.getSimpleName());
+  private static final transient Logger logger = Logger.getLogger(SBMLFix.class.getName());
 
   /**
    * 
@@ -143,6 +143,21 @@ public class SBMLFix {
    */
   public static boolean fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions,
     FBCModelPlugin fbcPlug) {
+    return fixObjective(modelDescriptor, listOfReactions, fbcPlug, null, null);
+  }
+
+  /**
+   * 
+   * @param modelDescriptor
+   * @param listOfReactions
+   * @param fbcPlug
+   * @param fluxCoefficients
+   * @param fluxObjectives
+   * @return
+   */
+  public static boolean fixObjective(String modelDescriptor,
+    ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug, double[] fluxCoefficients,
+    String[] fluxObjectives) {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
       logger.severe(MessageFormat.format(
@@ -165,20 +180,42 @@ public class SBMLFix {
           "Trying to identify missing flux objective from model in model {0}.",
           modelDescriptor));
         if (listOfReactions != null) {
-          final Pattern pattern = SBMLPolisher.PATTERN_BIOMASS_CASE_INSENSITIVE;
-          Reaction rBiomass = listOfReactions.firstHit((obj) -> {
-            return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
-          });
-          if (rBiomass != null) {
-            logger.info(MessageFormat.format(
-              "Added biomass function {0} with coefficient {1,number} to model {2}.",
-              rBiomass.getId(), DEFAULT_COEFFICIENT, modelDescriptor));
-            o.createFluxObjective(null, null, DEFAULT_COEFFICIENT, rBiomass);
-
-            return true;
+          if (fluxObjectives != null) {
+            /*
+             * An array of target reactions is provided. We want to use this as flux objectives.
+             */
+            boolean strict = false;
+            for (int i = 0; i < fluxObjectives.length; i++) {
+              final String id = fluxObjectives[i];
+              Reaction r = listOfReactions.firstHit((obj) -> {
+                return (obj instanceof Reaction) && id.equals(((Reaction) obj).getId());
+              });
+              if (r != null) {
+                createFluxObjective(modelDescriptor, r, fluxCoefficients, o, i);
+                // if at least one flux objective exists, the model qualifies as strict model.
+                strict = true;
+              } else {
+                logger.severe(MessageFormat.format(
+                  "Operation failed! Could not identify reaction ''{0}'' in model {1}.",
+                  id, modelDescriptor));
+              }
+            }
+            return strict;
 
           } else {
-            logger.severe("Operation failed! Could not identify biomass reaction.");
+            /*
+             * Search for biomass reaction in the model and use this as objective.
+             */
+            final Pattern pattern = SBMLPolisher.PATTERN_BIOMASS_CASE_INSENSITIVE;
+            Reaction rBiomass = listOfReactions.firstHit((obj) -> {
+              return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
+            });
+            if (rBiomass != null) {
+              createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, o, 0);
+              return true;
+            } else {
+              logger.severe("Operation failed! Could not identify biomass reaction.");
+            }
           }
         } else {
           logger.severe(MessageFormat.format(
@@ -189,6 +226,26 @@ public class SBMLFix {
     }
 
     return false;
+  }
+
+  /**
+   * 
+   * @param modelDescriptor
+   * @param r
+   * @param fluxCoefficients
+   * @param o
+   * @param i
+   */
+  private static void createFluxObjective(String modelDescriptor,
+    Reaction r, double[] fluxCoefficients, Objective o, int i) {
+    double coeff = DEFAULT_COEFFICIENT;
+    if ((fluxCoefficients != null) && (fluxCoefficients.length > i)) {
+      coeff = fluxCoefficients[i];
+    }
+    logger.info(MessageFormat.format(
+      "Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.",
+      r.getId(), coeff, modelDescriptor));
+    o.createFluxObjective(null, null, coeff, r);
   }
 
   /**

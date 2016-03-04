@@ -232,7 +232,7 @@ public enum MIRIAM {
        * http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=
        * TODO What is the actual pattern? Using any character!
        */
-      unipathway_reaction(pairOf("http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=", ".*")),
+      unipathway_reaction(pairOf(" http://identifiers.org/unipathway.reaction/", "^UCR\\d{5}$")),
       /**
        * UniPathway is a manually curated resource of enzyme-catalyzed and
        * spontaneous chemical reactions. It provides a hierarchical representation
