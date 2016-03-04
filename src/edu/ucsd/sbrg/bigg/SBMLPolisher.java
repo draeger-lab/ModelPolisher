@@ -156,6 +156,14 @@ public class SBMLPolisher {
    * 
    */
   private String documentNotesFile = "SBMLDocumentNotes.html";
+  /**
+   * 
+   */
+  private double[] fluxCoefficients;
+  /**
+   * 
+   */
+  private String[] fluxObjectives;
 
   /**
    * @param bigg
@@ -349,6 +357,10 @@ public class SBMLPolisher {
     }
     if (!c.isSetUnits()) {
       // TODO: set compartment units.
+      /*
+       * This is a temporary solution until we agree on something better.
+       */
+      c.setUnits(Unit.Kind.DIMENSIONLESS);
     }
   }
   /**
@@ -1017,7 +1029,7 @@ public class SBMLPolisher {
         progress.DisplayBar(); //"Processing objective " + objective.getId());
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
-          strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug);
+          strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug, fluxCoefficients, fluxObjectives);
         }
         if (objective.isSetListOfFluxObjectives()) {
           strict &= polishListOfFluxObjectives(strict, objective);
@@ -1219,6 +1231,22 @@ public class SBMLPolisher {
    */
   public void setDocumentNotesFile(File documentNotesFile) {
     this.documentNotesFile = documentNotesFile.getAbsolutePath();
+  }
+
+  /**
+   * 
+   * @param fluxCoefficients
+   */
+  public void setFluxCoefficients(double[] fluxCoefficients) {
+    this.fluxCoefficients = fluxCoefficients;
+  }
+
+  /**
+   * 
+   * @param fluxObjectives
+   */
+  public void setFluxObjectives(String[] fluxObjectives) {
+    this.fluxObjectives = fluxObjectives;
   }
 
 }

@@ -31,6 +31,8 @@ public enum ModelFields {
    * If this cannot be expressed in SBML, then an error message would be
    * appropriate. The SBML file would probably not result in a functional joined
    * model though.
+   * <p>
+   * Data type: double array. Length must be identical to the number of reactions.
    */
   b,
   /**
@@ -41,7 +43,13 @@ public enum ModelFields {
    */
   B,
   /**
-   * The objective function vector for max(<i>c' &sdot; v</i>)
+   * The objective function vector for max(<i>c' &sdot; v</i>). The dimension
+   * of this element must be identical to the number of reactions. Dimensions
+   * that have a zero value in this field, do not contribute to the objective
+   * function.
+   * <p>
+   * Data type: double array.
+   * Corresponds to {@link FluxObjective#getCoefficient()}.
    */
   c,
   /**
@@ -80,7 +88,8 @@ public enum ModelFields {
    */
   disabled,
   /**
-   * The Enzyme Commission codes for the reactions.
+   * The Enzyme Commission codes for the reactions. Length must be identical to
+   * the number of reactions.
    */
   ecNumbers,
   /**
@@ -92,7 +101,8 @@ public enum ModelFields {
    */
   geneindex,
   /**
-   * The gene products.
+   * The list of gene in the model, where each contained gene corresponds to a
+   * {@link GeneProduct#getId()}. Data type: cell array of string.
    */
   genes,
   /**
@@ -100,7 +110,9 @@ public enum ModelFields {
    */
   genesource,
   /**
-   * 
+   * Boolean GPR rules (AND/OR). Data type: cell array of strings.
+   * Example: {@code (8639.1) or (26.1) or (314.2) or (314.1)}. Dimensions must
+   * be identical to the number of reactions. Corresponds to {@link GeneProductAssociation}
    */
   grRules,
   /**
@@ -108,39 +120,50 @@ public enum ModelFields {
    */
   lb,
   /**
-   * Must have same dimension as {@link #mets}.
+   * Must have same dimension as {@link #mets}. Data type: double array.
+   * For SBML Level < 3, it corresponds to {@link Species#getCharge()}. Since
+   * Level 3, it corresponds to {@link FBCSpeciesPlugin#getCharge()}.
    */
   metCharge,
   /**
    * Optional: if present, it must have same dimension as {@link #mets}.
+   * Data type: cell array of strings. Corresponds to the annotation of
+   * {@link Species}
    */
   metCHEBIID,
   /**
    * Chemical formulas for metabolites, must have same dimension as {@link #mets}.
+   * Datatype: cell array of strings. Corresponds to {@link FBCSpeciesPlugin#getChemicalFormula()}.
    */
   metFormulas,
   /**
    * Optional: if present, it must have same dimension as {@link #mets}.
+   * Data type: cell array of strings.
    */
   metHMDB,
   /**
    * Optional: if present, it must have same dimension as {@link #mets}.
+   * Data type: cell array of strings.
    */
   metInchiString,
   /**
    * Optional: if present, it must have same dimension as {@link #mets}.
+   * Data type: cell array of strings.
    */
   metKeggID,
   /**
-   * Descriptive metabolite names, must have same dimension as {@link #mets}
+   * Descriptive metabolite names, must have same dimension as {@link #mets}.
+   * Datatype: cell array of strings. Corresponds to {@link Species#getName()}
    */
   metNames,
   /**
    * Optional: if present, it must have same dimension as {@link #mets}.
+   * Data type: cell array of strings.
    */
   metPubChemID,
   /**
-   * Metabolite BiGG ids (incl. compartment code)
+   * Metabolite BiGG ids (incl. compartment code). Data type: cell array of
+   * strings. Corresponds to {@link Species#getId()}.
    */
   mets,
   /**
@@ -168,6 +191,8 @@ public enum ModelFields {
   /**
    * A vector consisting of zeros and ones that translate to binary and determine
    * if the corresponding reaction of that index is reversible (1) or not (0).
+   * Dimensions must be equal to the number of reactions. Corresponds to the
+   * value {@linkReaction#isReversible()}
    */
   rev,
   /**
@@ -175,21 +200,58 @@ public enum ModelFields {
    */
   rules,
   /**
-   * 
+   * Cell array of strings, can any value in a range of 0 to 4. Length must be
+   * equal to the number of reactions.
+   */
+  rxnConfidenceEcoIDA,
+  /**
+   * @see #confidenceScores.
+   */
+  rxnConfidenceScores,
+  /**
+   * The Systems Biology Ontology Term to describe the role of a reaction.
+   * Length must be identical to the number of reactions. Value corresponds to
+   * the attribute {@link Reaction#getSBOTerm()}
+   */
+  rxnsboTerm,
+  /**
+   * A matrix with rows corresponding to reaction list and columns corresponding
+   * to gene list. Data type: sparse double. Size of this matrix must be number
+   * of reactions times number of genes. No counterpart in FBC v2.
    */
   rxnGeneMat,
   /**
    * Reaction identifiers in KEGG, but sometimes also contains {@link #ecNumbers}.
+   * Length must be identical to the number of reactions. Entries belong to the
+   * annotation of {@link Reaction}.
    */
   rxnKeggID,
   /**
-   * Descriptive reaction names
+   * Descriptive reaction names, length must be identical to the number of
+   * reactions. Data type: cell array of string. Corresponds to the name of a
+   * {@link Reaction}.
    */
   rxnNames,
   /**
-   * Reaction BiGG ids
+   * @see #ecNumbers
+   */
+  rxnECNumbers,
+  /**
+   * Example:
+   * <pre>
+   * 'Na coupled transport of pyruvate, lactate, and short chain fatty acids, i.e., acetate, propionate, and butyrate mediated by SMCT1
+   * </pre>
+   */
+  rxnReferences,
+  /**
+   * Reaction BiGG ids. Corresponds to the id of {@link Reaction}.
    */
   rxns,
+  /**
+   * Cell array of strings. Text notes (description) about reactions. Length
+   * must be identical to the number of reactions.
+   */
+  rxnNotes,
   /**
    * Stoichiometric matrix
    */
@@ -198,6 +260,9 @@ public enum ModelFields {
    * This defines groups of reactions that belong to a common reaction subsystem.
    * Their number must hence be identical to the reaction count. Subsystems are
    * listed repeatedly in the source file.
+   * If present, the size of this field must be identical to the number of
+   * reactions.
+   * Data type: cell array of strings.
    */
   subSystems,
   /**

@@ -51,7 +51,7 @@
     <developer>
       <email>andraeger@eng.ucsd.edu</email>
       <name>Andreas Dräger</name>
-      <url>https://github.com/draeger</url>
+      <url>https://github.com/draeger/</url>
       <id>draeger</id>
     </developer>
   </developers>
@@ -73,14 +73,14 @@
       <!-- mvn install:install-file -Dfile=/path/to/jsbml.jar -DgroupId=org.sbml -DartifactId=JSBML -Dversion=REVISION_NUMBER -Dpackaging=jar -->
       <groupId>org.sbml</groupId>
       <artifactId>JSBML</artifactId>
-      <version>2472</version>
+      <version>2482</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <!-- mvn install:install-file -Dfile=/path/to/sysbio.jar -DgroupId=de.zbit -DartifactId=SysBio -Dversion=REVISION_NUMBER -Dpackaging=jar -->
       <groupId>de.zbit</groupId>
       <artifactId>SysBio</artifactId>
-      <version>1388</version> <!-- SVN revision -->
+      <version>1390</version> <!-- SVN revision -->
       <scope>compile</scope>
     </dependency>
     <dependency>
