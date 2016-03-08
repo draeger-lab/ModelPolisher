@@ -162,7 +162,8 @@ public class ModelPolisher extends Launcher {
 
     if (!output.exists() && !output.isFile()
         && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format("Creating directory {0}.",
+      logger.info(MessageFormat.format(
+        "Creating directory {0}.",
         output.getAbsolutePath()));
       output.mkdir();
     }
@@ -454,7 +455,8 @@ public class ModelPolisher extends Launcher {
   public void polish(BiGGDB bigg, File input, File output, Parameters parameters)
       throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(MessageFormat.format("Reading input file {0}.",
+    logger.info(MessageFormat.format(
+      "Reading input file {0}.",
       input.getAbsolutePath()));
     SBMLDocument doc = null;
     if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
