@@ -401,14 +401,14 @@ public class COBRAparser {
     // Check that the given data structure only contains allowable entries:
     for (MLArray field : struct.getAllFields()) {
       try {
-        logger.finest(MessageFormat.format("Found model component {0}.", ModelFields.valueOf(field.getName())));
+        logger.finest(MessageFormat.format("Found model component {0}.", ModelField.valueOf(field.getName())));
       } catch (IllegalArgumentException exc) {
         logException(exc);
       }
     }
     // parse model
     Model model = builder.getModel();
-    parseDescription(model, struct.getField(ModelFields.description.name()));
+    parseDescription(model, struct.getField(ModelField.description.name()));
 
     // Generate basic unit:
     UnitDefinition ud = builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
@@ -417,45 +417,45 @@ public class COBRAparser {
     ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
 
     // parse metabolites
-    MLCell mets = toMLCell(struct, ModelFields.mets);
-    MLCell metNames = toMLCell(struct, ModelFields.metNames);
-    MLCell metFormulas = toMLCell(struct, ModelFields.metFormulas);
-    MLDouble metCharge = toMLDouble(struct, ModelFields.metCharge);
-    MLCell metCHEBIID = toMLCell(struct, ModelFields.metCHEBIID);
-    MLCell metHMDB = toMLCell(struct, ModelFields.metHMDB);
-    MLCell metInchiString = toMLCell(struct, ModelFields.metInchiString);
-    MLCell metKeggID = toMLCell(struct, ModelFields.metKeggID);
-    MLCell metPubChemID = toMLCell(struct, ModelFields.metPubChemID);
-    MLCell metSmile = toMLCell(struct, ModelFields.metSmile);
+    MLCell mets = toMLCell(struct, ModelField.mets);
+    MLCell metNames = toMLCell(struct, ModelField.metNames);
+    MLCell metFormulas = toMLCell(struct, ModelField.metFormulas);
+    MLDouble metCharge = toMLDouble(struct, ModelField.metCharge);
+    MLCell metCHEBIID = toMLCell(struct, ModelField.metCHEBIID);
+    MLCell metHMDB = toMLCell(struct, ModelField.metHMDB);
+    MLCell metInchiString = toMLCell(struct, ModelField.metInchiString);
+    MLCell metKeggID = toMLCell(struct, ModelField.metKeggID);
+    MLCell metPubChemID = toMLCell(struct, ModelField.metPubChemID);
+    MLCell metSmile = toMLCell(struct, ModelField.metSmile);
     parseMetabolites(builder, mets, metNames, metFormulas, metCharge, metCHEBIID, metHMDB, metInchiString, metKeggID, metPubChemID, metSmile);
 
     // parse genes
-    MLCell genes = toMLCell(struct.getField(ModelFields.mets.name()));
+    MLCell genes = toMLCell(struct.getField(ModelField.mets.name()));
     parseGenes(builder, genes);
 
     // parse reactions
-    MLCell rxns = toMLCell(struct, ModelFields.rxns);
-    MLCell rxnNames = toMLCell(struct, ModelFields.rxnNames);
-    MLCell rxnKeggID = toMLCell(struct, ModelFields.rxnKeggID);
-    MLCell ecNumbers = toMLCell(struct, ModelFields.ecNumbers);
-    MLCell confidenceScores = toMLCell(struct, ModelFields.confidenceScores);
-    MLCell citations = toMLCell(struct, ModelFields.citations);
-    MLCell comments = toMLCell(struct, ModelFields.comments);
-    MLNumericArray<?> rev = toMLNumericArray(struct, ModelFields.rev);
-    MLDouble lb = toMLDouble(struct.getField(ModelFields.lb.name()));
-    MLDouble ub = toMLDouble(struct.getField(ModelFields.ub.name()));
-    MLSparse S = toMLSparse(struct.getField(ModelFields.S.name()));
+    MLCell rxns = toMLCell(struct, ModelField.rxns);
+    MLCell rxnNames = toMLCell(struct, ModelField.rxnNames);
+    MLCell rxnKeggID = toMLCell(struct, ModelField.rxnKeggID);
+    MLCell ecNumbers = toMLCell(struct, ModelField.ecNumbers);
+    MLCell confidenceScores = toMLCell(struct, ModelField.confidenceScores);
+    MLCell citations = toMLCell(struct, ModelField.citations);
+    MLCell comments = toMLCell(struct, ModelField.comments);
+    MLNumericArray<?> rev = toMLNumericArray(struct, ModelField.rev);
+    MLDouble lb = toMLDouble(struct.getField(ModelField.lb.name()));
+    MLDouble ub = toMLDouble(struct.getField(ModelField.ub.name()));
+    MLSparse S = toMLSparse(struct.getField(ModelField.S.name()));
     parseRxns(builder, rxns, rxnNames, rev, S, mets, lb, ub, rxnKeggID, ecNumbers, confidenceScores, citations, comments);
 
     // parse gprs
-    MLCell grRules = toMLCell(struct, ModelFields.grRules);
+    MLCell grRules = toMLCell(struct, ModelField.grRules);
     for (int i = 0; i < grRules.getSize(); i++) {
       String geneReactionRule = toString(grRules.get(i));
       SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
     }
 
     // parse subsystems
-    MLCell subSystems = toMLCell(struct, ModelFields.subSystems);
+    MLCell subSystems = toMLCell(struct, ModelField.subSystems);
     if ((subSystems != null) && (subSystems.getSize() > 0)) {
       parseSubsystems(model, subSystems);
     }
@@ -464,7 +464,7 @@ public class COBRAparser {
     Objective obj = fbc.createObjective("obj");
     obj.setType(Objective.Type.MAXIMIZE);
     fbc.getListOfObjectives().setActiveObjective(obj.getId());
-    MLChar csense = toMLChar(struct, ModelFields.csense);
+    MLChar csense = toMLChar(struct, ModelField.csense);
     if (csense != null) {
       for (int i = 0; i < csense.getSize(); i++) {
         char c = csense.getChar(0, i);
@@ -475,7 +475,7 @@ public class COBRAparser {
       }
     }
 
-    MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelFields.c);
+    MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelField.c);
     if (coefficients != null) {
       for (int i = 0; i < coefficients.getSize(); i++) {
         double coef = coefficients.get(i).doubleValue();
@@ -488,7 +488,7 @@ public class COBRAparser {
       }
     }
 
-    MLNumericArray<?> b = toMLNumericArray(struct, ModelFields.b);
+    MLNumericArray<?> b = toMLNumericArray(struct, ModelField.b);
     if (b != null) {
       for (int i = 0; i < b.getSize(); i++) {
         double bVal = b.get(i).doubleValue();
@@ -519,13 +519,13 @@ public class COBRAparser {
         }
       } else if (descriptionField.isStruct()) {
         MLStructure descrStruct = (MLStructure) descriptionField;
-        MLCell name = toMLCell(descrStruct, ModelFields.name);
-        MLCell organism = toMLCell(descrStruct, ModelFields.organism);
-        MLCell author = toMLCell(descrStruct, ModelFields.author);
-        MLCell geneindex = toMLCell(descrStruct, ModelFields.geneindex);
-        MLCell genedate = toMLCell(descrStruct, ModelFields.genedate);
-        MLCell genesource = toMLCell(descrStruct, ModelFields.genesource);
-        MLCell notes = toMLCell(descrStruct, ModelFields.notes);
+        MLCell name = toMLCell(descrStruct, ModelField.name);
+        MLCell organism = toMLCell(descrStruct, ModelField.organism);
+        MLCell author = toMLCell(descrStruct, ModelField.author);
+        MLCell geneindex = toMLCell(descrStruct, ModelField.geneindex);
+        MLCell genedate = toMLCell(descrStruct, ModelField.genedate);
+        MLCell genesource = toMLCell(descrStruct, ModelField.genesource);
+        MLCell notes = toMLCell(descrStruct, ModelField.notes);
         if (name != null) {
           model.setName(toString(name));
         }
@@ -553,7 +553,7 @@ public class COBRAparser {
         }
       }
     } else {
-      logger.warning(MessageFormat.format("Missing field: {0}", ModelFields.description));
+      logger.warning(MessageFormat.format("Missing field: {0}", ModelField.description));
     }
   }
 
@@ -570,7 +570,7 @@ public class COBRAparser {
    * @param field
    * @return
    */
-  private MLNumericArray<?> toMLNumericArray(MLStructure struct, ModelFields field) {
+  private MLNumericArray<?> toMLNumericArray(MLStructure struct, ModelField field) {
     return toMLNumericArray(struct.getField(field.name()));
   }
 
@@ -601,7 +601,7 @@ public class COBRAparser {
    * @param field
    * @return
    */
-  private MLDouble toMLDouble(MLStructure struct, ModelFields field) {
+  private MLDouble toMLDouble(MLStructure struct, ModelField field) {
     return toMLDouble(struct.getField(field.name()));
   }
 
@@ -611,7 +611,7 @@ public class COBRAparser {
    * @return an {@link MLCell} or {@code null} if no such entry exists in the
    *         given data structure.
    */
-  private MLCell toMLCell(MLStructure struct, ModelFields field) {
+  private MLCell toMLCell(MLStructure struct, ModelField field) {
     return toMLCell(struct.getField(field.name()));
   }
 
@@ -621,7 +621,7 @@ public class COBRAparser {
    * @param field
    * @return
    */
-  private MLChar toMLChar(MLStructure struct, ModelFields field) {
+  private MLChar toMLChar(MLStructure struct, ModelField field) {
     return toMLChar(struct.getField(field.name()));
   }
 

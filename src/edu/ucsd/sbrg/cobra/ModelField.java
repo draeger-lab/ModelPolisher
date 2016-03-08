@@ -4,9 +4,12 @@
 package edu.ucsd.sbrg.cobra;
 
 /**
+ * For more information about COBRA model fields, see the following
+ * <a href="http://www.nature.com/protocolexchange/system/uploads/1808/original/Supplementary_Material.pdf?1304792680">Supplementary Material</a>.
+ * 
  * @author Andreas Dr&auml;ger
  */
-public enum ModelFields {
+public enum ModelField {
   /**
    * Matrix of constraints, form <i>&mu; &sdot; A &sdot; v + B &sdot; v =
    * 0</i> or g(<i>&mu;</i>) &sdot; <i>A &sdot; v + B &sdot; v = 0</i> with
@@ -43,10 +46,10 @@ public enum ModelFields {
    */
   B,
   /**
-   * The objective function vector for max(<i>c' &sdot; v</i>). The dimension
-   * of this element must be identical to the number of reactions. Dimensions
-   * that have a zero value in this field, do not contribute to the objective
-   * function.
+   * The objective function vector for max(<i>c' &sdot; v</i>) for corresponding
+   * reactions. The dimension of this element must be identical to the number of
+   * reactions. Dimensions that have a zero value in this field, do not
+   * contribute to the objective function.
    * <p>
    * Data type: double array.
    * Corresponds to {@link FluxObjective#getCoefficient()}.
@@ -61,6 +64,7 @@ public enum ModelFields {
    */
   comments,
   /**
+   * Confidence score for each reaction.
    * Confidence scores must have the same dimension as the reactions. These are
    * an optional input, but it provides additional information on the reaction
    * content. Adding them as notes would be a good idea.
@@ -78,7 +82,8 @@ public enum ModelFields {
    */
   csense,
   /**
-   * Human-redable information about the model
+   * Human-redable information about the model, e.g., the model name. This field
+   * can optionally have sub-entries.
    */
   description,
   /**
@@ -101,8 +106,8 @@ public enum ModelFields {
    */
   geneindex,
   /**
-   * The list of gene in the model, where each contained gene corresponds to a
-   * {@link GeneProduct#getId()}. Data type: cell array of string.
+   * The list of all genes in the model, where each contained gene corresponds
+   * to a {@link GeneProduct#getId()}. Data type: cell array of string.
    */
   genes,
   /**
@@ -110,16 +115,19 @@ public enum ModelFields {
    */
   genesource,
   /**
-   * Boolean GPR rules (AND/OR). Data type: cell array of strings.
+   * Boolean gene-protein-reaction (GPR) rules in a readable format (AND/OR).
+   * Data type: cell array of strings.
    * Example: {@code (8639.1) or (26.1) or (314.2) or (314.1)}. Dimensions must
-   * be identical to the number of reactions. Corresponds to {@link GeneProductAssociation}
+   * be identical to the number of reactions. Corresponds to
+   * {@link GeneProductAssociation}
    */
   grRules,
   /**
-   *  Lower reaction flux bounds
+   * Lower reaction flux bounds for corresponding reactions
    */
   lb,
   /**
+   * Value of charge for corresponding metabolite.
    * Must have same dimension as {@link #mets}. Data type: double array.
    * For SBML Level < 3, it corresponds to {@link Species#getCharge()}. Since
    * Level 3, it corresponds to {@link FBCSpeciesPlugin#getCharge()}.
@@ -132,8 +140,14 @@ public enum ModelFields {
    */
   metCHEBIID,
   /**
-   * Chemical formulas for metabolites, must have same dimension as {@link #mets}.
-   * Datatype: cell array of strings. Corresponds to {@link FBCSpeciesPlugin#getChemicalFormula()}.
+   * ChEBI ID for each corresponding metabolite
+   * @see #metCHEBIID
+   */
+  metChEBIID,
+  /**
+   * Elemental formula for each metabolite. This must have same dimension as
+   * {@link #mets}. Datatype: cell array of strings. Corresponds to
+   * {@link FBCSpeciesPlugin#getChemicalFormula()}.
    */
   metFormulas,
   /**
@@ -142,11 +156,13 @@ public enum ModelFields {
    */
   metHMDB,
   /**
+   * Inichi String for each corresponding metabolite.
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
   metInchiString,
   /**
+   * KEGG ID for each corresponding metabolite.
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
@@ -157,11 +173,13 @@ public enum ModelFields {
    */
   metNames,
   /**
+   * Pub Chem ID for each corresponding metabolite.
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
   metPubChemID,
   /**
+   * Metabolite name abbreviation; metabolite ID; order corresponds to S matrix.
    * Metabolite BiGG ids (incl. compartment code). Data type: cell array of
    * strings. Corresponds to {@link Species#getId()}.
    */
@@ -189,6 +207,10 @@ public enum ModelFields {
    */
   osense,
   /**
+   * Proteins associated with each reaction.
+   */
+  proteins,
+  /**
    * A vector consisting of zeros and ones that translate to binary and determine
    * if the corresponding reaction of that index is reversible (1) or not (0).
    * Dimensions must be equal to the number of reactions. Corresponds to the
@@ -196,7 +218,8 @@ public enum ModelFields {
    */
   rev,
   /**
-   * 
+   * Boolean rule for the corresponding reaction which defines gene-reaction
+   * relationship.
    */
   rules,
   /**
@@ -227,16 +250,19 @@ public enum ModelFields {
    */
   rxnKeggID,
   /**
-   * Descriptive reaction names, length must be identical to the number of
-   * reactions. Data type: cell array of string. Corresponds to the name of a
-   * {@link Reaction}.
+   * Descriptive reaction names, length of this array must be identical to the
+   * number of reactions. Data type: cell array of string. Corresponds to the
+   * name of a {@link Reaction}.
    */
   rxnNames,
   /**
+   * E. C. number for each reaction
    * @see #ecNumbers
    */
   rxnECNumbers,
   /**
+   * Cell array of strings which can contain optional information on references
+   * for each specific reaction.
    * Example:
    * <pre>
    * 'Na coupled transport of pyruvate, lactate, and short chain fatty acids, i.e., acetate, propionate, and butyrate mediated by SMCT1
@@ -245,6 +271,7 @@ public enum ModelFields {
   rxnReferences,
   /**
    * Reaction BiGG ids. Corresponds to the id of {@link Reaction}.
+   * Reaction name abbreviation; reaction ID; order corresponds to S matrix.
    */
   rxns,
   /**
@@ -253,7 +280,7 @@ public enum ModelFields {
    */
   rxnNotes,
   /**
-   * Stoichiometric matrix
+   * Stoichiometric matrix in sparse format.
    */
   S,
   /**
@@ -266,7 +293,7 @@ public enum ModelFields {
    */
   subSystems,
   /**
-   * Upper reaction flux bounds
+   * Upper reaction flux bounds for corresponding reactions
    */
   ub;
 }
