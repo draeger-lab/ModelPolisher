@@ -1,5 +1,5 @@
 # ModelPolisher
-ModelPolisher accesses the BiGG Models knowledgebase to annotate and autocomplete SBML models.
+ModelPolisher accesses the [BiGG Models knowledgebase](http://bigg.ucsd.edu) to annotate and autocomplete SBML models.
 Thereby, the program mainly relies on [BiGG identifiers](https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines) for model components.
 In addition, it fixes some obvious errors in the models.
 
