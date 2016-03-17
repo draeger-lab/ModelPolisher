@@ -14,7 +14,7 @@ import de.zbit.util.Utils;
  * to access all components of the identifier.
  * 
  * For a formal description of the structure of BiGG ids see the proposed
- * <a href="https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">BiGG ID specification</a>.
+ * <a href="https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines">BiGG ID specification</a>.
  * 
  * @author Andreas Dr&auml;ger
  *
