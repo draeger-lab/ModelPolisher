@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLException;
@@ -174,7 +174,7 @@ public class COBRAparser {
     Model model = builder.getModel();
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     for (int i = 0; i < genes.getSize(); i++) {
-      String id = toString(genes.get(i));
+      String id = toString(genes.get(i), genes.getName(), i+1);
       if ((id != null) && (id.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(id));
@@ -211,7 +211,7 @@ public class COBRAparser {
     MLCell metPubChemID, MLCell metSmile) {
     Model model = builder.getModel();
     for (int i = 0; i < mets.getSize(); i++) {
-      String id = toString(mets.get(i));
+      String id = toString(mets.get(i), mets.getName(), i+1);
       if ((id != null) && (id.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(id));
@@ -219,11 +219,11 @@ public class COBRAparser {
             biggId.setPrefix(METABOLITE_PREFIX);
           }
           Species species = model.createSpecies(biggId.toBiGGId());
-          species.setName(toString(metNames.get(i)));
+          species.setName(toString(metNames.get(i), metNames.getName(), i+1));
           if ((metFormulas != null) || (metCharge != null)) {
             FBCSpeciesPlugin specPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
             if (exists(metFormulas, i)) {
-              specPlug.setChemicalFormula(toString(metFormulas.get(i)));
+              specPlug.setChemicalFormula(toString(metFormulas.get(i), metFormulas.getName(), i+1));
             }
             if ((metCharge != null) && (metCharge.get(i) != null)) {
               double charge = metCharge.get(i).doubleValue();
@@ -247,7 +247,7 @@ public class COBRAparser {
           if ((metSmile != null) && (metSmile.get(i) != null)) {
             // For some reason, the mat files appear to store the creation date
             // in the field smile, rather than a smiles string.
-            String smile = toString(metSmile.get(i));
+            String smile = toString(metSmile.get(i), metSmile.getName(), i+1);
             Date date = parseDate(smile);
             if (date != null) {
               species.createHistory().setCreatedDate(date);
@@ -301,7 +301,7 @@ public class COBRAparser {
   private void addResource(MLCell cell, int i, CVTerm term, MIRIAM catalog) {
     if (exists(cell, i)) {
       String id = toMIRIAMid(cell.get(i));
-      if (!id.isEmpty()) {
+      if ((id != null) && !id.isEmpty()) {
         String resource = MIRIAM.toResourceURL(catalog, id);
         if ((resource != null) && !resource.isEmpty()) {
           term.addResource(resource);
@@ -325,7 +325,7 @@ public class COBRAparser {
    */
   private String toMIRIAMid(String idCandidate) {
     if ((idCandidate == null) || idCandidate.isEmpty()) {
-      return "";
+      return null;
     }
     int start = 0;
     int end = idCandidate.length() - 1;
@@ -335,7 +335,7 @@ public class COBRAparser {
     if ((idCandidate.charAt(end) == ']') || (idCandidate.charAt(end) == '\'')) {
       end--;
     }
-    return idCandidate.substring(start, end);
+    return (start < end) ? idCandidate.substring(start, end) : null;
   }
 
   /**
@@ -450,7 +450,7 @@ public class COBRAparser {
     // parse gprs
     MLCell grRules = toMLCell(struct, ModelField.grRules);
     for (int i = 0; i < grRules.getSize(); i++) {
-      String geneReactionRule = toString(grRules.get(i));
+      String geneReactionRule = toString(grRules.get(i), grRules.getName(), i+1);
       SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
     }
 
@@ -582,7 +582,7 @@ public class COBRAparser {
     Map<String, Group> nameToGroup = new HashMap<>(); // this is to avoid creating the identical group multiple times.
     GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
     for (int i = 0; i < subSystems.getSize(); i++) {
-      String name = toString(subSystems.get(i));
+      String name = toString(subSystems.get(i), subSystems.getName(), i+1);
       Group group = nameToGroup.get(name);
       if (group == null) {
         group = groupsModelPlugin.createGroup();
@@ -648,7 +648,7 @@ public class COBRAparser {
     MLCell confidenceScores, MLCell citations, MLCell comments) {
     Model model = builder.getModel();
     for (int j = 0; j < rxns.getSize(); j++) {
-      String rId = toString(rxns.get(j));
+      String rId = toString(rxns.get(j), rxns.getName(), j+1);
       if ((rId != null) && (rId.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(rId));
@@ -656,7 +656,7 @@ public class COBRAparser {
             biggId.setPrefix(REACTION_PREFIX);
           }
           Reaction r = model.createReaction(biggId.toBiGGId());
-          r.setName(toString(rxnNames.get(j)));
+          r.setName(toString(rxnNames.get(j), rxnNames.getName(), j+1));
           r.setReversible(rev.get(j).doubleValue() != 0d);
           FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
           rPlug.setLowerFluxBound(builder.buildParameter(r.getId() + "_lb", null, lb.get(j), true, (String) null));
@@ -666,7 +666,7 @@ public class COBRAparser {
             double coeff = S.get(i, j).doubleValue();
             if (coeff != 0d) {
               try {
-                BiGGId metId = new BiGGId(correctId(toString(mets.get(i))));
+                BiGGId metId = new BiGGId(correctId(toString(mets.get(i), mets.getName(), i+1)));
                 metId.setPrefix(METABOLITE_PREFIX);
                 Species species = model.getSpecies(metId.toBiGGId());
                 if (coeff < 0d) { // Reactant
@@ -681,15 +681,15 @@ public class COBRAparser {
           }
 
           if (exists(rxnKeggID, j)) {
-            parseRxnKEGGids(toString(rxnKeggID.get(j)), r);
+            parseRxnKEGGids(toString(rxnKeggID.get(j), rxnKeggID.getName(), j+1), r);
           }
 
           if (exists(ecNumbers, j)) {
-            parseECcodes(toString(ecNumbers.get(j)), r);
+            parseECcodes(toString(ecNumbers.get(j), ecNumbers.getName(), j+1), r);
           }
 
           if (exists(comments, j)) {
-            String comment = toString(comments.get(j));
+            String comment = toString(comments.get(j), comments.getName(), j+1);
             appendComment(comment, r);
           }
 
@@ -711,7 +711,7 @@ public class COBRAparser {
           }
 
           if (exists(citations, j)) {
-            parseCitation(toString(citations.get(j)), r);
+            parseCitation(toString(citations.get(j), citations.getName(), j+1), r);
           }
           if (r.getCVTermCount() > 0) {
             r.setMetaId(r.getId());
@@ -994,12 +994,18 @@ public class COBRAparser {
     return null;
   }
 
+  private String toString(MLArray array) {
+    return toString(array, null, -1);
+  }
+
   /**
    * 
    * @param array
+   * @param parentName
+   * @param parentIndex
    * @return
    */
-  private String toString(MLArray array) {
+  private String toString(MLArray array, String parentName, int parentIndex) {
     StringBuilder sb = new StringBuilder();
     if (array.isChar()) {
       MLChar string = (MLChar) array;
@@ -1012,8 +1018,16 @@ public class COBRAparser {
         }
         sb.append(string.getString(i));
       }
-    } else {
-      logger.warning(MessageFormat.format("Expected character string in data field ''{1}'', but received data type {0}.", MLArray.typeToString(array.getType()), array.getName()));
+    } else if (!Arrays.equals(array.getDimensions(), new int[] {0, 0})) {
+      String name = array.getName();
+      String pos = "";
+      if (name.equals("@") && (parentName != null)) {
+        name = parentName;
+        pos = "at position " + parentIndex;
+      }
+      logger.warning(MessageFormat.format(
+        "Expected character string in data field ''{1}''{2}, but received data type {0}.",
+        MLArray.typeToString(array.getType()), name, pos));
     }
     return sb.toString();
   }

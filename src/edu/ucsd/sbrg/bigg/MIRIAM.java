@@ -232,7 +232,7 @@ public enum MIRIAM {
        * http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=
        * TODO What is the actual pattern? Using any character!
        */
-      unipathway_reaction(pairOf(" http://identifiers.org/unipathway.reaction/", "^UCR\\d{5}$")),
+      unipathway_reaction(pairOf("unipathway.reaction", "^UCR\\d{5}$")),
       /**
        * UniPathway is a manually curated resource of enzyme-catalyzed and
        * spontaneous chemical reactions. It provides a hierarchical representation
@@ -479,7 +479,6 @@ public enum MIRIAM {
       switch (this) {
       case biopath_molecule:
       case biopath_reaction:
-      case unipathway_reaction:
         // TODO: In these cases we don't have patterns and cannot guarantee the correctness of the id!
         return catalogToIdPatterns.keySet().iterator().next().toString() + id;
       default:
