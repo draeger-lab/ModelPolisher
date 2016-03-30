@@ -63,6 +63,10 @@ public class ModelPolisher extends Launcher {
    */
   private static final class Parameters {
     /**
+     * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
+     */
+    Boolean acceptsOnlyMIRIAMregistryURIs = null;
+    /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
     Boolean checkMassBalance = null;
@@ -159,8 +163,9 @@ public class ModelPolisher extends Launcher {
    */
   public void batchProcess(BiGGDB bigg, File input, File output, Parameters parameters) throws IOException,
   XMLStreamException {
-
-    if (!output.exists() && !output.isFile()
+    // We test if non-existing path denotes a file or directory by checking if
+    // it contains at least one period in its name. If so, we assume it is a file.
+    if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
         && !(input.isFile() && input.getName().equals(output.getName()))) {
       logger.info(MessageFormat.format(
         "Creating directory {0}.",
@@ -261,6 +266,7 @@ public class ModelPolisher extends Launcher {
       }
 
       Parameters parameters = new Parameters();
+      parameters.acceptsOnlyMIRIAMregistryURIs = args.getBooleanProperty(ModelPolisherOptions.ACCEPT_ONLY_MIRIAM_URIS);
       parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
       parameters.compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
       parameters.documentNotesFile = documentNotesFile;
@@ -472,6 +478,9 @@ public class ModelPolisher extends Launcher {
     SBMLPolisher polisher = new SBMLPolisher(bigg);
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
+    if (parameters.acceptsOnlyMIRIAMregistryURIs != null) {
+      polisher.setAcceptOnlyMIRIAMregistryURIs(parameters.acceptsOnlyMIRIAMregistryURIs.booleanValue());
+    }
     if (parameters.documentNotesFile != null) {
       polisher.setDocumentNotesFile(parameters.documentNotesFile);
     }

@@ -66,6 +66,18 @@ public interface ModelPolisherOptions extends KeyProvider {
   }
 
   /**
+   * This switch allows users to specify if also those database cross-links should
+   * be extracted from BiGG Models database for which currently no entry in the
+   * MIRIAM exists. This includes URIs that do not contain the pattern identifiers.org.
+   */
+  @SuppressWarnings("unchecked")
+  public static final Option<Boolean> ACCEPT_ONLY_MIRIAM_URIS = new Option<Boolean>(
+      "ACCEPT_ONLY_MIRIAM_URIS",
+      Boolean.class,
+      "This switch allows users to specify if also those database cross-links should be extracted from BiGG Models database for which currently no entry in the MIRIAM exists. This includes URIs that do not contain the pattern identifiers.org.",
+      Boolean.TRUE);
+
+  /**
    * When set to true, the mass balance of each reaction will be checked where
    * possible. Reactions that are recognized as peudoreactions are excluded from
    * this check, also are reactions that lack information about elementary
