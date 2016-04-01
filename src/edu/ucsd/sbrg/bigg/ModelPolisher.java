@@ -65,7 +65,7 @@ public class ModelPolisher extends Launcher {
     /**
      * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
      */
-    Boolean acceptsOnlyMIRIAMregistryURIs = null;
+    Boolean includeAnyURI = null;
     /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
@@ -266,7 +266,7 @@ public class ModelPolisher extends Launcher {
       }
 
       Parameters parameters = new Parameters();
-      parameters.acceptsOnlyMIRIAMregistryURIs = args.getBooleanProperty(ModelPolisherOptions.ACCEPT_ONLY_MIRIAM_URIS);
+      parameters.includeAnyURI = args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
       parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
       parameters.compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
       parameters.documentNotesFile = documentNotesFile;
@@ -478,8 +478,8 @@ public class ModelPolisher extends Launcher {
     SBMLPolisher polisher = new SBMLPolisher(bigg);
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
-    if (parameters.acceptsOnlyMIRIAMregistryURIs != null) {
-      polisher.setAcceptOnlyMIRIAMregistryURIs(parameters.acceptsOnlyMIRIAMregistryURIs.booleanValue());
+    if (parameters.includeAnyURI != null) {
+      polisher.setIncludeAnyURI(parameters.includeAnyURI.booleanValue());
     }
     if (parameters.documentNotesFile != null) {
       polisher.setDocumentNotesFile(parameters.documentNotesFile);

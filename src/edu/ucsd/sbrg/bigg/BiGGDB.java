@@ -141,11 +141,12 @@ public class BiGGDB {
   /**
    * 
    * @param biggId
+   * @param includeAnyURI
    * @return a list of external source together with external id.
    * @throws SQLException
    */
-  public List<String> getComponentResources(BiGGId biggId, boolean onlyMIRIAMregistry) throws SQLException {
-    return getResourceURL(biggId, "component", onlyMIRIAMregistry);
+  public List<String> getComponentResources(BiGGId biggId, boolean includeAnyURI) throws SQLException {
+    return getResourceURL(biggId, "component", includeAnyURI);
   }
 
   /**
@@ -317,11 +318,11 @@ public class BiGGDB {
    * 
    * @param biggId
    * @param type
-   * @param onlyMIRIAMregistry
+   * @param includeAnyURI
    * @return a list of external source together with external id.
    * @throws SQLException
    */
-  private List<String> getResourceURL(BiGGId biggId, String type, boolean onlyMIRIAMregistry) throws SQLException {
+  private List<String> getResourceURL(BiGGId biggId, String type, boolean includeAnyURI) throws SQLException {
     ResultSet rst = conect.query("SELECT CONCAT(url_prefix, s.synonym) AS url " +
         "FROM  %s c, synonym s, data_source d " +
         "WHERE c.id = s.ome_id AND" +
@@ -330,7 +331,7 @@ public class BiGGDB {
         "      c.bigg_id = '%s'%s",
         type,
         biggId.getAbbreviation(),
-        onlyMIRIAMregistry ? " AND url_prefix like '%%identifiers.org%%'" : "");
+        includeAnyURI ? "" : " AND url_prefix like '%%identifiers.org%%'");
     List<String> result = new LinkedList<String>();
     while (rst.next()) {
       result.add(rst.getString(1));
