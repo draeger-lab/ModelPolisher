@@ -144,22 +144,22 @@ public class SBMLPolisher {
    * Switch to decide if also references to data sources can be included into
    * {@link CVTerm}s whose URLs are not (yet) part of the MIRIAM registry.
    */
-  private boolean onlyMIRIAMregistry;
+  private boolean includeAnyURI;
 
 
   /**
-   * @return the onlyMIRIAMregistry
+   * @return the includeAnyURI
    */
-  public boolean acceptsOnlyMIRIAMregistryURIs() {
-    return onlyMIRIAMregistry;
+  public boolean getIncludeAnyURI() {
+    return includeAnyURI;
   }
 
 
   /**
-   * @param onlyMIRIAMregistry the onlyMIRIAMregistry to set
+   * @param includeAnyURI define if only identifiers.org URIs are included in MIRIAM annotation.
    */
-  public void setAcceptOnlyMIRIAMregistryURIs(boolean onlyMIRIAMregistry) {
-    this.onlyMIRIAMregistry = onlyMIRIAMregistry;
+  public void setIncludeAnyURI(boolean includeAnyURI) {
+    this.includeAnyURI = includeAnyURI;
   }
 
   /**
@@ -901,7 +901,7 @@ public class SBMLPolisher {
         }
       }
       try {
-        List<String> linkOut = bigg.getComponentResources(biggId, onlyMIRIAMregistry);
+        List<String> linkOut = bigg.getComponentResources(biggId, includeAnyURI);
         for (String resource : linkOut) {
           cvTerm.addResource(resource);
         }
