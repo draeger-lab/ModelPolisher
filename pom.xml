@@ -57,6 +57,16 @@
     </developer>
   </developers>
   
+  <!-- =================================================================== -->
+  <!-- Repositories                                                        -->
+  <!-- =================================================================== -->
+  <repositories>
+		<repository>
+    		<id>in-project</id>
+    		<name>In project repository</name>
+    		<url>file://${project.basedir}/lib</url>
+		</repository>
+  </repositories>
   
   <!-- =================================================================== -->
   <!-- Dependencies                                                        -->
@@ -65,15 +75,9 @@
   <dependencies>
     <!-- To update or install local non-MAVEN JAR files run the command in the comments -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <!-- mvn install:install-file -Dfile=/path/to/jsbml.jar -DgroupId=org.sbml -DartifactId=JSBML -Dversion=REVISION_NUMBER -Dpackaging=jar -->
       <groupId>org.sbml</groupId>
-      <artifactId>JSBML</artifactId>
+      <artifactId>JSBML-incl-libs</artifactId>
       <version>2492</version>
       <scope>compile</scope>
     </dependency>
@@ -84,6 +88,14 @@
       <version>1390</version> <!-- SVN revision -->
       <scope>compile</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
