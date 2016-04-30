@@ -61,11 +61,11 @@
   <!-- Repositories                                                        -->
   <!-- =================================================================== -->
   <repositories>
-		<repository>
-    		<id>in-project</id>
-    		<name>In project repository</name>
-    		<url>file://${project.basedir}/lib</url>
-		</repository>
+    <repository>
+      <id>in-project</id>
+      <name>In project repository</name>
+      <url>file://${project.basedir}/lib</url>
+    </repository>
   </repositories>
   
   <!-- =================================================================== -->
@@ -82,7 +82,7 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <!-- mvn install:install-file -Dfile=/path/to/sysbio.jar -DgroupId=de.zbit -DartifactId=SysBio -Dversion=REVISION_NUMBER -Dpackaging=jar -->
+      <!-- mvn install:install-file -Dfile=./lib/sysbio.jar -DgroupId=de.zbit -DartifactId=SysBio -Dversion=REVISION_NUMBER -Dpackaging=jar -DlocalRepositoryPath=./lib/ && rm ./lib/sysbio.jar -->
       <groupId>de.zbit</groupId>
       <artifactId>SysBio</artifactId>
       <version>1390</version> <!-- SVN revision -->
