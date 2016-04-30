@@ -719,6 +719,7 @@ public class SBMLPolisher {
             group = groupsModelPlugin.createGroup("g" + (groupsModelPlugin.getGroupCount() + 1));
             group.setName(subsystem);
             group.setKind(Group.Kind.partonomy);
+            group.setSBOTerm(633); // subsystem
             groupForName.put(subsystem, group);
           }
           Member member = group.createMember();
