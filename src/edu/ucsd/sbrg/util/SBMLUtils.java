@@ -25,6 +25,7 @@ import org.sbml.jsbml.ext.fbc.ListOfObjectives;
 import org.sbml.jsbml.ext.fbc.LogicalOperator;
 import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.fbc.Or;
+import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
 import de.zbit.util.Utils;
@@ -41,6 +42,12 @@ public class SBMLUtils {
    * A {@link Logger} for this class.
    */
   private static final Logger logger = Logger.getLogger(SBMLUtils.class.getName());
+
+  /**
+   * Key to link from {@link Reaction} directly to {@link Member}s referencing
+   * that reaction.
+   */
+  public static final String SUBSYSTEM_LINK = "SUBSYSTEM_LINK";
 
   /**
    * 
@@ -224,6 +231,20 @@ public class SBMLUtils {
     //    if (!r.isSetSBOTerm()) {
     //      r.setSBOTerm(SBO.getProcess());
     //    }
+  }
+
+  /**
+   * Add a direct link from the reaction to the member pointing to that reaction.
+   * 
+   * @param r
+   * @param member
+   */
+  public static void createSubsystemLink(Reaction r, Member member) {
+    member.setIdRef(r);
+    if (r.getUserObject(SUBSYSTEM_LINK) == null) {
+      r.putUserObject(SUBSYSTEM_LINK , new HashSet<Member>());
+    }
+    ((Set<Member>) r.getUserObject(SUBSYSTEM_LINK)).add(member);
   }
 
 }

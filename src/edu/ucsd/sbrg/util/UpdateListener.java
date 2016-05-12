@@ -20,6 +20,7 @@ import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.GeneProductRef;
+import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.util.TreeNodeChangeEvent;
 import org.sbml.jsbml.util.TreeNodeChangeListener;
 import org.sbml.jsbml.util.TreeNodeRemovedEvent;
@@ -52,6 +53,7 @@ public class UpdateListener implements TreeNodeChangeListener {
   /* (non-Javadoc)
    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void propertyChange(PropertyChangeEvent evt) {
     if (evt.getPropertyName().equals(TreeNodeChangeEvent.id)) {
@@ -66,6 +68,12 @@ public class UpdateListener implements TreeNodeChangeListener {
           Model model = r.getModel();
           FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
           SBMLUtils.updateReactionRef(oldId, newId, fbcModelPlug);
+          Set<Member> subsystems = (Set<Member>) r.getUserObject(SBMLUtils.SUBSYSTEM_LINK);
+          if (subsystems != null) {
+            for (Member m : subsystems) {
+              m.setIdRef(newId);
+            }
+          }
         } else if (nsb instanceof GeneProduct) {
           Set<GeneProductRef> geneRefs = geneIdToAssociation.remove(oldId);
           if (geneRefs != null) {

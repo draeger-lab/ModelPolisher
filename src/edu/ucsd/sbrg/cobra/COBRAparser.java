@@ -590,8 +590,7 @@ public class COBRAparser {
         group.setKind(Group.Kind.partonomy);
         nameToGroup.put(name, group);
       }
-      Member member = group.createMember();
-      member.setIdRef(model.getReaction(i));
+      SBMLUtils.createSubsystemLink(model.getReaction(i), group.createMember());
     }
   }
 

@@ -60,7 +60,6 @@ import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
-import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.util.Pair;
 import org.sbml.jsbml.util.ResourceManager;
 
@@ -722,8 +721,7 @@ public class SBMLPolisher {
             group.setSBOTerm(633); // subsystem
             groupForName.put(subsystem, group);
           }
-          Member member = group.createMember();
-          member.setIdRef(r);
+          SBMLUtils.createSubsystemLink(r, group.createMember());
         }
       }
       SBMLUtils.setRequiredAttributes(r);
