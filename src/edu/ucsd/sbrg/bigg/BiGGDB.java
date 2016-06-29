@@ -79,9 +79,9 @@ public class BiGGDB {
   public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
     String query = "SELECT DISTINCT "
       + BiGGDBContract.BiGGDBConstants.MR_SUBSYSTEM + "\n" + "FROM "
-      + BiGGDBContract.BiGGDBConstants.REACTION + ", "
-      + BiGGDBContract.BiGGDBConstants.MODEL + ", "
-      + BiGGDBContract.BiGGDBConstants.MODEl_REACTION + "\n" + "WHERE "
+      + BiGGDBContract.BiGGDBConstants.REACTION_R + ", "
+      + BiGGDBContract.BiGGDBConstants.MODEL_M + ", "
+      + BiGGDBContract.BiGGDBConstants.MODEL_REACTION + "\n" + "WHERE "
       + BiGGDBContract.BiGGDBConstants.M_BIGG_ID + " = '%s' AND\n" + "      "
       + BiGGDBContract.BiGGDBConstants.R_BIGG_ID + " = '%s' AND\n" + "      "
       + BiGGDBContract.BiGGDBConstants.M_ID + " = "
@@ -109,14 +109,14 @@ public class BiGGDB {
    */
   public String getChemicalFormula(BiGGId biggId, String modelId) {
     String query = "SELECT " + BiGGDBContract.BiGGDBConstants.MCC_FORMULA + "\n"
-      + "FROM   " + BiGGDBContract.BiGGDBConstants.COMPONENT + ",\n" + "       "
+      + "FROM   " + BiGGDBContract.BiGGDBConstants.COMPONENT_C + ",\n" + "       "
       + BiGGDBContract.BiGGDBConstants.COMPARTMENTALIZED_COMPONENT + ",\n"
-      + "       " + BiGGDBContract.BiGGDBConstants.MODEL + ",\n" + "       "
+      + "       " + BiGGDBContract.BiGGDBConstants.MODEL_M + ",\n" + "       "
       + BiGGDBContract.BiGGDBConstants.MCC + "\n" + "WHERE  "
       + BiGGDBContract.BiGGDBConstants.C_ID + " = "
       + BiGGDBContract.BiGGDBConstants.CC_COMPONENT_ID + " AND\n" + "       "
       + BiGGDBContract.BiGGDBConstants.CC_ID + " = "
-      + BiGGDBContract.BiGGDBConstants.MCC_CC_ID + " AND\n" + "       "
+      + BiGGDBContract.BiGGDBConstants.MCC_COMPARTMENTALIZED_COMPONENT_ID + " AND\n" + "       "
       + BiGGDBContract.BiGGDBConstants.C_BIGG_ID + " = '%s' AND\n" + "       "
       + BiGGDBContract.BiGGDBConstants.M_BIGG_ID + " = '%s' AND\n" + "       "
       + BiGGDBContract.BiGGDBConstants.M_ID + " = "
@@ -258,9 +258,9 @@ public class BiGGDB {
         + BiGGDBContract.BiGGDBConstants.MR_GENE_REACTION_RULE
         + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS "
         + BiGGDBContract.BiGGDBConstants.GENE_REACTION_RULE + " " + "FROM  "
-        + BiGGDBContract.BiGGDBConstants.MODEl_REACTION + ", "
-        + BiGGDBContract.BiGGDBConstants.REACTION + ", "
-        + BiGGDBContract.BiGGDBConstants.MODEL + " " + "WHERE "
+        + BiGGDBContract.BiGGDBConstants.MODEL_REACTION + ", "
+        + BiGGDBContract.BiGGDBConstants.REACTION_R + ", "
+        + BiGGDBContract.BiGGDBConstants.MODEL_M + " " + "WHERE "
         + BiGGDBContract.BiGGDBConstants.R_ID + " = "
         + BiGGDBContract.BiGGDBConstants.MR_REACTION_ID + " AND " + "      "
         + BiGGDBContract.BiGGDBConstants.M_ID + " = "
@@ -326,7 +326,7 @@ public class BiGGDB {
   public String getOrganism(String biggId) {
     return getString("SELECT " + BiGGDBContract.BiGGDBConstants.G_ORGANISM
       + " FROM " + BiGGDBContract.BiGGDBConstants.GENOME + ", "
-      + BiGGDBContract.BiGGDBConstants.MODEL + " WHERE "
+      + BiGGDBContract.BiGGDBConstants.MODEL_M + " WHERE "
       + BiGGDBContract.BiGGDBConstants.M_GENOME_ID + " = "
       + BiGGDBContract.BiGGDBConstants.G_ID + " AND "
       + BiGGDBContract.BiGGDBConstants.M_BIGG_ID + " = '%s'", biggId);
@@ -356,7 +356,7 @@ public class BiGGDB {
         + ", " + BiGGDBContract.BiGGDBConstants.P_REFERENCE_ID + " " + "FROM  "
         + BiGGDBContract.BiGGDBConstants.PUBLICATION + ", "
         + BiGGDBContract.BiGGDBConstants.PUBLICATION_MODEL + ", "
-        + BiGGDBContract.BiGGDBConstants.MODEL + " " + "WHERE "
+        + BiGGDBContract.BiGGDBConstants.MODEL_M + " " + "WHERE "
         + BiGGDBContract.BiGGDBConstants.P_ID + " = "
         + BiGGDBContract.BiGGDBConstants.PM_PUBLICATION_ID + " AND "
         + BiGGDBContract.BiGGDBConstants.PM_MODEL_ID + " = "
@@ -442,7 +442,7 @@ public class BiGGDB {
     try {
       return getInt("SELECT " + BiGGDBContract.BiGGDBConstants.TAXON_ID
         + " FROM " + BiGGDBContract.BiGGDBConstants.GENOME + ", "
-        + BiGGDBContract.BiGGDBConstants.MODEL + " WHERE "
+        + BiGGDBContract.BiGGDBConstants.MODEL_M + " WHERE "
         + BiGGDBContract.BiGGDBConstants.G_ID + " = "
         + BiGGDBContract.BiGGDBConstants.M_GENOME_ID + " AND "
         + BiGGDBContract.BiGGDBConstants.M_BIGG_ID + " = '%s'", biggId);
@@ -541,9 +541,9 @@ public class BiGGDB {
    */
   public Integer getCharge(String biggId, String modelId) {
     String query = "SELECT " + BiGGDBContract.BiGGDBConstants.MCC_CHARGE + "\n"
-      + "FROM   " + BiGGDBContract.BiGGDBConstants.COMPONENT + ",\n" + "       "
+      + "FROM   " + BiGGDBContract.BiGGDBConstants.COMPONENT_C + ",\n" + "       "
       + BiGGDBContract.BiGGDBConstants.COMPARTMENTALIZED_COMPONENT + ",\n"
-      + "       " + BiGGDBContract.BiGGDBConstants.MODEL + ",\n" + "       "
+      + "       " + BiGGDBContract.BiGGDBConstants.MODEL_M + ",\n" + "       "
       + BiGGDBContract.BiGGDBConstants.MCC + "\n" + "WHERE  "
       + BiGGDBContract.BiGGDBConstants.C_ID + " = "
       + BiGGDBContract.BiGGDBConstants.CC_COMPONENT_ID + " AND\n" + "       "
