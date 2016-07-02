@@ -263,18 +263,7 @@ public class SBMLFix {
     logger.info(MessageFormat.format(
       "Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.",
       r.getId(), coeff, modelDescriptor));
-    String rId = null;
-    // o.createFluxObjective(null, null, coeff, r);
-    rId = r != null ? r.getId() : null;
-    FluxObjective fluxObjective =
-      new FluxObjective(null, null, o.getLevel(), o.getVersion());
-    if (!Double.isNaN(coeff)) {
-      fluxObjective.setCoefficient(coeff);
-    }
-    if (rId != null) {
-      fluxObjective.setReaction(rId);
-    }
-    o.getListOfFluxObjectives().add(fluxObjective);
+    o.createFluxObjective(null, null, coeff, r);
   }
 
 
