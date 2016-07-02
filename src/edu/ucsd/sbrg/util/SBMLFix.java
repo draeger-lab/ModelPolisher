@@ -19,6 +19,7 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
@@ -31,7 +32,6 @@ import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
 import edu.ucsd.sbrg.bigg.ModelPolisher;
 import edu.ucsd.sbrg.bigg.SBMLPolisher;
-
 
 /**
  * This is a stand-alone bug-fix program. It recursively traverses a directory
@@ -56,12 +56,13 @@ public class SBMLFix {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SBMLFix.class.getName());
-
+  private static final transient Logger logger =
+    Logger.getLogger(SBMLFix.class.getName());
   /**
    * 
    */
   private static final double DEFAULT_COEFFICIENT = 1d;
+
 
   /**
    * @param input
@@ -71,7 +72,7 @@ public class SBMLFix {
    */
   public static void batchProcess(File input, File output) {
     if (!output.exists() && !output.isFile()
-        && !(input.isFile() && input.getName().equals(output.getName()))) {
+      && !(input.isFile() && input.getName().equals(output.getName()))) {
       logger.info(MessageFormat.format("Creating directory {0}.",
         output.getAbsolutePath()));
       output.mkdir();
@@ -80,7 +81,8 @@ public class SBMLFix {
       if (SBFileFilter.isSBMLFile(input)) {
         if (output.isDirectory()) {
           String fName = input.getName();
-          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
+          output =
+            new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
         try {
           fixSBML(input, output);
@@ -90,15 +92,17 @@ public class SBMLFix {
       }
     } else {
       if (!output.isDirectory()) {
-        logger.severe(MessageFormat.format(
-          "Cannot write to file {0}.", output.getAbsolutePath()));
+        logger.severe(MessageFormat.format("Cannot write to file {0}.",
+          output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
-        File target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        File target = new File(
+          Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
         batchProcess(file, target);
       }
     }
   }
+
 
   /**
    * Set group kind where required
@@ -106,31 +110,39 @@ public class SBMLFix {
    * @param model
    */
   public static void fixGroups(Model model) {
-    GroupsModelPlugin gPlug = (GroupsModelPlugin) model.getExtension(GroupsConstants.shortLabel);
+    GroupsModelPlugin gPlug =
+      (GroupsModelPlugin) model.getExtension(GroupsConstants.shortLabel);
     if ((gPlug != null) && gPlug.isSetListOfGroups()) {
       for (Group group : gPlug.getListOfGroups()) {
         if (!group.isSetKind()) {
-          logger.info(MessageFormat.format(
-            "Adding missing kind attribute to group {0}.",
-            group.isSetName() ? group.getName() : group.getId()));
+          logger.info(
+            MessageFormat.format("Adding missing kind attribute to group {0}.",
+              group.isSetName() ? group.getName() : group.getId()));
           group.setKind(Group.Kind.partonomy);
         }
       }
     }
   }
 
+
   /**
    * Check for missing objective function.
    * 
-   * @param modelDescriptor this can be the path to the model file or some name that describes this model.
+   * @param modelDescriptor
+   *        this can be the path to the model file or some name that describes
+   *        this model.
    * @param model
    */
   public static void fixObjective(String modelDescriptor, Model model) {
-    FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getExtension(FBCConstants.shortLabel);
+    FBCModelPlugin fbcPlug =
+      (FBCModelPlugin) model.getExtension(FBCConstants.shortLabel);
     if ((fbcPlug != null) && fbcPlug.isSetListOfObjectives()) {
-      fixObjective(modelDescriptor, model.isSetListOfReactions() ? model.getListOfReactions() : null, fbcPlug);
+      fixObjective(modelDescriptor,
+        model.isSetListOfReactions() ? model.getListOfReactions() : null,
+        fbcPlug);
     }
   }
+
 
   /**
    * @param modelDescriptor
@@ -141,13 +153,13 @@ public class SBMLFix {
    * @return {@code true} if this operation was successful and {@code false} if
    *         the problem could not be fixed.
    */
-  public static boolean fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions,
-    FBCModelPlugin fbcPlug) {
+  public static boolean fixObjective(String modelDescriptor,
+    ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug) {
     return fixObjective(modelDescriptor, listOfReactions, fbcPlug, null, null);
   }
 
+
   /**
-   * 
    * @param modelDescriptor
    * @param listOfReactions
    * @param fbcPlug
@@ -156,13 +168,12 @@ public class SBMLFix {
    * @return
    */
   public static boolean fixObjective(String modelDescriptor,
-    ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug, double[] fluxCoefficients,
-    String[] fluxObjectives) {
+    ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug,
+    double[] fluxCoefficients, String[] fluxObjectives) {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
       logger.severe(MessageFormat.format(
-        "No active objective defined in model {0}.",
-        modelDescriptor));
+        "No active objective defined in model {0}.", modelDescriptor));
       if (fbcPlug.getObjectiveCount() == 1) {
         activeObjective = fbcPlug.getObjective(0);
         fbcPlug.setActiveObjective(activeObjective);
@@ -171,7 +182,8 @@ public class SBMLFix {
           activeObjective.getId()));
       }
     } else {
-      activeObjective = fbcPlug.getListOfObjectives().firstHit(new NameFilter(fbcPlug.getListOfObjectives().getActiveObjective()));
+      activeObjective = fbcPlug.getListOfObjectives().firstHit(
+        new NameFilter(fbcPlug.getListOfObjectives().getActiveObjective()));
     }
     if (activeObjective != null) {
       Objective o = activeObjective;
@@ -182,17 +194,20 @@ public class SBMLFix {
         if (listOfReactions != null) {
           if (fluxObjectives != null) {
             /*
-             * An array of target reactions is provided. We want to use this as flux objectives.
+             * An array of target reactions is provided. We want to use this as
+             * flux objectives.
              */
             boolean strict = false;
             for (int i = 0; i < fluxObjectives.length; i++) {
               final String id = fluxObjectives[i];
               Reaction r = listOfReactions.firstHit((obj) -> {
-                return (obj instanceof Reaction) && id.equals(((Reaction) obj).getId());
+                return (obj instanceof Reaction)
+                  && id.equals(((Reaction) obj).getId());
               });
               if (r != null) {
                 createFluxObjective(modelDescriptor, r, fluxCoefficients, o, i);
-                // if at least one flux objective exists, the model qualifies as strict model.
+                // if at least one flux objective exists, the model qualifies as
+                // strict model.
                 strict = true;
               } else {
                 logger.severe(MessageFormat.format(
@@ -201,20 +216,24 @@ public class SBMLFix {
               }
             }
             return strict;
-
           } else {
             /*
-             * Search for biomass reaction in the model and use this as objective.
+             * Search for biomass reaction in the model and use this as
+             * objective.
              */
-            final Pattern pattern = SBMLPolisher.PATTERN_BIOMASS_CASE_INSENSITIVE;
+            final Pattern pattern =
+              SBMLPolisher.PATTERN_BIOMASS_CASE_INSENSITIVE;
             Reaction rBiomass = listOfReactions.firstHit((obj) -> {
-              return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
+              return (obj instanceof Reaction)
+                && pattern.matcher(((Reaction) obj).getId()).matches();
             });
             if (rBiomass != null) {
-              createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, o, 0);
+              createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients,
+                o, 0);
               return true;
             } else {
-              logger.severe("Operation failed! Could not identify biomass reaction.");
+              logger.severe(
+                "Operation failed! Could not identify biomass reaction.");
             }
           }
         } else {
@@ -224,20 +243,19 @@ public class SBMLFix {
         }
       }
     }
-
     return false;
   }
 
+
   /**
-   * 
    * @param modelDescriptor
    * @param r
    * @param fluxCoefficients
    * @param o
    * @param i
    */
-  private static void createFluxObjective(String modelDescriptor,
-    Reaction r, double[] fluxCoefficients, Objective o, int i) {
+  private static void createFluxObjective(String modelDescriptor, Reaction r,
+    double[] fluxCoefficients, Objective o, int i) {
     double coeff = DEFAULT_COEFFICIENT;
     if ((fluxCoefficients != null) && (fluxCoefficients.length > i)) {
       coeff = fluxCoefficients[i];
@@ -245,33 +263,48 @@ public class SBMLFix {
     logger.info(MessageFormat.format(
       "Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.",
       r.getId(), coeff, modelDescriptor));
-    o.createFluxObjective(null, null, coeff, r);
+    String rId = null;
+    // o.createFluxObjective(null, null, coeff, r);
+    rId = r != null ? r.getId() : null;
+    FluxObjective fluxObjective =
+      new FluxObjective(null, null, o.getLevel(), o.getVersion());
+    if (!Double.isNaN(coeff)) {
+      fluxObjective.setCoefficient(coeff);
+    }
+    if (rId != null) {
+      fluxObjective.setReaction(rId);
+    }
+    o.getListOfFluxObjectives().add(fluxObjective);
   }
 
+
   /**
-   * 
    * @param in
    * @param out
    * @throws XMLStreamException
    * @throws IOException
    */
-  public static void fixSBML(File in, File out) throws XMLStreamException,
-  IOException {
+  public static void fixSBML(File in, File out)
+    throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(MessageFormat.format("Reading input file {0}", in.getAbsolutePath()));
+    logger.info(
+      MessageFormat.format("Reading input file {0}", in.getAbsolutePath()));
     SBMLDocument doc = SBMLReader.read(in);
     Model model = doc.getModel();
-
     fixGroups(model);
     fixObjective(in.getAbsolutePath(), model);
-
-    logger.info(MessageFormat.format("Writing output file {0}.", out.getAbsolutePath()));
-    TidySBMLWriter.write(doc, out, ModelPolisher.class.getName(), "1.1", ' ', (short) 2);
+    logger.info(
+      MessageFormat.format("Writing output file {0}.", out.getAbsolutePath()));
+    TidySBMLWriter.write(doc, out, ModelPolisher.class.getName(), "1.1", ' ',
+      (short) 2);
     String archive = out.getAbsolutePath() + ".gz";
     logger.info(MessageFormat.format("Packing archive file {0}.", archive));
     ZIPUtils.GZip(out.getAbsolutePath(), archive);
-    logger.info(MessageFormat.format("Done. Time elapsed: {0,number,integer} ms", System.currentTimeMillis() - time));
+    logger.info(
+      MessageFormat.format("Done. Time elapsed: {0,number,integer} ms",
+        System.currentTimeMillis() - time));
   }
+
 
   /**
    * @param args
@@ -280,5 +313,4 @@ public class SBMLFix {
     LogUtil.initializeLogging("de.zbit", "edu.ucsd.sbrg");
     batchProcess(new File(args[0]), new File(args[1]));
   }
-
 }
