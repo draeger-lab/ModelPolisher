@@ -117,150 +117,150 @@ public enum MIRIAM {
     pairOf("kegg.glycan", "^G\\d+$"),
     pairOf("kegg.pathway", "^\\w{2,4}\\d{5}$"),
     pairOf("kegg.reaction", "^R\\d+$")),
-    /**
-     * 
-     */
-    lipidmaps(pairOf("lipidmaps", "^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$")),
-    /**
-     * MetaNetx integrates various information from genome-scale metabolic network
-     * reconstructions such as information on reactions, metabolites and
-     * compartments. This information undergoes a reconciliation process to
-     * minimise for discrepancies between different data sources, and makes the
-     * data accessible under a common namespace. This collection references
-     * chemical or metabolic components.
-     */
-    mnx_chemical(pairOf("metanetx.chemical", "^MNXM\\d+$")),
-    /**
-     * MetaNetx integrates various information from genome-scale metabolic network
-     * reconstructions such as information on reactions, metabolites and
-     * compartments. This information undergoes a reconciliation process to
-     * minimise for discrepancies between different data sources, and makes the
-     * data accessible under a common namespace. This collection references
-     * reactions.
-     */
-    mnx_equation(pairOf("metanetx.reaction", "^MNXR\\d+$")),
-    /**
-     * 
-     */
-    biocyc(pairOf("biocyc", "^[A-Z-0-9]+(?<!CHEBI)(\\:)?[A-Za-z0-9+_.%-]+$")),
-    /**
-     * The Mouse Genome Database (MGD) project includes data on gene
-     * characterization, nomenclature, mapping, gene homologies among mammals,
-     * sequence links, phenotypes, allelic variants and mutants, and strain data.
-     */
-    MGI(pairOf("mgd", "^MGI:\\d+$")),
-    /**
-     * 
-     */
-    //TODO: unclear which database is meant.
-    MIM(),
-    /**
-     * Protein Data Bank
-     */
-    PDB(pairOf("pdb", "^[0-9][A-Za-z0-9]{3}$")),
-    /**
-     * 
-     */
-    //TODO: unclear, which database is meant.
-    PSEUDO(),
-    /**
-     * 
-     */
-    //TODO: there is also http://identifiers.org/pubchem.substance/ - which one to choose?
-    PUBCHEMID(pairOf("pubchem.compound", "^\\d{1,7}\\-\\d{2}\\-\\d$"), pairOf("pubchem.substance", "^\\d+$")),
-    /**
-     * SubtiList serves to collate and integrate various aspects of the genomic
-     * information from <i>B. subtilis</i>, the paradigm of sporulating
-     * Gram-positive bacteria. SubtiList provides a complete dataset of DNA and
-     * protein sequences derived from the paradigm strain <i>B. subtilis</i> 168,
-     * linked to the relevant annotations and functional assignments.
-     */
-    subtilist(pairOf("subtilist", "^BG\\d+$")),
-    /**
-     * Reactome
-     */
-    reactome(pairOf("reactome", "^REACT_\\d+(\\.\\d+)?$")),
-    /**
-     * RHEA
-     */
-    rhea(pairOf("rhea", "^\\d{5}$")),
-    /**
-     * 
-     */
-    REBASE(pairOf("rebase", "^\\d+$")),
-    /**
-     * The Reference Sequence (RefSeq) collection aims to provide a comprehensive,
-     * integrated, non-redundant set of sequences, including genomic DNA,
-     * transcript (RNA), and protein products.
-     */
-    RefSeq(pairOf("refseq", "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{4}\\d+))(\\.\\d+)?$")),
-    /**
-     * Online Mendelian Inheritance in Man a catalog of human genes and genetic disorders.
-     */
-    omim(pairOf("omim", "^[*#+%^]?\\d{6}$")),
-    /**
-     * 
-     */
-    seed(pairOf("seed", "^\\d+\\.\\d+$"), pairOf("seed.compound", "^cpd\\d+$")),
-    /**
-     * 
-     */
-    sgd(pairOf("sgd", "^((S\\d+$)|(Y[A-Z]{2}\\d{3}[a-zA-Z](\\-[A-Z])?))$")),
-    /**
-     * 
-     */
-    TubercuList(pairOf("myco.tuber", "^Rv\\d{4}(A|B|c)?$")),
-    /**
-     * The University of Minnesota Biocatalysis/Biodegradation Database (UM-BBD)
-     * contains information on microbial biocatalytic reactions and biodegradation
-     * pathways for primarily xenobiotic, chemical compounds. The goal of the
-     * UM-BBD is to provide information on microbial enzyme-catalyzed reactions
-     * that are important for biotechnology. This collection refers to compound
-     * information.
-     */
-    umbbd_compound(pairOf("umbbd.compound", "^c\\d+$")),
-    /**
-     * 
-     */
-    //TODO
-    UniProtKB_Swiss_Prot(
-      pairOf("uniprot.isoform", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\-\\d+)$"),
-      pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$"),
-      pairOf("ipi", "^IPI\\d{8}$")),
+  /**
+   * 
+   */
+  lipidmaps(pairOf("lipidmaps", "^LM(FA|GL|GP|SP|ST|PR|SL|PK)[0-9]{4}([0-9a-zA-Z]{4,6})?$")),
+  /**
+   * MetaNetx integrates various information from genome-scale metabolic network
+   * reconstructions such as information on reactions, metabolites and
+   * compartments. This information undergoes a reconciliation process to
+   * minimise for discrepancies between different data sources, and makes the
+   * data accessible under a common namespace. This collection references
+   * chemical or metabolic components.
+   */
+  mnx_chemical(pairOf("metanetx.chemical", "^MNXM\\d+$")),
+  /**
+   * MetaNetx integrates various information from genome-scale metabolic network
+   * reconstructions such as information on reactions, metabolites and
+   * compartments. This information undergoes a reconciliation process to
+   * minimise for discrepancies between different data sources, and makes the
+   * data accessible under a common namespace. This collection references
+   * reactions.
+   */
+  mnx_equation(pairOf("metanetx.reaction", "^MNXR\\d+$")),
+  /**
+   * 
+   */
+  biocyc(pairOf("biocyc", "^[A-Z-0-9]+(?<!CHEBI)(\\:)?[A-Za-z0-9+_.%-]+$")),
+  /**
+   * The Mouse Genome Database (MGD) project includes data on gene
+   * characterization, nomenclature, mapping, gene homologies among mammals,
+   * sequence links, phenotypes, allelic variants and mutants, and strain data.
+   */
+  MGI(pairOf("mgd", "^MGI:\\d+$")),
+  /**
+   * 
+   */
+  //TODO: unclear which database is meant.
+  MIM(),
+  /**
+   * Protein Data Bank
+   */
+  PDB(pairOf("pdb", "^[0-9][A-Za-z0-9]{3}$")),
+  /**
+   * 
+   */
+  //TODO: unclear, which database is meant.
+  PSEUDO(),
+  /**
+   * 
+   */
+  //TODO: there is also http://identifiers.org/pubchem.substance/ - which one to choose?
+  PUBCHEMID(pairOf("pubchem.compound", "^\\d{1,7}\\-\\d{2}\\-\\d$"), pairOf("pubchem.substance", "^\\d+$")),
+  /**
+   * SubtiList serves to collate and integrate various aspects of the genomic
+   * information from <i>B. subtilis</i>, the paradigm of sporulating
+   * Gram-positive bacteria. SubtiList provides a complete dataset of DNA and
+   * protein sequences derived from the paradigm strain <i>B. subtilis</i> 168,
+   * linked to the relevant annotations and functional assignments.
+   */
+  subtilist(pairOf("subtilist", "^BG\\d+$")),
+  /**
+   * Reactome, see http://www.ebi.ac.uk/miriam/main/collections/MIR:00000018
+   */
+  reactome(pairOf("reactome", "(^(REACTOME:)?R-[A-Z]{3}-[0-9]+(-[0-9]+)?$)|(^REACT_\\d+$)")),
+  /**
+   * RHEA
+   */
+  rhea(pairOf("rhea", "^\\d{5}$")),
+  /**
+   * 
+   */
+  REBASE(pairOf("rebase", "^\\d+$")),
+  /**
+   * The Reference Sequence (RefSeq) collection aims to provide a comprehensive,
+   * integrated, non-redundant set of sequences, including genomic DNA,
+   * transcript (RNA), and protein products.
+   */
+  RefSeq(pairOf("refseq", "^((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+|(NZ\\_[A-Z]{4}\\d+))(\\.\\d+)?$")),
+  /**
+   * Online Mendelian Inheritance in Man a catalog of human genes and genetic disorders.
+   */
+  omim(pairOf("omim", "^[*#+%^]?\\d{6}$")),
+  /**
+   * 
+   */
+  seed(pairOf("seed", "^\\d+\\.\\d+$"), pairOf("seed.compound", "^cpd\\d+$")),
+  /**
+   * 
+   */
+  sgd(pairOf("sgd", "^((S\\d+$)|(Y[A-Z]{2}\\d{3}[a-zA-Z](\\-[A-Z])?))$")),
+  /**
+   * 
+   */
+  TubercuList(pairOf("myco.tuber", "^Rv\\d{4}(A|B|c)?$")),
+  /**
+   * The University of Minnesota Biocatalysis/Biodegradation Database (UM-BBD)
+   * contains information on microbial biocatalytic reactions and biodegradation
+   * pathways for primarily xenobiotic, chemical compounds. The goal of the
+   * UM-BBD is to provide information on microbial enzyme-catalyzed reactions
+   * that are important for biotechnology. This collection refers to compound
+   * information.
+   */
+  umbbd_compound(pairOf("umbbd.compound", "^c\\d+$")),
+  /**
+   * 
+   */
+  //TODO
+  UniProtKB_Swiss_Prot(
+    pairOf("uniprot.isoform", "^([A-N,R-Z][0-9][A-Z][A-Z, 0-9][A-Z, 0-9][0-9])|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\-\\d+)$"),
+    pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$"),
+    pairOf("ipi", "^IPI\\d{8}$")),
 
-      /**
-       * http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=
-       * TODO What is the actual pattern? Using any character!
-       */
-      unipathway_reaction(pairOf("unipathway.reaction", "^UCR\\d{5}$")),
-      /**
-       * UniPathway is a manually curated resource of enzyme-catalyzed and
-       * spontaneous chemical reactions. It provides a hierarchical representation
-       * of metabolic pathways and a controlled vocabulary for pathway annotation in
-       * UniProtKB. UniPathway data are cross-linked to existing metabolic resources
-       * such as ChEBI/Rhea, KEGG and MetaCyc. This collection references compounds.
-       */
-      uniprot(pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$")),
-      /**
-       * 
-       */
-      UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$")),
-      /**
-       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000383
-       */
-      INCHI(pairOf("inchi", "^InChI\\=1S\\/[A-Za-z0-9]+(\\/[cnpqbtmsih][A-Za-z0-9\\-\\+\\(\\)\\,]+)+$")),
-      /**
-       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000019
-       */
-      DOI(pairOf("doi", "^(doi\\:)?\\d{2}\\.\\d{4}.*$")),
-      /**
-       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000015
-       */
-      PUBMED(pairOf("pubmed", "^\\d+$")),
-      /**
-       * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000004
-       */
-      EC_CODE(pairOf("ec-code", "^\\d+\\.-\\.-\\.-|\\d+\\.\\d+\\.-\\.-|\\d+\\.\\d+\\.\\d+\\.-|\\d+\\.\\d+\\.\\d+\\.(n)?\\d+$"));
+  /**
+   * http://www.grenoble.prabi.fr/obiwarehouse/unipathway/ucr?upid=
+   * TODO What is the actual pattern? Using any character!
+   */
+  unipathway_reaction(pairOf("unipathway.reaction", "^UCR\\d{5}$")),
+  /**
+   * UniPathway is a manually curated resource of enzyme-catalyzed and
+   * spontaneous chemical reactions. It provides a hierarchical representation
+   * of metabolic pathways and a controlled vocabulary for pathway annotation in
+   * UniProtKB. UniPathway data are cross-linked to existing metabolic resources
+   * such as ChEBI/Rhea, KEGG and MetaCyc. This collection references compounds.
+   */
+  uniprot(pairOf("uniprot", "^([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\\.\\d+)?$")),
+  /**
+   * 
+   */
+  UPA(pairOf("unipathway.compound", "^UPC\\d{5}$"), pairOf("unipathway", "^UPA\\d{5}$")),
+  /**
+   * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000383
+   */
+  INCHI(pairOf("inchi", "^InChI\\=1S\\/[A-Za-z0-9]+(\\/[cnpqbtmsih][A-Za-z0-9\\-\\+\\(\\)\\,]+)+$")),
+  /**
+   * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000019
+   */
+  DOI(pairOf("doi", "^(doi\\:)?\\d{2}\\.\\d{4}.*$")),
+  /**
+   * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000015
+   */
+  PUBMED(pairOf("pubmed", "^\\d+$")),
+  /**
+   * See http://www.ebi.ac.uk/miriam/main/collections/MIR:00000004
+   */
+  EC_CODE(pairOf("ec-code", "^\\d+\\.-\\.-\\.-|\\d+\\.\\d+\\.-\\.-|\\d+\\.\\d+\\.\\d+\\.-|\\d+\\.\\d+\\.\\d+\\.(n)?\\d+$"));
 
   /**
    * 
