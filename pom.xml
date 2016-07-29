@@ -1,220 +1,221 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>edu.ucsd.sbrg</groupId>
-	<artifactId>ModelPolisher</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.ucsd.sbrg</groupId>
+  <artifactId>ModelPolisher</artifactId>
 
-	<!-- Output to jar format -->
-	<packaging>jar</packaging>
-
-
-	<!-- =================================================================== -->
-	<!-- General project information -->
-	<!-- =================================================================== -->
-
-	<name>${project.artifactId}</name>
-	<version>1.4</version>
-	<url>https://github.com/SBRG/ModelPolisher/</url>
-	<inceptionYear>2014</inceptionYear>
-	<description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
-
-	<properties>
-		<jdk.version>1.8</jdk.version>
-		<maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
-		<year>${maven.build.timestamp}</year><!-- This property is used for filtering 
-			the variable ${year} in some resource files -->
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.license.url>http://www.opensource.org/licenses/mit-license.php</project.license.url>
-		<junit.version>4.11</junit.version>
-	</properties>
-
-	<organization>
-		<name>University of California, San Diego</name>
-		<url>http://sbrg.ucsd.edu</url>
-	</organization>
-
-	<issueManagement>
-		<url>https://github.com/SBRG/ModelPolisher/issues</url>
-		<system>GitHub Issues</system>
-	</issueManagement>
-
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>${project.license.url}</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<developers>
-		<developer>
-			<email>andraeger@eng.ucsd.edu</email>
-			<name>Andreas Dräger</name>
-			<url>https://github.com/draeger/</url>
-			<id>draeger</id>
-		</developer>
-		<developer>
-			<email>zajac.thomas1992@gmail.com</email>
-			<name>Thomas Jakob Zajac</name>
-			<url>https://github.com/mephenor/</url>
-			<id>mephenor</id>
-		</developer>
-	</developers>
-
-	<!-- =================================================================== -->
-	<!-- Repositories -->
-	<!-- =================================================================== -->
-
-	<repositories>
-		<repository>
-			<id>ebi-repo</id>
-			<name>The EBI repository</name>
-			<url>http://www.ebi.ac.uk/~maven/m2repo</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>JSBML</id>
-			<name>The JSBML repository</name>
-			<url>http://jsbml.sourceforge.net/m2repo_snapshots/</url>
-		</repository>
-		<!-- Local libraries are an in-project repository -->
-		<!-- Add the dependencies and put them in -->
-		<!-- ${project.basedir}/lib/groupId/artifactId/version/ -->
-		<repository>
-			<id>libs</id>
-			<url>file://${project.basedir}/lib</url>
-		</repository>
-	</repositories>
-
-	<!-- =================================================================== -->
-	<!-- Dependencies -->
-	<!-- =================================================================== -->
-
-	<dependencies>
-		<dependency>
-			<groupId>org.sbml.jsbml</groupId>
-			<artifactId>jsbml</artifactId>
-			<version>1.2-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.zbit</groupId>
-			<artifactId>SysBio</artifactId>
-			<version>1390</version> <!-- SVN revision -->
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>9.4-1202-jdbc41</version>
-		</dependency>
-		<dependency>
-			<groupId>com.diffplug.matsim</groupId>
-			<artifactId>matfilerw</artifactId>
-			<version>2.1.0</version>
-		</dependency>
-	</dependencies>
+  <!-- Output to jar format -->
+  <packaging>jar</packaging>
 
 
-	<!-- =================================================================== -->
-	<!-- Building -->
-	<!-- =================================================================== -->
+  <!-- =================================================================== -->
+  <!-- General project information -->
+  <!-- =================================================================== -->
 
-	<!-- To build the project run: -->
-	<!-- mvn clean compile verify -->
-	<!-- Enter following highlighted line with correct JDK path !! -->
-	<build>
+  <name>${project.artifactId}</name>
+  <version>1.4</version>
+  <url>https://github.com/SBRG/ModelPolisher/</url>
+  <inceptionYear>2014</inceptionYear>
+  <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
 
-		<finalName>${project.artifactId}-${project.version}</finalName>
-		<sourceDirectory>src</sourceDirectory>
-		<scriptSourceDirectory>scripts</scriptSourceDirectory>
-		<testSourceDirectory>test</testSourceDirectory>
+  <properties>
+    <jdk.version>1.8</jdk.version>
+    <maven.build.timestamp.format>yyyy</maven.build.timestamp.format>
+    <year>${maven.build.timestamp}</year><!-- This property is used for filtering 
+      the variable ${year} in some resource files -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.license.url>http://www.opensource.org/licenses/mit-license.php</project.license.url>
+    <junit.version>4.11</junit.version>
+  </properties>
 
-		<resources>
-			<resource>
-				<directory>resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
+  <organization>
+    <name>University of California, San Diego</name>
+    <url>http://sbrg.ucsd.edu</url>
+  </organization>
 
-		<plugins>
+  <issueManagement>
+    <url>https://github.com/SBRG/ModelPolisher/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
 
-			<!-- Download source code in Eclipse, best practice [OPTIONAL!] -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<version>2.9</version>
-				<configuration>
-					<downloadSources>true</downloadSources>
-					<downloadJavadocs>false</downloadJavadocs>
-				</configuration>
-			</plugin>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>${project.license.url}</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
-			<!-- Set a JDK compiler level -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
-				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-				</configuration>
-			</plugin>
+  <developers>
+    <developer>
+      <email>andraeger@eng.ucsd.edu</email>
+      <name>Andreas Dräger</name>
+      <url>https://github.com/draeger/</url>
+      <id>draeger</id>
+    </developer>
+    <developer>
+      <email>zajac.thomas1992@gmail.com</email>
+      <name>Thomas Jakob Zajac</name>
+      <url>https://github.com/mephenor/</url>
+      <id>mephenor</id>
+    </developer>
+  </developers>
 
-			<!-- Assemble executable JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.6</version>
-				<executions>
-					<execution>
-						<id>jar-with-dependencies</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<finalName>${project.artifactId}-${project.version}</finalName>
-							<appendAssemblyId>false</appendAssemblyId>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<archive>
-								<manifest>
-									<mainClass>edu.ucsd.sbrg.bigg.ModelPolisher</mainClass>
-									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-								</manifest>
-							</archive>
-						</configuration>
-					</execution>
-					<execution>
-						<id>make-assembly</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
-							<descriptors>
-								<descriptor>assembly.xml</descriptor>
-							</descriptors>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+  <!-- =================================================================== -->
+  <!-- Repositories -->
+  <!-- =================================================================== -->
 
-		</plugins>
-	</build>
+  <repositories>
+    <repository>
+      <id>ebi-repo</id>
+      <name>The EBI repository</name>
+      <url>http://www.ebi.ac.uk/~maven/m2repo</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>JSBML</id>
+      <name>The JSBML repository</name>
+      <url>http://jsbml.sourceforge.net/m2repo_snapshots/</url>
+    </repository>
+    <!-- Local libraries are an in-project repository -->
+    <!-- Add the dependencies and put them in -->
+    <!-- ${project.basedir}/lib/groupId/artifactId/version/ -->
+    <repository>
+      <id>libs</id>
+      <url>file://${project.basedir}/lib</url>
+    </repository>
+  </repositories>
+
+  <!-- =================================================================== -->
+  <!-- Dependencies -->
+  <!-- =================================================================== -->
+
+  <dependencies>
+    <dependency>
+      <groupId>org.sbml.jsbml</groupId>
+      <artifactId>jsbml</artifactId>
+      <version>1.2-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>de.zbit</groupId>
+      <artifactId>SysBio</artifactId>
+      <version>1390</version> <!-- SVN revision -->
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.4-1202-jdbc41</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.diffplug.matsim</groupId>
+      <artifactId>matfilerw</artifactId>
+      <version>2.1.0</version>
+    </dependency>
+  </dependencies>
+
+
+  <!-- =================================================================== -->
+  <!-- Building -->
+  <!-- =================================================================== -->
+
+  <!-- To build the project run: -->
+  <!-- mvn clean compile verify -->
+  <!-- Enter following highlighted line with correct JDK path !! -->
+  <build>
+
+    <finalName>${project.artifactId}-${project.version}</finalName>
+    <sourceDirectory>src</sourceDirectory>
+    <scriptSourceDirectory>scripts</scriptSourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+
+    <resources>
+      <resource>
+        <directory>resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+
+      <!-- Download source code in Eclipse, best practice [OPTIONAL!] -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>false</downloadJavadocs>
+        </configuration>
+      </plugin>
+
+      <!-- Set a JDK compiler level -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>${jdk.version}</source>
+          <target>${jdk.version}</target>
+        </configuration>
+      </plugin>
+
+      <!-- Assemble executable JAR -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>jar-with-dependencies</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>${project.artifactId}-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <archive>
+                <manifest>
+                  <mainClass>edu.ucsd.sbrg.bigg.ModelPolisher</mainClass>
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                </manifest>
+              </archive>
+            </configuration>
+          </execution>
+          <execution>
+            <id>make-assembly</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>assembly.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
 
 </project>
