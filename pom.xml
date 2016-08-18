@@ -27,6 +27,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.license.url>http://www.opensource.org/licenses/mit-license.php</project.license.url>
     <junit.version>4.11</junit.version>
+    <jackson.version>2.8.1</jackson.version>
   </properties>
 
   <organization>
