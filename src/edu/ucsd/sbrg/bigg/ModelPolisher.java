@@ -47,80 +47,86 @@ import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
+import edu.ucsd.sbrg.json.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
-
 
 /**
  * @author Andreas Dr&auml;ger
- *
  */
 public class ModelPolisher extends Launcher {
 
   /**
-   * Helper class to store all parameters for running ModelPolisher in batch mode.
+   * Helper class to store all parameters for running ModelPolisher in batch
+   * mode.
    * 
    * @author Andreas Dr&auml;ger
    */
   private static final class Parameters {
+
     /**
      * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
      */
-    Boolean includeAnyURI = null;
+    Boolean     includeAnyURI        = null;
     /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
-    Boolean checkMassBalance = null;
+    Boolean     checkMassBalance     = null;
     /**
      * @see ModelPolisherOptions#COMPRESSION_TYPE
      */
-    Compression compression = Compression.NONE;
+    Compression compression          = Compression.NONE;
     /**
      * Can be {@code null}
+     * 
      * @see ModelPolisherOptions#DOCUMENT_NOTES_FILE
      */
-    File documentNotesFile = null;
+    File        documentNotesFile    = null;
     /**
      * Can be {@code null} (then a default is used).
+     * 
      * @see ModelPolisherOptions#DOCUMENT_TITLE_PATTERN
      */
-    String documentTitlePattern = null;
+    String      documentTitlePattern = null;
     /**
      * @see ModelPolisherOptions#FLUX_COEFFICIENTS
      */
-    double[] fluxCoefficients = null;
+    double[]    fluxCoefficients     = null;
     /**
      * @see ModelPolisherOptions#FLUX_OBJECTIVES
      */
-    String[] fluxObjectives = null;
+    String[]    fluxObjectives       = null;
     /**
      * Can be {@code null}
+     * 
      * @see ModelPolisherOptions#MODEL_NOTES_FILE
      */
-    File modelNotesFile = null;
+    File        modelNotesFile       = null;
     /**
      * @see ModelPolisherOptions#OMIT_GENERIC_TERMS
      */
-    Boolean omitGenericTerms = null;
+    Boolean     omitGenericTerms     = null;
     /**
      * @see ModelPolisherOptions#SBML_VALIDATION
      */
-    Boolean sbmlValidation = null;
+    Boolean     sbmlValidation       = null;
   }
 
   /**
    * Localization support.
    */
-  private static final transient ResourceBundle baseBundle = ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
-
+  private static final transient ResourceBundle baseBundle       =
+    ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
-
+  private static final transient Logger         logger           =
+    Logger.getLogger(ModelPolisher.class.getName());
   /**
    * Generated serial version identifier.
    */
-  private static final long serialVersionUID = 7745344693995142413L;
+  private static final long                     serialVersionUID =
+    7745344693995142413L;
+
 
   /**
    * @param args
@@ -129,6 +135,7 @@ public class ModelPolisher extends Launcher {
     new ModelPolisher(args);
   }
 
+
   /**
    * @param args
    */
@@ -136,7 +143,9 @@ public class ModelPolisher extends Launcher {
     super(args);
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#addCopyrightToSplashScreen()
    */
   @Override
@@ -144,7 +153,9 @@ public class ModelPolisher extends Launcher {
     return false;
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#addVersionNumberToSplashScreen()
    */
   @Override
@@ -152,8 +163,8 @@ public class ModelPolisher extends Launcher {
     return false;
   }
 
+
   /**
-   * 
    * @param bigg
    * @param input
    * @param output
@@ -161,26 +172,31 @@ public class ModelPolisher extends Launcher {
    * @throws IOException
    * @throws XMLStreamException
    */
-  public void batchProcess(BiGGDB bigg, File input, File output, Parameters parameters) throws IOException,
-  XMLStreamException {
+  public void batchProcess(BiGGDB bigg, File input, File output,
+    Parameters parameters) throws IOException, XMLStreamException {
     // We test if non-existing path denotes a file or directory by checking if
-    // it contains at least one period in its name. If so, we assume it is a file.
+    // it contains at least one period in its name. If so, we assume it is a
+    // file.
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
-        && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format(
-        "Creating directory {0}.",
+      && !(input.isFile() && input.getName().equals(output.getName()))) {
+      logger.info(MessageFormat.format("Creating directory {0}.",
         output.getAbsolutePath()));
       output.mkdir();
     }
     if (input.isFile()) {
-      boolean matFile = SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
-      if (SBFileFilter.isSBMLFile(input) || matFile) {
+      // TODO: FileFilter for .json files
+      boolean jsonFile =
+        SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
+      boolean matFile =
+        SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+      if (SBFileFilter.isSBMLFile(input) || matFile || jsonFile) {
         if (output.isDirectory()) {
           String fName = input.getName();
-          if (matFile) {
+          if (matFile || jsonFile) {
             fName = FileTools.removeFileExtension(fName) + ".xml";
           }
-          output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
+          output =
+            new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
         polish(bigg, input, output, parameters);
       }
@@ -190,13 +206,16 @@ public class ModelPolisher extends Launcher {
           output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
-        File target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        File target = new File(
+          Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
         batchProcess(bigg, file, target, parameters);
       }
     }
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#commandLineMode(de.zbit.AppConf)
    */
   @Override
@@ -204,19 +223,27 @@ public class ModelPolisher extends Launcher {
     SBProperties args = appConf.getCmdArgs();
     if (args.containsKey(LogOptions.LOG_FILE)) {
       LogUtil.addHandler(new ConsoleHandler() {
+
         /**
          * Formatter
          */
         OneLineFormatter formatter = new OneLineFormatter(false, false, false);
-        /* (non-Javadoc)
+
+
+        /*
+         * (non-Javadoc)
          * @see java.util.logging.StreamHandler#flush()
          */
         @Override
         public synchronized void flush() {
           System.out.flush();
         }
-        /* (non-Javadoc)
-         * @see java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
+
+
+        /*
+         * (non-Javadoc)
+         * @see
+         * java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
          */
         @Override
         public void publish(LogRecord record) {
@@ -235,21 +262,21 @@ public class ModelPolisher extends Launcher {
     try {
       // Connect to database and launch application:
       String passwd = args.getProperty(DBOptions.PASSWD);
-      BiGGDB bigg = new BiGGDB(new PostgreSQLConnector(
-        args.getProperty(DBOptions.HOST),
-        args.getIntProperty(DBOptions.PORT),
-        args.getProperty(DBOptions.USER),
-        passwd != null ? passwd : "",
-          args.getProperty(DBOptions.DBNAME)));
-
-      // Gives users the choice to pass an alternative model notes XHTML file to the program.
-      File modelNotesFile = parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
-      File documentNotesFile = parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
+      BiGGDB bigg =
+        new BiGGDB(new PostgreSQLConnector(args.getProperty(DBOptions.HOST),
+          args.getIntProperty(DBOptions.PORT), args.getProperty(DBOptions.USER),
+          passwd != null ? passwd : "", args.getProperty(DBOptions.DBNAME)));
+      // Gives users the choice to pass an alternative model notes XHTML file to
+      // the program.
+      File modelNotesFile =
+        parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
+      File documentNotesFile =
+        parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
       String documentTitlePattern = null;
       if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
-        documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
+        documentTitlePattern =
+          args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
       }
-
       double[] coefficients = null;
       if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
         String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
@@ -261,57 +288,59 @@ public class ModelPolisher extends Launcher {
       }
       String fObj[] = null;
       if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
-        String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
+        String fObjectives =
+          args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
         fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
       }
-
       Parameters parameters = new Parameters();
-      parameters.includeAnyURI = args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
-      parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
-      parameters.compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
+      parameters.includeAnyURI =
+        args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
+      parameters.checkMassBalance =
+        args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
+      parameters.compression = ModelPolisherOptions.Compression.valueOf(
+        args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
       parameters.documentNotesFile = documentNotesFile;
       parameters.documentTitlePattern = documentTitlePattern;
       parameters.fluxCoefficients = coefficients;
       parameters.fluxObjectives = fObj;
       parameters.modelNotesFile = modelNotesFile;
-      parameters.omitGenericTerms = args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
-      parameters.sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-
+      parameters.omitGenericTerms =
+        args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
+      parameters.sbmlValidation =
+        args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
       // run polishing operations in background and parallel.
-      batchProcess(bigg,
-        new File(args.getProperty(IOOptions.INPUT)),
-        new File(args.getProperty(IOOptions.OUTPUT)),
-        parameters);
-
-
-    } catch (SBMLException | XMLStreamException | IOException | SQLException | ClassNotFoundException exc) {
+      batchProcess(bigg, new File(args.getProperty(IOOptions.INPUT)),
+        new File(args.getProperty(IOOptions.OUTPUT)), parameters);
+    } catch (SBMLException | XMLStreamException | IOException | SQLException
+        | ClassNotFoundException exc) {
       exc.printStackTrace();
     }
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getCitation(boolean)
    */
   @Override
   public String getCitation(boolean HTMLstyle) {
     if (HTMLstyle) {
-      return
-          "<dl>\n" +
-          "  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n" +
-          "    <dd>\n" +
-          "      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n" +
-          "      <a href=\"https://dx.doi.org/10.1093/nar/gkv1049\" target=\"_blank\"\n" +
-          "      title=\"Access the publication about BiGG Models knowledgebase\">doi:10.1093/nar/gkv1049</a>\n" +
-          "    </dd>\n" +
-          "  </dt>\n" +
-          "</dl>";
+      return "<dl>\n"
+        + "  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n"
+        + "    <dd>\n"
+        + "      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n"
+        + "      <a href=\"https://dx.doi.org/10.1093/nar/gkv1049\" target=\"_blank\"\n"
+        + "      title=\"Access the publication about BiGG Models knowledgebase\">doi:10.1093/nar/gkv1049</a>\n"
+        + "    </dd>\n" + "  </dt>\n" + "</dl>";
     }
-    return "King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). " +
-    "BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, " +
-    "doi:10.1093/nar/gkv1049.";
+    return "King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). "
+      + "BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, "
+      + "doi:10.1093/nar/gkv1049.";
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getCmdLineOptions()
    */
   @Override
@@ -324,7 +353,9 @@ public class ModelPolisher extends Launcher {
     return options;
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getInstitute()
    */
   @Override
@@ -332,7 +363,9 @@ public class ModelPolisher extends Launcher {
     return baseBundle.getString("INSTITUTE");
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getInteractiveOptions()
    */
   @Override
@@ -343,7 +376,9 @@ public class ModelPolisher extends Launcher {
     return options;
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getLogPackages()
    */
   @Override
@@ -351,7 +386,9 @@ public class ModelPolisher extends Launcher {
     return new String[] {"edu.ucsd", "de.zbit"};
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getOrganization()
    */
   @Override
@@ -359,7 +396,9 @@ public class ModelPolisher extends Launcher {
     return baseBundle.getString("ORGANIZATION");
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getProvider()
    */
   @Override
@@ -367,7 +406,9 @@ public class ModelPolisher extends Launcher {
     return baseBundle.getString("PROVIDER");
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getURLlicenseFile()
    */
   @Override
@@ -379,7 +420,9 @@ public class ModelPolisher extends Launcher {
     }
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getURLOnlineUpdate()
    */
   @Override
@@ -387,7 +430,9 @@ public class ModelPolisher extends Launcher {
     return null;
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getVersionNumber()
    */
   @Override
@@ -396,7 +441,9 @@ public class ModelPolisher extends Launcher {
     return version == null ? "?" : version;
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getYearOfProgramRelease()
    */
   @Override
@@ -408,7 +455,9 @@ public class ModelPolisher extends Launcher {
     }
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#getYearWhenProjectWasStarted()
    */
   @Override
@@ -420,13 +469,16 @@ public class ModelPolisher extends Launcher {
     }
   }
 
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
    * @see de.zbit.Launcher#initGUI(de.zbit.AppConf)
    */
   @Override
   public Window initGUI(AppConf appConf) {
     return null;
   }
+
 
   /**
    * Scans the given command-line options for a specific file option and returns
@@ -449,8 +501,8 @@ public class ModelPolisher extends Launcher {
     return null;
   }
 
+
   /**
-   * 
    * @param bigg
    * @param input
    * @param output
@@ -458,20 +510,22 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    * @throws IOException
    */
-  public void polish(BiGGDB bigg, File input, File output, Parameters parameters)
-      throws XMLStreamException, IOException {
+  public void polish(BiGGDB bigg, File input, File output,
+    Parameters parameters) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(MessageFormat.format(
-      "Reading input file {0}.",
-      input.getAbsolutePath()));
+    logger.info(
+      MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
     SBMLDocument doc = null;
     if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
       doc = COBRAparser.read(input, parameters.omitGenericTerms);
+    } else if (SBFileFilter.hasFileType(input,
+      SBFileFilter.FileType.JSON_FILES)) {
+      doc = JSONparser.read(input);
     } else {
       doc = SBMLReader.read(input, new UpdateListener());
     }
     if (!doc.isSetLevelAndVersion()
-        || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+      || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info("Trying to convert the model to Level 3 Version 2.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
@@ -497,7 +551,8 @@ public class ModelPolisher extends Launcher {
     // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
     logger.info(MessageFormat.format("Writing output file {0}",
       output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
+      getVersionNumber(), ' ', (short) 2);
     // SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
@@ -521,38 +576,37 @@ public class ModelPolisher extends Launcher {
     time = System.currentTimeMillis() - time;
     Calendar calendar = Calendar.getInstance();
     calendar.setTimeInMillis(time);
-    logger.info(MessageFormat.format("Done ({0,time,ss.sss} s).", calendar.getTime()));
+    logger.info(
+      MessageFormat.format("Done ({0,time,ss.sss} s).", calendar.getTime()));
   }
 
+
   /**
-   * 
    * @param filename
    */
   private void validate(String filename) {
-    //org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u", compressedOutput});
+    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u",
+    // compressedOutput});
     String output = "xml";
     String offcheck = "p,u";
     HashMap<String, String> parameters = new HashMap<String, String>();
     parameters.put("output", output);
     parameters.put("offcheck", offcheck);
-
     logger.info("Validating  " + filename + "\n");
-
-    SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
-
+    SBMLErrorLog sbmlErrorLog =
+      SBMLValidator.checkConsistency(filename, parameters);
     if (sbmlErrorLog != null) {
       logger.info(MessageFormat.format(
         "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
         sbmlErrorLog.getErrorCount(), filename));
-
       // printErrors
       for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
         SBMLError error = sbmlErrorLog.getError(j);
         logger.warning(error.toString());
       }
     } else {
-      logger.info("No SBML validation possible, process terminated with errors.");
+      logger.info(
+        "No SBML validation possible, process terminated with errors.");
     }
   }
-
 }
