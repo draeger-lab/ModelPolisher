@@ -159,12 +159,10 @@ public class COBRAparser {
         "Parsing only one randomly selected model of {0} available models in the given file {1}.",
         content.keySet().size(), matFile.getAbsolutePath()));
     }
-    for (String key : content.keySet()) {
-      MLArray array = content.get(key);
-      builder.buildModel(SBMLtools.toSId(array.getName()), null);
-      parseModel(builder, array);
-      break;
-    }
+    String key = content.keySet().iterator().next();
+    MLArray array = content.get(key);
+    builder.buildModel(SBMLtools.toSId(array.getName()), null);
+    parseModel(builder, array);
     return doc;
   }
 
