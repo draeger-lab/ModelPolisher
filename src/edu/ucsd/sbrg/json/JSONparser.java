@@ -5,8 +5,9 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -14,10 +15,12 @@ import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.AssignmentRule;
+import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.JSBML;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.Rule;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.Unit;
@@ -133,6 +136,7 @@ public class JSONparser {
         "The number of fields in the JSON-Model is not in the expected range of 4-10: ''{0}''\nSome properties might not get parsed.",
         root.size()));
     }
+    logger.info("Started JSONparser");
     // get Model and set all informational fields
     Model model = builder.getModel();
     JsonNode annotation = root.path("annotation");
@@ -143,10 +147,12 @@ public class JSONparser {
     if (annotation.isMissingNode()) {
       logger.info("There is no annotation for this model");
     } else {
-      try {
-        model.setAnnotation(crop(annotation.toString()));
-      } catch (XMLStreamException e) {
-        logException(e);
+      if (!annotation.toString().isEmpty()) {
+        try {
+          model.setAnnotation(checkAnnotation(crop(annotation.toString())));
+        } catch (XMLStreamException e) {
+          logException(e);
+        }
       }
     }
     if (id.isMissingNode()) {
@@ -163,10 +169,12 @@ public class JSONparser {
     if (notes.isMissingNode()) {
       logger.info("There are no notes for this model");
     } else {
-      try {
-        model.setNotes(crop(notes.toString()));
-      } catch (XMLStreamException e) {
-        logException(e);
+      if (!notes.toString().isEmpty()) {
+        try {
+          model.setNotes(checkNotes(crop(notes.toString())));
+        } catch (XMLStreamException e) {
+          logException(e);
+        }
       }
     }
     if (version.isMissingNode()) {
@@ -185,6 +193,7 @@ public class JSONparser {
     parseMetabolites(builder, root.path("metabolites"));
     parseGenes(builder, root.path("genes"));
     parseReactions(builder, root.path("reactions"));
+    // parseRulesMu(builder);
   }
 
 
@@ -203,11 +212,13 @@ public class JSONparser {
       return;
     }
     Model model = builder.getModel();
-    for (int counter = 0; counter < compSize; counter++) {
-      JsonNode current = compartments.path(counter);
-      String id = crop(current.path("id").toString());
-      BiGGId biggId = new BiGGId(correctId(id));
-      model.createCompartment(biggId.toBiGGId());
+    Iterator<Entry<String, JsonNode>> compIter = compartments.fields();
+    while (compIter.hasNext()) {
+      String compartment = compIter.next().toString();
+      String cId = compartment.substring(0, compartment.indexOf("="));
+      String cName = crop(compartment.substring(compartment.indexOf("=") + 1));
+      Compartment comp = model.createCompartment(cId);
+      comp.setName(cName);
     }
   }
 
@@ -261,7 +272,6 @@ public class JSONparser {
         }
         String csense = crop(current.path("_constraint_sense").toString());
         if (csense != null && !csense.isEmpty() && !csense.equals("E")) {
-          System.out.println(csense);
           logger.severe(MessageFormat.format(
             "Unsupported nonequality relationship for metabolite with id ''{0}''.",
             species.getId()));
@@ -273,15 +283,15 @@ public class JSONparser {
         String annotation = crop(current.path("annotation").toString());
         if (annotation != null && !annotation.isEmpty()) {
           try {
-            species.setAnnotation(annotation);
+            species.setAnnotation(checkAnnotation(annotation));
           } catch (XMLStreamException e) {
             logException(e);
           }
         }
         String notes = crop(current.path("notes").toString());
-        if (annotation != null && !annotation.isEmpty()) {
+        if (notes != null && !notes.isEmpty()) {
           try {
-            species.setNotes(notes);
+            species.setNotes(checkNotes(notes));
           } catch (XMLStreamException e) {
             logException(e);
           }
@@ -332,15 +342,19 @@ public class JSONparser {
           throw new IllegalArgumentException(
             "Name is missing for geneproduct " + gp.getId());
         }
-        try {
-          gp.setNotes(notes);
-        } catch (XMLStreamException e) {
-          logException(e);
+        if (notes != null && !notes.isEmpty()) {
+          try {
+            gp.setNotes(checkNotes(notes));
+          } catch (XMLStreamException e) {
+            logException(e);
+          }
         }
-        try {
-          gp.setAnnotation(annotation);
-        } catch (XMLStreamException e) {
-          logException(e);
+        if (annotation != null && !annotation.isEmpty()) {
+          try {
+            gp.setAnnotation(checkAnnotation(annotation));
+          } catch (XMLStreamException e) {
+            logException(e);
+          }
         }
       }
     }
@@ -405,30 +419,20 @@ public class JSONparser {
           } catch (ParseException e) {
             logException(e);
           }
-          List<ASTNode> parameters = new ArrayList<ASTNode>();
           if (ast.getChildCount() > 1) {
-            parameters = getReactionParameters(ast, parameters);
-            for (int j = 0; j < parameters.size(); j++) {
-              String paramString = parameters.get(j).toString();
-              Parameter param = model.getParameter(paramString);
-              if (param == null) {
-                param = model.createParameter();
-                param.setId(paramString);
-              }
-              String rId = correctId(r.getId() + "_Reac_Prod_" + paramString);
-              boolean unique = true;
-              for (int rc = 0; rc < model.getRuleCount(); rc++) {
-                if (model.getRule(rc).getMetaId().equals(rId)) {
-                  unique = false;
-                  break;
-                }
-              }
-              if (unique) {
-                AssignmentRule rule = model.createAssignmentRule();
-                rule.setMath(ast);
-                rule.setMetaId(rId);
-              }
+            String paramString = "mu";
+            Parameter param = model.getParameter(paramString);
+            if (param == null) {
+              param = model.createParameter();
+              param.setId(paramString);
             }
+            BiGGId metId = new BiGGId(correctId(type));
+            metId.setPrefix(METABOLITE_PREFIX);
+            String mId =
+              correctId(r.getId() + "_Reac_Prod_" + metId.toBiGGId());
+            AssignmentRule rule = model.createAssignmentRule();
+            rule.setMath(ast);
+            rule.setMetaId(mId);
           } else {
             double coeff = 0d;
             if (ast.getType().equals(ASTNode.Type.MINUS)) {
@@ -487,14 +491,14 @@ public class JSONparser {
         }
         String notes = crop(current.path("notes").toString());
         try {
-          r.setNotes(notes);
+          r.setNotes(checkNotes(notes));
         } catch (XMLStreamException e) {
           logException(e);
         }
         String annotation = crop(current.path("annotation").toString());
         if (annotation != null && !annotation.isEmpty()) {
           try {
-            r.setAnnotation(annotation);
+            r.setAnnotation(checkAnnotation(annotation));
           } catch (XMLStreamException e) {
             logException(e);
           }
@@ -505,27 +509,64 @@ public class JSONparser {
 
 
   /**
-   * Recursively looks for all ASTNodes with type {@link ASTNode.Type.NAME},
-   * which should contain mu
+   * As of now unused function, needs a good method to get a value from a
+   * formula containing mu
    * 
-   * @param ast
-   * @return
+   * @param builder
    */
-  private List<ASTNode> getReactionParameters(ASTNode ast,
-    List<ASTNode> params) {
-    ASTNode param = null;
-    if (ast.getType() == ASTNode.Type.NAME) {
-      param = ast;
-    }
-    if (param != null) {
-      params.add(param);
-    }
-    if (ast.getChildCount() > 0) {
-      for (ASTNode child : ast.getChildren()) {
-        params.addAll(getReactionParameters(child, params));
+  private void parseRulesMu(ModelBuilder builder) {
+    Model model = builder.getModel();
+    Parameter param = model.getParameter("mu");
+    param.setValue(1.0d);
+    List<Rule> rules = model.getListOfRules();
+    for (Rule rule : rules) {
+      String metaId = rule.getMetaId().toString();
+      String rId = metaId.substring(0, metaId.indexOf("_Reac_Prod_"));
+      String mId = metaId.substring(metaId.indexOf("_Reac_Prod_") + 11);
+      Reaction r = model.getReaction(rId);
+      // TODO: not yet implemented, returns 0d
+      double coeff = getValueFromAssignmentRule(rule.getMath());
+      if (coeff != 0d) {
+        Species species = model.getSpecies(mId);
+        if (species == null) {
+          species = model.createSpecies(mId);
+          logger.info(MessageFormat.format(
+            " Species ''{0}'' in reaction ''{1}'' is not defined!", mId,
+            r.getId()));
+        }
+        if (coeff < 0d) {
+          ModelBuilder.buildReactants(r, pairOf(-coeff, species));
+        } else if (coeff > 0d) {
+          ModelBuilder.buildProducts(r, pairOf(coeff, species));
+        }
       }
     }
-    return params;
+  }
+
+
+  /**
+   * @param annotation
+   * @return
+   */
+  private String checkAnnotation(String annotation) {
+    if (annotation.startsWith("<")) {
+      return annotation;
+    } else {
+      return "<annotation>" + annotation + "</annotation>";
+    }
+  }
+
+
+  /**
+   * @param notes
+   * @return
+   */
+  private String checkNotes(String notes) {
+    if (notes.startsWith("<")) {
+      return notes;
+    } else {
+      return "<notes>" + notes + "</notes>";
+    }
   }
 
 
@@ -575,6 +616,17 @@ public class JSONparser {
       return str.substring(1, str.length() - 1);
     }
     return str;
+  }
+
+
+  /**
+   * @param ast:
+   *        rule.getMath()
+   * @return
+   */
+  private double getValueFromAssignmentRule(ASTNode ast) {
+    // TODO: implement a formula evaluator
+    return 0d;
   }
 
 
