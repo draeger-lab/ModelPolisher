@@ -467,7 +467,13 @@ public class JSONparser {
         if (subsystem != null && !subsystem.isEmpty()) {
           GroupsModelPlugin groupsModelPlugin =
             (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-          Group group = (Group) groupsModelPlugin.getGroup(subsystem);
+          Group group = null;
+          for (Group existingGroup : groupsModelPlugin.getListOfGroups()) {
+            if (name.equals(existingGroup.getName())) {
+              group = existingGroup;
+              break;
+            }
+          }
           if (group == null) {
             group = groupsModelPlugin.createGroup();
             group.setName(name);
@@ -490,10 +496,12 @@ public class JSONparser {
           fo.setReaction(r);
         }
         String notes = crop(current.path("notes").toString());
-        try {
-          r.setNotes(checkNotes(notes));
-        } catch (XMLStreamException e) {
-          logException(e);
+        if (notes != null && !notes.isEmpty()) {
+          try {
+            r.setNotes(checkNotes(notes));
+          } catch (XMLStreamException e) {
+            logException(e);
+          }
         }
         String annotation = crop(current.path("annotation").toString());
         if (annotation != null && !annotation.isEmpty()) {
@@ -509,7 +517,7 @@ public class JSONparser {
 
 
   /**
-   * As of now unused function, needs a good method to get a value from a
+   * As of now unused function, needs a method to get a value from a
    * formula containing mu
    * 
    * @param builder
