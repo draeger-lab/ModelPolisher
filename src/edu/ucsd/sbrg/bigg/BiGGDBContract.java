@@ -5,7 +5,7 @@ public final class BiGGDBContract {
 	public BiGGDBContract() {
 	}
 
-	public static abstract class BiGGDBConstants {
+	public static abstract class Constants {
 
 		// simple
 
