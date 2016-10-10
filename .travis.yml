@@ -1,0 +1,10 @@
+language: java
+sudo: required
+jdk:
+  - oraclejdk8
+before_install:
+  - ./mvn_settings.sh
+install: travis_retry mvn test
+git: 
+  depth: 10
+
