@@ -1,4 +1,4 @@
-# ModelPolisher
+# ModelPolisher [![Build Status](https://travis-ci.org/SBRG/ModelPolisher.svg?branch=refactoring)](https://travis-ci.org/SBRG/ModelPolisher)
 
 <img src="doc/img/ModelPolisherIcon256.png" width="64"/>
 
