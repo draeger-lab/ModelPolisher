@@ -1,8 +1,11 @@
 language: java
 sudo: required
 jdk:
-  - oraclejdk8
+- oraclejdk8
 install: travis_retry mvn test
-git: 
+git:
   depth: 10
-
+notifications:
+  slack:
+    secure: KzzPB+xMPFbPU+7hhzKXadrQcrweCIMa3pT7jI/PcShR9DnJ8eGDgSJOqjwgx0p0r0BWs79oHxcYtbcECcFFhs3uHd1SdqaP76+XrM9WBYfx4gqX6akZft3Z3rmDJqBsOMZGKLEFp3H7E43hg3ciaUVm1+ryrTNOS1bVNKG7w6teo85J0JyND+oin8wi5Ox7z7UtvfxPNSdoprbsE/wSWX8mp6QeZiDl+k57cQJYUg5ttp5BV2O1x37iiViu//BA1b4afSDI+ci/knQYpAKHLwGdDzKxFRvCWSiQjjpExIb8gGpon5FwFf8ALrSeBZZgTV3skRDU3tQS8FfPf7noevDzW8ShTXZpcmCEWIIMPJYyHgqns5ZXq26Cn3w/gIsNLmXU0E+MoaYupoATaPgqZf5jcjG0yZ0wl2IKmeSmjMHPNAcE3nqxQPyx4hp+fYRvzNUdlGdcfZkwydw3tR1ja97yBKjJp86Zdys2+30rkI3Sutv15m23gaK3+bnV0yr+B+JNI1tNlkXm581wDSMuZ13p0IJ/gAe7jSuma8NcpEfo+mbwQ1nTZr+zLI0J76cqF3voWL8ZIIUa8j8x30yWxuByHnrib734OBodPPZphjeQx0xTCe+rHt7lfrNaiLYGIEHeVPKSKksRbNKWhGySGyXpaCgxjQZTj7/Pg3J7ZRQ=
+  email: false
