@@ -547,12 +547,6 @@ public class ModelPolisher extends Launcher {
     if (parameters.includeAnyURI != null) {
       polisher.setIncludeAnyURI(parameters.includeAnyURI.booleanValue());
     }
-    if (parameters.documentNotesFile != null) {
-      polisher.setDocumentNotesFile(parameters.documentNotesFile);
-    }
-    if (parameters.modelNotesFile != null) {
-      polisher.setModelNotesFile(parameters.modelNotesFile);
-    }
     if (parameters.documentTitlePattern != null) {
       polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
     }
@@ -561,6 +555,12 @@ public class ModelPolisher extends Launcher {
     doc = polisher.polish(doc);
     if (parameters.annotateWithBiGG) {
       BiGGAnnotation annotation = new BiGGAnnotation(bigg, polisher);
+      if (parameters.documentNotesFile != null) {
+        annotation.setDocumentNotesFile(parameters.documentNotesFile);
+      }
+      if (parameters.modelNotesFile != null) {
+        annotation.setModelNotesFile(parameters.modelNotesFile);
+      }
       doc = annotation.annotate(doc);
     }
     // <?xml-stylesheet type="text/xsl"
