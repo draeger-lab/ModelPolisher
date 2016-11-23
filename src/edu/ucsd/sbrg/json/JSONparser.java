@@ -148,7 +148,7 @@ public class JSONparser {
     JsonNode notes = root.path("notes");
     JsonNode version = root.path("version");
     if (annotation.isMissingNode()) {
-      logger.info("There is no annotation for this model");
+      logger.fine("There is no annotation for this model");
     } else {
       if (!annotation.toString().isEmpty()) {
         try {
@@ -165,12 +165,12 @@ public class JSONparser {
       model.setId(correctId(crop(id.toString())));
     }
     if (name.isMissingNode()) {
-      logger.info("There is no name for this model");
+      logger.fine("There is no name for this model");
     } else {
       model.setName(crop(name.toString()));
     }
     if (notes.isMissingNode()) {
-      logger.info("There are no notes for this model");
+      logger.fine("There are no notes for this model");
     } else {
       if (!notes.toString().isEmpty()) {
         try {
@@ -181,7 +181,7 @@ public class JSONparser {
       }
     }
     if (version.isMissingNode()) {
-      logger.info("There is no version number provided for this model");
+      logger.fine("There is no version number provided for this model");
     } else {
       model.setVersion(version.asInt());
     }
@@ -571,7 +571,7 @@ public class JSONparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.warning(MessageFormat.format(
+      logger.fine(MessageFormat.format(
         "Changed id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.",
         id, newId));
     }
