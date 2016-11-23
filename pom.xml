@@ -14,7 +14,7 @@
   <!-- =================================================================== -->
 
   <name>${project.artifactId}</name>
-  <version>1.4</version>
+  <version>1.5</version>
   <url>https://github.com/SBRG/ModelPolisher/</url>
   <inceptionYear>2014</inceptionYear>
   <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
@@ -142,6 +142,11 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
+    </dependency>
+        <dependency>
+        <groupId>org.simulator</groupId>
+        <artifactId>sbscl</artifactId>
+        <version>1.4</version>
     </dependency>
   </dependencies>
 
