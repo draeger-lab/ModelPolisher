@@ -1,11 +1,20 @@
 package edu.ucsd.sbrg.bigg;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
@@ -39,8 +48,21 @@ public class BiGGAnnotation {
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger =
+  public static final transient Logger logger            =
     Logger.getLogger(BiGGAnnotation.class.getName());
+  /**
+   * Default model notes.
+   */
+  private String                       modelNotes        = "ModelNotes.html";
+  /**
+   * 
+   */
+  protected Map<String, String>        replacements;
+  /**
+   * 
+   */
+  private String                       documentNotesFile =
+    "SBMLDocumentNotes.html";
 
 
   /**
@@ -56,10 +78,23 @@ public class BiGGAnnotation {
   /**
    * @param doc
    * @return
+   * @throws IOException
+   * @throws XMLStreamException
    */
-  public SBMLDocument annotate(SBMLDocument doc) {
+  public SBMLDocument annotate(SBMLDocument doc)
+    throws XMLStreamException, IOException {
     Model model = doc.getModel();
+    replacements = new HashMap<>();
+    if (!doc.isSetModel()) {
+      logger.info(
+        "This SBML document does not contain a model. Nothing to do.");
+      return doc;
+    }
     annotate(model);
+    if (replacements.containsKey("${title}")) {
+      doc.appendNotes(parseNotes(documentNotesFile, replacements));
+    }
+    model.appendNotes(parseNotes(modelNotes, replacements));
     return doc;
   }
 
@@ -343,10 +378,23 @@ public class BiGGAnnotation {
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON,
         polisher.createURI("taxonomy", taxonId)));
     }
+    // Note: date is probably not accurate.
+    // Date date = bigg.getModelCreationDate(model.getId());
+    // if (date != null) {
+    // History history = model.createHistory();
+    // history.setCreatedDate(date);
+    // }
     String name = polisher.getDocumentTitlePattern();
+    name = name.replace("[biggId]", model.getId());
+    replacements.put("${title}", name);
+    replacements.put("${bigg_id}", model.getId());
+    replacements.put("${year}",
+      Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
+                                              // data, "Species", attributes));
     name = name.replace("[organism]", organism);
-    polisher.replacements.put("${organism}", organism);
-    polisher.replacements.put("${bigg.timestamp}",
+    replacements.put("${organism}", organism);
+    replacements.put("${bigg.timestamp}",
       MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
     if (!model.isSetName()) {
       model.setName(organism);
@@ -363,5 +411,71 @@ public class BiGGAnnotation {
     annotateSpecies(model);
     annotateReactions(model);
     annotateGeneProducts(model);
+  }
+
+
+  /**
+   * @param location
+   *        relative path to the resource from this class.
+   * @param replacements
+   * @return
+   * @throws IOException
+   */
+  private String parseNotes(String location, Map<String, String> replacements)
+    throws IOException {
+    StringBuilder sb = new StringBuilder();
+    try (InputStream is = getClass().getResourceAsStream(location);
+        InputStreamReader isReader = new InputStreamReader(
+          (is != null) ? is : new FileInputStream(new File(location)));
+        BufferedReader br = new BufferedReader(isReader)) {
+      String line;
+      boolean start = false;
+      while (br.ready() && ((line = br.readLine()) != null)) {
+        if (line.matches("\\s*<body.*")) {
+          start = true;
+        }
+        if (!start) {
+          continue;
+        }
+        if (line.matches(".*\\$\\{.*\\}.*")) {
+          for (String key : replacements.keySet()) {
+            line = line.replace(key, replacements.get(key));
+          }
+        }
+        sb.append(line);
+        sb.append('\n');
+        if (line.matches("\\s*</body.*")) {
+          break;
+        }
+      }
+    } catch (IOException exc) {
+      throw exc;
+    }
+    return sb.toString();
+  }
+
+
+  /**
+   * @return the modelNotes
+   */
+  public File getModelNotesFile() {
+    return new File(modelNotes);
+  }
+
+
+  /**
+   * @param modelNotes
+   *        the modelNotes to set
+   */
+  public void setModelNotesFile(File modelNotes) {
+    this.modelNotes = modelNotes.getAbsolutePath();
+  }
+
+
+  /**
+   * @param documentNotesFile
+   */
+  public void setDocumentNotesFile(File documentNotesFile) {
+    this.documentNotesFile = documentNotesFile.getAbsolutePath();
   }
 }

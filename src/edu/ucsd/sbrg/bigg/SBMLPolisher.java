@@ -126,11 +126,6 @@ public class SBMLPolisher {
   private String                        documentTitlePattern             =
     "[biggId] - [organism]";
   /**
-   * Default model notes.
-   */
-  private String                        modelNotes                       =
-    "ModelNotes.html";
-  /**
    * Switch to decide if generic and obvious terms should be used.
    */
   protected boolean                     omitGenericTerms;
@@ -161,23 +156,15 @@ public class SBMLPolisher {
   /**
    * 
    */
-  private AbstractProgressBar   progress;
+  private AbstractProgressBar progress;
   /**
    * 
    */
-  protected Map<String, String> replacements;
+  private double[]            fluxCoefficients;
   /**
    * 
    */
-  private String                documentNotesFile = "SBMLDocumentNotes.html";
-  /**
-   * 
-   */
-  private double[]              fluxCoefficients;
-  /**
-   * 
-   */
-  private String[]              fluxObjectives;
+  private String[]            fluxObjectives;
 
 
   /**
@@ -297,14 +284,6 @@ public class SBMLPolisher {
 
 
   /**
-   * @return the modelNotes
-   */
-  public File getModelNotesFile() {
-    return new File(modelNotes);
-  }
-
-
-  /**
    * @return the checkMassBalance
    */
   public boolean isCheckMassBalance() {
@@ -317,47 +296,6 @@ public class SBMLPolisher {
    */
   public boolean isOmitGenericTerms() {
     return omitGenericTerms;
-  }
-
-
-  /**
-   * @param location
-   *        relative path to the resource from this class.
-   * @param replacements
-   * @return
-   * @throws IOException
-   */
-  private String parseNotes(String location, Map<String, String> replacements)
-    throws IOException {
-    StringBuilder sb = new StringBuilder();
-    try (InputStream is = getClass().getResourceAsStream(location);
-        InputStreamReader isReader = new InputStreamReader(
-          (is != null) ? is : new FileInputStream(new File(location)));
-        BufferedReader br = new BufferedReader(isReader)) {
-      String line;
-      boolean start = false;
-      while (br.ready() && ((line = br.readLine()) != null)) {
-        if (line.matches("\\s*<body.*")) {
-          start = true;
-        }
-        if (!start) {
-          continue;
-        }
-        if (line.matches(".*\\$\\{.*\\}.*")) {
-          for (String key : replacements.keySet()) {
-            line = line.replace(key, replacements.get(key));
-          }
-        }
-        sb.append(line);
-        sb.append('\n');
-        if (line.matches("\\s*</body.*")) {
-          break;
-        }
-      }
-    } catch (IOException exc) {
-      throw exc;
-    }
-    return sb.toString();
   }
 
 
@@ -496,23 +434,6 @@ public class SBMLPolisher {
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
     }
-    // Note: date is probably not accurate.
-    // Date date = bigg.getModelCreationDate(model.getId());
-    // if (date != null) {
-    // History history = model.createHistory();
-    // history.setCreatedDate(date);
-    // }
-    String name = getDocumentTitlePattern();
-    name = name.replace("[biggId]", model.getId());
-    replacements.put("${title}", name);
-    replacements.put("${bigg_id}", model.getId());
-    replacements.put("${year}",
-      Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-    polishListOfUnitDefinitions(model);
-    polishListOfCompartments(model);
-    polishListOfSpecies(model);
-    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
-                                              // data, "Species", attributes));
     boolean strict = polishListOfReactions(model);
     if (strict && model.isSetListOfInitialAssignments()) {
       strict &= polishListOfInitialAssignments(model, strict);
@@ -717,9 +638,7 @@ public class SBMLPolisher {
    * @throws SBMLException
    * @throws IOException
    */
-  public SBMLDocument polish(SBMLDocument doc)
-    throws SBMLException, XMLStreamException, IOException {
-    replacements = new HashMap<>();
+  public SBMLDocument polish(SBMLDocument doc) throws XMLStreamException, IOException {
     if (!doc.isSetModel()) {
       logger.info(
         "This SBML document does not contain a model. Nothing to do.");
@@ -728,10 +647,6 @@ public class SBMLPolisher {
     Model model = doc.getModel();
     polish(model);
     doc.setSBOTerm(624); // flux balance framework
-    if (replacements.containsKey("${title}")) {
-      doc.appendNotes(parseNotes(documentNotesFile, replacements));
-    }
-    model.appendNotes(parseNotes(modelNotes, replacements));
     if (progress != null) {
       progress.finished();
     }
@@ -1117,28 +1032,11 @@ public class SBMLPolisher {
 
 
   /**
-   * @param modelNotes
-   *        the modelNotes to set
-   */
-  public void setModelNotesFile(File modelNotes) {
-    this.modelNotes = modelNotes.getAbsolutePath();
-  }
-
-
-  /**
    * @param omitGenericTerms
    *        the omitGenericTerms to set
    */
   public void setOmitGenericTerms(boolean omitGenericTerms) {
     this.omitGenericTerms = omitGenericTerms;
-  }
-
-
-  /**
-   * @param documentNotesFile
-   */
-  public void setDocumentNotesFile(File documentNotesFile) {
-    this.documentNotesFile = documentNotesFile.getAbsolutePath();
   }
 
 

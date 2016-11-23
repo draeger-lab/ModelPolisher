@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -20,7 +19,6 @@ import org.sbml.jsbml.JSBML;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.Rule;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.Unit;
@@ -60,6 +58,11 @@ public class JSONparser {
    */
   private static final Pattern METABOLITE_DELIMITER =
     Pattern.compile("((?<=\\w)|(?<=\")),(?=\")");
+  /**
+   * Regex pattern for biomass prefix exclusion
+   */
+  private static Pattern       PATTERN_BIOMASS_CASE_INSENSITIVE =
+    Pattern.compile("(.*)([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(.*)");
 
 
   /**
@@ -193,7 +196,6 @@ public class JSONparser {
     parseMetabolites(builder, root.path("metabolites"));
     parseGenes(builder, root.path("genes"));
     parseReactions(builder, root.path("reactions"));
-    // parseRulesMu(builder);
   }
 
 
@@ -244,7 +246,9 @@ public class JSONparser {
       String id = crop(current.path("id").toString());
       if ((id != null) && (!id.isEmpty())) {
         BiGGId biggId = new BiGGId(correctId(id));
-        if (!biggId.isSetPrefix()) {
+        if (!biggId.isSetPrefix()
+          && !PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(biggId.toBiGGId())
+                                              .find()) {
           biggId.setPrefix(METABOLITE_PREFIX);
         }
         Species species = model.createSpecies(biggId.toBiGGId());
@@ -262,7 +266,7 @@ public class JSONparser {
           }
           if (!charge.isEmpty()) {
             int metCharge = Integer.parseInt(charge);
-            specPlug.setCharge( metCharge);
+            specPlug.setCharge(metCharge);
           }
         }
         String csense = crop(current.path("_constraint_sense").toString());
@@ -414,15 +418,19 @@ public class JSONparser {
           } catch (ParseException e) {
             logException(e);
           }
+          BiGGId metId = new BiGGId(correctId(type));
+          if (!PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(metId.toBiGGId())
+                                               .find()) {
+            metId.setPrefix(METABOLITE_PREFIX);
+          }
           if (ast.getChildCount() > 1) {
             String paramString = "mu";
             Parameter param = model.getParameter(paramString);
             if (param == null) {
               param = model.createParameter();
               param.setId(paramString);
+              param.setConstant(false);
             }
-            BiGGId metId = new BiGGId(correctId(type));
-            metId.setPrefix(METABOLITE_PREFIX);
             String mId =
               correctId(r.getId() + "_Reac_Prod_" + metId.toBiGGId());
             AssignmentRule rule = model.createAssignmentRule();
@@ -436,8 +444,6 @@ public class JSONparser {
               coeff = ast.getReal();
             }
             if (coeff != 0d) {
-              BiGGId metId = new BiGGId(correctId(type));
-              metId.setPrefix(METABOLITE_PREFIX);
               Species species = model.getSpecies(metId.toBiGGId());
               if (species == null) {
                 species = model.createSpecies(metId.toBiGGId());
@@ -505,42 +511,6 @@ public class JSONparser {
           } catch (XMLStreamException e) {
             logException(e);
           }
-        }
-      }
-    }
-  }
-
-
-  /**
-   * As of now unused function, needs a method to get a value from a
-   * formula containing mu
-   * 
-   * @param builder
-   */
-  private void parseRulesMu(ModelBuilder builder) {
-    Model model = builder.getModel();
-    Parameter param = model.getParameter("mu");
-    param.setValue(1.0d);
-    List<Rule> rules = model.getListOfRules();
-    for (Rule rule : rules) {
-      String metaId = rule.getMetaId().toString();
-      String rId = metaId.substring(0, metaId.indexOf("_Reac_Prod_"));
-      String mId = metaId.substring(metaId.indexOf("_Reac_Prod_") + 11);
-      Reaction r = model.getReaction(rId);
-      // TODO: not yet implemented, returns 0d
-      double coeff = getValueFromAssignmentRule(rule.getMath());
-      if (coeff != 0d) {
-        Species species = model.getSpecies(mId);
-        if (species == null) {
-          species = model.createSpecies(mId);
-          logger.info(MessageFormat.format(
-            " Species ''{0}'' in reaction ''{1}'' is not defined!", mId,
-            r.getId()));
-        }
-        if (coeff < 0d) {
-          ModelBuilder.buildReactants(r, pairOf(-coeff, species));
-        } else if (coeff > 0d) {
-          ModelBuilder.buildProducts(r, pairOf(coeff, species));
         }
       }
     }
@@ -619,17 +589,6 @@ public class JSONparser {
       return str.substring(1, str.length() - 1);
     }
     return str;
-  }
-
-
-  /**
-   * @param ast:
-   *        rule.getMath()
-   * @return
-   */
-  private double getValueFromAssignmentRule(ASTNode ast) {
-    // TODO: implement a formula evaluator
-    return 0d;
   }
 
 
