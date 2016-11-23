@@ -143,11 +143,6 @@
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
     </dependency>
-        <dependency>
-        <groupId>org.simulator</groupId>
-        <artifactId>sbscl</artifactId>
-        <version>1.4</version>
-    </dependency>
   </dependencies>
 
 
