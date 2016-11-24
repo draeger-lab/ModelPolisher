@@ -167,6 +167,14 @@ public class ModelPolisher extends Launcher {
     return false;
   }
 
+  /**
+   * Array for file type:
+   * 0 = SBMLFile,
+   * 1 = MATFile,
+   * 2 = JSONFile
+   */
+  private boolean[] fileTypes;
+
 
   /**
    * @param bigg
@@ -178,7 +186,8 @@ public class ModelPolisher extends Launcher {
    */
   public void batchProcess(BiGGDB bigg, File input, File output,
     Parameters parameters) throws IOException, XMLStreamException {
-    // We test if non-existing path denotes a file or directory by checking if
+    // We test if non-existing path denotes a file or directory by checking
+    // if
     // it contains at least one period in its name. If so, we assume it is a
     // file.
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
@@ -188,14 +197,17 @@ public class ModelPolisher extends Launcher {
       output.mkdir();
     }
     if (input.isFile()) {
-      boolean jsonFile =
-        SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
-      boolean matFile =
-        SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
-      if (SBFileFilter.isSBMLFile(input) || matFile || jsonFile) {
+      // get fileType array and check if any value is true
+      boolean validFileType = false;
+      fileTypes = getFileType(input);
+      for (boolean fileType : fileTypes) {
+        validFileType |= fileType;
+      }
+      if (validFileType) {
         if (output.isDirectory()) {
           String fName = input.getName();
-          if (matFile || jsonFile) {
+          // if not SBML file
+          if (!fileTypes[0]) {
             fName = FileTools.removeFileExtension(fName) + ".xml";
           }
           output =
@@ -214,6 +226,25 @@ public class ModelPolisher extends Launcher {
         batchProcess(bigg, file, target, parameters);
       }
     }
+  }
+
+
+  /**
+   * Get file type from input file
+   * 
+   * @param input
+   *        File used in {@link}batchProcess
+   * @return boolean array, containing flags at indices: 0 SBMLFile, 1 MATFile,
+   *         2 JSONFile
+   */
+  public boolean[] getFileType(File input) {
+    boolean[] fileFilters = new boolean[3];
+    fileFilters[0] = SBFileFilter.isSBMLFile(input);
+    fileFilters[1] =
+      SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+    fileFilters[2] =
+      SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
+    return fileFilters;
   }
 
 
@@ -246,7 +277,8 @@ public class ModelPolisher extends Launcher {
         /*
          * (non-Javadoc)
          * @see
-         * java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
+         * java.util.logging.ConsoleHandler#publish(java.util.logging.
+         * LogRecord)
          */
         @Override
         public void publish(LogRecord record) {
@@ -279,7 +311,8 @@ public class ModelPolisher extends Launcher {
         exc.printStackTrace();
       }
     }
-    // Gives users the choice to pass an alternative model notes XHTML file to
+    // Gives users the choice to pass an alternative model notes XHTML file
+    // to
     // the program.
     File modelNotesFile =
       parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
@@ -493,8 +526,8 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Scans the given command-line options for a specific file option and returns
-   * the corresponding file if it exists, {@code null} otherwise.
+   * Scans the given command-line options for a specific file option and
+   * returns the corresponding file if it exists, {@code null} otherwise.
    * 
    * @param args
    *        command-line options.
@@ -528,10 +561,10 @@ public class ModelPolisher extends Launcher {
     logger.info(
       MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
     SBMLDocument doc = null;
-    if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
+    //reading or parsing input
+    if (fileTypes[1]) {
       doc = COBRAparser.read(input, parameters.omitGenericTerms);
-    } else if (SBFileFilter.hasFileType(input,
-      SBFileFilter.FileType.JSON_FILES)) {
+    } else if (fileTypes[2]) {
       doc = JSONparser.read(input);
     } else {
       doc = SBMLReader.read(input, new UpdateListener());
@@ -541,6 +574,7 @@ public class ModelPolisher extends Launcher {
       logger.info("Trying to convert the model to Level 3 Version 2.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
+    //polishing
     SBMLPolisher polisher = new SBMLPolisher();
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
@@ -553,6 +587,7 @@ public class ModelPolisher extends Launcher {
     polisher.setFluxCoefficients(parameters.fluxCoefficients);
     polisher.setFluxObjectives(parameters.fluxObjectives);
     doc = polisher.polish(doc);
+    //Annotation
     if (parameters.annotateWithBiGG) {
       BiGGAnnotation annotation = new BiGGAnnotation(bigg, polisher);
       if (parameters.documentNotesFile != null) {
@@ -563,6 +598,7 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
+    //Writing output
     // <?xml-stylesheet type="text/xsl"
     // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
     logger.info(MessageFormat.format("Writing output file {0}",
@@ -601,7 +637,8 @@ public class ModelPolisher extends Launcher {
    * @param filename
    */
   private void validate(String filename) {
-    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u",
+    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d",
+    // "p,u",
     // compressedOutput});
     String output = "xml";
     String offcheck = "p,u";
