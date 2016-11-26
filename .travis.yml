@@ -2,7 +2,7 @@ language: java
 sudo: required
 jdk:
 - oraclejdk8
-install: travis_retry mvn test -X -B -e
+script: travis_retry mvn test -X -B -e
 git:
   depth: 10
 notifications:
