@@ -69,10 +69,13 @@ public final class BiGGDBContract {
 		public static final String M_BIGG_ID = "m.bigg_id";
 		public static final String M_GENOME_ID = "m.genome_id";
 		public static final String M_ID = "m.id";
+		public static final String M_ORGANISM = "model.organism";
 		public static final String MCC_CHARGE = "mcc.charge";
 		public static final String MCC_COMPARTMENTALIZED_COMPONENT_ID = "mcc.compartmentalized_component_id";
 		public static final String MCC_FORMULA = "mcc.formula";
 		public static final String MCC_MODEL_ID = "mcc.model_id";
+		public static final String MODEL_ORGANISM = "model.organism";
+		public static final String MODEL_BIGG_ID = "model.bigg_id";
 		public static final String MR_GENE_REACTION_RULE = "mr.gene_reaction_rule";
 		public static final String MR_MODEL_ID = "mr.model_id";
 		public static final String MR_REACTION_ID = "mr.reaction_id";

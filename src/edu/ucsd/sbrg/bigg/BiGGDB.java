@@ -41,7 +41,7 @@ public class BiGGDB {
   /**
    * The connection to the database.
    */
-  private PostgreSQLConnector           connect;
+  private PostgreSQLConnector connect;
 
 
   /**
@@ -322,12 +322,9 @@ public class BiGGDB {
    * @return
    */
   public String getOrganism(String biggId) {
-    return getString("SELECT " + BiGGDBContract.Constants.G_ORGANISM + " FROM "
-      + BiGGDBContract.Constants.GENOME + ", "
-      + BiGGDBContract.Constants.MODEL_M + " WHERE "
-      + BiGGDBContract.Constants.M_GENOME_ID + " = "
-      + BiGGDBContract.Constants.G_ID + " AND "
-      + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
+    return getString("SELECT " + BiGGDBContract.Constants.MODEL_ORGANISM + " FROM "
+      + BiGGDBContract.Constants.MODEL + " WHERE "
+      + BiGGDBContract.Constants.MODEL_BIGG_ID + " = '%s'", biggId);
   }
 
 
