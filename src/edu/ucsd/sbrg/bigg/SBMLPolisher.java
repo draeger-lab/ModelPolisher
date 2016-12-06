@@ -74,12 +74,12 @@ public class SBMLPolisher {
   /**
    * 
    */
-  public static final transient Pattern PATTERN_DEFAULT_FLUX_BOUND       =
+  public static final transient Pattern PATTERN_DEFAULT_FLUX_BOUND =
     Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
   /**
    * 
    */
-  public static final transient Pattern PATTERN_ATP_MAINTENANCE          =
+  public static final transient Pattern PATTERN_ATP_MAINTENANCE =
     Pattern.compile(".*[Aa][Tt][Pp][Mm]");
   /**
    * 
@@ -89,51 +89,50 @@ public class SBMLPolisher {
   /**
    * 
    */
-  public static final transient Pattern PATTERN_BIOMASS_CASE_SENSITIVE   =
+  public static final transient Pattern PATTERN_BIOMASS_CASE_SENSITIVE =
     Pattern.compile(".*BIOMASS.*");
   /**
    * 
    */
-  public static final transient Pattern PATTERN_DEMAND_REACTION          =
+  public static final transient Pattern PATTERN_DEMAND_REACTION =
     Pattern.compile(".*_[Dd][Mm]_.*");
   /**
    * 
    */
-  public static final transient Pattern PATTERN_EXCHANGE_REACTION        =
+  public static final transient Pattern PATTERN_EXCHANGE_REACTION =
     Pattern.compile(".*_[Ee][Xx]_.*");
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger  logger                           =
+  public static final transient Logger logger =
     Logger.getLogger(SBMLPolisher.class.getName());
   /**
    * 
    */
-  public static final transient Pattern PATTERN_SINK_OLD_STYLE           =
+  public static final transient Pattern PATTERN_SINK_OLD_STYLE =
     Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
   /**
    * 
    */
-  public static final transient Pattern PATTERN_SINK_REACTION            =
+  public static final transient Pattern PATTERN_SINK_REACTION =
     Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
   /**
    * 
    */
-  private boolean                       checkMassBalance                 = true;
+  private boolean checkMassBalance = true;
   /**
    * 
    */
-  private String                        documentTitlePattern             =
-    "[biggId] - [organism]";
+  private String documentTitlePattern = "[biggId] - [organism]";
   /**
    * Switch to decide if generic and obvious terms should be used.
    */
-  protected boolean                     omitGenericTerms;
+  protected boolean omitGenericTerms;
   /**
    * Switch to decide if also references to data sources can be included into
    * {@link CVTerm}s whose URLs are not (yet) part of the MIRIAM registry.
    */
-  protected boolean                     includeAnyURI;
+  protected boolean includeAnyURI;
 
 
   /**
@@ -160,11 +159,11 @@ public class SBMLPolisher {
   /**
    * 
    */
-  private double[]            fluxCoefficients;
+  private double[] fluxCoefficients;
   /**
    * 
    */
-  private String[]            fluxObjectives;
+  private String[] fluxObjectives;
 
 
   /**
@@ -638,7 +637,8 @@ public class SBMLPolisher {
    * @throws SBMLException
    * @throws IOException
    */
-  public SBMLDocument polish(SBMLDocument doc) throws XMLStreamException, IOException {
+  public SBMLDocument polish(SBMLDocument doc)
+    throws XMLStreamException, IOException {
     if (!doc.isSetModel()) {
       logger.info(
         "This SBML document does not contain a model. Nothing to do.");
