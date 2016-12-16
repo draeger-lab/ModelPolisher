@@ -185,8 +185,7 @@ public class ModelPolisher extends Launcher {
    */
   public void batchProcess(BiGGDB bigg, File input, File output,
     Parameters parameters) throws IOException, XMLStreamException {
-    // We test if non-existing path denotes a file or directory by checking
-    // if
+    // We test if non-existing path denotes a file or directory by checking if
     // it contains at least one period in its name. If so, we assume it is a
     // file.
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
@@ -230,7 +229,7 @@ public class ModelPolisher extends Launcher {
 
   /**
    * Get file type from input file
-   * 
+   *
    * @param input
    *        File used in {@link batchProcess}
    * @return boolean array, containing flags at indices: 0 SBMLFile, 1 MATFile,
@@ -276,8 +275,7 @@ public class ModelPolisher extends Launcher {
         /*
          * (non-Javadoc)
          * @see
-         * java.util.logging.ConsoleHandler#publish(java.util.logging.
-         * LogRecord)
+         * java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
          */
         @Override
         public void publish(LogRecord record) {
@@ -310,8 +308,7 @@ public class ModelPolisher extends Launcher {
         exc.printStackTrace();
       }
     }
-    // Gives users the choice to pass an alternative model notes XHTML file
-    // to
+    // Gives users the choice to pass an alternative model notes XHTML file to
     // the program.
     File modelNotesFile =
       parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
@@ -636,8 +633,7 @@ public class ModelPolisher extends Launcher {
    * @param filename
    */
   private void validate(String filename) {
-    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d",
-    // "p,u",
+    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u",
     // compressedOutput});
     String output = "xml";
     String offcheck = "p,u";
