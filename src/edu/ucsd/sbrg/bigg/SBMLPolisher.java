@@ -420,6 +420,9 @@ public class SBMLPolisher {
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
     }
+    polishListOfUnitDefinitions(model);
+    polishListOfCompartments(model);
+    polishListOfSpecies(model);
     boolean strict = polishListOfReactions(model);
     if (strict && model.isSetListOfInitialAssignments()) {
       strict &= polishListOfInitialAssignments(model, strict);

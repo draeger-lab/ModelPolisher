@@ -36,7 +36,7 @@ for OPT in $*; do
   esac
 done
 
-if [ $ANNOTATE ]
+if $ANNOTATE
 then
 # Completion with annotation
 ${DIR}/ModelPolisher.sh \
