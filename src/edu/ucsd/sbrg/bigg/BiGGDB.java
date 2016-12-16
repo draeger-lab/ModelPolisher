@@ -37,7 +37,7 @@ public class BiGGDB {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
-    Logger.getLogger(BiGGDB.class.getName());
+      Logger.getLogger(BiGGDB.class.getName());
   /**
    * The connection to the database.
    */
@@ -62,7 +62,7 @@ public class BiGGDB {
   public Date getBiGGVersion() {
     try {
       return getDate("SELECT " + BiGGDBContract.Constants.DATE_TIME + " FROM "
-        + BiGGDBContract.Constants.DATABASE_VERSION);
+          + BiGGDBContract.Constants.DATABASE_VERSION);
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
         Utils.getMessage(exc)));
@@ -78,16 +78,16 @@ public class BiGGDB {
    */
   public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
     String query = "SELECT DISTINCT " + BiGGDBContract.Constants.MR_SUBSYSTEM
-      + "\n" + "FROM " + BiGGDBContract.Constants.REACTION_R + ", "
-      + BiGGDBContract.Constants.MODEL_M + ", "
-      + BiGGDBContract.Constants.MODEL_REACTION + "\n" + "WHERE "
-      + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n" + "      "
-      + BiGGDBContract.Constants.R_BIGG_ID + " = '%s' AND\n" + "      "
-      + BiGGDBContract.Constants.M_ID + " = "
-      + BiGGDBContract.Constants.MR_MODEL_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.R_ID + " = "
-      + BiGGDBContract.Constants.MR_REACTION_ID + " AND\n" + "      length("
-      + BiGGDBContract.Constants.MR_SUBSYSTEM + ") > 0";
+        + "\n" + "FROM " + BiGGDBContract.Constants.REACTION_R + ", "
+        + BiGGDBContract.Constants.MODEL_M + ", "
+        + BiGGDBContract.Constants.MODEL_REACTION + "\n" + "WHERE "
+        + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n" + "      "
+        + BiGGDBContract.Constants.R_BIGG_ID + " = '%s' AND\n" + "      "
+        + BiGGDBContract.Constants.M_ID + " = "
+        + BiGGDBContract.Constants.MR_MODEL_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.R_ID + " = "
+        + BiGGDBContract.Constants.MR_REACTION_ID + " AND\n" + "      length("
+        + BiGGDBContract.Constants.MR_SUBSYSTEM + ") > 0";
     List<String> list = new LinkedList<String>();
     try {
       ResultSet rst = connect.query(query, modelBiGGid, reactionBiGGid);
@@ -108,18 +108,18 @@ public class BiGGDB {
    */
   public String getChemicalFormula(BiGGId biggId, String modelId) {
     String query = "SELECT " + BiGGDBContract.Constants.MCC_FORMULA + "\n"
-      + "FROM   " + BiGGDBContract.Constants.COMPONENT_C + ",\n" + "       "
-      + BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT + ",\n" + "       "
-      + BiGGDBContract.Constants.MODEL_M + ",\n" + "       "
-      + BiGGDBContract.Constants.MCC + "\n" + "WHERE  "
-      + BiGGDBContract.Constants.C_ID + " = "
-      + BiGGDBContract.Constants.CC_COMPONENT_ID + " AND\n" + "       "
-      + BiGGDBContract.Constants.CC_ID + " = "
-      + BiGGDBContract.Constants.MCC_COMPARTMENTALIZED_COMPONENT_ID + " AND\n"
-      + "       " + BiGGDBContract.Constants.C_BIGG_ID + " = '%s' AND\n"
-      + "       " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n"
-      + "       " + BiGGDBContract.Constants.M_ID + " = "
-      + BiGGDBContract.Constants.MCC_MODEL_ID + ";";
+        + "FROM   " + BiGGDBContract.Constants.COMPONENT_C + ",\n" + "       "
+        + BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT + ",\n" + "       "
+        + BiGGDBContract.Constants.MODEL_M + ",\n" + "       "
+        + BiGGDBContract.Constants.MCC + "\n" + "WHERE  "
+        + BiGGDBContract.Constants.C_ID + " = "
+        + BiGGDBContract.Constants.CC_COMPONENT_ID + " AND\n" + "       "
+        + BiGGDBContract.Constants.CC_ID + " = "
+        + BiGGDBContract.Constants.MCC_COMPARTMENTALIZED_COMPONENT_ID + " AND\n"
+        + "       " + BiGGDBContract.Constants.C_BIGG_ID + " = '%s' AND\n"
+        + "       " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n"
+        + "       " + BiGGDBContract.Constants.M_ID + " = "
+        + BiGGDBContract.Constants.MCC_MODEL_ID + ";";
     return getString(query, biggId.getAbbreviation(), modelId);
   }
 
@@ -131,9 +131,9 @@ public class BiGGDB {
   public String getCompartmentName(BiGGId biggId) {
     return getString(
       "SELECT " + BiGGDBContract.Constants.NAME + " FROM "
-        + BiGGDBContract.Constants.COMPARTMENT + " WHERE "
-        + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
-      biggId.getAbbreviation());
+          + BiGGDBContract.Constants.COMPARTMENT + " WHERE "
+          + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
+          biggId.getAbbreviation());
   }
 
 
@@ -145,9 +145,9 @@ public class BiGGDB {
   public String getComponentName(BiGGId biggId) throws SQLException {
     return getString(
       "SELECT " + BiGGDBContract.Constants.NAME + " FROM "
-        + BiGGDBContract.Constants.COMPONENT + " WHERE "
-        + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
-      biggId.getAbbreviation());
+          + BiGGDBContract.Constants.COMPONENT + " WHERE "
+          + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
+          biggId.getAbbreviation());
   }
 
 
@@ -171,9 +171,9 @@ public class BiGGDB {
   public String getComponentType(BiGGId biggId) {
     return getString(
       "SELECT " + BiGGDBContract.Constants.TYPE + " FROM "
-        + BiGGDBContract.Constants.COMPONENT + " WHERE "
-        + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
-      biggId.getAbbreviation());
+          + BiGGDBContract.Constants.COMPONENT + " WHERE "
+          + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
+          biggId.getAbbreviation());
   }
 
 
@@ -200,19 +200,19 @@ public class BiGGDB {
   public List<Pair<String, String>> getGeneIds(String label) {
     List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
     String query = "SELECT " + BiGGDBContract.Constants.D_BIGG_ID + ", "
-      + BiGGDBContract.Constants.S_SYNONYM + "\n" + "FROM  "
-      + BiGGDBContract.Constants.DATA_SOURCE + ", "
-      + BiGGDBContract.Constants.SYNONYM + ", "
-      + BiGGDBContract.Constants.GENOME_REGION + "\n" + "WHERE "
-      + BiGGDBContract.Constants.D_ID + " = "
-      + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.S_OME_ID + " = "
-      + BiGGDBContract.Constants.GR_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.GR_BIGG_ID + " = '%s' AND\n" + "      "
-      + BiGGDBContract.Constants.D_BIGG_ID + " != "
-      + BiGGDBContract.Constants.OLD_BIGG_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.D_BIGG_ID + " NOT LIKE "
-      + BiGGDBContract.Constants.REFSEQ_PATTERN;
+        + BiGGDBContract.Constants.S_SYNONYM + "\n" + "FROM  "
+        + BiGGDBContract.Constants.DATA_SOURCE + ", "
+        + BiGGDBContract.Constants.SYNONYM + ", "
+        + BiGGDBContract.Constants.GENOME_REGION + "\n" + "WHERE "
+        + BiGGDBContract.Constants.D_ID + " = "
+        + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.S_OME_ID + " = "
+        + BiGGDBContract.Constants.GR_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.GR_BIGG_ID + " = '%s' AND\n" + "      "
+        + BiGGDBContract.Constants.D_BIGG_ID + " != "
+        + BiGGDBContract.Constants.OLD_BIGG_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.D_BIGG_ID + " NOT LIKE "
+        + BiGGDBContract.Constants.REFSEQ_PATTERN;
     try {
       ResultSet rst = connect.query(query, label);
       while (rst.next()) {
@@ -232,16 +232,16 @@ public class BiGGDB {
    */
   public String getGeneName(String label) {
     String query = "SELECT " + BiGGDBContract.Constants.S_SYNONYM + "\n"
-      + "FROM  " + BiGGDBContract.Constants.DATA_SOURCE + ", "
-      + BiGGDBContract.Constants.SYNONYM + ", "
-      + BiGGDBContract.Constants.GENOME_REGION + "\n" + "WHERE "
-      + BiGGDBContract.Constants.D_ID + " = "
-      + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.S_OME_ID + " = "
-      + BiGGDBContract.Constants.GR_ID + " AND\n" + "      "
-      + BiGGDBContract.Constants.GR_BIGG_ID + " = '%s' AND\n" + "      "
-      + BiGGDBContract.Constants.D_BIGG_ID + " = "
-      + BiGGDBContract.Constants.REFSEQ_NAME;
+        + "FROM  " + BiGGDBContract.Constants.DATA_SOURCE + ", "
+        + BiGGDBContract.Constants.SYNONYM + ", "
+        + BiGGDBContract.Constants.GENOME_REGION + "\n" + "WHERE "
+        + BiGGDBContract.Constants.D_ID + " = "
+        + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.S_OME_ID + " = "
+        + BiGGDBContract.Constants.GR_ID + " AND\n" + "      "
+        + BiGGDBContract.Constants.GR_BIGG_ID + " = '%s' AND\n" + "      "
+        + BiGGDBContract.Constants.D_BIGG_ID + " = "
+        + BiGGDBContract.Constants.REFSEQ_NAME;
     return getString(query, label);
   }
 
@@ -254,21 +254,21 @@ public class BiGGDB {
   public String getGeneReactionRule(String reactionId, String modelId) {
     return getString(
       "SELECT REPLACE(RTRIM(REPLACE(REPLACE("
-        + BiGGDBContract.Constants.MR_GENE_REACTION_RULE
-        + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS "
-        + BiGGDBContract.Constants.GENE_REACTION_RULE + " " + "FROM  "
-        + BiGGDBContract.Constants.MODEL_REACTION + ", "
-        + BiGGDBContract.Constants.REACTION_R + ", "
-        + BiGGDBContract.Constants.MODEL_M + " " + "WHERE "
-        + BiGGDBContract.Constants.R_ID + " = "
-        + BiGGDBContract.Constants.MR_REACTION_ID + " AND " + "      "
-        + BiGGDBContract.Constants.M_ID + " = "
-        + BiGGDBContract.Constants.MR_MODEL_ID + " AND " + "      "
-        + BiGGDBContract.Constants.MR_GENE_REACTION_RULE + " IS NOT NULL AND "
-        + "      LENGTH(" + BiGGDBContract.Constants.MR_GENE_REACTION_RULE
-        + ") > 0 AND " + BiGGDBContract.Constants.R_BIGG_ID + " = '%s' AND "
-        + "      " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'",
-      reactionId, modelId);
+          + BiGGDBContract.Constants.MR_GENE_REACTION_RULE
+          + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS "
+          + BiGGDBContract.Constants.GENE_REACTION_RULE + " " + "FROM  "
+          + BiGGDBContract.Constants.MODEL_REACTION + ", "
+          + BiGGDBContract.Constants.REACTION_R + ", "
+          + BiGGDBContract.Constants.MODEL_M + " " + "WHERE "
+          + BiGGDBContract.Constants.R_ID + " = "
+          + BiGGDBContract.Constants.MR_REACTION_ID + " AND " + "      "
+          + BiGGDBContract.Constants.M_ID + " = "
+          + BiGGDBContract.Constants.MR_MODEL_ID + " AND " + "      "
+          + BiGGDBContract.Constants.MR_GENE_REACTION_RULE + " IS NOT NULL AND "
+          + "      LENGTH(" + BiGGDBContract.Constants.MR_GENE_REACTION_RULE
+          + ") > 0 AND " + BiGGDBContract.Constants.R_BIGG_ID + " = '%s' AND "
+          + "      " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'",
+          reactionId, modelId);
   }
 
 
@@ -296,9 +296,9 @@ public class BiGGDB {
   public Date getModelCreationDate(BiGGId biggId) throws SQLException {
     ResultSet rst = connect.query(
       "SELECT " + BiGGDBContract.Constants.FIRST_CREATED + " FROM "
-        + BiGGDBContract.Constants.MODEL + " WHERE "
-        + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
-      biggId.getAbbreviation());
+          + BiGGDBContract.Constants.MODEL + " WHERE "
+          + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
+          biggId.getAbbreviation());
     Date result = rst.next() ? rst.getDate(1) : null;
     rst.getStatement().close();
     return result;
@@ -312,8 +312,8 @@ public class BiGGDB {
    */
   public String getModelDescription(String biggId) throws SQLException {
     return getString("SELECT " + BiGGDBContract.Constants.DESCRIPTION + " FROM "
-      + BiGGDBContract.Constants.MODEL + " WHERE "
-      + BiGGDBContract.Constants.BIGG_ID + " = '%s'", biggId);
+        + BiGGDBContract.Constants.MODEL + " WHERE "
+        + BiGGDBContract.Constants.BIGG_ID + " = '%s'", biggId);
   }
 
 
@@ -323,11 +323,11 @@ public class BiGGDB {
    */
   public String getOrganism(String biggId) {
     return getString("SELECT " + BiGGDBContract.Constants.G_ORGANISM + " FROM "
-      + BiGGDBContract.Constants.GENOME + ", "
-      + BiGGDBContract.Constants.MODEL_M + " WHERE "
-      + BiGGDBContract.Constants.M_GENOME_ID + " = "
-      + BiGGDBContract.Constants.G_ID + " AND "
-      + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
+        + BiGGDBContract.Constants.GENOME + ", "
+        + BiGGDBContract.Constants.MODEL_M + " WHERE "
+        + BiGGDBContract.Constants.M_GENOME_ID + " = "
+        + BiGGDBContract.Constants.G_ID + " AND "
+        + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
   }
 
 
@@ -337,7 +337,7 @@ public class BiGGDB {
    * @throws SQLException
    */
   public List<Pair<String, String>> getPublications(BiGGId biggId)
-    throws SQLException {
+      throws SQLException {
     return getPublications(biggId.getAbbreviation());
   }
 
@@ -348,18 +348,18 @@ public class BiGGDB {
    * @throws SQLException
    */
   public List<Pair<String, String>> getPublications(String biggId)
-    throws SQLException {
+      throws SQLException {
     ResultSet rst =
-      connect.query("SELECT " + BiGGDBContract.Constants.P_REFERENCE_TYPE + ", "
-        + BiGGDBContract.Constants.P_REFERENCE_ID + " " + "FROM  "
-        + BiGGDBContract.Constants.PUBLICATION + ", "
-        + BiGGDBContract.Constants.PUBLICATION_MODEL + ", "
-        + BiGGDBContract.Constants.MODEL_M + " " + "WHERE "
-        + BiGGDBContract.Constants.P_ID + " = "
-        + BiGGDBContract.Constants.PM_PUBLICATION_ID + " AND "
-        + BiGGDBContract.Constants.PM_MODEL_ID + " = "
-        + BiGGDBContract.Constants.M_ID + " AND "
-        + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
+        connect.query("SELECT " + BiGGDBContract.Constants.P_REFERENCE_TYPE + ", "
+            + BiGGDBContract.Constants.P_REFERENCE_ID + " " + "FROM  "
+            + BiGGDBContract.Constants.PUBLICATION + ", "
+            + BiGGDBContract.Constants.PUBLICATION_MODEL + ", "
+            + BiGGDBContract.Constants.MODEL_M + " " + "WHERE "
+            + BiGGDBContract.Constants.P_ID + " = "
+            + BiGGDBContract.Constants.PM_PUBLICATION_ID + " AND "
+            + BiGGDBContract.Constants.PM_MODEL_ID + " = "
+            + BiGGDBContract.Constants.M_ID + " AND "
+            + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
     List<Pair<String, String>> list = new LinkedList<>();
     while (rst.next()) {
       String key = rst.getString(1);
@@ -376,8 +376,8 @@ public class BiGGDB {
    */
   public String getReactionName(String biggId) {
     return getString("SELECT " + BiGGDBContract.Constants.NAME + " FROM "
-      + BiGGDBContract.Constants.REACTION + " WHERE "
-      + BiGGDBContract.Constants.BIGG_ID + " = '%s'", biggId);
+        + BiGGDBContract.Constants.REACTION + " WHERE "
+        + BiGGDBContract.Constants.BIGG_ID + " = '%s'", biggId);
   }
 
 
@@ -390,20 +390,21 @@ public class BiGGDB {
    */
   private List<String> getResourceURL(BiGGId biggId, String type,
     boolean includeAnyURI) throws SQLException {
+    // TODO: there could be errors in BiGG database and it is important to check patterns again (see MIRIAM class).
     ResultSet rst = connect.query(
       "SELECT CONCAT(" + BiGGDBContract.Constants.URL_PREFIX + ", "
-        + BiGGDBContract.Constants.S_SYNONYM + ") AS "
-        + BiGGDBContract.Constants.URL + " " + "FROM  %s c, "
-        + BiGGDBContract.Constants.SYNONYM + ", "
-        + BiGGDBContract.Constants.DATA_SOURCE + " " + "WHERE "
-        + BiGGDBContract.Constants.C_ID + " = "
-        + BiGGDBContract.Constants.S_OME_ID + " AND" + "      "
-        + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " = "
-        + BiGGDBContract.Constants.D_ID + " AND" + "      "
-        + BiGGDBContract.Constants.URL_PREFIX + " IS NOT NULL AND" + "      "
-        + BiGGDBContract.Constants.C_BIGG_ID + " = '%s'%s",
-      type, biggId.getAbbreviation(), includeAnyURI ? "" : " AND "
-        + BiGGDBContract.Constants.URL_PREFIX + " like '%%identifiers.org%%'");
+          + BiGGDBContract.Constants.S_SYNONYM + ") AS "
+          + BiGGDBContract.Constants.URL + " FROM  %s c, "
+          + BiGGDBContract.Constants.SYNONYM + ", "
+          + BiGGDBContract.Constants.DATA_SOURCE + " WHERE "
+          + BiGGDBContract.Constants.C_ID + " = "
+          + BiGGDBContract.Constants.S_OME_ID + " AND      "
+          + BiGGDBContract.Constants.S_DATA_SOURCE_ID + " = "
+          + BiGGDBContract.Constants.D_ID + " AND      "
+          + BiGGDBContract.Constants.URL_PREFIX + " IS NOT NULL AND      "
+          + BiGGDBContract.Constants.C_BIGG_ID + " = '%s'%s",
+          type, biggId.getAbbreviation(), includeAnyURI ? "" : " AND "
+              + BiGGDBContract.Constants.URL_PREFIX + " like '%%identifiers.org%%'");
     List<String> result = new LinkedList<String>();
     while (rst.next()) {
       result.add(rst.getString(1));
@@ -438,11 +439,11 @@ public class BiGGDB {
   public Integer getTaxonId(String biggId) {
     try {
       return getInt("SELECT " + BiGGDBContract.Constants.TAXON_ID + " FROM "
-        + BiGGDBContract.Constants.GENOME + ", "
-        + BiGGDBContract.Constants.MODEL_M + " WHERE "
-        + BiGGDBContract.Constants.G_ID + " = "
-        + BiGGDBContract.Constants.M_GENOME_ID + " AND "
-        + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
+          + BiGGDBContract.Constants.GENOME + ", "
+          + BiGGDBContract.Constants.MODEL_M + " WHERE "
+          + BiGGDBContract.Constants.G_ID + " = "
+          + BiGGDBContract.Constants.M_GENOME_ID + " AND "
+          + BiGGDBContract.Constants.M_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not retrieve NCBI taxon identifier for model ''{0}'', because of {1}.",
@@ -460,7 +461,7 @@ public class BiGGDB {
     try {
       return getInt(
         "SELECT COUNT(*) FROM " + BiGGDBContract.Constants.COMPARTMENT
-          + " WHERE " + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
+        + " WHERE " + BiGGDBContract.Constants.BIGG_ID + " = '%s'",
         biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
@@ -532,18 +533,18 @@ public class BiGGDB {
    */
   public Integer getCharge(String biggId, String modelId) {
     String query = "SELECT " + BiGGDBContract.Constants.MCC_CHARGE + "\n"
-      + "FROM   " + BiGGDBContract.Constants.COMPONENT_C + ",\n" + "       "
-      + BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT + ",\n" + "       "
-      + BiGGDBContract.Constants.MODEL_M + ",\n" + "       "
-      + BiGGDBContract.Constants.MCC + "\n" + "WHERE  "
-      + BiGGDBContract.Constants.C_ID + " = "
-      + BiGGDBContract.Constants.CC_COMPONENT_ID + " AND\n" + "       "
-      + BiGGDBContract.Constants.CC_ID + " = "
-      + BiGGDBContract.Constants.MCC_COMPARTMENTALIZED_COMPONENT_ID + " AND\n"
-      + "       " + BiGGDBContract.Constants.C_BIGG_ID + " = '%s' AND\n"
-      + "       " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n"
-      + "       " + BiGGDBContract.Constants.M_ID + " = "
-      + BiGGDBContract.Constants.MCC_MODEL_ID;
+        + "FROM   " + BiGGDBContract.Constants.COMPONENT_C + ",\n" + "       "
+        + BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT + ",\n" + "       "
+        + BiGGDBContract.Constants.MODEL_M + ",\n" + "       "
+        + BiGGDBContract.Constants.MCC + "\n" + "WHERE  "
+        + BiGGDBContract.Constants.C_ID + " = "
+        + BiGGDBContract.Constants.CC_COMPONENT_ID + " AND\n" + "       "
+        + BiGGDBContract.Constants.CC_ID + " = "
+        + BiGGDBContract.Constants.MCC_COMPARTMENTALIZED_COMPONENT_ID + " AND\n"
+        + "       " + BiGGDBContract.Constants.C_BIGG_ID + " = '%s' AND\n"
+        + "       " + BiGGDBContract.Constants.M_BIGG_ID + " = '%s' AND\n"
+        + "       " + BiGGDBContract.Constants.M_ID + " = "
+        + BiGGDBContract.Constants.MCC_MODEL_ID;
     String charge = getString(query, biggId, modelId);
     if ((charge == null) || (charge.trim().length() == 0)) {
       return null;
@@ -558,8 +559,8 @@ public class BiGGDB {
    */
   public boolean isPseudoreaction(String reactionId) {
     String query = "SELECT " + BiGGDBContract.Constants.PSEUDOREACTION
-      + " FROM " + BiGGDBContract.Constants.REACTION + " WHERE "
-      + BiGGDBContract.Constants.BIGG_ID + " = '%s'";
+        + " FROM " + BiGGDBContract.Constants.REACTION + " WHERE "
+        + BiGGDBContract.Constants.BIGG_ID + " = '%s'";
     String result = getString(query,
       reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
     return (result != null) && result.equals("t");
