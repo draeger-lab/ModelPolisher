@@ -14,17 +14,8 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -53,10 +44,6 @@ import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.Objective;
-import org.sbml.jsbml.ext.groups.Group;
-import org.sbml.jsbml.ext.groups.GroupsConstants;
-import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
-import org.sbml.jsbml.util.Pair;
 import org.sbml.jsbml.util.ResourceManager;
 
 import de.zbit.kegg.AtomBalanceCheck;

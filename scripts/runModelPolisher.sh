@@ -7,8 +7,8 @@
 ## Find location of this script ##
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-
-#Default argument values
+# Default argument values, all other values have to be provided as 
+# arguments for the given mode
 ANNOTATE=false
 COMPRESSION_TYPE=GZIP
 CHECK_MASS_BALANCE=true
@@ -36,8 +36,9 @@ for OPT in $*; do
   esac
 done
 
-if [ $ANNOTATE ] 
+if [ $ANNOTATE ]
 then
+# Completion with annotation
 ${DIR}/ModelPolisher.sh \
 --user=$USER \
 --dbname=$DBNAME \
@@ -54,6 +55,7 @@ ${DIR}/ModelPolisher.sh \
 --log-level=$LOG_LEVEL \
 --log-file=$LOG_FILE
 else
+# Only completion
 ${DIR}/ModelPolisher.sh \
 --input=$INPUT \
 --output=$OUTPUT \

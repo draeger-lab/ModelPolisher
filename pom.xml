@@ -168,7 +168,7 @@
     </resources>
 
     <plugins>
-    
+
       <!-- Travis build workaround -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -177,7 +177,7 @@
             <argLine>-Xms1024m -Xmx2048m</argLine>
         </configuration>
       </plugin>
-      
+
       <!-- Download source code in Eclipse, best practice [OPTIONAL!] -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
