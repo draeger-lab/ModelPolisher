@@ -30,16 +30,22 @@ for OPT in $*; do
     --compression-type=*) COMPRESSION_TYPE="${OPT#*=}";;
     --check-mass-balance=*) CHECK_MASS_BALANCE="${OPT#*=}";;
     --sbml-validation=*) SBML_VALIDATION="${OPT#*=}";;
-    --sbml-generic-terms=*) SBML_GENERIC_TERMS="${OPT#*=}";;
+    --omit-generic-terms=*) OMIT_GENERIC_TERMS="${OPT#*=}";;
     --log-level=*) LOG_LEVEL="${OPT#*=}";;
     --log-file=*) LOG_FILE="${OPT#*=}";;
+    --include-any-uri=*) INCLUDE_ANY_URI="${OPT#*=}";;
+    --flux-coefficients=*) FLUX_COEFFICIENTS="${OPT#*=}";;
+    --flux-objectives=*) FLUX_OBJECTIVES="${OPT#*=}";;
+    --document-title-pattern=*) DOCUMENT_TITLE_PATTERN="${OPT#*=}";;
+    --model-notes-file=*) MODEL_NOTES_FILE="{OPT#*=}";;
+    --document-notes-file=*) DOCUMENT_NOTES_FILE="{OPT#*=}";;	
   esac
 done
 
 if $ANNOTATE
 then
 # Completion with annotation
-${DIR}/ModelPolisher.sh \
+ARGS="\
 --user=$USER \
 --dbname=$DBNAME \
 --annotate-with-bigg=$ANNOTATE \
@@ -53,10 +59,10 @@ ${DIR}/ModelPolisher.sh \
 --sbml-validation=$SBML_VALIDATION \
 --omit-generic-terms=$OMIT_GENERIC_TERMS \
 --log-level=$LOG_LEVEL \
---log-file=$LOG_FILE
+--log-file=$LOG_FILE"
 else
 # Only completion
-${DIR}/ModelPolisher.sh \
+ARGS="\
 --input=$INPUT \
 --output=$OUTPUT \
 --compression-type=$COMPRESSION_TYPE \
@@ -64,6 +70,35 @@ ${DIR}/ModelPolisher.sh \
 --sbml-validation=$SBML_VALIDATION \
 --omit-generic-terms=$OMIT_GENERIC_TERMS \
 --log-level=$LOG_LEVEL \
---log-file=$LOG_FILE
+--log-file=$LOG_FILE"
 fi
+
+
+# Optional Arguments
+if [ -n "$INCLUDE_ANY_URI" ]
+then
+    ARGS+=" --include-any-uri=$INCLUDE_ANY_URI"
+fi
+if [ -n "$FLUX_COEFFICENTS" ]
+then
+    ARGS+=" --flux-coefficients=$FLUX_COEFFICIENTS"
+fi
+if [ -n "$FLUX_OBJECTIVES" ]
+then
+    ARGS+=" --flux-objectives=FLUX_OBJECTIVES$"
+fi
+if [ -n "$DOCUMENT_TITLE_PATTERN" ]
+then
+    ARGS+=" --document-title-pattern=$DOCUMENT_TILE_PATTERN"
+fi
+if [ -n "$MODEL_NOTES_FILE" ]
+then
+    ARGS+=" --model-notes-file=$MODEL_NOTES_FILE" 
+fi
+if [ -n "$DOCUMENT_NOTES_FILE" ]
+then
+    ARGS+=" --document-notes-file=$DOCUMENT_NOTES_FILE" 
+fi
+
+${DIR}/ModelPolisher.sh $ARGS
 exit 0
