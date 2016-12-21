@@ -85,7 +85,7 @@ then
 fi
 if [ -n "$FLUX_OBJECTIVES" ]
 then
-    ARGS+=" --flux-objectives=FLUX_OBJECTIVES$"
+    ARGS+=" --flux-objectives=$FLUX_OBJECTIVES"
 fi
 if [ -n "$DOCUMENT_TITLE_PATTERN" ]
 then
@@ -102,3 +102,4 @@ fi
 
 ${DIR}/ModelPolisher.sh $ARGS
 exit 0
+
