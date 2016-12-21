@@ -40,29 +40,28 @@ public class BiGGAnnotation {
   /*
    * 
    */
-  private BiGGDB                       bigg;
+  private BiGGDB bigg;
   /*
    * 
    */
-  private SBMLPolisher                 polisher;
+  private SBMLPolisher polisher;
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger            =
+  public static final transient Logger logger =
     Logger.getLogger(BiGGAnnotation.class.getName());
   /**
    * Default model notes.
    */
-  private String                       modelNotes        = "ModelNotes.html";
+  private String modelNotes = "ModelNotes.html";
   /**
    * 
    */
-  protected Map<String, String>        replacements;
+  protected Map<String, String> replacements;
   /**
    * 
    */
-  private String                       documentNotesFile =
-    "SBMLDocumentNotes.html";
+  private String documentNotesFile = "SBMLDocumentNotes.html";
 
 
   /**
@@ -386,16 +385,16 @@ public class BiGGAnnotation {
     // }
     String name = polisher.getDocumentTitlePattern();
     name = name.replace("[biggId]", model.getId());
+    name = name.replace("[organism]", organism);
     replacements.put("${title}", name);
+    replacements.put("${organism}", organism);
     replacements.put("${bigg_id}", model.getId());
     replacements.put("${year}",
       Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
-                                              // data, "Species", attributes));
-    name = name.replace("[organism]", organism);
-    replacements.put("${organism}", organism);
     replacements.put("${bigg.timestamp}",
       MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
+    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
+                                              // data, "Species", attributes));
     if (!model.isSetName()) {
       model.setName(organism);
     }
