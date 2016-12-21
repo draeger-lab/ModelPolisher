@@ -9,8 +9,9 @@
 
 ## Find location of this script ##
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd $DIR/..
 
 ## Launch the program
-java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en ${DIR}/${pom.build.finalName}.jar $@
+java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en target/ModelPolisher-1.5.jar $@
 
 exit 0

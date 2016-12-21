@@ -41,7 +41,7 @@ public class BiGGDB {
   /**
    * The connection to the database.
    */
-  private PostgreSQLConnector           connect;
+  private PostgreSQLConnector connect;
 
 
   /**

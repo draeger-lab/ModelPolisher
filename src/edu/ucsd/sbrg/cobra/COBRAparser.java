@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -64,14 +65,14 @@ import edu.ucsd.sbrg.util.UpdateListener;
  */
 public class COBRAparser {
 
-  private static final String           DELIM               = " ,;\t\n\r\f";
-  private static final String           GENE_PRODUCT_PREFIX = "G";
-  private static final String           REACTION_PREFIX     = "R";
-  private static final String           METABOLITE_PREFIX   = "M";
+  private static final String DELIM = " ,;\t\n\r\f";
+  private static final String GENE_PRODUCT_PREFIX = "G";
+  private static final String REACTION_PREFIX = "R";
+  private static final String METABOLITE_PREFIX = "M";
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger              =
+  private static final transient Logger logger =
     Logger.getLogger(COBRAparser.class.getName());
 
 
@@ -159,9 +160,18 @@ public class COBRAparser {
         "Parsing only one randomly selected model of {0} available models in the given file {1}.",
         content.keySet().size(), matFile.getAbsolutePath()));
     }
-    String key = content.keySet().iterator().next();
-    MLArray array = content.get(key);
+    MLArray array = null;
+    Iterator<String> keyIter = content.keySet().iterator();
+    do{
+    String key = keyIter.next();
+    array = content.get(key);
     builder.buildModel(SBMLtools.toSId(array.getName()), null);
+    }while((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
+    if ((array.getSize() != 1) && !array.isStruct()) {
+      throw new IllegalArgumentException(MessageFormat.format(
+        "Expected data struct of size 1, but found array ''{1}'' of size {0,number,integer}.",
+        array.getSize(), array.getName()));
+    }
     parseModel(builder, array);
     return doc;
   }
@@ -407,11 +417,6 @@ public class COBRAparser {
    */
   private Model parseModel(ModelBuilder builder, MLArray array) {
     // TODO: always check for null!
-    if ((array.getSize() != 1) && !array.isStruct()) {
-      throw new IllegalArgumentException(MessageFormat.format(
-        "Expected data struct of size 1, but found array ''{1}'' of size {0,number,integer}.",
-        array.getSize(), array.getName()));
-    }
     MLStructure struct = (MLStructure) array;
     // Check that the given data structure only contains allowable entries:
     for (MLArray field : struct.getAllFields()) {

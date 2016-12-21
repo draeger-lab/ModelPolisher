@@ -66,70 +66,69 @@ public class ModelPolisher extends Launcher {
     /**
      * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
      */
-    Boolean     includeAnyURI        = null;
+    Boolean includeAnyURI = null;
     /**
      * @see ModelPolisherOptions#ANNOTATE_WITH_BIGG
      */
-    Boolean     annotateWithBiGG     = null;
+    Boolean annotateWithBiGG = null;
     /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
-    Boolean     checkMassBalance     = null;
+    Boolean checkMassBalance = null;
     /**
      * @see ModelPolisherOptions#COMPRESSION_TYPE
      */
-    Compression compression          = Compression.NONE;
+    Compression compression = Compression.NONE;
     /**
      * Can be {@code null}
      * 
      * @see ModelPolisherOptions#DOCUMENT_NOTES_FILE
      */
-    File        documentNotesFile    = null;
+    File documentNotesFile = null;
     /**
      * Can be {@code null} (then a default is used).
      * 
      * @see ModelPolisherOptions#DOCUMENT_TITLE_PATTERN
      */
-    String      documentTitlePattern = null;
+    String documentTitlePattern = null;
     /**
      * @see ModelPolisherOptions#FLUX_COEFFICIENTS
      */
-    double[]    fluxCoefficients     = null;
+    double[] fluxCoefficients = null;
     /**
      * @see ModelPolisherOptions#FLUX_OBJECTIVES
      */
-    String[]    fluxObjectives       = null;
+    String[] fluxObjectives = null;
     /**
      * Can be {@code null}
      * 
      * @see ModelPolisherOptions#MODEL_NOTES_FILE
      */
-    File        modelNotesFile       = null;
+    File modelNotesFile = null;
     /**
      * @see ModelPolisherOptions#OMIT_GENERIC_TERMS
      */
-    Boolean     omitGenericTerms     = null;
+    Boolean omitGenericTerms = null;
     /**
      * @see ModelPolisherOptions#SBML_VALIDATION
      */
-    Boolean     sbmlValidation       = null;
+    Boolean sbmlValidation = null;
   }
 
   /**
    * Localization support.
    */
-  private static final transient ResourceBundle baseBundle       =
+  private static final transient ResourceBundle baseBundle =
     ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger         logger           =
+  private static final transient Logger logger =
     Logger.getLogger(ModelPolisher.class.getName());
   /**
    * Generated serial version identifier.
    */
-  private static final long                     serialVersionUID =
-    7745344693995142413L;
+  private static final long serialVersionUID = 7745344693995142413L;
 
 
   /**
@@ -167,6 +166,14 @@ public class ModelPolisher extends Launcher {
     return false;
   }
 
+  /**
+   * Array for file type:
+   * 0 = SBMLFile,
+   * 1 = MATFile,
+   * 2 = JSONFile
+   */
+  private boolean[] fileTypes;
+
 
   /**
    * @param bigg
@@ -188,14 +195,17 @@ public class ModelPolisher extends Launcher {
       output.mkdir();
     }
     if (input.isFile()) {
-      boolean jsonFile =
-        SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
-      boolean matFile =
-        SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
-      if (SBFileFilter.isSBMLFile(input) || matFile || jsonFile) {
+      // get fileType array and check if any value is true
+      boolean validFileType = false;
+      fileTypes = getFileType(input);
+      for (boolean fileType : fileTypes) {
+        validFileType |= fileType;
+      }
+      if (validFileType) {
         if (output.isDirectory()) {
           String fName = input.getName();
-          if (matFile || jsonFile) {
+          // if not SBML file
+          if (!fileTypes[0]) {
             fName = FileTools.removeFileExtension(fName) + ".xml";
           }
           output =
@@ -214,6 +224,25 @@ public class ModelPolisher extends Launcher {
         batchProcess(bigg, file, target, parameters);
       }
     }
+  }
+
+
+  /**
+   * Get file type from input file
+   *
+   * @param input
+   *        File used in {@link batchProcess}
+   * @return boolean array, containing flags at indices: 0 SBMLFile, 1 MATFile,
+   *         2 JSONFile
+   */
+  public boolean[] getFileType(File input) {
+    boolean[] fileFilters = new boolean[3];
+    fileFilters[0] = SBFileFilter.isSBMLFile(input);
+    fileFilters[1] =
+      SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+    fileFilters[2] =
+      SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
+    return fileFilters;
   }
 
 
@@ -493,8 +522,8 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Scans the given command-line options for a specific file option and returns
-   * the corresponding file if it exists, {@code null} otherwise.
+   * Scans the given command-line options for a specific file option and
+   * returns the corresponding file if it exists, {@code null} otherwise.
    * 
    * @param args
    *        command-line options.
@@ -528,10 +557,10 @@ public class ModelPolisher extends Launcher {
     logger.info(
       MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
     SBMLDocument doc = null;
-    if (SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES)) {
+    // reading or parsing input
+    if (fileTypes[1]) {
       doc = COBRAparser.read(input, parameters.omitGenericTerms);
-    } else if (SBFileFilter.hasFileType(input,
-      SBFileFilter.FileType.JSON_FILES)) {
+    } else if (fileTypes[2]) {
       doc = JSONparser.read(input);
     } else {
       doc = SBMLReader.read(input, new UpdateListener());
@@ -541,6 +570,7 @@ public class ModelPolisher extends Launcher {
       logger.info("Trying to convert the model to Level 3 Version 2.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
+    // polishing
     SBMLPolisher polisher = new SBMLPolisher();
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
@@ -553,6 +583,7 @@ public class ModelPolisher extends Launcher {
     polisher.setFluxCoefficients(parameters.fluxCoefficients);
     polisher.setFluxObjectives(parameters.fluxObjectives);
     doc = polisher.polish(doc);
+    // Annotation
     if (parameters.annotateWithBiGG) {
       BiGGAnnotation annotation = new BiGGAnnotation(bigg, polisher);
       if (parameters.documentNotesFile != null) {
@@ -563,6 +594,7 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
+    // Writing output
     // <?xml-stylesheet type="text/xsl"
     // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
     logger.info(MessageFormat.format("Writing output file {0}",
