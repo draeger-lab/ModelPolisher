@@ -100,6 +100,12 @@ then
     ARGS+=" --document-notes-file=$DOCUMENT_NOTES_FILE" 
 fi
 
-${DIR}/ModelPolisher.sh $ARGS
-exit 0
+"${DIR}/ModelPolisher.sh" $ARGS 
 
+if [ -e "${DIR}/ModelPolisherTemplate.sh" ] 
+then
+  mv "${DIR}/ModelPolisherTemplate.sh" "${DIR}/ModelPolisherTemplate.bckp"
+fi
+echo "${DIR}/ModelPolisher.sh $ARGS" > "${DIR}/ModelPolisherTemplate.sh"
+
+exit 0
