@@ -192,8 +192,22 @@ public class BiGGAnnotation {
               resource.substring(resource.lastIndexOf('/') + 1);
             // filter non metabolite annotations for kegg
             if (resource.contains("kegg")) {
-              if(url.contains("kegg.reaction")){
+              if (url.contains("kegg.reaction")) {
                 continue;
+              } else if (url.contains("kegg.compound")
+                && !identifier.startsWith("C")) {
+                switch (identifier.charAt(0)) {
+                case 'D':
+                  resource = resource.replace("compound", "drug");
+                  break;
+                case 'G':
+                  resource = resource.replace("compound", "glycan");
+                  break;
+                default:
+                  logger.warning(MessageFormat.format(
+                    "Wrong Identifier ''{}'' for collection ''{}'' ", url,
+                    identifier));
+                }
               }
             }
             // Add potentially missing GI: to ncbigi identifiers
@@ -203,6 +217,8 @@ public class BiGGAnnotation {
               }
               resource = url + identifier;
             }
+            if (resource.contains("kegg"))
+              logger.warning(resource);
             cvTerm.addResource(resource);
           }
         } catch (SQLException exc) {
@@ -362,8 +378,7 @@ public class BiGGAnnotation {
           geneProduct.setMetaId(id);
         }
         // we successfully found information by using the id, so this needs to
-        // be
-        // the label
+        // be the label
         if (geneProduct.getLabel().equalsIgnoreCase("None")) {
           geneProduct.setLabel(label);
         }
@@ -436,7 +451,7 @@ public class BiGGAnnotation {
    * @param location
    *        relative path to the resource from this class.
    * @param replacements
-   * @return
+   * @returnConstants.URL_PREFIX + " like '%%identifiers.org%%'"
    * @throws IOException
    */
   private String parseNotes(String location, Map<String, String> replacements)
