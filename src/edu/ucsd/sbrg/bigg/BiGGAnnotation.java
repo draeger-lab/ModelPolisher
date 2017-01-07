@@ -12,6 +12,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
@@ -182,7 +183,26 @@ public class BiGGAnnotation {
         try {
           List<String> linkOut =
             bigg.getComponentResources(biggId, polisher.includeAnyURI);
-          for (String resource : linkOut) {
+          // convert to set to remove possible duplicates; TreeSet should
+          // respect current order
+          TreeSet<String> terms = new TreeSet<String>(linkOut);
+          for (String resource : terms) {
+            String url = resource.substring(0, resource.lastIndexOf('/') + 1);
+            String identifier =
+              resource.substring(resource.lastIndexOf('/') + 1);
+            // filter non metabolite annotations for kegg
+            if (resource.contains("kegg")) {
+              if(url.contains("kegg.reaction")){
+                continue;
+              }
+            }
+            // Add potentially missing GI: to ncbigi identifiers
+            if (resource.contains("ncbigi")) {
+              if (!identifier.startsWith("GI:")) {
+                identifier = "GI:" + identifier;
+              }
+              resource = url + identifier;
+            }
             cvTerm.addResource(resource);
           }
         } catch (SQLException exc) {
@@ -218,8 +238,7 @@ public class BiGGAnnotation {
         }
         if ((charge != null) && (charge != 0)) {
           // If charge is set and charge = 0 -> this can mean it is
-          // only a
-          // default!
+          // only a default!
           fbcSpecPlug.setCharge(charge);
         }
       }
