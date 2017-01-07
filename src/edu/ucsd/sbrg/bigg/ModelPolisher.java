@@ -567,7 +567,7 @@ public class ModelPolisher extends Launcher {
     }
     if (!doc.isSetLevelAndVersion()
       || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info("Trying to convert the model to Level 3 Version 2.");
+      logger.info("Trying to convert the model to Level 3 Version 1.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
     // polishing
