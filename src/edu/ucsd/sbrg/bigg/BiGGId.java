@@ -24,8 +24,7 @@ public class BiGGId {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-    Logger.getLogger(BiGGId.class.getName());
+  private static final transient Logger logger = Logger.getLogger(BiGGId.class.getName());
   /**
    * 
    */
@@ -165,13 +164,10 @@ public class BiGGId {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-      prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
-    result = prime * result
-      + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
+    result = prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
+    result = prime * result + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
     result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-    result =
-      prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
+    result = prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
     return result;
   }
 
@@ -217,8 +213,7 @@ public class BiGGId {
     id = setParsedPrefix(id);
     id = id.replace("__", "-");
     if (id.matches(".*-[a-z][a-z0-9]?")) {
-      id = id.substring(0, id.lastIndexOf('-')) + '-'
-        + biggId.substring(biggId.lastIndexOf('_'));
+      id = id.substring(0, id.lastIndexOf('-')) + '-' + biggId.substring(biggId.lastIndexOf('_'));
     }
     StringTokenizer st = new StringTokenizer(id, "_");
     while (st.hasMoreElements()) {
@@ -387,8 +382,8 @@ public class BiGGId {
    */
   public void setConstructorPrefix(String prefix) {
     if (prefix.matches("[RMG]") || prefix.matches("R_[Ee][Xx]")
-      || prefix.matches("R_[Dd][Mm]")
-      || prefix.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
+        || prefix.matches("R_[Dd][Mm]")
+        || prefix.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
       try {
         setPrefix(prefix);
       } catch (IllegalArgumentException exc) {
@@ -539,4 +534,5 @@ public class BiGGId {
   public void unsetTissueCode() {
     tissueCode = null;
   }
+
 }
