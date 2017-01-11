@@ -48,8 +48,7 @@ public class BiGGAnnotation {
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger =
-    Logger.getLogger(BiGGAnnotation.class.getName());
+  public static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
   /**
    * Default model notes.
    */
@@ -80,13 +79,11 @@ public class BiGGAnnotation {
    * @throws IOException
    * @throws XMLStreamException
    */
-  public SBMLDocument annotate(SBMLDocument doc)
-    throws XMLStreamException, IOException {
+  public SBMLDocument annotate(SBMLDocument doc) throws XMLStreamException, IOException {
     Model model = doc.getModel();
     replacements = new HashMap<>();
     if (!doc.isSetModel()) {
-      logger.info(
-        "This SBML document does not contain a model. Nothing to do.");
+      logger.info("This SBML document does not contain a model. Nothing to do.");
       return doc;
     }
     annotate(model);
@@ -103,14 +100,12 @@ public class BiGGAnnotation {
    */
   public void annotatePublications(Model model) {
     try {
-      List<Pair<String, String>> publications =
-        bigg.getPublications(model.getId());
+      List<Pair<String, String>> publications = bigg.getPublications(model.getId());
       if (publications.size() > 0) {
         String resources[] = new String[publications.size()];
         int i = 0;
         for (Pair<String, String> publication : publications) {
-          resources[i++] =
-            polisher.createURI(publication.getKey(), publication.getValue());
+          resources[i++] = polisher.createURI(publication.getKey(), publication.getValue());
         }
         model.addCVTerm(
           new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
@@ -133,8 +128,11 @@ public class BiGGAnnotation {
         c.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
           polisher.createURI("bigg.compartment", biggId)));
         c.setSBOTerm(SBO.getCompartment()); // physical compartment
-        if (!c.isSetName()) {
-          c.setName(bigg.getCompartmentName(biggId));
+        if (!c.isSetName() || c.getName().equals("default")) {
+          String name = bigg.getCompartmentName(biggId).trim();
+          if (!name.isEmpty()) {
+            c.setName(name);
+          }
         }
       }
     }
@@ -180,8 +178,7 @@ public class BiGGAnnotation {
           }
         }
         try {
-          List<String> linkOut =
-            bigg.getComponentResources(biggId, polisher.includeAnyURI);
+          List<String> linkOut = bigg.getComponentResources(biggId, polisher.includeAnyURI);
           for (String resource : linkOut) {
             cvTerm.addResource(resource);
           }
@@ -195,8 +192,7 @@ public class BiGGAnnotation {
         if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
           species.setMetaId(species.getId());
         }
-        FBCSpeciesPlugin fbcSpecPlug =
-          (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+        FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
         if (!fbcSpecPlug.isSetChemicalFormula()) {
           try {
             fbcSpecPlug.setChemicalFormula(
@@ -206,8 +202,7 @@ public class BiGGAnnotation {
               Utils.getMessage(exc)));
           }
         }
-        Integer charge =
-          bigg.getCharge(biggId.getAbbreviation(), model.getId());
+        Integer charge = bigg.getCharge(biggId.getAbbreviation(), model.getId());
         if (species.isSetCharge()) {
           if ((charge != null) && (charge != species.getCharge())) {
             logger.warning(MessageFormat.format(
@@ -232,60 +227,68 @@ public class BiGGAnnotation {
    */
   public void annotateReactions(Model model) {
     for (int i = 0; i < model.getReactionCount(); i++) {
-      Reaction r = model.getReaction(i);
-      String id = r.getId();
-      if (!r.isSetSBOTerm()) {
-        if (bigg.isPseudoreaction(id)) {
-          r.setSBOTerm(631);
-        } else if (!polisher.omitGenericTerms) {
-          r.setSBOTerm(375); // generic process
-        }
+      annotateReaction(model.getReaction(i));
+    }
+  }
+
+
+  /**
+   * @param r
+   */
+  public void annotateReaction(Reaction r) {
+    String id = r.getId();
+    if (!r.isSetSBOTerm()) {
+      if (bigg.isPseudoreaction(id)) {
+        r.setSBOTerm(631);
+      } else if (!polisher.omitGenericTerms) {
+        r.setSBOTerm(375); // generic process
       }
-      BiGGId biggId = polisher.extractBiGGId(id);
-      if (biggId != null) {
-        if (bigg.isReaction(r.getId())) {
-          r.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-            polisher.createURI("bigg.reaction", biggId)));
-        }
+    }
+    BiGGId biggId = polisher.extractBiGGId(id);
+    if (biggId != null) {
+      if (bigg.isReaction(r.getId())) {
+        r.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
+          polisher.createURI("bigg.reaction", biggId)));
       }
-      if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
-        r.setMetaId(id);
-      }
-      if (id.startsWith("R_")) {
-        id = id.substring(2);
-      }
-      String name = bigg.getReactionName(id);
-      if ((name != null) && !name.equals(r.getName())) {
-        r.setName(polisher.polishName(name));
-      }
-      SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()),
-        polisher.omitGenericTerms);
-      List<String> subsystems =
+    }
+    if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
+      r.setMetaId(id);
+    }
+    if (id.startsWith("R_")) {
+      id = id.substring(2);
+    }
+    String name = bigg.getReactionName(id);
+    if ((name != null) && !name.equals(r.getName())) {
+      r.setName(polisher.polishName(name));
+    }
+    SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()),
+      polisher.omitGenericTerms);
+    Model model = r.getModel();
+    List<String> subsystems =
         bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
-      if (subsystems.size() > 0) {
-        String groupKey = "GROUP_FOR_NAME";
-        if (model.getUserObject(groupKey) == null) {
-          model.putUserObject(groupKey, new HashMap<String, Group>());
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Group> groupForName =
-          (Map<String, Group>) model.getUserObject(groupKey);
-        for (String subsystem : subsystems) {
-          Group group;
-          if (groupForName.containsKey(subsystem)) {
-            group = groupForName.get(subsystem);
-          } else {
-            GroupsModelPlugin groupsModelPlugin =
+    if (subsystems.size() > 0) {
+      String groupKey = "GROUP_FOR_NAME";
+      if (model.getUserObject(groupKey) == null) {
+        model.putUserObject(groupKey, new HashMap<String, Group>());
+      }
+      @SuppressWarnings("unchecked")
+      Map<String, Group> groupForName =
+      (Map<String, Group>) model.getUserObject(groupKey);
+      for (String subsystem : subsystems) {
+        Group group;
+        if (groupForName.containsKey(subsystem)) {
+          group = groupForName.get(subsystem);
+        } else {
+          GroupsModelPlugin groupsModelPlugin =
               (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-            group = groupsModelPlugin.createGroup(
-              "g" + (groupsModelPlugin.getGroupCount() + 1));
-            group.setName(subsystem);
-            group.setKind(Group.Kind.partonomy);
-            group.setSBOTerm(633); // subsystem
-            groupForName.put(subsystem, group);
-          }
-          SBMLUtils.createSubsystemLink(r, group.createMember());
+          group = groupsModelPlugin.createGroup(
+            "g" + (groupsModelPlugin.getGroupCount() + 1));
+          group.setName(subsystem);
+          group.setKind(Group.Kind.partonomy);
+          group.setSBOTerm(633); // subsystem
+          groupForName.put(subsystem, group);
         }
+        SBMLUtils.createSubsystemLink(r, group.createMember());
       }
     }
   }
@@ -296,13 +299,12 @@ public class BiGGAnnotation {
    */
   public void annotateGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlug =
-        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
         String label = null;
         String id = geneProduct.getId();
         if (geneProduct.isSetLabel()
-          && !geneProduct.getLabel().equalsIgnoreCase("None")) {
+            && !geneProduct.getLabel().equalsIgnoreCase("None")) {
           label = geneProduct.getLabel();
         } else if (geneProduct.isSetId()) {
           label = id;
@@ -355,7 +357,7 @@ public class BiGGAnnotation {
               "No gene name found in BiGG for label ''{0}''.",
               geneProduct.getName()));
           } else if (geneProduct.isSetName()
-            && !geneProduct.getName().equals(geneName)) {
+              && !geneProduct.getName().equals(geneName)) {
             logger.warning(MessageFormat.format(
               "Updating gene product name from ''{0}'' to ''{1}''.",
               geneProduct.getName(), geneName));
@@ -394,7 +396,7 @@ public class BiGGAnnotation {
     replacements.put("${bigg.timestamp}",
       MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
     replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
-                                              // data, "Species", attributes));
+    // data, "Species", attributes));
     if (!model.isSetName()) {
       model.setName(organism);
     }
@@ -420,8 +422,7 @@ public class BiGGAnnotation {
    * @return
    * @throws IOException
    */
-  private String parseNotes(String location, Map<String, String> replacements)
-    throws IOException {
+  private String parseNotes(String location, Map<String, String> replacements) throws IOException {
     StringBuilder sb = new StringBuilder();
     try (InputStream is = getClass().getResourceAsStream(location);
         InputStreamReader isReader = new InputStreamReader(
@@ -477,4 +478,5 @@ public class BiGGAnnotation {
   public void setDocumentNotesFile(File documentNotesFile) {
     this.documentNotesFile = documentNotesFile.getAbsolutePath();
   }
+  
 }
