@@ -14,8 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import de.zbit.util.Utils;
-import org.sbml.jsbml.util.Pair;
+import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -23,10 +22,13 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants;
-import static org.sbml.jsbml.util.Pair.pairOf;
+import org.sbml.jsbml.util.Pair;
+
+import de.zbit.util.Utils;
+import edu.ucsd.sbrg.bigg.BiGGDBContract.Constants;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -56,12 +58,42 @@ public class BiGGDB {
   }
 
 
+  public String checkResourceUrl(String resource) {
+    String url = resource.substring(0, resource.lastIndexOf('/') + 1);
+    String identifier = resource.substring(resource.lastIndexOf('/') + 1);
+    // filter non metabolite annotations for kegg
+    if (resource.contains("kegg")) {
+      if (url.contains("kegg.compound") && !identifier.startsWith("C")) {
+        switch (identifier.charAt(0)) {
+        case 'D':
+          resource = resource.replace("compound", "drug");
+          break;
+        case 'G':
+          resource = resource.replace("compound", "glycan");
+          break;
+        default:
+          logger.warning(MessageFormat.format(
+            "Wrong Identifier ''{}'' for collection ''{}'' ", url, identifier));
+        }
+      }
+    }
+    // Add potentially missing GI: to ncbigi identifiers
+    if (resource.contains("ncbigi")) {
+      if (!identifier.startsWith("GI:")) {
+        identifier = "GI:" + identifier;
+      }
+      resource = url + identifier;
+    }
+    return resource;
+  }
+
+
   /**
    * @return
    */
   public Date getBiGGVersion() {
     try {
-      return getDate("SELECT " + Constants.DATE_TIME + " FROM "
+      return getDate("SELECT " + Constants.COLUMN_DATE_TIME + " FROM "
         + Constants.DATABASE_VERSION);
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
@@ -77,13 +109,14 @@ public class BiGGDB {
    * @return
    */
   public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
-    String query = "SELECT DISTINCT mr." + Constants.SUBSYSTEM + "\n FROM "
-      + Constants.REACTION + " r, " + Constants.MODEL + " m, "
-      + Constants.MODEL_REACTION + " mr\n" + "WHERE m." + Constants.BIGG_ID
-      + " = '%s' AND\n r." + Constants.BIGG_ID + " = '%s' AND\n m."
-      + Constants.ID + " = mr." + Constants.MODEL_ID + " AND\n r."
-      + Constants.ID + " = mr." + Constants.REACTION_ID + " AND\n length(mr."
-      + Constants.SUBSYSTEM + ") > 0";
+    String query = "SELECT DISTINCT mr." + Constants.COLUMN_SUBSYSTEM
+      + "\n FROM " + Constants.REACTION + " r, " + Constants.MODEL + " m, "
+      + Constants.MODEL_REACTION + " mr\n" + "WHERE m."
+      + Constants.COLUMN_BIGG_ID + " = '%s' AND\n r." + Constants.COLUMN_BIGG_ID
+      + " = '%s' AND\n m." + Constants.COLUMN_ID + " = mr."
+      + Constants.COLUMN_MODEL_ID + " AND\n r." + Constants.COLUMN_ID + " = mr."
+      + Constants.COLUMN_REACTION_ID + " AND\n length(mr."
+      + Constants.COLUMN_SUBSYSTEM + ") > 0";
     List<String> list = new LinkedList<String>();
     try {
       ResultSet rst = connect.query(query, modelBiGGid, reactionBiGGid);
@@ -103,14 +136,15 @@ public class BiGGDB {
    * @return
    */
   public String getChemicalFormula(BiGGId biggId, String modelId) {
-    String query = "SELECT mcc." + Constants.FORMULA + "\n FROM "
+    String query = "SELECT mcc." + Constants.COLUMN_FORMULA + "\n FROM "
       + Constants.COMPONENT + " c,\n" + Constants.COMPARTMENTALIZED_COMPONENT
       + " cc,\n" + Constants.MODEL + " m,\n" + Constants.MCC + " mcc\n WHERE c."
-      + Constants.ID + " = cc." + Constants.COMPONENT_ID + " AND\n cc."
-      + Constants.ID + " = mcc." + Constants.COMPARTMENTALIZED_COMPONENT_ID
-      + " AND\n c." + Constants.BIGG_ID + " = '%s' AND\n m." + Constants.BIGG_ID
-      + " = '%s' AND\n m." + Constants.ID + " = mcc." + Constants.MODEL_ID
-      + ";";
+      + Constants.COLUMN_ID + " = cc." + Constants.COLUMN_COMPONENT_ID
+      + " AND\n cc." + Constants.COLUMN_ID + " = mcc."
+      + Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c."
+      + Constants.COLUMN_BIGG_ID + " = '%s' AND\n m." + Constants.COLUMN_BIGG_ID
+      + " = '%s' AND\n m." + Constants.COLUMN_ID + " = mcc."
+      + Constants.COLUMN_MODEL_ID + ";";
     return getString(query, biggId.getAbbreviation(), modelId);
   }
 
@@ -120,8 +154,9 @@ public class BiGGDB {
    * @return
    */
   public String getCompartmentName(BiGGId biggId) {
-    return getString("SELECT " + Constants.NAME + " FROM "
-      + Constants.COMPARTMENT + " WHERE " + Constants.BIGG_ID + " = '%s'",
+    return getString(
+      "SELECT " + Constants.COLUMN_NAME + " FROM " + Constants.COMPARTMENT
+        + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
       biggId.getAbbreviation());
   }
 
@@ -132,20 +167,43 @@ public class BiGGDB {
    * @throws SQLException
    */
   public String getComponentName(BiGGId biggId) throws SQLException {
-    return getString("SELECT " + Constants.NAME + " FROM " + Constants.COMPONENT
-      + " WHERE " + Constants.BIGG_ID + " = '%s'", biggId.getAbbreviation());
+    return getString(
+      "SELECT " + Constants.COLUMN_NAME + " FROM " + Constants.COMPONENT
+        + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
+      biggId.getAbbreviation());
   }
 
 
   /**
    * @param biggId
    * @param includeAnyURI
-   * @return a list of external source together with external id.
+   * @return a set of external source together with external id.
    * @throws SQLException
    */
-  public List<String> getComponentResources(BiGGId biggId,
+  public TreeSet<String> getComponentResources(BiGGId biggId,
     boolean includeAnyURI) throws SQLException {
-    return getResourceURL(biggId, Constants.COMPONENT, includeAnyURI);
+    // TODO: there could be errors in BiGG database and it is important to check
+    // patterns again (see MIRIAM class).
+    ResultSet rst = connect.query(
+      "SELECT CONCAT(" + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
+        + ") AS " + Constants.URL + " FROM " + Constants.COMPONENT + " c, "
+        + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE c."
+        + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
+        + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
+        + " AND " + Constants.URL_PREFIX
+        + " IS NOT NULL AND (CAST(s.type AS \"text\") = '" + Constants.COMPONENT
+        + "' OR CAST(s.type AS \"text\") = '"
+        + Constants.COMPARTMENTALIZED_COMPONENT + "') AND c."
+        + Constants.COLUMN_BIGG_ID + " = '%s'%s",
+      biggId.getAbbreviation(), includeAnyURI ? ""
+        : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
+    TreeSet<String> result = new TreeSet<String>();
+    while (rst.next()) {
+      String resource = checkResourceUrl(rst.getString(1));
+      result.add(resource);
+    }
+    rst.getStatement().close();
+    return result;
   }
 
 
@@ -154,8 +212,10 @@ public class BiGGDB {
    * @return
    */
   public String getComponentType(BiGGId biggId) {
-    return getString("SELECT " + Constants.TYPE + " FROM " + Constants.COMPONENT
-      + " WHERE " + Constants.BIGG_ID + " = '%s'", biggId.getAbbreviation());
+    return getString(
+      "SELECT " + Constants.COLUMN_TYPE + " FROM " + Constants.COMPONENT
+        + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
+      biggId.getAbbreviation());
   }
 
 
@@ -181,18 +241,20 @@ public class BiGGDB {
    */
   public List<Pair<String, String>> getGeneIds(String label) {
     List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
-    String query = "SELECT d." + Constants.BIGG_ID + ", s." + Constants.SYNONYM
-      + "\n" + "FROM  " + Constants.DATA_SOURCE + " d, " + Constants.SYNONYM
-      + " s, " + Constants.GENOME_REGION + " gr\n" + "WHERE d." + Constants.ID
-      + " = s." + Constants.DATA_SOURCE_ID + " AND\n s." + Constants.OME_ID
-      + " = gr." + Constants.ID + " AND\n gr." + Constants.BIGG_ID
-      + " = '%s' AND\n d." + Constants.BIGG_ID + " != " + Constants.OLD_BIGG_ID
-      + " AND\n d." + Constants.BIGG_ID + " NOT LIKE "
-      + Constants.REFSEQ_PATTERN;
+    String query = "SELECT d." + Constants.COLUMN_BIGG_ID + ", s."
+      + Constants.SYNONYM + "\n" + "FROM  " + Constants.DATA_SOURCE + " d, "
+      + Constants.SYNONYM + " s, " + Constants.GENOME_REGION + " gr\n"
+      + "WHERE d." + Constants.COLUMN_ID + " = s."
+      + Constants.COLUMN_DATA_SOURCE_ID + " AND\n s." + Constants.COLUMN_OME_ID
+      + " = gr." + Constants.COLUMN_ID + " AND\n gr." + Constants.COLUMN_BIGG_ID
+      + " = '%s' AND\n d." + Constants.COLUMN_BIGG_ID + " != "
+      + Constants.OLD_BIGG_ID + " AND\n d." + Constants.COLUMN_BIGG_ID
+      + " NOT LIKE " + Constants.REFSEQ_PATTERN;
     try {
       ResultSet rst = connect.query(query, label);
       while (rst.next()) {
-        list.add(pairOf(rst.getString(1), rst.getString(2)));
+        Pair<String,String> resource = pairOf(rst.getString(1), rst.getString(2)); 
+        list.add(resource);
       }
       rst.getStatement().close();
     } catch (SQLException exc) {
@@ -209,10 +271,11 @@ public class BiGGDB {
   public String getGeneName(String label) {
     String query = "SELECT s." + Constants.SYNONYM + "\n" + "FROM  "
       + Constants.DATA_SOURCE + " d, " + Constants.SYNONYM + " s, "
-      + Constants.GENOME_REGION + " gr\n" + "WHERE d." + Constants.ID + " = s."
-      + Constants.DATA_SOURCE_ID + " AND\n s." + Constants.OME_ID + " = gr."
-      + Constants.ID + " AND\n gr." + Constants.BIGG_ID + " = '%s' AND\n d."
-      + Constants.BIGG_ID + " = " + Constants.REFSEQ_NAME;
+      + Constants.GENOME_REGION + " gr\n" + "WHERE d." + Constants.COLUMN_ID
+      + " = s." + Constants.COLUMN_DATA_SOURCE_ID + " AND\n s."
+      + Constants.COLUMN_OME_ID + " = gr." + Constants.COLUMN_ID + " AND\n gr."
+      + Constants.COLUMN_BIGG_ID + " = '%s' AND\n d." + Constants.COLUMN_BIGG_ID
+      + " = " + Constants.REFSEQ_NAME;
     return getString(query, label);
   }
 
@@ -223,17 +286,18 @@ public class BiGGDB {
    * @return
    */
   public String getGeneReactionRule(String reactionId, String modelId) {
-    return getString(
-      "SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + Constants.GENE_REACTION_RULE
-        + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS "
-        + Constants.GENE_REACTION_RULE + " FROM " + Constants.MODEL_REACTION
-        + " mr, " + Constants.REACTION + " r, " + Constants.MODEL
-        + " m WHERE r." + Constants.ID + " = mr." + Constants.REACTION_ID
-        + " AND m." + Constants.ID + " = mr." + Constants.MODEL_ID + " AND mr."
-        + Constants.GENE_REACTION_RULE + " IS NOT NULL AND " + " LENGTH(mr."
-        + Constants.GENE_REACTION_RULE + ") > 0 AND r." + Constants.BIGG_ID
-        + " = '%s' AND m." + Constants.BIGG_ID + " = '%s'",
-      reactionId, modelId);
+    return getString("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr."
+      + Constants.COLUMN_GENE_REACTION_RULE
+      + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS "
+      + Constants.COLUMN_GENE_REACTION_RULE + " FROM "
+      + Constants.MODEL_REACTION + " mr, " + Constants.REACTION + " r, "
+      + Constants.MODEL + " m WHERE r." + Constants.COLUMN_ID + " = mr."
+      + Constants.COLUMN_REACTION_ID + " AND m." + Constants.COLUMN_ID
+      + " = mr." + Constants.COLUMN_MODEL_ID + " AND mr."
+      + Constants.COLUMN_GENE_REACTION_RULE + " IS NOT NULL AND "
+      + " LENGTH(mr." + Constants.COLUMN_GENE_REACTION_RULE + ") > 0 AND r."
+      + Constants.COLUMN_BIGG_ID + " = '%s' AND m." + Constants.COLUMN_BIGG_ID
+      + " = '%s'", reactionId, modelId);
   }
 
 
@@ -259,11 +323,10 @@ public class BiGGDB {
    * @throws SQLException
    */
   public Date getModelCreationDate(BiGGId biggId) throws SQLException {
-    ResultSet rst =
-      connect.query(
-        "SELECT " + Constants.FIRST_CREATED + " FROM " + Constants.MODEL
-          + " WHERE " + Constants.BIGG_ID + " = '%s'",
-        biggId.getAbbreviation());
+    ResultSet rst = connect.query(
+      "SELECT " + Constants.COLUMN_FIRST_CREATED + " FROM " + Constants.MODEL
+        + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
+      biggId.getAbbreviation());
     Date result = rst.next() ? rst.getDate(1) : null;
     rst.getStatement().close();
     return result;
@@ -276,8 +339,9 @@ public class BiGGDB {
    * @throws SQLException
    */
   public String getModelDescription(String biggId) throws SQLException {
-    return getString("SELECT " + Constants.DESCRIPTION + " FROM "
-      + Constants.MODEL + " WHERE " + Constants.BIGG_ID + " = '%s'", biggId);
+    return getString("SELECT " + Constants.COLUMN_DESCRIPTION + " FROM "
+      + Constants.MODEL + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
+      biggId);
   }
 
 
@@ -286,11 +350,10 @@ public class BiGGDB {
    * @return
    */
   public String getOrganism(String biggId) {
-    return getString(
-      "SELECT g." + Constants.ORGANISM + " FROM " + Constants.GENOME + " g, "
-        + Constants.MODEL + " m WHERE m." + Constants.GENOME_ID + " = g."
-        + Constants.ID + " AND m." + Constants.BIGG_ID + " = '%s'",
-      biggId);
+    return getString("SELECT g." + Constants.COLUMN_ORGANISM + " FROM "
+      + Constants.GENOME + " g, " + Constants.MODEL + " m WHERE m."
+      + Constants.COLUMN_GENOME_ID + " = g." + Constants.COLUMN_ID + " AND m."
+      + Constants.COLUMN_BIGG_ID + " = '%s'", biggId);
   }
 
 
@@ -312,12 +375,13 @@ public class BiGGDB {
    */
   public List<Pair<String, String>> getPublications(String biggId)
     throws SQLException {
-    ResultSet rst = connect.query("SELECT p." + Constants.REFERENCE_TYPE
-      + ", p." + Constants.REFERENCE_ID + " FROM  " + Constants.PUBLICATION
-      + " p, " + Constants.PUBLICATION_MODEL + " pm, " + Constants.MODEL
-      + " m WHERE p." + Constants.ID + " = pm." + Constants.PUBLICATION_ID
-      + " AND pm." + Constants.MODEL_ID + " = m." + Constants.ID + " AND m."
-      + Constants.BIGG_ID + " = '%s'", biggId);
+    ResultSet rst = connect.query("SELECT p." + Constants.COLUMN_REFERENCE_TYPE
+      + ", p." + Constants.COLUMN_REFERENCE_ID + " FROM  "
+      + Constants.PUBLICATION + " p, " + Constants.PUBLICATION_MODEL + " pm, "
+      + Constants.MODEL + " m WHERE p." + Constants.COLUMN_ID + " = pm."
+      + Constants.COLUMN_PUBLICATION_ID + " AND pm." + Constants.COLUMN_MODEL_ID
+      + " = m." + Constants.COLUMN_ID + " AND m." + Constants.COLUMN_BIGG_ID
+      + " = '%s'", biggId);
     List<Pair<String, String>> list = new LinkedList<>();
     while (rst.next()) {
       String key = rst.getString(1);
@@ -333,34 +397,37 @@ public class BiGGDB {
    * @return
    */
   public String getReactionName(String biggId) {
-    return getString("SELECT " + Constants.NAME + " FROM " + Constants.REACTION
-      + " WHERE " + Constants.BIGG_ID + " = '%s'", biggId);
+    return getString("SELECT " + Constants.COLUMN_NAME + " FROM "
+      + Constants.REACTION + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'",
+      biggId);
   }
 
 
   /**
    * @param biggId
-   * @param type
    * @param includeAnyURI
-   * @return a list of external source together with external id.
+   * @return a set of external source together with external id.
    * @throws SQLException
    */
-  private List<String> getResourceURL(BiGGId biggId, String type,
+  public TreeSet<String> getReactionResources(BiGGId biggId,
     boolean includeAnyURI) throws SQLException {
     // TODO: there could be errors in BiGG database and it is important to check
     // patterns again (see MIRIAM class).
     ResultSet rst = connect.query(
       "SELECT CONCAT(" + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
-        + ") AS " + Constants.URL + " FROM  %s c, " + Constants.SYNONYM + " s, "
-        + Constants.DATA_SOURCE + " d WHERE c." + Constants.ID + " = s."
-        + Constants.OME_ID + " AND s." + Constants.DATA_SOURCE_ID + " = d."
-        + Constants.ID + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND c."
-        + Constants.BIGG_ID + " = '%s'%s",
-      type, biggId.getAbbreviation(), includeAnyURI ? ""
+        + ") AS " + Constants.URL + " FROM " + Constants.REACTION + " r, "
+        + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE r."
+        + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
+        + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
+        + " AND " + Constants.URL_PREFIX
+        + " IS NOT NULL AND CAST(s.type AS \"text\") = '" + Constants.REACTION
+        + "' AND r." + Constants.COLUMN_BIGG_ID + " = '%s'%s",
+      biggId.getAbbreviation(), includeAnyURI ? ""
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
-    List<String> result = new LinkedList<String>();
+    TreeSet<String> result = new TreeSet<String>();
     while (rst.next()) {
-      result.add(rst.getString(1));
+      String resource = checkResourceUrl(rst.getString(1));
+      result.add(resource);
     }
     rst.getStatement().close();
     return result;
@@ -391,11 +458,10 @@ public class BiGGDB {
    */
   public Integer getTaxonId(String biggId) {
     try {
-      return getInt(
-        "SELECT " + Constants.TAXON_ID + " FROM " + Constants.GENOME + " g, "
-          + Constants.MODEL + " m WHERE g." + Constants.ID + " = m."
-          + Constants.GENOME_ID + " AND m." + Constants.BIGG_ID + " = '%s'",
-        biggId);
+      return getInt("SELECT " + Constants.COLUMN_TAXON_ID + " FROM "
+        + Constants.GENOME + " g, " + Constants.MODEL + " m WHERE g."
+        + Constants.COLUMN_ID + " = m." + Constants.COLUMN_GENOME_ID + " AND m."
+        + Constants.COLUMN_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not retrieve NCBI taxon identifier for model ''{0}'', because of {1}.",
@@ -412,7 +478,7 @@ public class BiGGDB {
   public boolean isCompartment(String biggId) {
     try {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPARTMENT + " WHERE "
-        + Constants.BIGG_ID + " = '%s'", biggId) > 0;
+        + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not determine if ''{0}'' is a compartment or not: {1}.", biggId,
@@ -429,7 +495,7 @@ public class BiGGDB {
   public boolean isMetabolite(String biggId) {
     try {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPONENT + " WHERE "
-        + Constants.BIGG_ID + " = '%s'", biggId) > 0;
+        + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not determine if ''{0}'' is a metabolite or not: {1}.", biggId,
@@ -446,7 +512,7 @@ public class BiGGDB {
   public boolean isModel(String biggId) {
     try {
       return getInt("SELECT COUNT(*) FROM " + Constants.MODEL + " WHERE "
-        + Constants.BIGG_ID + " = '%s'", biggId) > 0;
+        + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not determine if ''{0}'' is a model or not: {1}.", biggId,
@@ -466,7 +532,7 @@ public class BiGGDB {
     }
     try {
       return getInt("SELECT COUNT(*) FROM " + Constants.REACTION + " WHERE "
-        + Constants.BIGG_ID + " = '%s'", biggId) > 0;
+        + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(MessageFormat.format(
         "Could not determine if ''{0}'' is a reaction or not: {1}.", biggId,
@@ -482,13 +548,15 @@ public class BiGGDB {
    * @return
    */
   public Integer getCharge(String biggId, String modelId) {
-    String query = "SELECT mcc." + Constants.CHARGE + "\n FROM "
+    String query = "SELECT mcc." + Constants.COLUMN_CHARGE + "\n FROM "
       + Constants.COMPONENT + " c,\n" + Constants.COMPARTMENTALIZED_COMPONENT
       + " cc,\n" + Constants.MODEL + " m,\n" + Constants.MCC + " mcc\n WHERE c."
-      + Constants.ID + " = cc." + Constants.COMPONENT_ID + " AND\n cc."
-      + Constants.ID + " = mcc." + Constants.COMPARTMENTALIZED_COMPONENT_ID
-      + " AND\n c." + Constants.BIGG_ID + " = '%s' AND\n m." + Constants.BIGG_ID
-      + " = '%s' AND\n m." + Constants.ID + " = mcc." + Constants.MODEL_ID;
+      + Constants.COLUMN_ID + " = cc." + Constants.COLUMN_COMPONENT_ID
+      + " AND\n cc." + Constants.COLUMN_ID + " = mcc."
+      + Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c."
+      + Constants.COLUMN_BIGG_ID + " = '%s' AND\n m." + Constants.COLUMN_BIGG_ID
+      + " = '%s' AND\n m." + Constants.COLUMN_ID + " = mcc."
+      + Constants.COLUMN_MODEL_ID;
     String charge = getString(query, biggId, modelId);
     if ((charge == null) || (charge.trim().length() == 0)) {
       return null;
@@ -502,8 +570,8 @@ public class BiGGDB {
    * @return
    */
   public boolean isPseudoreaction(String reactionId) {
-    String query = "SELECT " + Constants.PSEUDOREACTION + " FROM "
-      + Constants.REACTION + " WHERE " + Constants.BIGG_ID + " = '%s'";
+    String query = "SELECT " + Constants.COLUMN_PSEUDOREACTION + " FROM "
+      + Constants.REACTION + " WHERE " + Constants.COLUMN_BIGG_ID + " = '%s'";
     String result = getString(query,
       reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
     return (result != null) && result.equals("t");

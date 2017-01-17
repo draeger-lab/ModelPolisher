@@ -181,44 +181,11 @@ public class BiGGAnnotation {
           }
         }
         try {
-          List<String> linkOut =
+          TreeSet<String> linkOut =
             bigg.getComponentResources(biggId, polisher.includeAnyURI);
           // convert to set to remove possible duplicates; TreeSet should
           // respect current order
-          TreeSet<String> terms = new TreeSet<String>(linkOut);
-          for (String resource : terms) {
-            String url = resource.substring(0, resource.lastIndexOf('/') + 1);
-            String identifier =
-              resource.substring(resource.lastIndexOf('/') + 1);
-            // filter non metabolite annotations for kegg
-            if (resource.contains("kegg")) {
-              if (url.contains("kegg.reaction")) {
-                continue;
-              } else if (url.contains("kegg.compound")
-                && !identifier.startsWith("C")) {
-                switch (identifier.charAt(0)) {
-                case 'D':
-                  resource = resource.replace("compound", "drug");
-                  break;
-                case 'G':
-                  resource = resource.replace("compound", "glycan");
-                  break;
-                default:
-                  logger.warning(MessageFormat.format(
-                    "Wrong Identifier ''{}'' for collection ''{}'' ", url,
-                    identifier));
-                }
-              }
-            }
-            // Add potentially missing GI: to ncbigi identifiers
-            if (resource.contains("ncbigi")) {
-              if (!identifier.startsWith("GI:")) {
-                identifier = "GI:" + identifier;
-              }
-              resource = url + identifier;
-            }
-            if (resource.contains("kegg"))
-              logger.warning(resource);
+          for (String resource : linkOut) {
             cvTerm.addResource(resource);
           }
         } catch (SQLException exc) {
@@ -322,6 +289,23 @@ public class BiGGAnnotation {
           SBMLUtils.createSubsystemLink(r, group.createMember());
         }
       }
+      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
+      try {
+        TreeSet<String> linkOut =
+          bigg.getReactionResources(biggId, polisher.includeAnyURI);
+        for (String resource : linkOut) {
+          cvTerm.addResource(resource);
+        }
+      } catch (SQLException exc) {
+        logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
+          Utils.getMessage(exc)));
+      }
+      if (cvTerm.getResourceCount() > 0) {
+        r.addCVTerm(cvTerm);
+      }
+      if ((r.getCVTermCount() > 0) && !r.isSetMetaId()) {
+        r.setMetaId(r.getId());
+      }
     }
   }
 
@@ -344,6 +328,10 @@ public class BiGGAnnotation {
         }
         if (label == null) {
           return;
+        }
+        // label is stored without "G_" prefix in bigg
+        if (label.startsWith("G_")) {
+          label = label.substring(2);
         }
         CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
         CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
