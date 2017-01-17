@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.identifiers.registry.RegistryLocalProvider;
+import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.Utils;
@@ -58,31 +61,50 @@ public class BiGGDB {
   }
 
 
+  /**
+   * Checks resource URIs and logs those not matching the specified pattern
+   *
+   * @param resource:
+   *        resource URI to be added as annotation
+   * @return corrected resource URI
+   */
   public String checkResourceUrl(String resource) {
-    String url = resource.substring(0, resource.lastIndexOf('/') + 1);
-    String identifier = resource.substring(resource.lastIndexOf('/') + 1);
-    // filter non metabolite annotations for kegg
-    if (resource.contains("kegg")) {
-      if (url.contains("kegg.compound") && !identifier.startsWith("C")) {
-        switch (identifier.charAt(0)) {
-        case 'D':
-          resource = resource.replace("compound", "drug");
-          break;
-        case 'G':
-          resource = resource.replace("compound", "glycan");
-          break;
-        default:
-          logger.warning(MessageFormat.format(
-            "Wrong Identifier ''{}'' for collection ''{}'' ", url, identifier));
+    String collection =
+      RegistryUtilities.getDataCollectionPartFromURI(resource);
+    // not present in provided registry, cannot be checked this way
+    if (collection.contains("metanetx")
+      || collection.contains("unipathway.reaction")) {
+      return resource;
+    }
+    String identifier = RegistryUtilities.getIdentifierFromURI(resource);
+    RegistryLocalProvider registry = new RegistryLocalProvider();
+    Boolean correct = registry.checkRegExp(identifier, collection);
+    String regexp = "";
+    DataType type = RegistryUtilities.getDataType(collection);
+    if (type != null)
+      regexp = type.getRegexp();
+    if (!correct) {
+      logger.warning(MessageFormat.format(
+        "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
+        identifier, regexp, collection));
+      // We can correct the kegg collection
+      if (resource.contains("kegg")) {
+        if (identifier.startsWith("D")) {
+          logger.warning("Changing kegg collection to kegg.drug");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
+        } else if (identifier.startsWith("G")) {
+          logger.warning("Changing kegg collection to kegg.glycan");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
+        }
+        // add possibly missing "gi:" prefix to identifier
+      } else if (resource.contains("ncbigi")) {
+        if (!identifier.toLowerCase().startsWith("gi:")) {
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
         }
       }
-    }
-    // Add potentially missing GI: to ncbigi identifiers
-    if (resource.contains("ncbigi")) {
-      if (!identifier.startsWith("GI:")) {
-        identifier = "GI:" + identifier;
-      }
-      resource = url + identifier;
     }
     return resource;
   }
@@ -239,28 +261,41 @@ public class BiGGDB {
    * @param label
    * @return
    */
-  public List<Pair<String, String>> getGeneIds(String label) {
-    List<Pair<String, String>> list = new LinkedList<Pair<String, String>>();
-    String query = "SELECT d." + Constants.COLUMN_BIGG_ID + ", s."
-      + Constants.SYNONYM + "\n" + "FROM  " + Constants.DATA_SOURCE + " d, "
-      + Constants.SYNONYM + " s, " + Constants.GENOME_REGION + " gr\n"
-      + "WHERE d." + Constants.COLUMN_ID + " = s."
-      + Constants.COLUMN_DATA_SOURCE_ID + " AND\n s." + Constants.COLUMN_OME_ID
-      + " = gr." + Constants.COLUMN_ID + " AND\n gr." + Constants.COLUMN_BIGG_ID
-      + " = '%s' AND\n d." + Constants.COLUMN_BIGG_ID + " != "
-      + Constants.OLD_BIGG_ID + " AND\n d." + Constants.COLUMN_BIGG_ID
-      + " NOT LIKE " + Constants.REFSEQ_PATTERN;
+  public TreeSet<String> getGeneIds(String label) {
+    TreeSet<String> set = new TreeSet<String>();
+    RegistryLocalProvider registry = new RegistryLocalProvider();
+    String query = "SELECT " + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
+      + "\n" + "FROM  " + Constants.DATA_SOURCE + " d, " + Constants.SYNONYM
+      + " s, " + Constants.GENOME_REGION + " gr\n" + "WHERE d."
+      + Constants.COLUMN_ID + " = s." + Constants.COLUMN_DATA_SOURCE_ID
+      + " AND\n s." + Constants.COLUMN_OME_ID + " = gr." + Constants.COLUMN_ID
+      + " AND\n gr." + Constants.COLUMN_BIGG_ID + " = '%s' AND\n d."
+      + Constants.COLUMN_BIGG_ID + " != " + Constants.OLD_BIGG_ID + " AND\n d."
+      + Constants.COLUMN_BIGG_ID + " NOT LIKE " + Constants.REFSEQ_PATTERN;
     try {
       ResultSet rst = connect.query(query, label);
       while (rst.next()) {
-        Pair<String,String> resource = pairOf(rst.getString(1), rst.getString(2)); 
-        list.add(resource);
+        String collection = rst.getString(1);
+        String identifier = rst.getString(2);
+        if (collection.contains("ncbigi")) {
+          if (!identifier.toLowerCase().startsWith("gi:")) {
+            identifier = "gi:" + identifier;
+          }
+        }
+        String resource = registry.getURI(collection, identifier);
+        if (resource == null || resource.isEmpty()) {
+          logger.warning(MessageFormat.format(
+            "Could not retrieve resource for collection ''{}'' and identifier ''{}''",
+            collection, identifier));
+        }
+        resource = checkResourceUrl(resource);
+        set.add(resource);
       }
       rst.getStatement().close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return list;
+    return set;
   }
 
 

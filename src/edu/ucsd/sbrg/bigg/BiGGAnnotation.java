@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.identifiers.registry.RegistryUtilities;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -335,25 +336,20 @@ public class BiGGAnnotation {
         }
         CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
         CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
-        for (Pair<String, String> pair : bigg.getGeneIds(label)) {
-          MIRIAM miriam = MIRIAM.toMIRIAM(pair.getKey());
-          if (miriam == null) {
-            continue;
-          }
-          String resource = MIRIAM.toResourceURL(miriam, pair.getValue());
-          if (resource == null) {
-            continue;
-          }
-          switch (miriam) {
-          case interpro:
-          case PDB:
-          case UniProtKB_Swiss_Prot:
-          case uniprot:
+        for (String resource : bigg.getGeneIds(label)) {
+          // get Collection part from uri without url prefix
+          String collection =
+            RegistryUtilities.getDataCollectionPartFromURI(resource);
+          collection = collection.substring(collection.indexOf("org/") + 4,
+            collection.length() - 1);
+          switch (collection) {
+          case "interpro":
+          case "pdb":
+          case "uniprot":
             termIs.addResource(resource);
             break;
           default:
             termEncodedBy.addResource(resource);
-            break;
           }
         }
         if (termIs.getResourceCount() > 0) {
