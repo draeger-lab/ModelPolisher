@@ -277,16 +277,20 @@ public class BiGGDB {
       while (rst.next()) {
         String collection = rst.getString(1);
         String identifier = rst.getString(2);
-        if (collection.contains("ncbigi")) {
+        if (collection != null && collection.contains("ncbigi")) {
           if (!identifier.toLowerCase().startsWith("gi:")) {
-            identifier = "gi:" + identifier;
+            identifier = "GI:" + identifier;
           }
         }
         String resource = registry.getURI(collection, identifier);
-        if (resource == null || resource.isEmpty()) {
+        if (collection == null || identifier == null ) {
+          logger.warning("Could not retrieve collection or identifier.");
+          continue;
+        } else if (resource == null || resource.isEmpty()) {
           logger.warning(MessageFormat.format(
-            "Could not retrieve resource for collection ''{}'' and identifier ''{}''",
+            "Could not retrieve resource for collection ''{0}'' and identifier ''{1}''",
             collection, identifier));
+          continue;
         }
         resource = checkResourceUrl(resource);
         set.add(resource);

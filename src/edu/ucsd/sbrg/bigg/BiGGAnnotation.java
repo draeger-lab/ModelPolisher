@@ -337,9 +337,13 @@ public class BiGGAnnotation {
         CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
         CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
         for (String resource : bigg.getGeneIds(label)) {
-          // get Collection part from uri without url prefix
+          // get Collection part from uri without url prefix - all uris should
+          // begin with http://identifiers.org, else this may fail
           String collection =
             RegistryUtilities.getDataCollectionPartFromURI(resource);
+          if (collection == null || collection.length() < 4) {
+            continue;
+          }
           collection = collection.substring(collection.indexOf("org/") + 4,
             collection.length() - 1);
           switch (collection) {
