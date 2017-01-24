@@ -94,7 +94,7 @@ public enum MIRIAM {
   /**
    * 
    */
-  hdmb(pairOf("hmdb", "^HMDB\\d{5}$")),
+  hmdb(pairOf("hmdb", "^HMDB\\d{5}$")),
   /**
    * 
    */

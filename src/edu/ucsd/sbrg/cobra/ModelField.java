@@ -156,11 +156,19 @@ public enum ModelField {
    */
   metHMDB,
   /**
+   * See {@link #metInchiString}.
+   */
+  metInChIString,
+  /**
    * Inichi String for each corresponding metabolite.
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
   metInchiString,
+  /**
+   * See {@link #metKeggID}.
+   */
+  metKEGGID,
   /**
    * KEGG ID for each corresponding metabolite.
    * Optional: if present, it must have same dimension as {@link #mets}.

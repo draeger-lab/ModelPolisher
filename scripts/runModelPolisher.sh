@@ -102,7 +102,7 @@ fi
 
 "${DIR}/ModelPolisher.sh" $ARGS 
 
-if [ -e "${DIR}/ModelPolisherTemplate.sh" ] 
+if [ -e "${DIR}/ModelPolisherTemplate.sh" ] && [ ! -e "${DIR}/ModelPolisherTemplate.bckp" ];
 then
   mv "${DIR}/ModelPolisherTemplate.sh" "${DIR}/ModelPolisherTemplate.bckp"
 fi
