@@ -86,7 +86,7 @@
     <repository>
       <id>JSBML</id>
       <name>The JSBML repository</name>
-      <url>http://jsbml.sourceforge.net/m2repo_snapshots/</url>
+      <url>http://jsbml.sourceforge.net/m2repo/</url>
     </repository>
   </repositories>
 
@@ -98,7 +98,7 @@
     <dependency>
       <groupId>org.sbml.jsbml</groupId>
       <artifactId>jsbml</artifactId>
-      <version>1.2-SNAPSHOT</version>
+      <version>1.2</version>
     </dependency>
 
     <dependency>

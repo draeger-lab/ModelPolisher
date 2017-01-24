@@ -162,11 +162,11 @@ public class COBRAparser {
     }
     MLArray array = null;
     Iterator<String> keyIter = content.keySet().iterator();
-    do{
-    String key = keyIter.next();
-    array = content.get(key);
-    builder.buildModel(SBMLtools.toSId(array.getName()), null);
-    }while((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
+    do {
+      String key = keyIter.next();
+      array = content.get(key);
+      builder.buildModel(SBMLtools.toSId(array.getName()), null);
+    } while ((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
     if ((array.getSize() != 1) && !array.isStruct()) {
       throw new IllegalArgumentException(MessageFormat.format(
         "Expected data struct of size 1, but found array ''{1}'' of size {0,number,integer}.",
@@ -242,7 +242,8 @@ public class COBRAparser {
               specPlug.setChemicalFormula(
                 toString(metFormulas.get(i), metFormulas.getName(), i + 1));
             }
-            if ((metCharge != null) && (metCharge.get(i) != null)) {
+            if ((metCharge != null) && (metCharge.getSize() > 0)
+              && (metCharge.get(i) != null)) {
               double charge = metCharge.get(i).doubleValue();
               specPlug.setCharge((int) charge);
               if (charge - ((int) charge) != 0d) {
@@ -256,7 +257,7 @@ public class COBRAparser {
           term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
           term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
           addResource(metCHEBIID, i, term, MIRIAM.chebi);
-          addResource(metHMDB, i, term, MIRIAM.hdmb);
+          addResource(metHMDB, i, term, MIRIAM.hmdb);
           addResource(metInchiString, i, term, MIRIAM.INCHI);
           addResource(metKeggID, i, term, MIRIAM.KEGGID);
           addResource(metPubChemID, i, term, MIRIAM.PUBCHEMID);
@@ -471,8 +472,13 @@ public class COBRAparser {
     for (int i = 0; i < grRules.getSize(); i++) {
       String geneReactionRule =
         toString(grRules.get(i), grRules.getName(), i + 1);
-      SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
-        omitGenericTerms);
+      if (model.getReaction(i) == null) {
+        logger.warning(MessageFormat.format(
+          "Could not create GPR for reaction with index ''{0}''.", i));
+      } else {
+        SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
+          omitGenericTerms);
+      }
     }
     // parse subsystems
     MLCell subSystems = toMLCell(struct, ModelField.subSystems);
@@ -620,7 +626,14 @@ public class COBRAparser {
         group.setKind(Group.Kind.partonomy);
         nameToGroup.put(name, group);
       }
-      SBMLUtils.createSubsystemLink(model.getReaction(i), group.createMember());
+      if (model.getReaction(i) != null) {
+        SBMLUtils.createSubsystemLink(model.getReaction(i),
+          group.createMember());
+      } else {
+        logger.warning(MessageFormat.format(
+          "Reaction at index ''{0}'' was null. Could not create subsystem link.",
+          i));
+      }
     }
   }
 
@@ -957,20 +970,6 @@ public class COBRAparser {
     return (string == null) || string.isEmpty() || string.equals("[]");
   }
 
-
-  /**
-   * @param array
-   * @return
-   */
-  private MLInt64 toInt64(MLArray array) {
-    if (array.isInt64()) {
-      MLInt64 integer = (MLInt64) array;
-      return integer;
-    }
-    throw new IllegalArgumentException(MessageFormat.format(
-      "Expected data structure ''{1}'' to be of type int64, but received type {0}.",
-      MLArray.typeToString(array.getType()), array.getName()));
-  }
 
 
   /**

@@ -245,10 +245,10 @@ public class BiGGAnnotation {
         }
       }
       BiGGId biggId = polisher.extractBiGGId(id);
+      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
       if (biggId != null) {
         if (bigg.isReaction(r.getId())) {
-          r.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-            polisher.createURI("bigg.reaction", biggId)));
+          cvTerm.addResource(polisher.createURI("bigg.reaction", biggId));
         }
       }
       if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
@@ -290,7 +290,6 @@ public class BiGGAnnotation {
           SBMLUtils.createSubsystemLink(r, group.createMember());
         }
       }
-      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
       try {
         TreeSet<String> linkOut =
           bigg.getReactionResources(biggId, polisher.includeAnyURI);
