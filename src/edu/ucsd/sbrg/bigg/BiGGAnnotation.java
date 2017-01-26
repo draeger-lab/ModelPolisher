@@ -127,18 +127,35 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateCompartments(Model model) {
+  public void annotateListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
-      Compartment c = model.getCompartment(i);
-      BiGGId biggId = new BiGGId(c.getId());
-      if (bigg.isCompartment(biggId.getAbbreviation())) {
-        c.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-          polisher.createURI("bigg.compartment", biggId)));
-        c.setSBOTerm(SBO.getCompartment()); // physical compartment
-        if (!c.isSetName()) {
-          c.setName(bigg.getCompartmentName(biggId));
-        }
+      annotateCompartment(model.getCompartment(i));
+    }
+  }
+
+
+  /**
+   * @param compartment
+   */
+  private void annotateCompartment(Compartment compartment) {
+    BiGGId biggId = new BiGGId(compartment.getId());
+    if (bigg.isCompartment(biggId.getAbbreviation())) {
+      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
+        polisher.createURI("bigg.compartment", biggId)));
+      compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
+      if (!compartment.isSetName()) {
+        compartment.setName(bigg.getCompartmentName(biggId));
       }
+    }
+  }
+
+
+  /**
+   * @param model
+   */
+  public void annotateListOfSpecies(Model model) {
+    for (int i = 0; i < model.getSpeciesCount(); i++) {
+      annotateSpecies(model.getSpecies(i));
     }
   }
 
@@ -147,152 +164,43 @@ public class BiGGAnnotation {
    * @param model
    */
   @SuppressWarnings("deprecation")
-  public void annotateSpecies(Model model) {
-    for (int i = 0; i < model.getSpeciesCount(); i++) {
-      Species species = model.getSpecies(i);
-      BiGGId biggId = polisher.extractBiGGId(species.getId());
-      if (biggId != null) {
-        CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
-        if (!species.isSetName() || species.getName().equals(
-          biggId.getAbbreviation() + "_" + biggId.getCompartmentCode())) {
-          try {
-            species.setName(polisher.polishName(bigg.getComponentName(biggId)));
-          } catch (SQLException exc) {
-            logger.severe(MessageFormat.format("{0}: {1}",
-              exc.getClass().getName(), Utils.getMessage(exc)));
-          }
-        }
-        if (bigg.isMetabolite(biggId.getAbbreviation())) {
-          cvTerm.addResource(polisher.createURI("bigg.metabolite", biggId));
-        }
-        String type = bigg.getComponentType(biggId);
-        if (type != null) {
-          switch (type) {
-          case "metabolite":
-            species.setSBOTerm(SBO.getSimpleMolecule());
-            break;
-          case "protein":
-            species.setSBOTerm(SBO.getProtein());
-            break;
-          default:
-            if (polisher.omitGenericTerms) {
-              species.setSBOTerm(SBO.getMaterialEntity());
-            }
-            break;
-          }
-        }
+  public void annotateSpecies(Species species) {
+    BiGGId biggId = polisher.extractBiGGId(species.getId());
+    if (biggId != null) {
+      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
+      if (!species.isSetName() || species.getName().equals(
+        biggId.getAbbreviation() + "_" + biggId.getCompartmentCode())) {
         try {
-          TreeSet<String> linkOut =
-            bigg.getComponentResources(biggId, polisher.includeAnyURI);
-          // convert to set to remove possible duplicates; TreeSet should
-          // respect current order
-          for (String resource : linkOut) {
-            cvTerm.addResource(resource);
-          }
+          species.setName(polisher.polishName(bigg.getComponentName(biggId)));
         } catch (SQLException exc) {
           logger.severe(MessageFormat.format("{0}: {1}",
             exc.getClass().getName(), Utils.getMessage(exc)));
         }
-        if (cvTerm.getResourceCount() > 0) {
-          species.addCVTerm(cvTerm);
-        }
-        if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
-          species.setMetaId(species.getId());
-        }
-        FBCSpeciesPlugin fbcSpecPlug =
-          (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-        if (!fbcSpecPlug.isSetChemicalFormula()) {
-          try {
-            fbcSpecPlug.setChemicalFormula(
-              bigg.getChemicalFormula(biggId, model.getId()));
-          } catch (IllegalArgumentException exc) {
-            logger.severe(MessageFormat.format("Invalid chemical formula: {0}",
-              Utils.getMessage(exc)));
+      }
+      if (bigg.isMetabolite(biggId.getAbbreviation())) {
+        cvTerm.addResource(polisher.createURI("bigg.metabolite", biggId));
+      }
+      String type = bigg.getComponentType(biggId);
+      if (type != null) {
+        switch (type) {
+        case "metabolite":
+          species.setSBOTerm(SBO.getSimpleMolecule());
+          break;
+        case "protein":
+          species.setSBOTerm(SBO.getProtein());
+          break;
+        default:
+          if (polisher.omitGenericTerms) {
+            species.setSBOTerm(SBO.getMaterialEntity());
           }
-        }
-        Integer charge =
-          bigg.getCharge(biggId.getAbbreviation(), model.getId());
-        if (species.isSetCharge()) {
-          if ((charge != null) && (charge != species.getCharge())) {
-            logger.warning(MessageFormat.format(
-              "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
-              charge, species.getCharge(), species.getId()));
-          }
-          species.unsetCharge();
-        }
-        if ((charge != null) && (charge != 0)) {
-          // If charge is set and charge = 0 -> this can mean it is
-          // only a default!
-          fbcSpecPlug.setCharge(charge);
-        }
-      }
-    }
-  }
-
-
-  /**
-   * @param model
-   */
-  public void annotateReactions(Model model) {
-    for (int i = 0; i < model.getReactionCount(); i++) {
-      Reaction r = model.getReaction(i);
-      String id = r.getId();
-      if (!r.isSetSBOTerm()) {
-        if (bigg.isPseudoreaction(id)) {
-          r.setSBOTerm(631);
-        } else if (!polisher.omitGenericTerms) {
-          r.setSBOTerm(375); // generic process
-        }
-      }
-      BiGGId biggId = polisher.extractBiGGId(id);
-      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
-      if (biggId != null) {
-        if (bigg.isReaction(r.getId())) {
-          cvTerm.addResource(polisher.createURI("bigg.reaction", biggId));
-        }
-      }
-      if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
-        r.setMetaId(id);
-      }
-      if (id.startsWith("R_")) {
-        id = id.substring(2);
-      }
-      String name = bigg.getReactionName(id);
-      if ((name != null) && !name.equals(r.getName())) {
-        r.setName(polisher.polishName(name));
-      }
-      SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()),
-        polisher.omitGenericTerms);
-      List<String> subsystems =
-        bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
-      if (subsystems.size() > 0) {
-        String groupKey = "GROUP_FOR_NAME";
-        if (model.getUserObject(groupKey) == null) {
-          model.putUserObject(groupKey, new HashMap<String, Group>());
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Group> groupForName =
-          (Map<String, Group>) model.getUserObject(groupKey);
-        for (String subsystem : subsystems) {
-          Group group;
-          if (groupForName.containsKey(subsystem)) {
-            group = groupForName.get(subsystem);
-          } else {
-            GroupsModelPlugin groupsModelPlugin =
-              (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-            group = groupsModelPlugin.createGroup(
-              "g" + (groupsModelPlugin.getGroupCount() + 1));
-            group.setName(subsystem);
-            group.setKind(Group.Kind.partonomy);
-            group.setSBOTerm(633); // subsystem
-            groupForName.put(subsystem, group);
-          }
-          SBMLUtils.createSubsystemLink(r, group.createMember());
+          break;
         }
       }
       try {
         TreeSet<String> linkOut =
-          bigg.getReactionResources(biggId, polisher.includeAnyURI);
+          bigg.getComponentResources(biggId, polisher.includeAnyURI);
+        // convert to set to remove possible duplicates; TreeSet should
+        // respect current order
         for (String resource : linkOut) {
           cvTerm.addResource(resource);
         }
@@ -301,10 +209,36 @@ public class BiGGAnnotation {
           Utils.getMessage(exc)));
       }
       if (cvTerm.getResourceCount() > 0) {
-        r.addCVTerm(cvTerm);
+        species.addCVTerm(cvTerm);
       }
-      if ((r.getCVTermCount() > 0) && !r.isSetMetaId()) {
-        r.setMetaId(r.getId());
+      if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
+        species.setMetaId(species.getId());
+      }
+      FBCSpeciesPlugin fbcSpecPlug =
+        (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+      if (!fbcSpecPlug.isSetChemicalFormula()) {
+        try {
+          fbcSpecPlug.setChemicalFormula(
+            bigg.getChemicalFormula(biggId, species.getModel().getId()));
+        } catch (IllegalArgumentException exc) {
+          logger.severe(MessageFormat.format("Invalid chemical formula: {0}",
+            Utils.getMessage(exc)));
+        }
+      }
+      Integer charge =
+        bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+      if (species.isSetCharge()) {
+        if ((charge != null) && (charge != species.getCharge())) {
+          logger.warning(MessageFormat.format(
+            "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
+            charge, species.getCharge(), species.getId()));
+        }
+        species.unsetCharge();
+      }
+      if ((charge != null) && (charge != 0)) {
+        // If charge is set and charge = 0 -> this can mean it is
+        // only a default!
+        fbcSpecPlug.setCharge(charge);
       }
     }
   }
@@ -313,77 +247,174 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateGeneProducts(Model model) {
+  public void annotateListOfReactions(Model model) {
+    for (int i = 0; i < model.getReactionCount(); i++) {
+      annotateReaction(model.getReaction(i));
+    }
+  }
+
+
+  /**
+   * @param reaction
+   */
+  private void annotateReaction(Reaction reaction) {
+    String id = reaction.getId();
+    if (!reaction.isSetSBOTerm()) {
+      if (bigg.isPseudoreaction(id)) {
+        reaction.setSBOTerm(631);
+      } else if (!polisher.omitGenericTerms) {
+        reaction.setSBOTerm(375); // generic process
+      }
+    }
+    BiGGId biggId = polisher.extractBiGGId(id);
+    CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
+    if (biggId != null) {
+      if (bigg.isReaction(reaction.getId())) {
+        cvTerm.addResource(polisher.createURI("bigg.reaction", biggId));
+      }
+    }
+    if (!reaction.isSetMetaId() && (reaction.getCVTermCount() > 0)) {
+      reaction.setMetaId(id);
+    }
+    if (id.startsWith("R_")) {
+      id = id.substring(2);
+    }
+    String name = bigg.getReactionName(id);
+    if ((name != null) && !name.equals(reaction.getName())) {
+      reaction.setName(polisher.polishName(name));
+    }
+    SBMLUtils.parseGPR(reaction,
+      bigg.getGeneReactionRule(id, reaction.getModel().getId()),
+      polisher.omitGenericTerms);
+    Model model = reaction.getModel();
+    List<String> subsystems =
+      bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
+    if (subsystems.size() > 0) {
+      String groupKey = "GROUP_FOR_NAME";
+      if (model.getUserObject(groupKey) == null) {
+        model.putUserObject(groupKey, new HashMap<String, Group>());
+      }
+      @SuppressWarnings("unchecked")
+      Map<String, Group> groupForName =
+        (Map<String, Group>) model.getUserObject(groupKey);
+      for (String subsystem : subsystems) {
+        Group group;
+        if (groupForName.containsKey(subsystem)) {
+          group = groupForName.get(subsystem);
+        } else {
+          GroupsModelPlugin groupsModelPlugin =
+            (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
+          group = groupsModelPlugin.createGroup(
+            "g" + (groupsModelPlugin.getGroupCount() + 1));
+          group.setName(subsystem);
+          group.setKind(Group.Kind.partonomy);
+          group.setSBOTerm(633); // subsystem
+          groupForName.put(subsystem, group);
+        }
+        SBMLUtils.createSubsystemLink(reaction, group.createMember());
+      }
+    }
+    try {
+      TreeSet<String> linkOut =
+        bigg.getReactionResources(biggId, polisher.includeAnyURI);
+      for (String resource : linkOut) {
+        cvTerm.addResource(resource);
+      }
+    } catch (SQLException exc) {
+      logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
+        Utils.getMessage(exc)));
+    }
+    if (cvTerm.getResourceCount() > 0) {
+      reaction.addCVTerm(cvTerm);
+    }
+    if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
+      reaction.setMetaId(reaction.getId());
+    }
+  }
+
+
+  /**
+   * @param model
+   */
+  public void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug =
         (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-        String label = null;
-        String id = geneProduct.getId();
-        if (geneProduct.isSetLabel()
-          && !geneProduct.getLabel().equalsIgnoreCase("None")) {
-          label = geneProduct.getLabel();
-        } else if (geneProduct.isSetId()) {
-          label = id;
-        }
-        if (label == null) {
-          return;
-        }
-        // label is stored without "G_" prefix in bigg
-        if (label.startsWith("G_")) {
-          label = label.substring(2);
-        }
-        CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
-        CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
-        for (String resource : bigg.getGeneIds(label)) {
-          // get Collection part from uri without url prefix - all uris should
-          // begin with http://identifiers.org, else this may fail
-          String collection =
-            RegistryUtilities.getDataCollectionPartFromURI(resource);
-          if (collection == null || collection.length() < 4) {
-            continue;
-          }
-          collection = collection.substring(collection.indexOf("org/") + 4,
-            collection.length() - 1);
-          switch (collection) {
-          case "interpro":
-          case "pdb":
-          case "uniprot":
-            termIs.addResource(resource);
-            break;
-          default:
-            termEncodedBy.addResource(resource);
-          }
-        }
-        if (termIs.getResourceCount() > 0) {
-          geneProduct.addCVTerm(termIs);
-        }
-        if (termEncodedBy.getResourceCount() > 0) {
-          geneProduct.addCVTerm(termEncodedBy);
-        }
-        if (geneProduct.getCVTermCount() > 0) {
-          geneProduct.setMetaId(id);
-        }
-        // we successfully found information by using the id, so this needs to
-        // be the label
-        if (geneProduct.getLabel().equalsIgnoreCase("None")) {
-          geneProduct.setLabel(label);
-        }
-        String geneName = bigg.getGeneName(label);
-        if (geneName != null) {
-          if (geneName.isEmpty()) {
-            logger.fine(MessageFormat.format(
-              "No gene name found in BiGG for label ''{0}''.",
-              geneProduct.getName()));
-          } else if (geneProduct.isSetName()
-            && !geneProduct.getName().equals(geneName)) {
-            logger.warning(MessageFormat.format(
-              "Updating gene product name from ''{0}'' to ''{1}''.",
-              geneProduct.getName(), geneName));
-          }
-          geneProduct.setName(geneName);
-        }
+        annotateGeneProduct(geneProduct);
       }
+    }
+  }
+
+
+  /**
+   * @param geneProduct
+   */
+  private void annotateGeneProduct(GeneProduct geneProduct) {
+    String label = null;
+    String id = geneProduct.getId();
+    if (geneProduct.isSetLabel()
+      && !geneProduct.getLabel().equalsIgnoreCase("None")) {
+      label = geneProduct.getLabel();
+    } else if (geneProduct.isSetId()) {
+      label = id;
+    }
+    if (label == null) {
+      return;
+    }
+    // label is stored without "G_" prefix in bigg
+    if (label.startsWith("G_")) {
+      label = label.substring(2);
+    }
+    CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
+    CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
+    for (String resource : bigg.getGeneIds(label)) {
+      // get Collection part from uri without url prefix - all uris should
+      // begin with http://identifiers.org, else this may fail
+      String collection =
+        RegistryUtilities.getDataCollectionPartFromURI(resource);
+      if (collection == null || collection.length() < 4) {
+        continue;
+      }
+      collection = collection.substring(collection.indexOf("org/") + 4,
+        collection.length() - 1);
+      switch (collection) {
+      case "interpro":
+      case "pdb":
+      case "uniprot":
+        termIs.addResource(resource);
+        break;
+      default:
+        termEncodedBy.addResource(resource);
+      }
+    }
+    if (termIs.getResourceCount() > 0) {
+      geneProduct.addCVTerm(termIs);
+    }
+    if (termEncodedBy.getResourceCount() > 0) {
+      geneProduct.addCVTerm(termEncodedBy);
+    }
+    if (geneProduct.getCVTermCount() > 0) {
+      geneProduct.setMetaId(id);
+    }
+    // we successfully found information by using the id, so this needs to
+    // be the label
+    if (geneProduct.getLabel().equalsIgnoreCase("None")) {
+      geneProduct.setLabel(label);
+    }
+    String geneName = bigg.getGeneName(label);
+    if (geneName != null) {
+      if (geneName.isEmpty()) {
+        logger.fine(
+          MessageFormat.format("No gene name found in BiGG for label ''{0}''.",
+            geneProduct.getName()));
+      } else if (geneProduct.isSetName()
+        && !geneProduct.getName().equals(geneName)) {
+        logger.warning(MessageFormat.format(
+          "Updating gene product name from ''{0}'' to ''{1}''.",
+          geneProduct.getName(), geneName));
+      }
+      geneProduct.setName(geneName);
     }
   }
 
@@ -427,10 +458,10 @@ public class BiGGAnnotation {
       model.setMetaId(model.getId());
     }
     annotatePublications(model);
-    annotateCompartments(model);
-    annotateSpecies(model);
-    annotateReactions(model);
-    annotateGeneProducts(model);
+    annotateListOfCompartments(model);
+    annotateListOfSpecies(model);
+    annotateListOfReactions(model);
+    annotateListOfGeneProducts(model);
   }
 
 
