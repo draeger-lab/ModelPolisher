@@ -3,35 +3,6 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import java.awt.Window;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.ErrorManager;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLError;
-import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLException;
-import org.sbml.jsbml.SBMLReader;
-import org.sbml.jsbml.TidySBMLWriter;
-import org.sbml.jsbml.util.ValuePair;
-import org.sbml.jsbml.validator.SBMLValidator;
-
 import de.zbit.AppConf;
 import de.zbit.Launcher;
 import de.zbit.io.FileTools;
@@ -49,6 +20,21 @@ import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
 import edu.ucsd.sbrg.json.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.util.ValuePair;
+import org.sbml.jsbml.validator.SBMLValidator;
+
+import javax.xml.stream.XMLStreamException;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.List;
+import java.util.logging.*;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -219,8 +205,15 @@ public class ModelPolisher extends Launcher {
           output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
-        File target = new File(
-          Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        File target = null;
+        fileTypes = getFileType(file);
+        if(!fileTypes[0]){
+          target = new File(
+              Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName()) + ".xml");
+        } else {
+          target = new File(
+              Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        }
         batchProcess(bigg, file, target, parameters);
       }
     }
