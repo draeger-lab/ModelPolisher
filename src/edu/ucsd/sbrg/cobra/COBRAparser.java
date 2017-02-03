@@ -3,62 +3,35 @@
  */
 package edu.ucsd.sbrg.cobra;
 
-import static org.sbml.jsbml.util.Pair.pairOf;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLException;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.TidySBMLWriter;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
-import org.sbml.jsbml.ext.groups.Group;
-import org.sbml.jsbml.ext.groups.GroupsConstants;
-import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
-import org.sbml.jsbml.util.ModelBuilder;
-
 import com.jmatio.io.MatFileReader;
-import com.jmatio.types.MLArray;
-import com.jmatio.types.MLCell;
-import com.jmatio.types.MLChar;
-import com.jmatio.types.MLDouble;
-import com.jmatio.types.MLInt64;
-import com.jmatio.types.MLNumericArray;
-import com.jmatio.types.MLSparse;
-import com.jmatio.types.MLStructure;
-
+import com.jmatio.types.*;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.MIRIAM;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
+import org.identifiers.registry.RegistryLocalProvider;
+import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.ext.groups.Group;
+import org.sbml.jsbml.ext.groups.GroupsConstants;
+import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
+import org.sbml.jsbml.util.ModelBuilder;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import static org.sbml.jsbml.util.Pair.pairOf;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -74,19 +47,6 @@ public class COBRAparser {
    */
   private static final transient Logger logger =
     Logger.getLogger(COBRAparser.class.getName());
-
-
-  /**
-   * @param args
-   *        path to a file to be parsed and to an output SBML file.
-   */
-  public static void main(String[] args)
-    throws IOException, SBMLException, XMLStreamException {
-    SBMLDocument doc = COBRAparser.read(new File(args[0]));
-    // TidySBMLWriter.write(doc, System.out, ' ', (short) 2);
-    TidySBMLWriter.write(doc, new File(args[1]),
-      COBRAparser.class.getSimpleName(), "1.0", ' ', (short) 2);
-  }
 
 
   /**
@@ -125,6 +85,10 @@ public class COBRAparser {
    * 
    */
   private boolean omitGenericTerms;
+  /**
+   *
+   */
+  private RegistryLocalProvider registry;
 
 
   /**
@@ -225,6 +189,7 @@ public class COBRAparser {
     MLCell metHMDB, MLCell metInchiString, MLCell metKeggID,
     MLCell metPubChemID, MLCell metSmile) {
     Model model = builder.getModel();
+    registry = new RegistryLocalProvider();
     for (int i = 0; i < mets.getSize(); i++) {
       String id = toString(mets.get(i), mets.getName(), i + 1);
       if ((id != null) && (id.length() > 0)) {
@@ -256,11 +221,12 @@ public class COBRAparser {
           CVTerm term = new CVTerm();
           term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
           term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
-          addResource(metCHEBIID, i, term, MIRIAM.chebi);
-          addResource(metHMDB, i, term, MIRIAM.hmdb);
-          addResource(metInchiString, i, term, MIRIAM.INCHI);
-          addResource(metKeggID, i, term, MIRIAM.KEGGID);
-          addResource(metPubChemID, i, term, MIRIAM.PUBCHEMID);
+          addResource(metCHEBIID, i, term, "ChEBI");
+          addResource(metHMDB, i, term, "HMDB");
+          addResource(metInchiString, i, term, "InChI");
+          // TODO: make sure, you get the right collection for both
+          // addResource(metKeggID, i, term, "kegg");
+          // addResource(metPubChemID, i, term, "pubchem");
           if (term.getResourceCount() > 0) {
             species.addCVTerm(term);
           }
@@ -320,13 +286,28 @@ public class COBRAparser {
    * @param term
    * @param catalog
    */
-  private void addResource(MLCell cell, int i, CVTerm term, MIRIAM catalog) {
+  private void addResource(MLCell cell, int i, CVTerm term, String catalog) {
     if (exists(cell, i)) {
       String id = toMIRIAMid(cell.get(i));
       if ((id != null) && !id.isEmpty()) {
-        String resource = MIRIAM.toResourceURL(catalog, id);
-        if ((resource != null) && !resource.isEmpty()) {
-          term.addResource(resource);
+        DataType collection = RegistryUtilities.getDataType(catalog);
+        String regexp = "";
+        String collName = "";
+        boolean validId = false;
+        if (collection != null) {
+          regexp = collection.getRegexp();
+          collName = collection.getName();
+          validId = registry.checkRegExp(id, collName);
+        }
+        if (validId) {
+          String resource = registry.getURI(catalog, id);
+          if ((resource != null) && !resource.isEmpty()) {
+            term.addResource(resource);
+          }
+        } else {
+          logger.warning(MessageFormat.format(
+            "Could not add resource, as the identifier ''{0}'' did not match the pattern ''{1}''",
+            id, regexp));
         }
       }
     }
@@ -359,7 +340,7 @@ public class COBRAparser {
     if ((idCandidate.charAt(end) == ']') || (idCandidate.charAt(end) == '\'')) {
       end--;
     }
-    return (start < end) ? idCandidate.substring(start, end) : null;
+    return (start < end) ? idCandidate.substring(start, end+1) : null;
   }
 
 
@@ -971,7 +952,6 @@ public class COBRAparser {
   }
 
 
-
   /**
    * @param array
    * @return
@@ -990,7 +970,7 @@ public class COBRAparser {
 
 
   /**
-   * @param field
+   * @param array
    * @return
    */
   private MLChar toMLChar(MLArray array) {
@@ -1025,7 +1005,7 @@ public class COBRAparser {
 
 
   /**
-   * @param field
+   * @param array
    * @return
    */
   private MLNumericArray<?> toMLNumericArray(MLArray array) {
