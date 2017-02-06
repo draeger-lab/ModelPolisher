@@ -958,7 +958,6 @@ public class COBRAparser {
       }
       if (r.endsWith("'") || r.endsWith(".")) {
         r = r.substring(0, r.length() - 1);
-        logger.severe(r);
       }
       if (validId(catalog, r)) {
         if (!resource.isEmpty()) {

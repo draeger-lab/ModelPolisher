@@ -154,7 +154,7 @@ public class SBMLPolisher {
 
 
   /**
-   * @param bigg
+   *
    */
   public SBMLPolisher() {
     omitGenericTerms = false;

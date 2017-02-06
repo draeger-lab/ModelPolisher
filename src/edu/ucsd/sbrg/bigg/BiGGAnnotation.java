@@ -161,7 +161,7 @@ public class BiGGAnnotation {
 
 
   /**
-   * @param model
+   * @param species
    */
   @SuppressWarnings("deprecation")
   public void annotateSpecies(Species species) {
