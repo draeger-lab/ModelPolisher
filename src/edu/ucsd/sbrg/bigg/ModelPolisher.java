@@ -50,7 +50,7 @@ public class ModelPolisher extends Launcher {
   private static final class Parameters {
 
     /**
-     * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
+     * @see ModelPolisherOptions#INCLUDE_ANY_URI
      */
     Boolean includeAnyURI = null;
     /**
@@ -201,8 +201,8 @@ public class ModelPolisher extends Launcher {
       }
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(MessageFormat.format("Cannot write to file {0}.",
-          output.getAbsolutePath()));
+        throw new IOException(MessageFormat.format("Cannot open file {0}.",
+          input.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
         File target = null;
@@ -568,7 +568,7 @@ public class ModelPolisher extends Launcher {
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
     if (parameters.includeAnyURI != null) {
-      polisher.setIncludeAnyURI(parameters.includeAnyURI.booleanValue());
+      polisher.setIncludeAnyURI(parameters.includeAnyURI);
     }
     if (parameters.documentTitlePattern != null) {
       polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
