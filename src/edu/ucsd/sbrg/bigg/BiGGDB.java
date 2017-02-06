@@ -90,11 +90,11 @@ public class BiGGDB {
       // We can correct the kegg collection
       if (resource.contains("kegg")) {
         if (identifier.startsWith("D")) {
-          logger.warning("Changing kegg collection to kegg.drug");
+          logger.info("Changing kegg collection to kegg.drug");
           resource =
             RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
         } else if (identifier.startsWith("G")) {
-          logger.warning("Changing kegg collection to kegg.glycan");
+          logger.info("Changing kegg collection to kegg.glycan");
           resource =
             RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
         }
@@ -103,6 +103,11 @@ public class BiGGDB {
         if (!identifier.toLowerCase().startsWith("gi:")) {
           resource =
             RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
+        }
+      } else if (resource.contains("go")) {
+        if (!identifier.toLowerCase().startsWith("go:")) {
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
         }
       }
     }
@@ -281,10 +286,17 @@ public class BiGGDB {
           if (!identifier.toLowerCase().startsWith("gi:")) {
             identifier = "GI:" + identifier;
           }
+        } else if (collection != null && collection.contains("go")) {
+          if (!identifier.toLowerCase().startsWith("go:")) {
+            identifier = "GO:" + identifier;
+          }
         }
         String resource = registry.getURI(collection, identifier);
-        if (collection == null || identifier == null ) {
-          logger.warning("Could not retrieve collection or identifier.");
+        if (collection == null) {
+          logger.warning("Could not retrieve collection");
+          continue;
+        } else if (identifier == null) {
+          logger.warning("Could not retrieve identifier");
           continue;
         } else if (resource == null || resource.isEmpty()) {
           logger.warning(MessageFormat.format(
