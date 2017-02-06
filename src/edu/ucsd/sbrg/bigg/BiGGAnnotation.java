@@ -50,8 +50,7 @@ public class BiGGAnnotation {
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger =
-    Logger.getLogger(BiGGAnnotation.class.getName());
+  public static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
   /**
    * Default model notes.
    */
@@ -82,13 +81,11 @@ public class BiGGAnnotation {
    * @throws IOException
    * @throws XMLStreamException
    */
-  public SBMLDocument annotate(SBMLDocument doc)
-    throws XMLStreamException, IOException {
+  public SBMLDocument annotate(SBMLDocument doc) throws XMLStreamException, IOException {
     Model model = doc.getModel();
     replacements = new HashMap<>();
     if (!doc.isSetModel()) {
-      logger.info(
-        "This SBML document does not contain a model. Nothing to do.");
+      logger.info("This SBML document does not contain a model. Nothing to do.");
       return doc;
     }
     annotate(model);
