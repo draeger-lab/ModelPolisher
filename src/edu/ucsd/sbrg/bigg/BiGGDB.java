@@ -104,7 +104,7 @@ public class BiGGDB {
           resource =
             RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
         }
-      } else if (resource.contains("go")) {
+      } else if (resource.contains("go") && !resource.contains("goa")) {
         if (!identifier.toLowerCase().startsWith("go:")) {
           resource =
             RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
@@ -286,7 +286,7 @@ public class BiGGDB {
           if (!identifier.toLowerCase().startsWith("gi:")) {
             identifier = "GI:" + identifier;
           }
-        } else if (collection != null && collection.contains("go")) {
+        } else if (collection != null && collection.contains("go") && !collection.contains("goa")) {
           if (!identifier.toLowerCase().startsWith("go:")) {
             identifier = "GO:" + identifier;
           }

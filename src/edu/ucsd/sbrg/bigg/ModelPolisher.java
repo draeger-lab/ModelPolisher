@@ -3,6 +3,46 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import java.awt.Window;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
+import javax.xml.stream.XMLStreamException;
+
+import com.sun.istack.internal.NotNull;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLError;
+import org.sbml.jsbml.SBMLErrorLog;
+import org.sbml.jsbml.SBMLException;
+import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.TidySBMLWriter;
+import org.sbml.jsbml.util.ValuePair;
+import org.sbml.jsbml.validator.SBMLValidator;
+
 import de.zbit.AppConf;
 import de.zbit.Launcher;
 import de.zbit.io.FileTools;
@@ -20,21 +60,6 @@ import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
 import edu.ucsd.sbrg.json.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.util.ValuePair;
-import org.sbml.jsbml.validator.SBMLValidator;
-
-import javax.xml.stream.XMLStreamException;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.List;
-import java.util.logging.*;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -207,12 +232,12 @@ public class ModelPolisher extends Launcher {
       for (File file : input.listFiles()) {
         File target = null;
         fileTypes = getFileType(file);
-        if(!fileTypes[0]){
-          target = new File(
-              Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName()) + ".xml");
+        if (!fileTypes[0]) {
+          target = new File(Utils.ensureSlash(output.getAbsolutePath())
+            + FileTools.removeFileExtension(file.getName()) + ".xml");
         } else {
           target = new File(
-              Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+            Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
         }
         batchProcess(bigg, file, target, parameters);
       }
@@ -556,6 +581,7 @@ public class ModelPolisher extends Launcher {
     } else if (fileTypes[2]) {
       doc = JSONparser.read(input);
     } else {
+      checkHTMLTags(input);
       doc = SBMLReader.read(input, new UpdateListener());
     }
     if (!doc.isSetLevelAndVersion()
@@ -619,6 +645,56 @@ public class ModelPolisher extends Launcher {
     calendar.setTimeInMillis(time);
     logger.info(
       MessageFormat.format("Done ({0,time, ssss} s).", calendar.getTime()));
+  }
+
+
+  /**
+   * Replaces wrong html tags in a SBML model with body tags
+   * Attention: Writes whole file into a one line string
+   *
+   * @param input:
+   *        SBML file
+   */
+  private void checkHTMLTags(File input) {
+    FileInputStream iStream = null;
+    try {
+      iStream = new FileInputStream(input);
+    } catch (FileNotFoundException exc) {
+      logger.severe(
+        MessageFormat.format("Could not open file at ''{0}''", input.toPath()));
+    }
+    // If it's null, something went horribly wrong annd a nullPointerException
+    // should be thrown
+    BufferedReader reader = new BufferedReader(new InputStreamReader(iStream));
+    // Preserve a copy of the original. String after replacement is possibly a
+    // one liner in a file
+    try {
+      Path output = Paths.get(input.getAbsolutePath() + ".bak");
+      Files.copy(input.toPath(), output);
+    } catch (IOException e) {
+      logger.info("File was not copied, as target already exists");
+    }
+    // Replace tags and replace file for processing
+    try {
+      StringBuilder sb = new StringBuilder();
+      String line = "";
+      while ((line = reader.readLine()) != null) {
+        sb.append(line);
+      }
+      reader.close();
+      String doc = sb.toString();
+      doc = doc.replaceAll("<html ", "<body ");
+      doc = doc.replaceAll("</html>", "</body>");
+      BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
+      writer.write(doc);
+      logger.info(MessageFormat.format("Wrote corrected file to ''{0}''",
+        input.toPath()));
+      writer.flush();
+      writer.close();
+    } catch (IOException exc) {
+      logger.severe("Could not read whole file");
+    }
   }
 
 
