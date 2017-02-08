@@ -672,7 +672,9 @@ public class ModelPolisher extends Launcher {
       Path output = Paths.get(input.getAbsolutePath() + ".bak");
       Files.copy(input.toPath(), output);
     } catch (IOException e) {
-      logger.info("File was not copied, as target already exists");
+      // We assume it was already corrected
+      logger.info("File was already corrected, skipping tag replacement");
+      return;
     }
     // Replace tags and replace file for processing
     try {

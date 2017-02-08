@@ -62,60 +62,6 @@ public class BiGGDB {
 
 
   /**
-   * Checks resource URIs and logs those not matching the specified pattern
-   *
-   * @param resource:
-   *        resource URI to be added as annotation
-   * @return corrected resource URI
-   */
-  public String checkResourceUrl(String resource) {
-    String collection =
-      RegistryUtilities.getDataCollectionPartFromURI(resource);
-    // not present in provided registry, cannot be checked this way
-    if (collection.contains("metanetx")
-      || collection.contains("unipathway.reaction")) {
-      return resource;
-    }
-    String identifier = RegistryUtilities.getIdentifierFromURI(resource);
-    RegistryLocalProvider registry = new RegistryLocalProvider();
-    Boolean correct = registry.checkRegExp(identifier, collection);
-    String regexp = "";
-    DataType type = RegistryUtilities.getDataType(collection);
-    if (type != null)
-      regexp = type.getRegexp();
-    if (!correct) {
-      logger.warning(MessageFormat.format(
-        "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
-        identifier, regexp, collection));
-      // We can correct the kegg collection
-      if (resource.contains("kegg")) {
-        if (identifier.startsWith("D")) {
-          logger.info("Changing kegg collection to kegg.drug");
-          resource =
-            RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
-        } else if (identifier.startsWith("G")) {
-          logger.info("Changing kegg collection to kegg.glycan");
-          resource =
-            RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
-        }
-        // add possibly missing "gi:" prefix to identifier
-      } else if (resource.contains("ncbigi")) {
-        if (!identifier.toLowerCase().startsWith("gi:")) {
-          resource =
-            RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
-        }
-      } else if (resource.contains("go") && !resource.contains("goa")) {
-        if (!identifier.toLowerCase().startsWith("go:")) {
-          resource =
-            RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
-        }
-      }
-    }
-    return resource;
-  }
-
-
-  /**
    * @return
    */
   public Date getBiGGVersion() {
@@ -226,8 +172,10 @@ public class BiGGDB {
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
     TreeSet<String> result = new TreeSet<String>();
     while (rst.next()) {
-      String resource = checkResourceUrl(rst.getString(1));
-      result.add(resource);
+      String resource = rst.getString(1);
+      if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
+        result.add(BiGGAnnotation.checkResourceUrl(resource));
+      }
     }
     rst.getStatement().close();
     return result;
@@ -280,32 +228,19 @@ public class BiGGDB {
     try {
       ResultSet rst = connect.query(query, label);
       while (rst.next()) {
+        String resource = "";
         String collection = rst.getString(1);
         String identifier = rst.getString(2);
-        if (collection != null && collection.contains("ncbigi")) {
-          if (!identifier.toLowerCase().startsWith("gi:")) {
-            identifier = "GI:" + identifier;
-          }
-        } else if (collection != null && collection.contains("go") && !collection.contains("goa")) {
-          if (!identifier.toLowerCase().startsWith("go:")) {
-            identifier = "GO:" + identifier;
-          }
-        }
-        String resource = registry.getURI(collection, identifier);
-        if (collection == null) {
-          logger.warning("Could not retrieve collection");
-          continue;
-        } else if (identifier == null) {
-          logger.warning("Could not retrieve identifier");
-          continue;
-        } else if (resource == null || resource.isEmpty()) {
-          logger.warning(MessageFormat.format(
-            "Could not retrieve resource for collection ''{0}'' and identifier ''{1}''",
-            collection, identifier));
+        if (collection != null && identifier != null) {
+          resource = collection + identifier;
+        } else {
+          logger.info(
+            "Either collection or id was null for this gene resource URI.");
           continue;
         }
-        resource = checkResourceUrl(resource);
-        set.add(resource);
+        if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
+          set.add(resource);
+        }
       }
       rst.getStatement().close();
     } catch (SQLException exc) {
@@ -477,8 +412,10 @@ public class BiGGDB {
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
     TreeSet<String> result = new TreeSet<String>();
     while (rst.next()) {
-      String resource = checkResourceUrl(rst.getString(1));
-      result.add(resource);
+      String resource = rst.getString(1);
+      if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
+        result.add(BiGGAnnotation.checkResourceUrl(resource));
+      }
     }
     rst.getStatement().close();
     return result;

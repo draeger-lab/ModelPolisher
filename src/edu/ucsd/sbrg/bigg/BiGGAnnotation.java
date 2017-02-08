@@ -17,7 +17,9 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.identifiers.registry.RegistryLocalProvider;
 import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -373,7 +375,7 @@ public class BiGGAnnotation {
       // begin with http://identifiers.org, else this may fail
       String collection =
         RegistryUtilities.getDataCollectionPartFromURI(resource);
-      if (collection == null || collection.length() < 4) {
+      if (collection == null || !collection.contains("identifiers.org")) {
         continue;
       }
       collection = collection.substring(collection.indexOf("org/") + 4,
@@ -462,6 +464,87 @@ public class BiGGAnnotation {
     annotateListOfSpecies(model);
     annotateListOfReactions(model);
     annotateListOfGeneProducts(model);
+  }
+
+
+  /**
+   * Checks resource URIs and logs those not matching the specified pattern
+   * Used to check URIs obtained from BiGGDB
+   * A resource URI that does not match the pattern will be logged and not added
+   * to the model
+   * For a collection not in the registry correctness is assumed
+   *
+   * @param resource:
+   *        resource URI to be added as annotation
+   * @return corrected resource URI
+   */
+  protected static String checkResourceUrl(String resource) {
+    String collection =
+      RegistryUtilities.getDataCollectionPartFromURI(resource);
+    RegistryLocalProvider registry = new RegistryLocalProvider();
+    // not present in provided registry, cannot be checked this way
+    if (collection.contains("metanetx")
+      || collection.contains("unipathway.reaction")
+      || collection.contains("reactome.org")
+      || collection.contains("molecular-networks.com")) {
+      logger.fine(MessageFormat.format(
+        "URI: ''{0}'' will be added without validity check. Collection not present in registry-lib",
+        resource));
+      return resource;
+    }
+    String identifier = RegistryUtilities.getIdentifierFromURI(resource);
+    Boolean correct = registry.checkRegExp(identifier, collection);
+    String regexp = "";
+    DataType type = RegistryUtilities.getDataType(collection);
+    if (type != null) {
+      regexp = type.getRegexp();
+    } else {
+      logger.severe(
+        MessageFormat.format("Please report this URI {0}", resource));
+      return resource;
+    }
+    if (!correct) {
+      logger.warning(MessageFormat.format(
+        "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
+        identifier, regexp, collection));
+      // We can correct the kegg collection
+      if (resource.contains("kegg")) {
+        if (identifier.startsWith("D")) {
+          logger.info("Changing kegg collection to kegg.drug");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
+        } else if (identifier.startsWith("G")) {
+          logger.info("Changing kegg collection to kegg.glycan");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
+        }
+        // add possibly missing "gi:" prefix to identifier
+      } else if (resource.contains("ncbigi")) {
+        if (!identifier.toLowerCase().startsWith("gi:")) {
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
+        }
+      } else if (resource.contains("go") && !resource.contains("goa")) {
+        if (!identifier.toLowerCase().startsWith("go:")) {
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
+        }
+      } else if (resource.contains("ec-code")) {
+        int missingDots =
+          identifier.length() - identifier.replace(".", "").length();
+        String replacement = identifier;
+        for (int count = missingDots; count < 3; count++) {
+          replacement += ".-";
+        }
+        resource = RegistryUtilities.replace(resource, identifier, replacement);
+      } else {
+        resource = null;
+      }
+    }
+    if (resource != null) {
+      logger.fine(MessageFormat.format("Added resource ", resource));
+    }
+    return resource;
   }
 
 
