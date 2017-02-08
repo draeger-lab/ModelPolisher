@@ -26,8 +26,6 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.identifiers.registry.RegistryLocalProvider;
-import org.identifiers.registry.RegistryUtilities;
-import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.Utils;

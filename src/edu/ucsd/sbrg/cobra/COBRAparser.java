@@ -3,33 +3,60 @@
  */
 package edu.ucsd.sbrg.cobra;
 
-import com.jmatio.io.MatFileReader;
-import com.jmatio.types.*;
-import de.zbit.sbml.util.SBMLtools;
-import de.zbit.util.Utils;
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.util.SBMLUtils;
-import edu.ucsd.sbrg.util.UpdateListener;
-import org.identifiers.registry.RegistryLocalProvider;
-import org.identifiers.registry.RegistryUtilities;
-import org.identifiers.registry.data.DataType;
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.ext.fbc.*;
-import org.sbml.jsbml.ext.groups.Group;
-import org.sbml.jsbml.ext.groups.GroupsConstants;
-import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
-import org.sbml.jsbml.util.ModelBuilder;
+import static org.sbml.jsbml.util.Pair.pairOf;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import static org.sbml.jsbml.util.Pair.pairOf;
+import javax.xml.stream.XMLStreamException;
+
+import org.identifiers.registry.RegistryLocalProvider;
+import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.ext.groups.Group;
+import org.sbml.jsbml.ext.groups.GroupsConstants;
+import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
+import org.sbml.jsbml.util.ModelBuilder;
+
+import com.jmatio.io.MatFileReader;
+import com.jmatio.types.MLArray;
+import com.jmatio.types.MLCell;
+import com.jmatio.types.MLChar;
+import com.jmatio.types.MLDouble;
+import com.jmatio.types.MLNumericArray;
+import com.jmatio.types.MLSparse;
+import com.jmatio.types.MLStructure;
+
+import de.zbit.sbml.util.SBMLtools;
+import de.zbit.util.Utils;
+import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
  * @author Andreas Dr&auml;ger
