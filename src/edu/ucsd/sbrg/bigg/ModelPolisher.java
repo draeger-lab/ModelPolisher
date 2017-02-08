@@ -649,7 +649,6 @@ public class ModelPolisher extends Launcher {
 
   /**
    * Replaces wrong html tags in a SBML model with body tags
-   * Attention: Writes whole file into a one line string
    *
    * @param input:
    *        SBML file
@@ -662,30 +661,33 @@ public class ModelPolisher extends Launcher {
       logger.severe(
         MessageFormat.format("Could not open file at ''{0}''", input.toPath()));
     }
-    // If it's null, something went horribly wrong annd a nullPointerException
+    // If it's null, something went horribly wrong and a nullPointerException
     // should be thrown
     BufferedReader reader = new BufferedReader(new InputStreamReader(iStream));
-    // Preserve a copy of the original. String after replacement is possibly a
-    // one liner in a file
-    try {
-      Path output = Paths.get(input.getAbsolutePath() + ".bak");
-      Files.copy(input.toPath(), output);
-    } catch (IOException e) {
-      // We assume it was already corrected
-      logger.info("File was already corrected, skipping tag replacement");
-      return;
-    }
     // Replace tags and replace file for processing
     try {
       StringBuilder sb = new StringBuilder();
       String line = "";
       while ((line = reader.readLine()) != null) {
-        sb.append(line);
+        sb.append(line + "\n");
       }
       reader.close();
       String doc = sb.toString();
+      if (!doc.contains("<html ")) {
+        logger.fine("No replacement needed, continuing");
+        return;
+      }
       doc = doc.replaceAll("<html ", "<body ");
       doc = doc.replaceAll("</html>", "</body>");
+      // Preserve a copy of the original.
+      try {
+        Path output = Paths.get(input.getAbsolutePath() + ".bak");
+        Files.copy(input.toPath(), output);
+      } catch (IOException e) {
+        // We assume it was already corrected
+        logger.info("File was already corrected, skipping tag replacement");
+        return;
+      }
       BufferedWriter writer =
         new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
       writer.write(doc);
