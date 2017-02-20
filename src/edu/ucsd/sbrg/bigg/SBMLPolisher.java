@@ -931,9 +931,22 @@ public class SBMLPolisher {
     }
     mmol_per_gDW_per_hr.addCVTerm(new CVTerm(
       CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, createURI("pubmed", 7986045)));
+    // units might be set, but not their ids (see yeast_7.00.xml)
+    ListOf unitDefinitions = model.getListOfUnitDefinitions();
     UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
+    if (substanceUnits == null && unitDefinitions.get("substance") != null) {
+      model.setSubstanceUnits(UnitDefinition.SUBSTANCE);
+      substanceUnits = model.getSubstanceUnitsInstance();
+    }
+    UnitDefinition volumeUnits = model.getVolumeUnitsInstance();
+    if (volumeUnits == null && unitDefinitions.get("volume") != null) {
+      model.setVolumeUnits(UnitDefinition.VOLUME);
+    }
+    UnitDefinition timeUnits = model.getTimeUnitsInstance();
+    if (timeUnits == null && unitDefinitions.get("time") != null) {
+      model.setTimeUnits(UnitDefinition.TIME);
+    }
     boolean substanceExists = true;
-    // TODO: find out why substance unit cannot be registered for yeast_7.00.xml
     if (substanceUnits == null) {
       substanceUnits = model.createUnitDefinition(UnitDefinition.SUBSTANCE);
       substanceUnits.setName("Millimoles per gram (dry weight)");
