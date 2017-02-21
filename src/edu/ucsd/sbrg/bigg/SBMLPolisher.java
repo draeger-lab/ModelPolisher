@@ -932,7 +932,7 @@ public class SBMLPolisher {
     mmol_per_gDW_per_hr.addCVTerm(new CVTerm(
       CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, createURI("pubmed", 7986045)));
     // units might be set, but not their ids (see yeast_7.00.xml)
-    ListOf unitDefinitions = model.getListOfUnitDefinitions();
+    ListOf<UnitDefinition> unitDefinitions = model.getListOfUnitDefinitions();
     UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
     if (substanceUnits == null && unitDefinitions.get("substance") != null) {
       model.setSubstanceUnits(UnitDefinition.SUBSTANCE);

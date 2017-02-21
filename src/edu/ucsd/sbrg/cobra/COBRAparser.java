@@ -328,6 +328,7 @@ public class COBRAparser {
     if (exists(cell, i)) {
       String id = toMIRIAMid(cell.get(i));
       if ((id != null) && !id.isEmpty()) {
+        id = checkId(id);
         if (validId(catalog, id)) {
           String resource = registry.getURI(catalog, id);
           if ((resource != null) && !resource.isEmpty()) {
@@ -342,6 +343,24 @@ public class COBRAparser {
         }
       }
     }
+  }
+
+
+  /**
+   * Necessary to check for a special whitespace (code 160) at beginning of id
+   * (iCHOv1.mat, possibly other models) and to remove trailing ';'
+   *
+   * @param id
+   * @return: trimmed id without ';' at the end
+   */
+  private String checkId(String id) {
+    if (id.startsWith(Character.toString((char) 160))) {
+      id = id.substring(1);
+    }
+    if (id.endsWith(";")) {
+      id = id.substring(0, id.length() - 1);
+    }
+    return id;
   }
 
 
@@ -516,7 +535,7 @@ public class COBRAparser {
       String geneReactionRule =
         toString(grRules.get(i), grRules.getName(), i + 1);
       if (model.getReaction(i) == null) {
-        logger.warning(MessageFormat.format(
+        logger.severe(MessageFormat.format(
           "Could not create GPR for reaction with index ''{0}''.", i));
       } else {
         SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
@@ -673,7 +692,7 @@ public class COBRAparser {
         SBMLUtils.createSubsystemLink(model.getReaction(i),
           group.createMember());
       } else {
-        logger.warning(MessageFormat.format(
+        logger.severe(MessageFormat.format(
           "Reaction at index ''{0}'' was null. Could not create subsystem link.",
           i));
       }
@@ -986,6 +1005,7 @@ public class COBRAparser {
       if (r.endsWith("'") || r.endsWith(".")) {
         r = r.substring(0, r.length() - 1);
       }
+      r = checkId(r);
       if (validId(catalog, r)) {
         if (!resource.isEmpty()) {
           if (st.countTokens() > 1) {
