@@ -354,11 +354,16 @@ public class COBRAparser {
    * @return: trimmed id without ';' at the end
    */
   private String checkId(String id) {
-    if (id.startsWith(Character.toString((char) 160))) {
+    if (id.startsWith(Character.toString((char) 160)) || id.startsWith("/")) {
       id = id.substring(1);
     }
     if (id.endsWith(";")) {
       id = id.substring(0, id.length() - 1);
+    } else if (id.contains(";")) {
+      logger.warning(
+        "Given Id String possibly contained more than one id, only the first one is used: "
+          + id);
+      id = id.substring(0, id.indexOf(";"));
     }
     return id;
   }
@@ -375,6 +380,9 @@ public class COBRAparser {
    * @return {@code true}, if it matches, else {@code false}
    */
   private boolean validId(String catalog, String id) {
+    if (id.isEmpty()) {
+      return false;
+    }
     DataType collection = RegistryUtilities.getDataType(catalog);
     boolean validId = false;
     if (collection != null) {
