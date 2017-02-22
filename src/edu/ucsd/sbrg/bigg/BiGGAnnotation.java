@@ -504,7 +504,7 @@ public class BiGGAnnotation {
       return resource;
     }
     if (!correct) {
-      logger.warning(MessageFormat.format(
+      logger.info(MessageFormat.format(
         "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
         identifier, regexp, collection));
       // We can correct the kegg collection
@@ -521,29 +521,37 @@ public class BiGGAnnotation {
         // add possibly missing "gi:" prefix to identifier
       } else if (resource.contains("ncbigi")) {
         if (!identifier.toLowerCase().startsWith("gi:")) {
+          logger.info("Adding missing GI: prefix.");
           resource =
             RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
         }
       } else if (resource.contains("go") && !resource.contains("goa")) {
         if (!identifier.toLowerCase().startsWith("go:")) {
+          logger.info("Adding missing GO: prefix.");
           resource =
             RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
         }
       } else if (resource.contains("ec-code")) {
         int missingDots =
           identifier.length() - identifier.replace(".", "").length();
+        if (missingDots < 1) {
+          logger.warning(MessageFormat.format(
+            "Could not correct ec-code ''{0}''", identifier));
+          return null;
+        }
         String replacement = identifier;
         for (int count = missingDots; count < 3; count++) {
           replacement += ".-";
         }
         resource = RegistryUtilities.replace(resource, identifier, replacement);
       } else {
-        resource = null;
+        logger.warning(MessageFormat.format(
+          "Could not update resource ''{0}''. Resource will not be added to the model.",
+          resource, collection));
+        return null;
       }
     }
-    if (resource != null) {
-      logger.fine(MessageFormat.format("Added resource ", resource));
-    }
+    logger.fine(MessageFormat.format("Added resource ", resource));
     return resource;
   }
 
