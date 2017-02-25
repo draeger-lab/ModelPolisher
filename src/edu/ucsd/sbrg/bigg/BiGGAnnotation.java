@@ -200,7 +200,7 @@ public class BiGGAnnotation {
       }
       try {
         TreeSet<String> linkOut =
-          bigg.getComponentResources(biggId, polisher.includeAnyURI);
+          bigg.getResources(biggId, polisher.includeAnyURI, false);
         // convert to set to remove possible duplicates; TreeSet should
         // respect current order
         for (String resource : linkOut) {
@@ -318,7 +318,7 @@ public class BiGGAnnotation {
     }
     try {
       TreeSet<String> linkOut =
-        bigg.getReactionResources(biggId, polisher.includeAnyURI);
+        bigg.getResources(biggId, polisher.includeAnyURI, true);
       for (String resource : linkOut) {
         cvTerm.addResource(resource);
       }
@@ -375,7 +375,13 @@ public class BiGGAnnotation {
       // begin with http://identifiers.org, else this may fail
       String collection =
         RegistryUtilities.getDataCollectionPartFromURI(resource);
-      if (collection == null || !collection.contains("identifiers.org")) {
+      if (collection == null) {
+        continue;
+      } else if (!collection.contains("identifiers.org")) {
+        // TODO: find out if there are valid non identifiers.org ids
+        logger.warning(MessageFormat.format(
+          "Collection ''{0}'' does not match expected pattern. It will not be added as resource.",
+          collection));
         continue;
       }
       collection = collection.substring(collection.indexOf("org/") + 4,
