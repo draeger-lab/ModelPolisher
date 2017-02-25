@@ -313,16 +313,29 @@ public class ModelPolisher extends Launcher {
     parameters.annotateWithBiGG =
       args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
     if (parameters.annotateWithBiGG) {
-      try {
-        // Connect to database and launch application:
-        String passwd = args.getProperty(DBOptions.PASSWD);
-        bigg =
-          new BiGGDB(new PostgreSQLConnector(args.getProperty(DBOptions.HOST),
+      SQLConnector connectorBase = new SQLConnector();
+      String dbName = args.getProperty(DBOptions.DBNAME);
+      if (dbName == null || dbName.isEmpty()) {
+        // If no DB name is provided, we try to connect to the local SQLite DB
+        try {
+          bigg = new BiGGDB(connectorBase.new SQLiteConnector());
+        } catch (SQLException | ClassNotFoundException exc) {
+          exc.printStackTrace();
+          return;
+        }
+      } else {
+        try {
+          // Connect to PostgreSQL database and launch application:
+          String passwd = args.getProperty(DBOptions.PASSWD);
+          bigg = new BiGGDB(connectorBase.new PostgreSQLConnector(
+            args.getProperty(DBOptions.HOST),
             args.getIntProperty(DBOptions.PORT),
             args.getProperty(DBOptions.USER), passwd != null ? passwd : "",
             args.getProperty(DBOptions.DBNAME)));
-      } catch (SQLException | ClassNotFoundException exc) {
-        exc.printStackTrace();
+        } catch (SQLException | ClassNotFoundException exc) {
+          exc.printStackTrace();
+          return;
+        }
       }
     }
     // Gives users the choice to pass an alternative model notes XHTML file to

@@ -44,15 +44,37 @@ public class BiGGDB {
   /**
    * The connection to the database.
    */
-  private PostgreSQLConnector connect;
+  private SQLConnector connect;
+  /**
+   *
+   */
+  private boolean isSQLiteConnection = false;
 
 
   /**
+   * Initialize a PostgreSQL connection
+   *
    * @param connector
    * @throws SQLException
    */
-  public BiGGDB(PostgreSQLConnector connector) throws SQLException {
+  public BiGGDB(SQLConnector.PostgreSQLConnector connector)
+    throws SQLException {
     connect = connector;
+    if (!connector.isConnected()) {
+      connector.connect();
+    }
+  }
+
+
+  /**
+   * Initialize a SQLite connection
+   *
+   * @param connector
+   * @throws SQLException
+   */
+  public BiGGDB(SQLConnector.SQLiteConnector connector) throws SQLException {
+    connect = connector;
+    isSQLiteConnection = true;
     if (!connector.isConnected()) {
       connector.connect();
     }
@@ -147,41 +169,6 @@ public class BiGGDB {
 
   /**
    * @param biggId
-   * @param includeAnyURI
-   * @return a set of external source together with external id.
-   * @throws SQLException
-   */
-  public TreeSet<String> getComponentResources(BiGGId biggId,
-    boolean includeAnyURI) throws SQLException {
-    // TODO: there could be errors in BiGG database and it is important to check
-    // patterns again (see MIRIAM class).
-    ResultSet rst = connect.query(
-      "SELECT CONCAT(" + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
-        + ") AS " + Constants.URL + " FROM " + Constants.COMPONENT + " c, "
-        + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE c."
-        + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
-        + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
-        + " AND " + Constants.URL_PREFIX
-        + " IS NOT NULL AND (CAST(s.type AS \"text\") = '" + Constants.COMPONENT
-        + "' OR CAST(s.type AS \"text\") = '"
-        + Constants.COMPARTMENTALIZED_COMPONENT + "') AND c."
-        + Constants.COLUMN_BIGG_ID + " = '%s'%s",
-      biggId.getAbbreviation(), includeAnyURI ? ""
-        : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
-    TreeSet<String> result = new TreeSet<String>();
-    while (rst.next()) {
-      String resource = rst.getString(1);
-      if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
-        result.add(BiGGAnnotation.checkResourceUrl(resource));
-      }
-    }
-    rst.getStatement().close();
-    return result;
-  }
-
-
-  /**
-   * @param biggId
    * @return
    */
   public String getComponentType(BiGGId biggId) {
@@ -231,9 +218,13 @@ public class BiGGDB {
         String identifier = rst.getString(2);
         if (collection != null && identifier != null) {
           resource = collection + identifier;
+        } else if (collection == null) {
+          logger.info("Collection was null for this gene resource URI.");
+          continue;
         } else {
-          logger.info(
-            "Either collection or id was null for this gene resource URI.");
+          logger.info(MessageFormat.format(
+            "Identifier was null for collection ''{0}'' and this gene resource URI ",
+            collection));
           continue;
         }
         if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
@@ -390,29 +381,40 @@ public class BiGGDB {
   /**
    * @param biggId
    * @param includeAnyURI
+   * @param isReaction
    * @return a set of external source together with external id.
    * @throws SQLException
    */
-  public TreeSet<String> getReactionResources(BiGGId biggId,
-    boolean includeAnyURI) throws SQLException {
-    // TODO: there could be errors in BiGG database and it is important to check
-    // patterns again (see MIRIAM class).
+  public TreeSet<String> getResources(BiGGId biggId, boolean includeAnyURI,
+    boolean isReaction) throws SQLException {
+    String type = isReaction ? Constants.REACTION : Constants.COMPONENT;
+    String selectConcat = "SELECT CONCAT(" + Constants.URL_PREFIX + ", s."
+      + Constants.SYNONYM + ")";
+    String typeCheck = "(CAST(s.type AS \"text\") = '" + Constants.COMPONENT
+      + "' OR CAST(s.type AS \"text\") = '"
+      + Constants.COMPARTMENTALIZED_COMPONENT + "')";
+    if (isSQLiteConnection) {
+      selectConcat =
+        "SELECT (" + Constants.URL_PREFIX + "|| s." + Constants.SYNONYM + ")";
+    }
+    if (isReaction) {
+      typeCheck = "CAST(s.type AS \"text\") = '" + Constants.REACTION + "'";
+    }
     ResultSet rst = connect.query(
-      "SELECT CONCAT(" + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
-        + ") AS " + Constants.URL + " FROM " + Constants.REACTION + " r, "
-        + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE r."
+      selectConcat + " AS " + Constants.URL + " FROM " + type + " t, "
+        + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE t."
         + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
         + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
-        + " AND " + Constants.URL_PREFIX
-        + " IS NOT NULL AND CAST(s.type AS \"text\") = '" + Constants.REACTION
-        + "' AND r." + Constants.COLUMN_BIGG_ID + " = '%s'%s",
+        + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND " + typeCheck
+        + " AND t." + Constants.COLUMN_BIGG_ID + " = '%s'%s",
       biggId.getAbbreviation(), includeAnyURI ? ""
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
-    TreeSet<String> result = new TreeSet<String>();
+    TreeSet<String> result = new TreeSet<>();
     while (rst.next()) {
       String resource = rst.getString(1);
-      if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
-        result.add(BiGGAnnotation.checkResourceUrl(resource));
+      resource = BiGGAnnotation.checkResourceUrl(resource);
+      if (resource != null) {
+        result.add(resource);
       }
     }
     rst.getStatement().close();
