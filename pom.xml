@@ -175,6 +175,9 @@
       <resource>
         <directory>resources</directory>
         <filtering>true</filtering>
+        <excludes>
+          <exclude>bigg.zip</exclude>
+        </excludes>
       </resource>
     </resources>
 
