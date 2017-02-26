@@ -3,10 +3,8 @@
 .classpath
 .project
 /bin/
-/doc/
 /target/
 /resources/bigg.sqlite
-/scripts/model_polisher.log
 /scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log
