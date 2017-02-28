@@ -2,8 +2,8 @@ language: java
 sudo: required
 jdk:
 - oraclejdk8
-before_script: git clone https://github.com/SBRG/bigg_models_data && cd scripts && ./configureSQLiteDB.sh && cd .. 
-script: travis_retry mvn clean compile verify -B && zip -d target/ModelPolisher-1.5.jar log4j2.xml && mkdir out && for file in bigg_models_data/models/*; do java -jar target/ModelPolisher-1.5.jar --input=$file --output=out/${file#bigg_models_data/models/} --annotate-with-bigg=true --log-level=SEVERE >> mp_log.txt; done
+before_script: git clone https://github.com/SBRG/bigg_models_data && mkdir models && mv bigg_models_data/models/RECON1.xml bigg_models_data/models/yeast_7.00.xml models/ && cd scripts && ./configureSQLiteDB.sh && cd ..
+script: travis_retry mvn clean compile verify -B && java -jar target/ModelPolisher-1.5.jar --input=models/ --output=out/ --annotate-with-bigg=true --log-level=WARNING
 after_success: ls -lisa out
 git:
   depth: 10
