@@ -566,7 +566,7 @@ public class BiGGAnnotation {
    * @param location
    *        relative path to the resource from this class.
    * @param replacements
-   * @returnConstants.URL_PREFIX + " like '%%identifiers.org%%'"
+   * @return Constants.URL_PREFIX + " like '%%identifiers.org%%'"
    * @throws IOException
    */
   private String parseNotes(String location, Map<String, String> replacements)

@@ -254,13 +254,24 @@ public class COBRAparser {
           addResource(metHMDB, i, term, "HMDB");
           addResource(metInchiString, i, term, "InChI");
           // all kegg resources
-          addResource(metKeggID, i, term, "kegg.compund");
-          addResource(metKeggID, i, term, "kegg.drug");
-          addResource(metKeggID, i, term, "kegg.genes");
-          addResource(metKeggID, i, term, "kegg.glycan");
-          addResource(metKeggID, i, term, "kegg.pathway");
-          addResource(metPubChemID, i, term, "pubchem.compund");
-          addResource(metPubChemID, i, term, "pubchem.substance");
+          do {
+            if (addResource(metKeggID, i, term, "KEGG Compound"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Drug"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Genes"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Glycan"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Pathway"))
+              break;
+          } while (false);
+          do {
+            if (addResource(metPubChemID, i, term, "PubChem-compound"))
+              break;
+            if (addResource(metPubChemID, i, term, "PubChem-substance"))
+              break;
+          } while (false);
           if (term.getResourceCount() > 0) {
             species.addCVTerm(term);
           }
@@ -324,7 +335,8 @@ public class COBRAparser {
    * @param term
    * @param catalog
    */
-  private void addResource(MLCell cell, int i, CVTerm term, String catalog) {
+  private boolean addResource(MLCell cell, int i, CVTerm term, String catalog) {
+    boolean success = false;
     if (exists(cell, i)) {
       String id = toMIRIAMid(cell.get(i));
       if ((id != null) && !id.isEmpty()) {
@@ -333,6 +345,7 @@ public class COBRAparser {
           String resource = registry.getURI(catalog, id);
           if ((resource != null) && !resource.isEmpty()) {
             term.addResource(resource);
+            success = true;
             logger.finest(MessageFormat.format(
               " Added resource URI ''{0}'' to provided CVTerm", resource));
           } else {
@@ -343,6 +356,7 @@ public class COBRAparser {
         }
       }
     }
+    return success;
   }
 
 
@@ -490,17 +504,55 @@ public class COBRAparser {
     // TODO: always check for null!
     MLStructure struct = (MLStructure) array;
     // Check that the given data structure only contains allowable entries:
+    // New struct to store values we match in a case insensitive way
+    MLStructure correctedStruct =
+      new MLStructure(struct.getName(), struct.getDimensions());
     for (MLArray field : struct.getAllFields()) {
+      boolean invalidField = false;
+      String fieldName = field.getName();
       try {
         logger.finest(MessageFormat.format("Found model component {0}.",
-          ModelField.valueOf(field.getName())));
+          ModelField.valueOf(fieldName)));
       } catch (IllegalArgumentException exc) {
         logException(exc);
+        invalidField = true;
+      }
+      finally {
+        // For each non matched struct field, check if an enum variant exists in
+        // a case insensitive way
+        if (invalidField) {
+          for (ModelField variant : ModelField.values()) {
+            String variantLC = variant.name().toLowerCase();
+            if (variantLC.equals(fieldName.toLowerCase())
+              || variantLC.startsWith(fieldName.toLowerCase())) {
+              if (correctedStruct.getField(variant.name()) != null) {
+                logger.warning(MessageFormat.format(
+                  "Field for possible match is already present: ''{0}''. ''{1}'' will be omitted.",
+                  variant.name(), fieldName));
+                break;
+              }
+              correctedStruct.setField(variant.name(), field);
+              logger.warning(MessageFormat.format(
+                "Changed name of unmatched "
+                  + "enum variant ''{0}'' to possible match ''{1}''",
+                fieldName, variant.name()));
+              invalidField = false;
+              break;
+            }
+          }
+          if (invalidField) {
+            logger.warning(MessageFormat.format(
+              "Could not find correct variant for field ''{0}''", fieldName));
+          }
+        } else {
+          correctedStruct.setField(fieldName, field);
+        }
       }
     }
     // parse model
     Model model = builder.getModel();
-    parseDescription(model, struct.getField(ModelField.description.name()));
+    parseDescription(model,
+      correctedStruct.getField(ModelField.description.name()));
     // Generate basic unit:
     UnitDefinition ud =
       builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
@@ -508,37 +560,39 @@ public class COBRAparser {
     ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
     ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
     // parse metabolites
-    MLCell mets = toMLCell(struct, ModelField.mets);
-    MLCell metNames = toMLCell(struct, ModelField.metNames);
-    MLCell metFormulas = toMLCell(struct, ModelField.metFormulas);
-    MLDouble metCharge = toMLDouble(struct, ModelField.metCharge);
-    MLCell metCHEBIID = toMLCell(struct, ModelField.metCHEBIID);
-    MLCell metHMDB = toMLCell(struct, ModelField.metHMDB);
-    MLCell metInchiString = toMLCell(struct, ModelField.metInchiString);
-    MLCell metKeggID = toMLCell(struct, ModelField.metKeggID);
-    MLCell metPubChemID = toMLCell(struct, ModelField.metPubChemID);
-    MLCell metSmile = toMLCell(struct, ModelField.metSmile);
+    MLCell mets = toMLCell(correctedStruct, ModelField.mets);
+    MLCell metNames = toMLCell(correctedStruct, ModelField.metNames);
+    MLCell metFormulas = toMLCell(correctedStruct, ModelField.metFormulas);
+    MLDouble metCharge = toMLDouble(correctedStruct, ModelField.metCharge);
+    MLCell metCHEBIID = toMLCell(correctedStruct, ModelField.metCHEBIID);
+    MLCell metHMDB = toMLCell(correctedStruct, ModelField.metHMDB);
+    MLCell metInchiString =
+      toMLCell(correctedStruct, ModelField.metInchiString);
+    MLCell metKeggID = toMLCell(correctedStruct, ModelField.metKEGGID);
+    MLCell metPubChemID = toMLCell(correctedStruct, ModelField.metPubChemID);
+    MLCell metSmile = toMLCell(correctedStruct, ModelField.metSmile);
     parseMetabolites(builder, mets, metNames, metFormulas, metCharge,
       metCHEBIID, metHMDB, metInchiString, metKeggID, metPubChemID, metSmile);
     // parse genes
-    MLCell genes = toMLCell(struct.getField(ModelField.mets.name()));
+    MLCell genes = toMLCell(correctedStruct.getField(ModelField.mets.name()));
     parseGenes(builder, genes);
     // parse reactions
-    MLCell rxns = toMLCell(struct, ModelField.rxns);
-    MLCell rxnNames = toMLCell(struct, ModelField.rxnNames);
-    MLCell rxnKeggID = toMLCell(struct, ModelField.rxnKeggID);
-    MLCell ecNumbers = toMLCell(struct, ModelField.ecNumbers);
-    MLCell confidenceScores = toMLCell(struct, ModelField.confidenceScores);
-    MLCell citations = toMLCell(struct, ModelField.citations);
-    MLCell comments = toMLCell(struct, ModelField.comments);
-    MLNumericArray<?> rev = toMLNumericArray(struct, ModelField.rev);
-    MLDouble lb = toMLDouble(struct.getField(ModelField.lb.name()));
-    MLDouble ub = toMLDouble(struct.getField(ModelField.ub.name()));
-    MLSparse S = toMLSparse(struct.getField(ModelField.S.name()));
+    MLCell rxns = toMLCell(correctedStruct, ModelField.rxns);
+    MLCell rxnNames = toMLCell(correctedStruct, ModelField.rxnNames);
+    MLCell rxnKeggID = toMLCell(correctedStruct, ModelField.rxnKeggID);
+    MLCell ecNumbers = toMLCell(correctedStruct, ModelField.ecNumbers);
+    MLCell confidenceScores =
+      toMLCell(correctedStruct, ModelField.confidenceScores);
+    MLCell citations = toMLCell(correctedStruct, ModelField.citations);
+    MLCell comments = toMLCell(correctedStruct, ModelField.comments);
+    MLNumericArray<?> rev = toMLNumericArray(correctedStruct, ModelField.rev);
+    MLDouble lb = toMLDouble(correctedStruct.getField(ModelField.lb.name()));
+    MLDouble ub = toMLDouble(correctedStruct.getField(ModelField.ub.name()));
+    MLSparse S = toMLSparse(correctedStruct.getField(ModelField.S.name()));
     parseRxns(builder, rxns, rxnNames, rev, S, mets, lb, ub, rxnKeggID,
       ecNumbers, confidenceScores, citations, comments);
     // parse gprs
-    MLCell grRules = toMLCell(struct, ModelField.grRules);
+    MLCell grRules = toMLCell(correctedStruct, ModelField.grRules);
     for (int i = 0; i < grRules.getSize(); i++) {
       String geneReactionRule =
         toString(grRules.get(i), grRules.getName(), i + 1);
@@ -551,7 +605,7 @@ public class COBRAparser {
       }
     }
     // parse subsystems
-    MLCell subSystems = toMLCell(struct, ModelField.subSystems);
+    MLCell subSystems = toMLCell(correctedStruct, ModelField.subSystems);
     if ((subSystems != null) && (subSystems.getSize() > 0)) {
       parseSubsystems(model, subSystems);
     }
@@ -560,7 +614,7 @@ public class COBRAparser {
     Objective obj = fbc.createObjective("obj");
     obj.setType(Objective.Type.MAXIMIZE);
     fbc.getListOfObjectives().setActiveObjective(obj.getId());
-    MLChar csense = toMLChar(struct, ModelField.csense);
+    MLChar csense = toMLChar(correctedStruct, ModelField.csense);
     if (csense != null) {
       for (int i = 0; i < csense.getSize(); i++) {
         char c = csense.getChar(0, i);
@@ -572,7 +626,8 @@ public class COBRAparser {
         }
       }
     }
-    MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelField.c);
+    MLNumericArray<?> coefficients =
+      toMLNumericArray(correctedStruct, ModelField.c);
     if (coefficients != null) {
       for (int i = 0; i < coefficients.getSize(); i++) {
         double coef = coefficients.get(i).doubleValue();
@@ -584,7 +639,7 @@ public class COBRAparser {
         }
       }
     }
-    MLNumericArray<?> b = toMLNumericArray(struct, ModelField.b);
+    MLNumericArray<?> b = toMLNumericArray(correctedStruct, ModelField.b);
     if (b != null) {
       for (int i = 0; i < b.getSize(); i++) {
         double bVal = b.get(i).doubleValue();
