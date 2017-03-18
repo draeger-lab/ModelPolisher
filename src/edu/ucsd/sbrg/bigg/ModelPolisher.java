@@ -584,9 +584,6 @@ public class ModelPolisher extends Launcher {
   public void polish(BiGGDB bigg, File input, File output,
     Parameters parameters) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    // Log level is set this high so that we can see if the build succeeds on travis:
-    // Exit code is always 1 (java -jar) and the log job is cancelled after 4 MB (travis),
-    // so we only want messages with the highest priority, so we can see at which model a build fails
     logger.severe(
       MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
     SBMLDocument doc = null;
