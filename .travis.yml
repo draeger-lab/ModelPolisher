@@ -6,11 +6,11 @@ notifications:
   slack:
     secure: CfOon5xVIVFiUQYeE9kC7GUOwPr+igeWSemL0NcpcEmzxC/4CkFC5ediR3znosufNxsexSXuC3mzy+UTzIstpcsxVWXdYwvlsrZjw0KVYEKpMcWl6MiWj0UUrggZDoV2xjKvcd4gxDgG/criOfJGxJEEjjWw0r+ZNRSDUHdNR7u13v0M4Sw6UOgdkyWP9mumiPWeH4ShF6Q5aRdLnPzeHLZQ/pKg4RgvlW08Km1Hb7W+UW/mXSSrvfeZUP8L4UF4znI+iekvI/1fslt5uc9lLaFlMqreZj6IzFrJLYG9EF29HcO7g/g7SkyldYLAlma36DxwdzfxSLgdqI0V3uTFlxic9QoElLAWlGZ6Q7lw8rxy61yMWdFoGEbrg3VPWqd72v7BQ4SyOuXMNSgoPKQvnkuAHAf4MDlb5wZutXKoO069ruMQ7zDrOcPe3fhreJM7Jz9VupvmWiwpE0q5067FtEeUYTo0LdifjjLAnar9NypvAnQhMJv9KxvWq3+Qs0lSf5NY3+dpoIJsUN5zIrAqj01mDER8J6MIMMU0zR+68sqD1T9wQgYexNqczLmbrPQNCwF/nz/vulIBiow2AM+mXG5XIHwcySbW9X2xSyXGxBeWTb3vvfczrnnmGY931i52ElIz2GN9xrg5sfSz91AAZRHeiUtmdIqXE4hZlkREqa4=
   email: false
-before_install: 
+before_install:
 - git clone https://github.com/SBRG/bigg_models_data
 - cd scripts && ./configureSQLiteDB.sh && cd ..
 - mkdir out
-install: 
+install:
 - travis_retry mvn clean compile verify -B && zip -d target/ModelPolisher-1.5.jar log4j2.xml > /dev/null 
 script:
 - travis_wait java -jar target/ModelPolisher-1.5.jar --input=bigg_models_data/models/RECON1.xml --output=out/RECON1.xml --annotate-with-bigg=true --log-level=SEVERE
