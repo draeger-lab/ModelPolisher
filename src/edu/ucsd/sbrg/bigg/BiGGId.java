@@ -290,7 +290,7 @@ public class BiGGId {
 
 
   /**
-   * @param id
+   * @param abbreviation
    */
   public void setCheckAbbreviation(String abbreviation) {
     try {
@@ -377,7 +377,7 @@ public class BiGGId {
 
 
   /**
-   * @param id
+   * @param prefix
    * @return
    */
   public void setConstructorPrefix(String prefix) {

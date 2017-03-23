@@ -4,10 +4,20 @@
 package edu.ucsd.sbrg.bigg;
 
 import java.awt.Window;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -64,7 +74,7 @@ public class ModelPolisher extends Launcher {
   private static final class Parameters {
 
     /**
-     * @see ModelPolisherOptions#ACCEPT_ONLY_MIRIAM_URIS
+     * @see ModelPolisherOptions#INCLUDE_ANY_URI
      */
     Boolean includeAnyURI = null;
     /**
@@ -215,14 +225,75 @@ public class ModelPolisher extends Launcher {
       }
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(MessageFormat.format("Cannot write to file {0}.",
-          output.getAbsolutePath()));
+        throw new IOException(MessageFormat.format("Cannot open file {0}.",
+          input.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
-        File target = new File(
-          Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        File target = null;
+        fileTypes = getFileType(file);
+        if (!fileTypes[0]) {
+          target = new File(Utils.ensureSlash(output.getAbsolutePath())
+            + FileTools.removeFileExtension(file.getName()) + ".xml");
+        } else {
+          target = new File(
+            Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+        }
         batchProcess(bigg, file, target, parameters);
       }
+    }
+  }
+
+
+  /**
+   * Replaces wrong html tags in a SBML model with body tags
+   *
+   * @param input:
+   *        SBML file
+   */
+  private void checkHTMLTags(File input) {
+    FileInputStream iStream = null;
+    try {
+      iStream = new FileInputStream(input);
+    } catch (FileNotFoundException exc) {
+      logger.severe(
+        MessageFormat.format("Could not open file at ''{0}''", input.toPath()));
+    }
+    // If it's null, something went horribly wrong and a nullPointerException
+    // should be thrown
+    BufferedReader reader = new BufferedReader(new InputStreamReader(iStream));
+    // Replace tags and replace file for processing
+    try {
+      StringBuilder sb = new StringBuilder();
+      String line = "";
+      while ((line = reader.readLine()) != null) {
+        sb.append(line).append("\n");
+      }
+      reader.close();
+      String doc = sb.toString();
+      if (!doc.contains("<html ")) {
+        logger.fine("No replacement needed, continuing");
+        return;
+      }
+      doc = doc.replaceAll("<html ", "<body ");
+      doc = doc.replaceAll("</html>", "</body>");
+      // Preserve a copy of the original.
+      try {
+        Path output = Paths.get(input.getAbsolutePath() + ".bak");
+        Files.copy(input.toPath(), output);
+      } catch (IOException e) {
+        // We assume it was already corrected
+        logger.info("File was already corrected, skipping tag replacement");
+        return;
+      }
+      BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
+      writer.write(doc);
+      logger.info(MessageFormat.format("Wrote corrected file to ''{0}''",
+        input.toPath()));
+      writer.flush();
+      writer.close();
+    } catch (IOException exc) {
+      logger.severe("Could not read whole file");
     }
   }
 
@@ -231,7 +302,7 @@ public class ModelPolisher extends Launcher {
    * Get file type from input file
    *
    * @param input
-   *        File used in {@link batchProcess}
+   *        File used in {@link #batchProcess}
    * @return boolean array, containing flags at indices: 0 SBMLFile, 1 MATFile,
    *         2 JSONFile
    */
@@ -291,65 +362,10 @@ public class ModelPolisher extends Launcher {
         }
       }, getLogPackages());
     }
-    BiGGDB bigg = null;
-    Parameters parameters = new Parameters();
-    parameters.annotateWithBiGG =
-      args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
-    if (parameters.annotateWithBiGG) {
-      try {
-        // Connect to database and launch application:
-        String passwd = args.getProperty(DBOptions.PASSWD);
-        bigg =
-          new BiGGDB(new PostgreSQLConnector(args.getProperty(DBOptions.HOST),
-            args.getIntProperty(DBOptions.PORT),
-            args.getProperty(DBOptions.USER), passwd != null ? passwd : "",
-            args.getProperty(DBOptions.DBNAME)));
-      } catch (SQLException | ClassNotFoundException exc) {
-        exc.printStackTrace();
-      }
-    }
+    Parameters parameters = initParameters(args);
+    BiGGDB bigg = setDBMode(args, parameters.annotateWithBiGG);
     // Gives users the choice to pass an alternative model notes XHTML file to
     // the program.
-    File modelNotesFile =
-      parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
-    File documentNotesFile =
-      parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
-    String documentTitlePattern = null;
-    if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
-      documentTitlePattern =
-        args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
-    }
-    double[] coefficients = null;
-    if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
-      String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
-      String coeff[] = c.substring(1, c.length() - 1).split(",");
-      coefficients = new double[coeff.length];
-      for (int i = 0; i < coeff.length; i++) {
-        coefficients[i] = Double.parseDouble(coeff[i].trim());
-      }
-    }
-    String fObj[] = null;
-    if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
-      String fObjectives =
-        args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
-      fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
-    }
-    parameters.includeAnyURI =
-      args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
-    parameters.checkMassBalance =
-      args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
-    parameters.compression = ModelPolisherOptions.Compression.valueOf(
-      args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
-    parameters.documentNotesFile = documentNotesFile;
-    parameters.documentTitlePattern = documentTitlePattern;
-    parameters.fluxCoefficients = coefficients;
-    parameters.fluxObjectives = fObj;
-    parameters.modelNotesFile = modelNotesFile;
-    parameters.omitGenericTerms =
-      args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
-    parameters.sbmlValidation =
-      args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-    // run polishing operations in background and parallel.
     try {
       batchProcess(bigg, new File(args.getProperty(IOOptions.INPUT)),
         new File(args.getProperty(IOOptions.OUTPUT)), parameters);
@@ -522,6 +538,65 @@ public class ModelPolisher extends Launcher {
 
 
   /**
+   * @param args:
+   *        Arguments from commandline
+   * @return Parameters for commandLineMode
+   */
+  private Parameters initParameters(SBProperties args) {
+    Parameters parameters = new Parameters();
+    String documentTitlePattern = null;
+    if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
+      documentTitlePattern =
+        args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
+    }
+    double[] coefficients = null;
+    if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
+      String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
+      String coeff[] = c.substring(1, c.length() - 1).split(",");
+      coefficients = new double[coeff.length];
+      for (int i = 0; i < coeff.length; i++) {
+        coefficients[i] = Double.parseDouble(coeff[i].trim());
+      }
+    }
+    String fObj[] = null;
+    if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
+      String fObjectives =
+        args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
+      fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
+    }
+    parameters.annotateWithBiGG =
+      args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
+    parameters.checkMassBalance =
+      args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
+    parameters.compression = ModelPolisherOptions.Compression.valueOf(
+      args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
+    parameters.documentNotesFile =
+      parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
+    parameters.documentTitlePattern = documentTitlePattern;
+    parameters.fluxCoefficients = coefficients;
+    parameters.fluxObjectives = fObj;
+    parameters.includeAnyURI =
+      args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
+    parameters.modelNotesFile =
+      parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
+    parameters.omitGenericTerms =
+      args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
+    parameters.sbmlValidation =
+      args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
+    return parameters;
+  }
+
+
+  /**
+   * @param string
+   * @return
+   */
+  private boolean isNotStrNullOrEmpty(String string) {
+    return !(string == null || string.isEmpty());
+  }
+
+
+  /**
    * Scans the given command-line options for a specific file option and
    * returns the corresponding file if it exists, {@code null} otherwise.
    * 
@@ -554,7 +629,7 @@ public class ModelPolisher extends Launcher {
   public void polish(BiGGDB bigg, File input, File output,
     Parameters parameters) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(
+    logger.severe(
       MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
     SBMLDocument doc = null;
     // reading or parsing input
@@ -563,11 +638,12 @@ public class ModelPolisher extends Launcher {
     } else if (fileTypes[2]) {
       doc = JSONparser.read(input);
     } else {
+      checkHTMLTags(input);
       doc = SBMLReader.read(input, new UpdateListener());
     }
     if (!doc.isSetLevelAndVersion()
       || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info("Trying to convert the model to Level 3 Version 2.");
+      logger.info("Trying to convert the model to Level 3 Version 1.");
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
     // polishing
@@ -575,7 +651,7 @@ public class ModelPolisher extends Launcher {
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
     if (parameters.includeAnyURI != null) {
-      polisher.setIncludeAnyURI(parameters.includeAnyURI.booleanValue());
+      polisher.setIncludeAnyURI(parameters.includeAnyURI);
     }
     if (parameters.documentTitlePattern != null) {
       polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
@@ -594,14 +670,10 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
-    // Writing output
-    // <?xml-stylesheet type="text/xsl"
-    // href="/Users/draeger/Documents/workspace/BioNetView/resources/edu/ucsd/sbrg/bigg/bigg_sbml.xsl"?>
     logger.info(MessageFormat.format("Writing output file {0}",
       output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
       getVersionNumber(), ' ', (short) 2);
-    // SBMLWriter.write(doc, sbmlFile, ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
@@ -626,6 +698,51 @@ public class ModelPolisher extends Launcher {
     calendar.setTimeInMillis(time);
     logger.info(
       MessageFormat.format("Done ({0,time, ssss} s).", calendar.getTime()));
+  }
+
+
+  /**
+   * Sets DB to use, depending on provided arguments:
+   * If annotateWithBigg is true and all arguments are provided, PostgreSQL is
+   * used
+   * If arguments are missing, the local SQLite DB is used instead
+   * else BiggAnnotation is disabled
+   *
+   * @param args:
+   *        Arguments from Commandline
+   * @return The corresponding DB
+   */
+  private BiGGDB setDBMode(SBProperties args, boolean annotateWithBiGG) {
+    if (!annotateWithBiGG)
+      return null;
+    BiGGDB bigg = null;
+    String dbName = args.getProperty(DBOptions.DBNAME);
+    String host = args.getProperty(DBOptions.HOST);
+    String passwd = args.getProperty(DBOptions.PASSWD);
+    String port = args.getProperty(DBOptions.PORT);
+    String user = args.getProperty(DBOptions.USER);
+    boolean runPSQL = true;
+    runPSQL &= isNotStrNullOrEmpty(dbName);
+    runPSQL &= isNotStrNullOrEmpty(host);
+    runPSQL &= isNotStrNullOrEmpty(port);
+    runPSQL &= isNotStrNullOrEmpty(user);
+    SQLConnector connectorBase = new SQLConnector();
+    if (runPSQL) {
+      try {
+        // Connect to PostgreSQL database and launch application:
+        bigg = new BiGGDB(connectorBase.new PostgreSQLConnector(host,
+          new Integer(port), user, passwd != null ? passwd : "", dbName));
+      } catch (SQLException | ClassNotFoundException exc) {
+        exc.printStackTrace();
+      }
+    } else {
+      try {
+        bigg = new BiGGDB(connectorBase.new SQLiteConnector());
+      } catch (SQLException | ClassNotFoundException exc) {
+        exc.printStackTrace();
+      }
+    }
+    return bigg;
   }
 
 
