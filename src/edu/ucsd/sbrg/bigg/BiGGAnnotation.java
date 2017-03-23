@@ -12,10 +12,14 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.identifiers.registry.RegistryLocalProvider;
+import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -48,7 +52,8 @@ public class BiGGAnnotation {
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
+  public static final transient Logger logger =
+    Logger.getLogger(BiGGAnnotation.class.getName());
   /**
    * Default model notes.
    */
@@ -79,11 +84,13 @@ public class BiGGAnnotation {
    * @throws IOException
    * @throws XMLStreamException
    */
-  public SBMLDocument annotate(SBMLDocument doc) throws XMLStreamException, IOException {
+  public SBMLDocument annotate(SBMLDocument doc)
+    throws XMLStreamException, IOException {
     Model model = doc.getModel();
     replacements = new HashMap<>();
     if (!doc.isSetModel()) {
-      logger.info("This SBML document does not contain a model. Nothing to do.");
+      logger.info(
+        "This SBML document does not contain a model. Nothing to do.");
       return doc;
     }
     annotate(model);
@@ -100,12 +107,14 @@ public class BiGGAnnotation {
    */
   public void annotatePublications(Model model) {
     try {
-      List<Pair<String, String>> publications = bigg.getPublications(model.getId());
+      List<Pair<String, String>> publications =
+        bigg.getPublications(model.getId());
       if (publications.size() > 0) {
         String resources[] = new String[publications.size()];
         int i = 0;
         for (Pair<String, String> publication : publications) {
-          resources[i++] = polisher.createURI(publication.getKey(), publication.getValue());
+          resources[i++] =
+            polisher.createURI(publication.getKey(), publication.getValue());
         }
         model.addCVTerm(
           new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
@@ -120,20 +129,24 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateCompartments(Model model) {
+  public void annotateListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
-      Compartment c = model.getCompartment(i);
-      BiGGId biggId = new BiGGId(c.getId());
-      if (bigg.isCompartment(biggId.getAbbreviation())) {
-        c.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-          polisher.createURI("bigg.compartment", biggId)));
-        c.setSBOTerm(SBO.getCompartment()); // physical compartment
-        if (!c.isSetName() || c.getName().equals("default")) {
-          String name = bigg.getCompartmentName(biggId).trim();
-          if (!name.isEmpty()) {
-            c.setName(name);
-          }
-        }
+      annotateCompartment(model.getCompartment(i));
+    }
+  }
+
+
+  /**
+   * @param compartment
+   */
+  private void annotateCompartment(Compartment compartment) {
+    BiGGId biggId = new BiGGId(compartment.getId());
+    if (bigg.isCompartment(biggId.getAbbreviation())) {
+      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
+        polisher.createURI("bigg.compartment", biggId)));
+      compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
+      if (!compartment.isSetName()) {
+        compartment.setName(bigg.getCompartmentName(biggId));
       }
     }
   }
@@ -142,81 +155,92 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  @SuppressWarnings("deprecation")
-  public void annotateSpecies(Model model) {
+  public void annotateListOfSpecies(Model model) {
     for (int i = 0; i < model.getSpeciesCount(); i++) {
-      Species species = model.getSpecies(i);
-      BiGGId biggId = polisher.extractBiGGId(species.getId());
-      if (biggId != null) {
-        CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
-        if (!species.isSetName() || species.getName().equals(
-          biggId.getAbbreviation() + "_" + biggId.getCompartmentCode())) {
-          try {
-            species.setName(polisher.polishName(bigg.getComponentName(biggId)));
-          } catch (SQLException exc) {
-            logger.severe(MessageFormat.format("{0}: {1}",
-              exc.getClass().getName(), Utils.getMessage(exc)));
-          }
-        }
-        if (bigg.isMetabolite(biggId.getAbbreviation())) {
-          cvTerm.addResource(polisher.createURI("bigg.metabolite", biggId));
-        }
-        String type = bigg.getComponentType(biggId);
-        if (type != null) {
-          switch (type) {
-          case "metabolite":
-            species.setSBOTerm(SBO.getSimpleMolecule());
-            break;
-          case "protein":
-            species.setSBOTerm(SBO.getProtein());
-            break;
-          default:
-            if (polisher.omitGenericTerms) {
-              species.setSBOTerm(SBO.getMaterialEntity());
-            }
-            break;
-          }
-        }
+      annotateSpecies(model.getSpecies(i));
+    }
+  }
+
+
+  /**
+   * @param species
+   */
+  @SuppressWarnings("deprecation")
+  public void annotateSpecies(Species species) {
+    BiGGId biggId = polisher.extractBiGGId(species.getId());
+    if (biggId != null) {
+      CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
+      if (!species.isSetName() || species.getName().equals(
+        biggId.getAbbreviation() + "_" + biggId.getCompartmentCode())) {
         try {
-          List<String> linkOut = bigg.getComponentResources(biggId, polisher.includeAnyURI);
-          for (String resource : linkOut) {
-            cvTerm.addResource(resource);
-          }
+          species.setName(polisher.polishName(bigg.getComponentName(biggId)));
         } catch (SQLException exc) {
           logger.severe(MessageFormat.format("{0}: {1}",
             exc.getClass().getName(), Utils.getMessage(exc)));
         }
-        if (cvTerm.getResourceCount() > 0) {
-          species.addCVTerm(cvTerm);
-        }
-        if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
-          species.setMetaId(species.getId());
-        }
-        FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-        if (!fbcSpecPlug.isSetChemicalFormula()) {
-          try {
-            fbcSpecPlug.setChemicalFormula(
-              bigg.getChemicalFormula(biggId, model.getId()));
-          } catch (IllegalArgumentException exc) {
-            logger.severe(MessageFormat.format("Invalid chemical formula: {0}",
-              Utils.getMessage(exc)));
+      }
+      if (bigg.isMetabolite(biggId.getAbbreviation())) {
+        cvTerm.addResource(polisher.createURI("bigg.metabolite", biggId));
+      }
+      String type = bigg.getComponentType(biggId);
+      if (type != null) {
+        switch (type) {
+        case "metabolite":
+          species.setSBOTerm(SBO.getSimpleMolecule());
+          break;
+        case "protein":
+          species.setSBOTerm(SBO.getProtein());
+          break;
+        default:
+          if (polisher.omitGenericTerms) {
+            species.setSBOTerm(SBO.getMaterialEntity());
           }
+          break;
         }
-        Integer charge = bigg.getCharge(biggId.getAbbreviation(), model.getId());
-        if (species.isSetCharge()) {
-          if ((charge != null) && (charge != species.getCharge())) {
-            logger.warning(MessageFormat.format(
-              "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
-              charge, species.getCharge(), species.getId()));
-          }
-          species.unsetCharge();
+      }
+      try {
+        TreeSet<String> linkOut =
+          bigg.getResources(biggId, polisher.includeAnyURI, false);
+        // convert to set to remove possible duplicates; TreeSet should
+        // respect current order
+        for (String resource : linkOut) {
+          cvTerm.addResource(resource);
         }
-        if ((charge != null) && (charge != 0)) {
-          // If charge is set and charge = 0 -> this can mean it is
-          // only a
-          // default!
-          fbcSpecPlug.setCharge(charge);
+      } catch (SQLException exc) {
+        logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
+          Utils.getMessage(exc)));
+      }
+      if (cvTerm.getResourceCount() > 0) {
+        species.addCVTerm(cvTerm);
+      }
+      if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
+        species.setMetaId(species.getId());
+      }
+      FBCSpeciesPlugin fbcSpecPlug =
+        (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+      if (!fbcSpecPlug.isSetChemicalFormula()) {
+        try {
+          fbcSpecPlug.setChemicalFormula(
+            bigg.getChemicalFormula(biggId, species.getModel().getId()));
+        } catch (IllegalArgumentException exc) {
+          logger.severe(MessageFormat.format("Invalid chemical formula: {0}",
+            Utils.getMessage(exc)));
         }
+      }
+      Integer charge =
+        bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+      if (species.isSetCharge()) {
+        if ((charge != null) && (charge != species.getCharge())) {
+          logger.warning(MessageFormat.format(
+            "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
+            charge, species.getCharge(), species.getId()));
+        }
+        species.unsetCharge();
+      }
+      if ((charge != null) && (charge != 0)) {
+        // If charge is set and charge = 0 -> this can mean it is
+        // only a default!
+        fbcSpecPlug.setCharge(charge);
       }
     }
   }
@@ -225,7 +249,7 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateReactions(Model model) {
+  public void annotateListOfReactions(Model model) {
     for (int i = 0; i < model.getReactionCount(); i++) {
       annotateReaction(model.getReaction(i));
     }
@@ -233,39 +257,40 @@ public class BiGGAnnotation {
 
 
   /**
-   * @param r
+   * @param reaction
    */
-  public void annotateReaction(Reaction r) {
-    String id = r.getId();
-    if (!r.isSetSBOTerm()) {
+  private void annotateReaction(Reaction reaction) {
+    String id = reaction.getId();
+    if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(id)) {
-        r.setSBOTerm(631);
+        reaction.setSBOTerm(631);
       } else if (!polisher.omitGenericTerms) {
-        r.setSBOTerm(375); // generic process
+        reaction.setSBOTerm(375); // generic process
       }
     }
     BiGGId biggId = polisher.extractBiGGId(id);
+    CVTerm cvTerm = new CVTerm(CVTerm.Qualifier.BQB_IS);
     if (biggId != null) {
-      if (bigg.isReaction(r.getId())) {
-        r.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-          polisher.createURI("bigg.reaction", biggId)));
+      if (bigg.isReaction(reaction.getId())) {
+        cvTerm.addResource(polisher.createURI("bigg.reaction", biggId));
       }
     }
-    if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
-      r.setMetaId(id);
+    if (!reaction.isSetMetaId() && (reaction.getCVTermCount() > 0)) {
+      reaction.setMetaId(id);
     }
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
     String name = bigg.getReactionName(id);
-    if ((name != null) && !name.equals(r.getName())) {
-      r.setName(polisher.polishName(name));
+    if ((name != null) && !name.equals(reaction.getName())) {
+      reaction.setName(polisher.polishName(name));
     }
-    SBMLUtils.parseGPR(r, bigg.getGeneReactionRule(id, r.getModel().getId()),
+    SBMLUtils.parseGPR(reaction,
+      bigg.getGeneReactionRule(id, reaction.getModel().getId()),
       polisher.omitGenericTerms);
-    Model model = r.getModel();
+    Model model = reaction.getModel();
     List<String> subsystems =
-        bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
+      bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
     if (subsystems.size() > 0) {
       String groupKey = "GROUP_FOR_NAME";
       if (model.getUserObject(groupKey) == null) {
@@ -273,14 +298,14 @@ public class BiGGAnnotation {
       }
       @SuppressWarnings("unchecked")
       Map<String, Group> groupForName =
-      (Map<String, Group>) model.getUserObject(groupKey);
+        (Map<String, Group>) model.getUserObject(groupKey);
       for (String subsystem : subsystems) {
         Group group;
         if (groupForName.containsKey(subsystem)) {
           group = groupForName.get(subsystem);
         } else {
           GroupsModelPlugin groupsModelPlugin =
-              (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
+            (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
           group = groupsModelPlugin.createGroup(
             "g" + (groupsModelPlugin.getGroupCount() + 1));
           group.setName(subsystem);
@@ -288,8 +313,24 @@ public class BiGGAnnotation {
           group.setSBOTerm(633); // subsystem
           groupForName.put(subsystem, group);
         }
-        SBMLUtils.createSubsystemLink(r, group.createMember());
+        SBMLUtils.createSubsystemLink(reaction, group.createMember());
       }
+    }
+    try {
+      TreeSet<String> linkOut =
+        bigg.getResources(biggId, polisher.includeAnyURI, true);
+      for (String resource : linkOut) {
+        cvTerm.addResource(resource);
+      }
+    } catch (SQLException exc) {
+      logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
+        Utils.getMessage(exc)));
+    }
+    if (cvTerm.getResourceCount() > 0) {
+      reaction.addCVTerm(cvTerm);
+    }
+    if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
+      reaction.setMetaId(reaction.getId());
     }
   }
 
@@ -297,74 +338,91 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateGeneProducts(Model model) {
+  public void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      FBCModelPlugin fbcModelPlug =
+        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-        String label = null;
-        String id = geneProduct.getId();
-        if (geneProduct.isSetLabel()
-            && !geneProduct.getLabel().equalsIgnoreCase("None")) {
-          label = geneProduct.getLabel();
-        } else if (geneProduct.isSetId()) {
-          label = id;
-        }
-        if (label == null) {
-          return;
-        }
-        CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
-        CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
-        for (Pair<String, String> pair : bigg.getGeneIds(label)) {
-          MIRIAM miriam = MIRIAM.toMIRIAM(pair.getKey());
-          if (miriam == null) {
-            continue;
-          }
-          String resource = MIRIAM.toResourceURL(miriam, pair.getValue());
-          if (resource == null) {
-            continue;
-          }
-          switch (miriam) {
-          case interpro:
-          case PDB:
-          case UniProtKB_Swiss_Prot:
-          case uniprot:
-            termIs.addResource(resource);
-            break;
-          default:
-            termEncodedBy.addResource(resource);
-            break;
-          }
-        }
-        if (termIs.getResourceCount() > 0) {
-          geneProduct.addCVTerm(termIs);
-        }
-        if (termEncodedBy.getResourceCount() > 0) {
-          geneProduct.addCVTerm(termEncodedBy);
-        }
-        if (geneProduct.getCVTermCount() > 0) {
-          geneProduct.setMetaId(id);
-        }
-        // we successfully found information by using the id, so this needs to
-        // be
-        // the label
-        if (geneProduct.getLabel().equalsIgnoreCase("None")) {
-          geneProduct.setLabel(label);
-        }
-        String geneName = bigg.getGeneName(label);
-        if (geneName != null) {
-          if (geneName.isEmpty()) {
-            logger.fine(MessageFormat.format(
-              "No gene name found in BiGG for label ''{0}''.",
-              geneProduct.getName()));
-          } else if (geneProduct.isSetName()
-              && !geneProduct.getName().equals(geneName)) {
-            logger.warning(MessageFormat.format(
-              "Updating gene product name from ''{0}'' to ''{1}''.",
-              geneProduct.getName(), geneName));
-          }
-          geneProduct.setName(geneName);
-        }
+        annotateGeneProduct(geneProduct);
       }
+    }
+  }
+
+
+  /**
+   * @param geneProduct
+   */
+  private void annotateGeneProduct(GeneProduct geneProduct) {
+    String label = null;
+    String id = geneProduct.getId();
+    if (geneProduct.isSetLabel()
+      && !geneProduct.getLabel().equalsIgnoreCase("None")) {
+      label = geneProduct.getLabel();
+    } else if (geneProduct.isSetId()) {
+      label = id;
+    }
+    if (label == null) {
+      return;
+    }
+    // label is stored without "G_" prefix in bigg
+    if (label.startsWith("G_")) {
+      label = label.substring(2);
+    }
+    CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
+    CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
+    for (String resource : bigg.getGeneIds(label)) {
+      // get Collection part from uri without url prefix - all uris should
+      // begin with http://identifiers.org, else this may fail
+      String collection =
+        RegistryUtilities.getDataCollectionPartFromURI(resource);
+      if (collection == null) {
+        continue;
+      } else if (!collection.contains("identifiers.org")) {
+        // TODO: find out if there are valid non identifiers.org ids
+        logger.warning(MessageFormat.format(
+          "Collection ''{0}'' does not match expected pattern. It will not be added as resource.",
+          collection));
+        continue;
+      }
+      collection = collection.substring(collection.indexOf("org/") + 4,
+        collection.length() - 1);
+      switch (collection) {
+      case "interpro":
+      case "pdb":
+      case "uniprot":
+        termIs.addResource(resource);
+        break;
+      default:
+        termEncodedBy.addResource(resource);
+      }
+    }
+    if (termIs.getResourceCount() > 0) {
+      geneProduct.addCVTerm(termIs);
+    }
+    if (termEncodedBy.getResourceCount() > 0) {
+      geneProduct.addCVTerm(termEncodedBy);
+    }
+    if (geneProduct.getCVTermCount() > 0) {
+      geneProduct.setMetaId(id);
+    }
+    // we successfully found information by using the id, so this needs to
+    // be the label
+    if (geneProduct.getLabel().equalsIgnoreCase("None")) {
+      geneProduct.setLabel(label);
+    }
+    String geneName = bigg.getGeneName(label);
+    if (geneName != null) {
+      if (geneName.isEmpty()) {
+        logger.fine(
+          MessageFormat.format("No gene name found in BiGG for label ''{0}''.",
+            geneProduct.getName()));
+      } else if (geneProduct.isSetName()
+        && !geneProduct.getName().equals(geneName)) {
+        logger.warning(MessageFormat.format(
+          "Updating gene product name from ''{0}'' to ''{1}''.",
+          geneProduct.getName(), geneName));
+      }
+      geneProduct.setName(geneName);
     }
   }
 
@@ -396,7 +454,7 @@ public class BiGGAnnotation {
     replacements.put("${bigg.timestamp}",
       MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
     replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
-    // data, "Species", attributes));
+                                              // data, "Species", attributes));
     if (!model.isSetName()) {
       model.setName(organism);
     }
@@ -408,10 +466,99 @@ public class BiGGAnnotation {
       model.setMetaId(model.getId());
     }
     annotatePublications(model);
-    annotateCompartments(model);
-    annotateSpecies(model);
-    annotateReactions(model);
-    annotateGeneProducts(model);
+    annotateListOfCompartments(model);
+    annotateListOfSpecies(model);
+    annotateListOfReactions(model);
+    annotateListOfGeneProducts(model);
+  }
+
+
+  /**
+   * Checks resource URIs and logs those not matching the specified pattern
+   * Used to check URIs obtained from BiGGDB
+   * A resource URI that does not match the pattern will be logged and not added
+   * to the model
+   * For a collection not in the registry correctness is assumed
+   *
+   * @param resource:
+   *        resource URI to be added as annotation
+   * @return corrected resource URI
+   */
+  protected static String checkResourceUrl(String resource) {
+    String collection =
+      RegistryUtilities.getDataCollectionPartFromURI(resource);
+    RegistryLocalProvider registry = new RegistryLocalProvider();
+    // not present in provided registry, cannot be checked this way
+    if (collection.contains("metanetx")
+      || collection.contains("unipathway.reaction")
+      || collection.contains("reactome.org")
+      || collection.contains("molecular-networks.com")) {
+      logger.fine(MessageFormat.format(
+        "URI: ''{0}'' will be added without validity check. Collection not present in registry-lib",
+        resource));
+      return resource;
+    }
+    String identifier = RegistryUtilities.getIdentifierFromURI(resource);
+    Boolean correct = registry.checkRegExp(identifier, collection);
+    String regexp = "";
+    DataType type = RegistryUtilities.getDataType(collection);
+    if (type != null) {
+      regexp = type.getRegexp();
+    } else {
+      logger.severe(
+        MessageFormat.format("Please report this URI {0}", resource));
+      return resource;
+    }
+    if (!correct) {
+      logger.info(MessageFormat.format(
+        "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
+        identifier, regexp, collection));
+      // We can correct the kegg collection
+      if (resource.contains("kegg")) {
+        if (identifier.startsWith("D")) {
+          logger.info("Changing kegg collection to kegg.drug");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
+        } else if (identifier.startsWith("G")) {
+          logger.info("Changing kegg collection to kegg.glycan");
+          resource =
+            RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
+        }
+        // add possibly missing "gi:" prefix to identifier
+      } else if (resource.contains("ncbigi")) {
+        if (!identifier.toLowerCase().startsWith("gi:")) {
+          logger.info("Adding missing GI: prefix.");
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
+        }
+      } else if (resource.contains("go") && !resource.contains("goa")) {
+        if (!identifier.toLowerCase().startsWith("go:")) {
+          logger.info("Adding missing GO: prefix.");
+          resource =
+            RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
+        }
+      } else if (resource.contains("ec-code")) {
+        int missingDots =
+          identifier.length() - identifier.replace(".", "").length();
+        if (missingDots < 1) {
+          logger.warning(MessageFormat.format(
+            "Could not correct ec-code ''{0}''", identifier));
+          return null;
+        }
+        String replacement = identifier;
+        for (int count = missingDots; count < 3; count++) {
+          replacement += ".-";
+        }
+        resource = RegistryUtilities.replace(resource, identifier, replacement);
+      } else {
+        logger.warning(MessageFormat.format(
+          "Could not update resource ''{0}''. Resource will not be added to the model.",
+          resource, collection));
+        return null;
+      }
+    }
+    logger.fine(MessageFormat.format("Added resource ", resource));
+    return resource;
   }
 
 
@@ -419,10 +566,11 @@ public class BiGGAnnotation {
    * @param location
    *        relative path to the resource from this class.
    * @param replacements
-   * @return
+   * @return Constants.URL_PREFIX + " like '%%identifiers.org%%'"
    * @throws IOException
    */
-  private String parseNotes(String location, Map<String, String> replacements) throws IOException {
+  private String parseNotes(String location, Map<String, String> replacements)
+    throws IOException {
     StringBuilder sb = new StringBuilder();
     try (InputStream is = getClass().getResourceAsStream(location);
         InputStreamReader isReader = new InputStreamReader(
@@ -478,5 +626,4 @@ public class BiGGAnnotation {
   public void setDocumentNotesFile(File documentNotesFile) {
     this.documentNotesFile = documentNotesFile.getAbsolutePath();
   }
-  
 }

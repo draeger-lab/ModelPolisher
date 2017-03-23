@@ -17,18 +17,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.identifiers.registry.RegistryLocalProvider;
+import org.identifiers.registry.RegistryUtilities;
+import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
-import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -48,7 +48,6 @@ import com.jmatio.types.MLArray;
 import com.jmatio.types.MLCell;
 import com.jmatio.types.MLChar;
 import com.jmatio.types.MLDouble;
-import com.jmatio.types.MLInt64;
 import com.jmatio.types.MLNumericArray;
 import com.jmatio.types.MLSparse;
 import com.jmatio.types.MLStructure;
@@ -56,7 +55,6 @@ import com.jmatio.types.MLStructure;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.bigg.MIRIAM;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
@@ -66,6 +64,7 @@ import edu.ucsd.sbrg.util.UpdateListener;
 public class COBRAparser {
 
   private static final String DELIM = " ,;\t\n\r\f";
+  // BiGGID prefixes
   private static final String GENE_PRODUCT_PREFIX = "G";
   private static final String REACTION_PREFIX = "R";
   private static final String METABOLITE_PREFIX = "M";
@@ -74,19 +73,7 @@ public class COBRAparser {
    */
   private static final transient Logger logger =
     Logger.getLogger(COBRAparser.class.getName());
-
-
-  /**
-   * @param args
-   *        path to a file to be parsed and to an output SBML file.
-   */
-  public static void main(String[] args)
-    throws IOException, SBMLException, XMLStreamException {
-    SBMLDocument doc = COBRAparser.read(new File(args[0]));
-    // TidySBMLWriter.write(doc, System.out, ' ', (short) 2);
-    TidySBMLWriter.write(doc, new File(args[1]),
-      COBRAparser.class.getSimpleName(), "1.0", ' ', (short) 2);
-  }
+  private String resource;
 
 
   /**
@@ -114,7 +101,7 @@ public class COBRAparser {
 
 
   /**
-   * 
+   *
    */
   public COBRAparser() {
     super();
@@ -122,9 +109,13 @@ public class COBRAparser {
   }
 
   /**
-   * 
+   *
    */
   private boolean omitGenericTerms;
+  /**
+   *
+   */
+  private RegistryLocalProvider registry;
 
 
   /**
@@ -162,11 +153,12 @@ public class COBRAparser {
     }
     MLArray array = null;
     Iterator<String> keyIter = content.keySet().iterator();
-    do{
-    String key = keyIter.next();
-    array = content.get(key);
-    builder.buildModel(SBMLtools.toSId(array.getName()), null);
-    }while((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
+    // Get a model from matFile to parse, skip over non-model entries
+    do {
+      String key = keyIter.next();
+      array = content.get(key);
+      builder.buildModel(SBMLtools.toSId(array.getName()), null);
+    } while ((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
     if ((array.getSize() != 1) && !array.isStruct()) {
       throw new IllegalArgumentException(MessageFormat.format(
         "Expected data struct of size 1, but found array ''{1}'' of size {0,number,integer}.",
@@ -183,6 +175,7 @@ public class COBRAparser {
    */
   private void parseGenes(ModelBuilder builder, MLCell genes) {
     if (genes == null) {
+      logger.info("No genes in this Model");
       return;
     }
     Model model = builder.getModel();
@@ -225,6 +218,7 @@ public class COBRAparser {
     MLCell metHMDB, MLCell metInchiString, MLCell metKeggID,
     MLCell metPubChemID, MLCell metSmile) {
     Model model = builder.getModel();
+    registry = new RegistryLocalProvider();
     for (int i = 0; i < mets.getSize(); i++) {
       String id = toString(mets.get(i), mets.getName(), i + 1);
       if ((id != null) && (id.length() > 0)) {
@@ -242,7 +236,8 @@ public class COBRAparser {
               specPlug.setChemicalFormula(
                 toString(metFormulas.get(i), metFormulas.getName(), i + 1));
             }
-            if ((metCharge != null) && (metCharge.get(i) != null)) {
+            if ((metCharge != null) && (metCharge.getSize() > 0)
+              && (metCharge.get(i) != null)) {
               double charge = metCharge.get(i).doubleValue();
               specPlug.setCharge((int) charge);
               if (charge - ((int) charge) != 0d) {
@@ -255,11 +250,28 @@ public class COBRAparser {
           CVTerm term = new CVTerm();
           term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
           term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
-          addResource(metCHEBIID, i, term, MIRIAM.chebi);
-          addResource(metHMDB, i, term, MIRIAM.hdmb);
-          addResource(metInchiString, i, term, MIRIAM.INCHI);
-          addResource(metKeggID, i, term, MIRIAM.KEGGID);
-          addResource(metPubChemID, i, term, MIRIAM.PUBCHEMID);
+          addResource(metCHEBIID, i, term, "ChEBI");
+          addResource(metHMDB, i, term, "HMDB");
+          addResource(metInchiString, i, term, "InChI");
+          // all kegg resources
+          do {
+            if (addResource(metKeggID, i, term, "KEGG Compound"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Drug"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Genes"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Glycan"))
+              break;
+            if (addResource(metKeggID, i, term, "KEGG Pathway"))
+              break;
+          } while (false);
+          do {
+            if (addResource(metPubChemID, i, term, "PubChem-compound"))
+              break;
+            if (addResource(metPubChemID, i, term, "PubChem-substance"))
+              break;
+          } while (false);
           if (term.getResourceCount() > 0) {
             species.addCVTerm(term);
           }
@@ -293,7 +305,7 @@ public class COBRAparser {
    * Attempts to parse the given String into a {@link Date} object. To this end,
    * it applies some date format patterns that have been found in some mat
    * files.
-   * 
+   *
    * @param dateString
    *        the {@link String} to be parsed, i.e., what is assumed to
    *        be a representation of some date.
@@ -313,28 +325,99 @@ public class COBRAparser {
 
 
   /**
+   * Adds resources to provided CVTerm if catalog and id from MLCell
+   * provide a valid URI. Logs ids not matching collection patterns
+   * and invalid collections. In both cases no resource is added.
+   *
    * @param cell
    * @param i
    *        the index within the cell.
    * @param term
    * @param catalog
    */
-  private void addResource(MLCell cell, int i, CVTerm term, MIRIAM catalog) {
+  private boolean addResource(MLCell cell, int i, CVTerm term, String catalog) {
+    boolean success = false;
     if (exists(cell, i)) {
       String id = toMIRIAMid(cell.get(i));
       if ((id != null) && !id.isEmpty()) {
-        String resource = MIRIAM.toResourceURL(catalog, id);
-        if ((resource != null) && !resource.isEmpty()) {
-          term.addResource(resource);
+        id = checkId(id);
+        if (validId(catalog, id)) {
+          String resource = registry.getURI(catalog, id);
+          if ((resource != null) && !resource.isEmpty()) {
+            term.addResource(resource);
+            success = true;
+            logger.finest(MessageFormat.format(
+              " Added resource URI ''{0}'' to provided CVTerm", resource));
+          } else {
+            logger.severe(MessageFormat.format(
+              "Could not obtain resource URI for collection ''{0}'' and id ''{1}''.",
+              catalog, id));
+          }
         }
       }
     }
+    return success;
   }
 
 
   /**
-   * @param array
-   * @return
+   * Necessary to check for a special whitespace (code 160) at beginning of id
+   * (iCHOv1.mat, possibly other models) and to remove trailing ';'
+   *
+   * @param id
+   * @return: trimmed id without ';' at the end
+   */
+  private String checkId(String id) {
+    if (id.startsWith(Character.toString((char) 160)) || id.startsWith("/")) {
+      id = id.substring(1);
+    }
+    if (id.endsWith(";")) {
+      id = id.substring(0, id.length() - 1);
+    } else if (id.contains(";")) {
+      logger.warning(
+        "Given Id String possibly contained more than one id, only the first one is used: "
+          + id);
+      id = id.substring(0, id.indexOf(";"));
+    }
+    return id;
+  }
+
+
+  /**
+   * Checks if id belongs to a given collection by matching it with the
+   * respective regexp
+   *
+   * @param catalog:
+   *        Miriam collection
+   * @param id:
+   *        id to test for membership
+   * @return {@code true}, if it matches, else {@code false}
+   */
+  private boolean validId(String catalog, String id) {
+    if (id.isEmpty()) {
+      return false;
+    }
+    DataType collection = RegistryUtilities.getDataType(catalog);
+    boolean validId = false;
+    if (collection != null) {
+      validId = registry.checkRegExp(id, collection.getName());
+      if (!validId) {
+        logger.warning(MessageFormat.format(
+          "Identifier ''{0}'' did not match the pattern ''{1}''", id,
+          collection.getRegexp()));
+      }
+    } else {
+      logger.severe(
+        MessageFormat.format("Unknown collection ''{0}''", catalog));
+    }
+    return validId;
+  }
+
+
+  /**
+   * @param array:
+   *        MLArray to be stringified
+   * @return String representation of the given array
    */
   private String toMIRIAMid(MLArray array) {
     return toMIRIAMid(toString(array));
@@ -342,8 +425,9 @@ public class COBRAparser {
 
 
   /**
-   * @param idCandidate
-   * @return
+   * @param idCandidate:
+   *        id part for the uri
+   * @return finalized id, without [, ], ' at the string boundaries
    */
   private String toMIRIAMid(String idCandidate) {
     if ((idCandidate == null) || idCandidate.isEmpty()) {
@@ -358,7 +442,8 @@ public class COBRAparser {
     if ((idCandidate.charAt(end) == ']') || (idCandidate.charAt(end) == '\'')) {
       end--;
     }
-    return (start < end) ? idCandidate.substring(start, end) : null;
+    // substring method already decrements second index
+    return (start < end) ? idCandidate.substring(start, end + 1) : null;
   }
 
 
@@ -402,7 +487,7 @@ public class COBRAparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.warning(MessageFormat.format(
+      logger.info(MessageFormat.format(
         "Changed metabolite id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.",
         id, newId));
     }
@@ -419,17 +504,55 @@ public class COBRAparser {
     // TODO: always check for null!
     MLStructure struct = (MLStructure) array;
     // Check that the given data structure only contains allowable entries:
+    // New struct to store values we match in a case insensitive way
+    MLStructure correctedStruct =
+      new MLStructure(struct.getName(), struct.getDimensions());
     for (MLArray field : struct.getAllFields()) {
+      boolean invalidField = false;
+      String fieldName = field.getName();
       try {
         logger.finest(MessageFormat.format("Found model component {0}.",
-          ModelField.valueOf(field.getName())));
+          ModelField.valueOf(fieldName)));
       } catch (IllegalArgumentException exc) {
         logException(exc);
+        invalidField = true;
+      }
+      finally {
+        // For each non matched struct field, check if an enum variant exists in
+        // a case insensitive way
+        if (invalidField) {
+          for (ModelField variant : ModelField.values()) {
+            String variantLC = variant.name().toLowerCase();
+            if (variantLC.equals(fieldName.toLowerCase())
+              || variantLC.startsWith(fieldName.toLowerCase())) {
+              if (correctedStruct.getField(variant.name()) != null) {
+                logger.warning(MessageFormat.format(
+                  "Field for possible match is already present: ''{0}''. ''{1}'' will be omitted.",
+                  variant.name(), fieldName));
+                break;
+              }
+              correctedStruct.setField(variant.name(), field);
+              logger.warning(MessageFormat.format(
+                "Changed name of unmatched "
+                  + "enum variant ''{0}'' to possible match ''{1}''",
+                fieldName, variant.name()));
+              invalidField = false;
+              break;
+            }
+          }
+          if (invalidField) {
+            logger.warning(MessageFormat.format(
+              "Could not find correct variant for field ''{0}''", fieldName));
+          }
+        } else {
+          correctedStruct.setField(fieldName, field);
+        }
       }
     }
     // parse model
     Model model = builder.getModel();
-    parseDescription(model, struct.getField(ModelField.description.name()));
+    parseDescription(model,
+      correctedStruct.getField(ModelField.description.name()));
     // Generate basic unit:
     UnitDefinition ud =
       builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
@@ -437,45 +560,52 @@ public class COBRAparser {
     ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
     ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
     // parse metabolites
-    MLCell mets = toMLCell(struct, ModelField.mets);
-    MLCell metNames = toMLCell(struct, ModelField.metNames);
-    MLCell metFormulas = toMLCell(struct, ModelField.metFormulas);
-    MLDouble metCharge = toMLDouble(struct, ModelField.metCharge);
-    MLCell metCHEBIID = toMLCell(struct, ModelField.metCHEBIID);
-    MLCell metHMDB = toMLCell(struct, ModelField.metHMDB);
-    MLCell metInchiString = toMLCell(struct, ModelField.metInchiString);
-    MLCell metKeggID = toMLCell(struct, ModelField.metKeggID);
-    MLCell metPubChemID = toMLCell(struct, ModelField.metPubChemID);
-    MLCell metSmile = toMLCell(struct, ModelField.metSmile);
+    MLCell mets = toMLCell(correctedStruct, ModelField.mets);
+    MLCell metNames = toMLCell(correctedStruct, ModelField.metNames);
+    MLCell metFormulas = toMLCell(correctedStruct, ModelField.metFormulas);
+    MLDouble metCharge = toMLDouble(correctedStruct, ModelField.metCharge);
+    MLCell metCHEBIID = toMLCell(correctedStruct, ModelField.metCHEBIID);
+    MLCell metHMDB = toMLCell(correctedStruct, ModelField.metHMDB);
+    MLCell metInchiString =
+      toMLCell(correctedStruct, ModelField.metInchiString);
+    MLCell metKeggID = toMLCell(correctedStruct, ModelField.metKEGGID);
+    MLCell metPubChemID = toMLCell(correctedStruct, ModelField.metPubChemID);
+    MLCell metSmile = toMLCell(correctedStruct, ModelField.metSmile);
     parseMetabolites(builder, mets, metNames, metFormulas, metCharge,
       metCHEBIID, metHMDB, metInchiString, metKeggID, metPubChemID, metSmile);
     // parse genes
-    MLCell genes = toMLCell(struct.getField(ModelField.mets.name()));
+    MLCell genes = toMLCell(correctedStruct.getField(ModelField.mets.name()));
     parseGenes(builder, genes);
     // parse reactions
-    MLCell rxns = toMLCell(struct, ModelField.rxns);
-    MLCell rxnNames = toMLCell(struct, ModelField.rxnNames);
-    MLCell rxnKeggID = toMLCell(struct, ModelField.rxnKeggID);
-    MLCell ecNumbers = toMLCell(struct, ModelField.ecNumbers);
-    MLCell confidenceScores = toMLCell(struct, ModelField.confidenceScores);
-    MLCell citations = toMLCell(struct, ModelField.citations);
-    MLCell comments = toMLCell(struct, ModelField.comments);
-    MLNumericArray<?> rev = toMLNumericArray(struct, ModelField.rev);
-    MLDouble lb = toMLDouble(struct.getField(ModelField.lb.name()));
-    MLDouble ub = toMLDouble(struct.getField(ModelField.ub.name()));
-    MLSparse S = toMLSparse(struct.getField(ModelField.S.name()));
+    MLCell rxns = toMLCell(correctedStruct, ModelField.rxns);
+    MLCell rxnNames = toMLCell(correctedStruct, ModelField.rxnNames);
+    MLCell rxnKeggID = toMLCell(correctedStruct, ModelField.rxnKeggID);
+    MLCell ecNumbers = toMLCell(correctedStruct, ModelField.ecNumbers);
+    MLCell confidenceScores =
+      toMLCell(correctedStruct, ModelField.confidenceScores);
+    MLCell citations = toMLCell(correctedStruct, ModelField.citations);
+    MLCell comments = toMLCell(correctedStruct, ModelField.comments);
+    MLNumericArray<?> rev = toMLNumericArray(correctedStruct, ModelField.rev);
+    MLDouble lb = toMLDouble(correctedStruct.getField(ModelField.lb.name()));
+    MLDouble ub = toMLDouble(correctedStruct.getField(ModelField.ub.name()));
+    MLSparse S = toMLSparse(correctedStruct.getField(ModelField.S.name()));
     parseRxns(builder, rxns, rxnNames, rev, S, mets, lb, ub, rxnKeggID,
       ecNumbers, confidenceScores, citations, comments);
     // parse gprs
-    MLCell grRules = toMLCell(struct, ModelField.grRules);
+    MLCell grRules = toMLCell(correctedStruct, ModelField.grRules);
     for (int i = 0; i < grRules.getSize(); i++) {
       String geneReactionRule =
         toString(grRules.get(i), grRules.getName(), i + 1);
-      SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
-        omitGenericTerms);
+      if (model.getReaction(i) == null) {
+        logger.severe(MessageFormat.format(
+          "Could not create GPR for reaction with index ''{0}''.", i));
+      } else {
+        SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
+          omitGenericTerms);
+      }
     }
     // parse subsystems
-    MLCell subSystems = toMLCell(struct, ModelField.subSystems);
+    MLCell subSystems = toMLCell(correctedStruct, ModelField.subSystems);
     if ((subSystems != null) && (subSystems.getSize() > 0)) {
       parseSubsystems(model, subSystems);
     }
@@ -484,7 +614,7 @@ public class COBRAparser {
     Objective obj = fbc.createObjective("obj");
     obj.setType(Objective.Type.MAXIMIZE);
     fbc.getListOfObjectives().setActiveObjective(obj.getId());
-    MLChar csense = toMLChar(struct, ModelField.csense);
+    MLChar csense = toMLChar(correctedStruct, ModelField.csense);
     if (csense != null) {
       for (int i = 0; i < csense.getSize(); i++) {
         char c = csense.getChar(0, i);
@@ -496,7 +626,8 @@ public class COBRAparser {
         }
       }
     }
-    MLNumericArray<?> coefficients = toMLNumericArray(struct, ModelField.c);
+    MLNumericArray<?> coefficients =
+      toMLNumericArray(correctedStruct, ModelField.c);
     if (coefficients != null) {
       for (int i = 0; i < coefficients.getSize(); i++) {
         double coef = coefficients.get(i).doubleValue();
@@ -508,7 +639,7 @@ public class COBRAparser {
         }
       }
     }
-    MLNumericArray<?> b = toMLNumericArray(struct, ModelField.b);
+    MLNumericArray<?> b = toMLNumericArray(correctedStruct, ModelField.b);
     if (b != null) {
       for (int i = 0; i < b.getSize(); i++) {
         double bVal = b.get(i).doubleValue();
@@ -607,8 +738,8 @@ public class COBRAparser {
    */
   private void parseSubsystems(Model model, MLCell subSystems) {
     Map<String, Group> nameToGroup = new HashMap<>(); // this is to avoid
-                                                      // creating the identical
-                                                      // group multiple times.
+    // creating the identical
+    // group multiple times.
     GroupsModelPlugin groupsModelPlugin =
       (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
     for (int i = 0; i < subSystems.getSize(); i++) {
@@ -620,7 +751,14 @@ public class COBRAparser {
         group.setKind(Group.Kind.partonomy);
         nameToGroup.put(name, group);
       }
-      SBMLUtils.createSubsystemLink(model.getReaction(i), group.createMember());
+      if (model.getReaction(i) != null) {
+        SBMLUtils.createSubsystemLink(model.getReaction(i),
+          group.createMember());
+      } else {
+        logger.severe(MessageFormat.format(
+          "Reaction at index ''{0}'' was null. Could not create subsystem link.",
+          i));
+      }
     }
   }
 
@@ -743,8 +881,8 @@ public class COBRAparser {
                 true, // constant
                 Unit.Kind.DIMENSIONLESS // unit
               ).setSBOTerm(613); // TODO: there should be a specific term for
-                                 // confidence scores. Use "613 - reaction
-                                 // parameter" for now.
+              // confidence scores. Use "613 - reaction
+              // parameter" for now.
             } else {
               logger.warning(
                 MessageFormat.format("Expected MLDouble, but received {0}.",
@@ -778,8 +916,8 @@ public class COBRAparser {
       StringTokenizer st = new StringTokenizer(citation, ",");
       while (st.hasMoreElements()) {
         String ref = st.nextElement().toString().trim();
-        if (!addResource(ref, term, MIRIAM.PUBMED)) {
-          if (!addResource(ref, term, MIRIAM.DOI)) {
+        if (!addResource(ref, term, "PubMed")) {
+          if (!addResource(ref, term, "DOI")) {
             if (otherCitation.length() > 0) {
               otherCitation.append(", ");
             }
@@ -827,15 +965,18 @@ public class COBRAparser {
    */
   private void parseRxnKEGGids(String keggId, Reaction r) {
     if (!isEmptyString(keggId)) {
-      MIRIAM kegg = MIRIAM.KEGGID;
       String catalog = "kegg.reaction";
-      Pattern pattern = kegg.getPattern(catalog);
+      DataType collection = RegistryUtilities.getDataType(catalog);
+      String regexp = "";
+      if (collection != null) {
+        regexp = collection.getRegexp();
+      }
       CVTerm term = findOrCreateCVTerm(r, CVTerm.Qualifier.BQB_IS);
       StringTokenizer st = new StringTokenizer(keggId, DELIM);
       while (st.hasMoreElements()) {
         String kId = st.nextElement().toString().trim();
-        if (!kId.isEmpty() && pattern.matcher(kId).matches()) {
-          term.addResource(MIRIAM.toResourceURL(kegg, kId));
+        if (!kId.isEmpty() && RegistryUtilities.checkRegexp(kId, regexp)) {
+          term.addResource(registry.getURI(catalog, kId));
         }
       }
       if (term.getResourceCount() == 0) {
@@ -856,27 +997,24 @@ public class COBRAparser {
   private void parseECcodes(String ec, Reaction r) {
     if (!isEmptyString(ec)) {
       CVTerm term = findOrCreateCVTerm(r, CVTerm.Qualifier.BQB_HAS_PROPERTY);
-      MIRIAM miriam = MIRIAM.EC_CODE;
-      for (String catalog : miriam.getCatalogs()) {
-        StringTokenizer st = new StringTokenizer(ec, DELIM);
-        boolean match = false;
-        while (st.hasMoreElements()) {
-          String ecCode = st.nextElement().toString().trim();
-          // if (ecCode.startsWith("E") || ecCode.startsWith("T")) {
-          // ecCode = ecCode.substring(1);
-          // }
-          if ((ecCode != null) && !ecCode.isEmpty()
-            && miriam.getPattern(catalog).matcher(ecCode).matches()) {
-            String resource = MIRIAM.toResourceURL(catalog, ecCode);
-            if ((resource != null) && !term.getResources().contains(resource)) {
-              match = term.addResource(resource);
-            }
+      StringTokenizer st = new StringTokenizer(ec, DELIM);
+      boolean match = false;
+      while (st.hasMoreElements()) {
+        String ecCode = st.nextElement().toString().trim();
+        // if (ecCode.startsWith("E") || ecCode.startsWith("T")) {
+        // ecCode = ecCode.substring(1);
+        // }
+        if ((ecCode != null) && !ecCode.isEmpty()
+          && validId("ec-code", ecCode)) {
+          String resource = registry.getURI("ec-code", ecCode);
+          if ((resource != null) && !term.getResources().contains(resource)) {
+            match = term.addResource(resource);
           }
         }
-        if (!match) {
-          logger.warning(MessageFormat.format(
-            "Could not recognize any of the EC codes from {0}.", ec));
-        }
+      }
+      if (!match) {
+        logger.warning(MessageFormat.format(
+          "Could not recognize any of the EC codes from {0}.", ec));
       }
       if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
         r.addCVTerm(term);
@@ -915,31 +1053,33 @@ public class COBRAparser {
    * 
    * @param resource
    * @param term
-   * @param miriam
+   * @param catalog
    * @return {@code true} if successful, {@code false} otherwise.
    */
-  private boolean addResource(String resource, CVTerm term, MIRIAM miriam) {
-    for (String catalog : miriam.getCatalogs()) {
-      StringTokenizer st = new StringTokenizer(resource, " ");
-      while (st.hasMoreElements()) {
-        String r = st.nextElement().toString().trim();
-        if (r.contains(":")) {
-          r = r.substring(r.indexOf(':') + 1).trim();
-        } else {
-          continue;
-        }
-        if (r.endsWith("'") || r.endsWith(".")) {
-          r = r.substring(0, r.length() - 1);
-        }
-        if (miriam.getPattern(catalog).matcher(r).find()) {
-          if (!resource.isEmpty()) {
-            if (st.countTokens() > 1) {
-              logger.warning(MessageFormat.format(
-                "Skipping comment for resource: ''{0}'', only keeping reference ''{1}'' to {2}.",
-                resource, r, catalog));
-            }
-            return term.addResource(MIRIAM.toResourceURL(miriam, r));
+  private boolean addResource(String resource, CVTerm term, String catalog) {
+    StringTokenizer st = new StringTokenizer(resource, " ");
+    while (st.hasMoreElements()) {
+      String r = st.nextElement().toString().trim();
+      if (r.contains(":")) {
+        r = r.substring(r.indexOf(':') + 1).trim();
+      } else {
+        continue;
+      }
+      if (r.endsWith("'") || r.endsWith(".")) {
+        r = r.substring(0, r.length() - 1);
+      }
+      r = checkId(r);
+      if (validId(catalog, r)) {
+        if (!resource.isEmpty()) {
+          if (st.countTokens() > 1) {
+            logger.warning(MessageFormat.format(
+              "Skipping comment for resource: ''{0}'', only keeping reference ''{1}'' to {2}.",
+              resource, r, catalog));
           }
+          resource = registry.getURI(catalog, r);
+          logger.finest(
+            MessageFormat.format("Added resource ''{0}''", resource));
+          return term.addResource(resource);
         }
       }
     }
@@ -962,21 +1102,6 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLInt64 toInt64(MLArray array) {
-    if (array.isInt64()) {
-      MLInt64 integer = (MLInt64) array;
-      return integer;
-    }
-    throw new IllegalArgumentException(MessageFormat.format(
-      "Expected data structure ''{1}'' to be of type int64, but received type {0}.",
-      MLArray.typeToString(array.getType()), array.getName()));
-  }
-
-
-  /**
-   * @param array
-   * @return
-   */
   private MLCell toMLCell(MLArray array) {
     if (array != null) {
       if (array.isCell()) {
@@ -991,7 +1116,7 @@ public class COBRAparser {
 
 
   /**
-   * @param field
+   * @param array
    * @return
    */
   private MLChar toMLChar(MLArray array) {
@@ -1026,7 +1151,7 @@ public class COBRAparser {
 
 
   /**
-   * @param field
+   * @param array
    * @return
    */
   private MLNumericArray<?> toMLNumericArray(MLArray array) {

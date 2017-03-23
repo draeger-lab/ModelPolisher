@@ -140,11 +140,6 @@ public enum ModelField {
    */
   metCHEBIID,
   /**
-   * ChEBI ID for each corresponding metabolite
-   * @see #metCHEBIID
-   */
-  metChEBIID,
-  /**
    * Elemental formula for each metabolite. This must have same dimension as
    * {@link #mets}. Datatype: cell array of strings. Corresponds to
    * {@link FBCSpeciesPlugin#getChemicalFormula()}.
@@ -166,7 +161,7 @@ public enum ModelField {
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
-  metKeggID,
+  metKEGGID,
   /**
    * Descriptive metabolite names, must have same dimension as {@link #mets}.
    * Datatype: cell array of strings. Corresponds to {@link Species#getName()}

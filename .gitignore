@@ -1,9 +1,10 @@
-/bin/
+.idea/
+.settings/
 .classpath
 .project
+/bin/
 /target/
-.settings/
-/doc/
-jsbml.log
-/scripts/model_polisher.log
+/resources/bigg.sqlite
 /scripts/ModelPolisherTemplate.*
+ModelPolisher.iml
+jsbml.log
