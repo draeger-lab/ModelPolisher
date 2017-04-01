@@ -1,5 +1,7 @@
 package edu.ucsd.sbrg.bigg;
 
+import static java.text.MessageFormat.format;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -120,8 +121,8 @@ public class BiGGAnnotation {
           new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
       }
     } catch (SQLException exc) {
-      logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
-        Utils.getMessage(exc)));
+      logger.severe(
+        format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
   }
 
@@ -175,8 +176,8 @@ public class BiGGAnnotation {
         try {
           species.setName(polisher.polishName(bigg.getComponentName(biggId)));
         } catch (SQLException exc) {
-          logger.severe(MessageFormat.format("{0}: {1}",
-            exc.getClass().getName(), Utils.getMessage(exc)));
+          logger.severe(format("{0}: {1}", exc.getClass().getName(),
+            Utils.getMessage(exc)));
         }
       }
       if (bigg.isMetabolite(biggId.getAbbreviation())) {
@@ -207,8 +208,8 @@ public class BiGGAnnotation {
           cvTerm.addResource(resource);
         }
       } catch (SQLException exc) {
-        logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
-          Utils.getMessage(exc)));
+        logger.severe(
+          format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
       }
       if (cvTerm.getResourceCount() > 0) {
         species.addCVTerm(cvTerm);
@@ -223,15 +224,15 @@ public class BiGGAnnotation {
           fbcSpecPlug.setChemicalFormula(
             bigg.getChemicalFormula(biggId, species.getModel().getId()));
         } catch (IllegalArgumentException exc) {
-          logger.severe(MessageFormat.format("Invalid chemical formula: {0}",
-            Utils.getMessage(exc)));
+          logger.severe(
+            format("Invalid chemical formula: {0}", Utils.getMessage(exc)));
         }
       }
       Integer charge =
         bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
       if (species.isSetCharge()) {
         if ((charge != null) && (charge != species.getCharge())) {
-          logger.warning(MessageFormat.format(
+          logger.warning(format(
             "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
             charge, species.getCharge(), species.getId()));
         }
@@ -323,8 +324,8 @@ public class BiGGAnnotation {
         cvTerm.addResource(resource);
       }
     } catch (SQLException exc) {
-      logger.severe(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
-        Utils.getMessage(exc)));
+      logger.severe(
+        format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
     if (cvTerm.getResourceCount() > 0) {
       reaction.addCVTerm(cvTerm);
@@ -370,7 +371,8 @@ public class BiGGAnnotation {
     }
     CVTerm termIs = new CVTerm(CVTerm.Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
-    for (String resource : bigg.getGeneIds(label)) {
+    TreeSet<String> resources = bigg.getGeneIds(label);
+    for (String resource : resources) {
       // get Collection part from uri without url prefix - all uris should
       // begin with http://identifiers.org, else this may fail
       String collection =
@@ -379,7 +381,7 @@ public class BiGGAnnotation {
         continue;
       } else if (!collection.contains("identifiers.org")) {
         // TODO: find out if there are valid non identifiers.org ids
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "Collection ''{0}'' does not match expected pattern. It will not be added as resource.",
           collection));
         continue;
@@ -410,17 +412,16 @@ public class BiGGAnnotation {
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
-    String geneName = bigg.getGeneName(label);
+    String geneName = bigg.getGeneName("test");
     if (geneName != null) {
       if (geneName.isEmpty()) {
-        logger.fine(
-          MessageFormat.format("No gene name found in BiGG for label ''{0}''.",
-            geneProduct.getName()));
+        logger.fine(format("No gene name found in BiGG for label ''{0}''.",
+          geneProduct.getName()));
       } else if (geneProduct.isSetName()
         && !geneProduct.getName().equals(geneName)) {
-        logger.warning(MessageFormat.format(
-          "Updating gene product name from ''{0}'' to ''{1}''.",
-          geneProduct.getName(), geneName));
+        logger.warning(
+          format("Updating gene product name from ''{0}'' to ''{1}''.",
+            geneProduct.getName(), geneName));
       }
       geneProduct.setName(geneName);
     }
@@ -452,7 +453,7 @@ public class BiGGAnnotation {
     replacements.put("${year}",
       Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
     replacements.put("${bigg.timestamp}",
-      MessageFormat.format("{0,date}", bigg.getBiGGVersion()));
+      format("{0,date}", bigg.getBiGGVersion()));
     replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
                                               // data, "Species", attributes));
     if (!model.isSetName()) {
@@ -493,7 +494,7 @@ public class BiGGAnnotation {
       || collection.contains("unipathway.reaction")
       || collection.contains("reactome.org")
       || collection.contains("molecular-networks.com")) {
-      logger.fine(MessageFormat.format(
+      logger.fine(format(
         "URI: ''{0}'' will be added without validity check. Collection not present in registry-lib",
         resource));
       return resource;
@@ -505,12 +506,11 @@ public class BiGGAnnotation {
     if (type != null) {
       regexp = type.getRegexp();
     } else {
-      logger.severe(
-        MessageFormat.format("Please report this URI {0}", resource));
+      logger.severe(format("Please report this URI {0}", resource));
       return resource;
     }
     if (!correct) {
-      logger.info(MessageFormat.format(
+      logger.info(format(
         "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
         identifier, regexp, collection));
       // We can correct the kegg collection
@@ -541,8 +541,8 @@ public class BiGGAnnotation {
         int missingDots =
           identifier.length() - identifier.replace(".", "").length();
         if (missingDots < 1) {
-          logger.warning(MessageFormat.format(
-            "Could not correct ec-code ''{0}''", identifier));
+          logger.warning(
+            format("Could not correct ec-code ''{0}''", identifier));
           return null;
         }
         String replacement = identifier;
@@ -551,13 +551,13 @@ public class BiGGAnnotation {
         }
         resource = RegistryUtilities.replace(resource, identifier, replacement);
       } else {
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "Could not update resource ''{0}''. Resource will not be added to the model.",
           resource, collection));
         return null;
       }
     }
-    logger.fine(MessageFormat.format("Added resource ", resource));
+    logger.fine(format("Added resource ", resource));
     return resource;
   }
 

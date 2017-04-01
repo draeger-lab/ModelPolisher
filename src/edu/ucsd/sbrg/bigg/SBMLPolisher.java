@@ -14,8 +14,9 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static java.text.MessageFormat.format;
+
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -31,6 +32,7 @@ import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBO;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
@@ -199,7 +201,7 @@ public class SBMLPolisher {
     Model model = nsb.getModel();
     Compartment c = (Compartment) model.findUniqueNamedSBase(cId);
     if (c == null) {
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.",
         cId, nsb.getId(), nsb.getElementName()));
       c = model.createCompartment(cId);
@@ -382,7 +384,7 @@ public class SBMLPolisher {
           compartmentId = species.getCompartment();
         }
       } else {
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "Invalid reference to a species ''{0}'' that doesn''t exist in the model.",
           sr.getSpecies()));
       }
@@ -400,7 +402,7 @@ public class SBMLPolisher {
    * @throws XMLStreamException
    */
   public void polish(Model model) throws XMLStreamException, IOException {
-    logger.info(MessageFormat.format("Processing model {0}.", model.getId()));
+    logger.info(format("Processing model {0}.", model.getId()));
     // initialize ProgressBar
     int count = 1 // for model properties
       + model.getUnitDefinitionCount() + model.getCompartmentCount()
@@ -519,7 +521,7 @@ public class SBMLPolisher {
       // checkCompartment(r);
       // }
       // if (biggId.isSetCompartmentCode() && !r.isSetCompartment()) {
-      // logger.info(MessageFormat.format("Applying compartment declaration as
+      // logger.info(format("Applying compartment declaration as
       // specified by compartment code ''{1}'' to reaction ''{0}''.", r.getId(),
       // biggId.getCompartmentCode()));
       // r.setCompartment(biggId.getCompartmentCode());
@@ -538,7 +540,7 @@ public class SBMLPolisher {
     if ((r.getReactantCount() == 0) && (r.getProductCount() == 0)) {
       ResourceBundle bundle =
         ResourceManager.getBundle("org.sbml.jsbml.resources.cfg.Messages");
-      logger.severe(MessageFormat.format(
+      logger.severe(format(
         bundle.getString("SBMLCoreParser.reactionWithoutParticipantsError"),
         r.getId()));
     } else {
@@ -548,7 +550,7 @@ public class SBMLPolisher {
           if (r.isReversible()) {
             // TODO: sink reaction
           } else {
-            logger.warning(MessageFormat.format(
+            logger.warning(format(
               "Reaction ''{0}'' has been recognized as demand reaction, but this is not reflected in its BiGG id.",
               r.getId()));
             r.setSBOTerm(628); // demand reaction
@@ -557,7 +559,7 @@ public class SBMLPolisher {
           if (r.isReversible()) {
             // TODO: source reaction
           } else {
-            logger.warning(MessageFormat.format(
+            logger.warning(format(
               "Reaction ''{0}'' has been recognized as demand reaction, but this is not reflected in its BiGG id.",
               r.getId()));
             r.setSBOTerm(628); // demand reaction
@@ -571,16 +573,16 @@ public class SBMLPolisher {
         AtomCheckResult<Reaction> defects =
           AtomBalanceCheck.checkAtomBalance(r, 1);
         if ((defects != null) && (defects.hasDefects())) {
-          logger.warning(MessageFormat.format(
+          logger.warning(format(
             "There are missing atoms in reaction ''{0}''. Values lower than zero indicate missing atoms on the substrate side, whereas positive values indicate missing atoms on the product side: {1}",
             r.getId(), defects.getDefects().toString()));
         } else if (defects == null) {
-          logger.fine(MessageFormat.format(
-            "Could not check the atom balance of reaction ''{0}''.",
-            r.getId()));
+          logger.fine(
+            format("Could not check the atom balance of reaction ''{0}''.",
+              r.getId()));
         } else {
-          logger.fine(MessageFormat.format(
-            "There are no missing atoms in reaction ''{0}''.", r.getId()));
+          logger.fine(format("There are no missing atoms in reaction ''{0}''.",
+            r.getId()));
         }
       }
     }
@@ -597,28 +599,28 @@ public class SBMLPolisher {
       strict &=
         lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
       if (!strict) {
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "The flux bounds of reaction {0} can either not be resolved or they have illegal values.",
           r.getId()));
       }
     } else {
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Reaction {0} does not define both required flux bounds.", r.getId()));
     }
     if (strict && r.isSetListOfReactants()) {
       strict &= checkSpeciesReferences(r.getListOfReactants());
       if (!strict) {
-        logger.warning(MessageFormat.format(
-          "Some reactants in reaction {0} have an illegal stoichiometry",
-          r.getId()));
+        logger.warning(
+          format("Some reactants in reaction {0} have an illegal stoichiometry",
+            r.getId()));
       }
     }
     if (strict && r.isSetListOfProducts()) {
       strict &= checkSpeciesReferences(r.getListOfProducts());
       if (!strict) {
-        logger.warning(MessageFormat.format(
-          "Some products in reaction {0} have an illegal stoichiometry",
-          r.getId()));
+        logger.warning(
+          format("Some products in reaction {0} have an illegal stoichiometry",
+            r.getId()));
       }
     }
     return strict;
@@ -655,11 +657,11 @@ public class SBMLPolisher {
   public void polish(Species species) {
     String id = species.getId();
     if (species.getId().endsWith("_boundary")) {
-      logger.warning(MessageFormat.format(
-        "Found a species with invalid BiGG id ''{0}''.", id));
+      logger.warning(
+        format("Found a species with invalid BiGG id ''{0}''.", id));
       id = id.substring(0, id.length() - 9);
       if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "Species ''{0}'' is supposed to be on the system''s boundary, but its boundary condition flag was not correctly set.",
           id));
         species.setBoundaryCondition(true);
@@ -687,7 +689,7 @@ public class SBMLPolisher {
       }
       if (biggId.isSetCompartmentCode() && species.isSetCompartment()
         && !biggId.getCompartmentCode().equals(species.getCompartment())) {
-        logger.warning(MessageFormat.format(
+        logger.warning(format(
           "Changing compartment reference in species ''{0}'' from ''{1}'' to ''{2}'' so that it matches the compartment code of its BiGG id ''{0}''.",
           species.getId(), species.getCompartment(),
           biggId.getCompartmentCode()));
@@ -738,13 +740,13 @@ public class SBMLPolisher {
     if (objective.getFluxObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any flux
       // objectives.
-      logger.warning(MessageFormat.format(
-        "Objective {0} does not have any flux objectives", objective.getId()));
+      logger.warning(format("Objective {0} does not have any flux objectives",
+        objective.getId()));
     } else {
       if (objective.getFluxObjectiveCount() > 1) {
-        logger.warning(MessageFormat.format(
-          "Only one reaction should be the target of objective {0}.",
-          objective.getId()));
+        logger.warning(
+          format("Only one reaction should be the target of objective {0}.",
+            objective.getId()));
       }
       for (FluxObjective fluxObjective : objective.getListOfFluxObjectives()) {
         if (fluxObjective.isSetCoefficient()
@@ -752,7 +754,7 @@ public class SBMLPolisher {
           && Double.isFinite(fluxObjective.getCoefficient())) {
           strict &= true;
         } else {
-          logger.warning(MessageFormat.format(
+          logger.warning(format(
             "A flux objective for reaction {0} has an illegal coefficient value.",
             fluxObjective.getReaction()));
         }
@@ -791,7 +793,7 @@ public class SBMLPolisher {
             strict &= true;
           } else {
             strict = false;
-            logger.warning(MessageFormat.format(
+            logger.warning(format(
               "The parameter {0} is used as flux bound but an initial assignment changes its value.",
               variable.getId()));
           }
@@ -814,8 +816,8 @@ public class SBMLPolisher {
     if (modelPlug.getObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any
       // Objectives in the model.
-      logger.warning(MessageFormat.format(
-        "No objectives defined for model {0}.", modelPlug.getParent().getId()));
+      logger.warning(format("No objectives defined for model {0}.",
+        modelPlug.getParent().getId()));
     } else {
       for (Objective objective : modelPlug.getListOfObjectives()) {
         progress.DisplayBar(); // "Processing objective " + objective.getId());
@@ -1022,8 +1024,7 @@ public class SBMLPolisher {
     }
     newName = newName.replace("_", " ");
     if (!newName.equals(name)) {
-      logger.fine(
-        MessageFormat.format("Changed name ''{0}'' to ''{1}''", name, newName));
+      logger.fine(format("Changed name ''{0}'' to ''{1}''", name, newName));
     }
     return newName;
   }

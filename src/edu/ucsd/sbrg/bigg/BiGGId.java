@@ -3,7 +3,8 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import java.text.MessageFormat;
+import static java.text.MessageFormat.format;
+
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -24,7 +25,8 @@ public class BiGGId {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(BiGGId.class.getName());
+  private static final transient Logger logger =
+    Logger.getLogger(BiGGId.class.getName());
   /**
    * 
    */
@@ -164,10 +166,13 @@ public class BiGGId {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
-    result = prime * result + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
+    result =
+      prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
+    result = prime * result
+      + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
     result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-    result = prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
+    result =
+      prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
     return result;
   }
 
@@ -213,7 +218,8 @@ public class BiGGId {
     id = setParsedPrefix(id);
     id = id.replace("__", "-");
     if (id.matches(".*-[a-z][a-z0-9]?")) {
-      id = id.substring(0, id.lastIndexOf('-')) + '-' + biggId.substring(biggId.lastIndexOf('_'));
+      id = id.substring(0, id.lastIndexOf('-')) + '-'
+        + biggId.substring(biggId.lastIndexOf('_'));
     }
     StringTokenizer st = new StringTokenizer(id, "_");
     while (st.hasMoreElements()) {
@@ -232,9 +238,8 @@ public class BiGGId {
         } catch (IllegalArgumentException exc) {
           // This is not a problem, we have the chance to fix it right
           // away.
-          logger.finer(
-            MessageFormat.format("Failed to correctly parse id ''{0}''. {1}",
-              biggId, Utils.getMessage(exc)));
+          logger.finer(format("Failed to correctly parse id ''{0}''. {1}",
+            biggId, Utils.getMessage(exc)));
           if (isSetCompartmentCode()) {
             setAbbreviation(getAbbreviation() + '_' + getCompartmentCode());
           }
@@ -244,7 +249,7 @@ public class BiGGId {
       }
       if (elem.length() > 0) {
         throw new IllegalArgumentException(
-          MessageFormat.format("Unknown BiGG id component {0}", elem));
+          format("Unknown BiGG id component {0}", elem));
       }
     }
   }
@@ -257,8 +262,8 @@ public class BiGGId {
     try {
       setCompartmentCode(CompartmentCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(MessageFormat.format(
-        "Failed to set CompartmentCode: ''{0}''", Utils.getMessage(exc)));
+      logger.finer(format("Failed to set CompartmentCode: ''{0}''",
+        Utils.getMessage(exc)));
     }
   }
 
@@ -274,9 +279,8 @@ public class BiGGId {
     } catch (IllegalArgumentException exc) {
       // this is not a warning because we try to fix the problem right
       // away.
-      logger.finer(
-        MessageFormat.format("Failed to correctly parse id ''{0}''. {1}",
-          biggId, Utils.getMessage(exc)));
+      logger.finer(format("Failed to correctly parse id ''{0}''. {1}", biggId,
+        Utils.getMessage(exc)));
       if (elem.endsWith("-")) {
         elem = elem.substring(0, elem.length() - 1) + '_';
       }
@@ -296,8 +300,8 @@ public class BiGGId {
     try {
       setAbbreviation(abbreviation);
     } catch (IllegalArgumentException exc) {
-      logger.fine(MessageFormat.format("Could not set abbreviation: {0}",
-        Utils.getMessage(exc)));
+      logger.fine(
+        format("Could not set abbreviation: {0}", Utils.getMessage(exc)));
     }
   }
 
@@ -321,7 +325,7 @@ public class BiGGId {
       this.abbreviation = abbreviation;
     } else {
       throw new IllegalArgumentException(
-        MessageFormat.format("Invalid abbreviation: ''{0}''", abbreviation));
+        format("Invalid abbreviation: ''{0}''", abbreviation));
     }
   }
 
@@ -337,8 +341,8 @@ public class BiGGId {
     if (compartmentCode.matches("[a-z][a-z0-9]?")) {
       this.compartmentCode = compartmentCode;
     } else {
-      throw new IllegalArgumentException(MessageFormat.format(
-        "Invalid compartment code: ''{0}''", compartmentCode));
+      throw new IllegalArgumentException(
+        format("Invalid compartment code: ''{0}''", compartmentCode));
     }
   }
 
@@ -364,13 +368,12 @@ public class BiGGId {
       prefix = id.substring(0, 1);
       id = id.substring(2);
     } else {
-      logger.fine(
-        MessageFormat.format("Id ''{0}'' seems to have no known prefix.", id));
+      logger.fine(format("Id ''{0}'' seems to have no known prefix.", id));
     }
     try {
       setPrefix(prefix);
     } catch (IllegalArgumentException exc) {
-      logger.fine(MessageFormat.format("Failed setting prefix : ''{0}'' ", id));
+      logger.fine(format("Failed setting prefix : ''{0}'' ", id));
     }
     return id;
   }
@@ -382,17 +385,15 @@ public class BiGGId {
    */
   public void setConstructorPrefix(String prefix) {
     if (prefix.matches("[RMG]") || prefix.matches("R_[Ee][Xx]")
-        || prefix.matches("R_[Dd][Mm]")
-        || prefix.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
+      || prefix.matches("R_[Dd][Mm]")
+      || prefix.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
       try {
         setPrefix(prefix);
       } catch (IllegalArgumentException exc) {
-        logger.fine(
-          MessageFormat.format("Failed setting prefix : ''{0}'' ", prefix));
+        logger.fine(format("Failed setting prefix : ''{0}'' ", prefix));
       }
     } else {
-      logger.fine(
-        MessageFormat.format(" ''{0}'' is not a known prefix.", prefix));
+      logger.fine(format(" ''{0}'' is not a known prefix.", prefix));
     }
   }
 
@@ -416,7 +417,7 @@ public class BiGGId {
       this.prefix = prefix;
     } else {
       throw new IllegalArgumentException(
-        MessageFormat.format("Invalid prefix: ''{0}''", prefix));
+        format("Invalid prefix: ''{0}''", prefix));
     }
   }
 
@@ -428,8 +429,8 @@ public class BiGGId {
     try {
       setTissueCode(tissueCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(MessageFormat.format("Failed to set TissueCode: ''{0}''",
-        Utils.getMessage(exc)));
+      logger.finer(
+        format("Failed to set TissueCode: ''{0}''", Utils.getMessage(exc)));
     }
   }
 
@@ -446,7 +447,7 @@ public class BiGGId {
       this.tissueCode = tissueCode;
     } else {
       throw new IllegalArgumentException(
-        MessageFormat.format("Invalid tissue code: ''{0}''", tissueCode));
+        format("Invalid tissue code: ''{0}''", tissueCode));
     }
   }
 
@@ -534,5 +535,4 @@ public class BiGGId {
   public void unsetTissueCode() {
     tissueCode = null;
   }
-
 }
