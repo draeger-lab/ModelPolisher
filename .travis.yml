@@ -11,7 +11,7 @@ before_install:
 - cd scripts && ./configureSQLiteDB.sh && cd ..
 - mkdir out
 install:
-- travis_retry mvn clean compile verify -B && zip -d target/ModelPolisher-1.6.jar log4j2.xml > /dev/null 
+- travis_retry mvn clean compile package -B && zip -d target/ModelPolisher-1.6.jar log4j2.xml > /dev/null 
 script:
 - travis_wait java -jar target/ModelPolisher-1.6.jar --input=bigg_models_data/models/RECON1.xml --output=out/RECON1.xml --annotate-with-bigg=true --log-level=SEVERE
 - travis_wait java -jar target/ModelPolisher-1.6.jar --input=bigg_models_data/models/ecoli_core_model.xml --output=out/ecoli_core_model.xml --annotate-with-bigg=true --log-level=SEVERE
