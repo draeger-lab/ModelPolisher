@@ -41,9 +41,9 @@
     <!-- Include scripts individually -->
     <fileSet>
       <directory>${project.build.scriptSourceDirectory}</directory>
-      <outputDirectory>./</outputDirectory>
+      <outputDirectory>./scripts</outputDirectory>
       <includes>
-        <include>*.sh</include>
+        <include>**/*</include>
       </includes>
       <filtered>true</filtered>
       <fileMode>0755</fileMode>
@@ -76,6 +76,12 @@
     <file>
       <outputDirectory>./</outputDirectory>
       <source>LICENSE</source>
+      <fileMode>0644</fileMode>
+      <filtered>true</filtered>
+    </file>
+    <file>
+      <outputDirectory>./</outputDirectory>
+      <source>THIRD-PARTY.txt</source>
       <fileMode>0644</fileMode>
       <filtered>true</filtered>
     </file>
