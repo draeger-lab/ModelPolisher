@@ -14,18 +14,17 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.identifiers.registry.RegistryLocalProvider;
 import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.Utils;
@@ -49,6 +48,19 @@ public class BiGGDB {
    *
    */
   private boolean isSQLiteConnection = false;
+
+
+  /**
+   *
+   */
+  public void closeConnection() {
+    if (connect.isConnected())
+      try {
+        connect.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+  }
 
 
   /**
@@ -89,8 +101,8 @@ public class BiGGDB {
       return getDate("SELECT " + Constants.COLUMN_DATE_TIME + " FROM "
         + Constants.DATABASE_VERSION);
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format("{0}: {1}", exc.getClass().getName(),
-        Utils.getMessage(exc)));
+      logger.warning(
+        format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
     return null;
   }
@@ -200,8 +212,7 @@ public class BiGGDB {
    * @return
    */
   public TreeSet<String> getGeneIds(String label) {
-    TreeSet<String> set = new TreeSet<String>();
-    RegistryLocalProvider registry = new RegistryLocalProvider();
+    TreeSet<String> set = new TreeSet<>();
     String query = "SELECT " + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
       + "\n" + "FROM  " + Constants.DATA_SOURCE + " d, " + Constants.SYNONYM
       + " s, " + Constants.GENOME_REGION + " gr\n" + "WHERE d."
@@ -222,7 +233,7 @@ public class BiGGDB {
           logger.info("Collection was null for this gene resource URI.");
           continue;
         } else {
-          logger.info(MessageFormat.format(
+          logger.info(format(
             "Identifier was null for collection ''{0}'' and this gene resource URI ",
             collection));
           continue;
@@ -250,7 +261,7 @@ public class BiGGDB {
       + " = s." + Constants.COLUMN_DATA_SOURCE_ID + " AND\n s."
       + Constants.COLUMN_OME_ID + " = gr." + Constants.COLUMN_ID + " AND\n gr."
       + Constants.COLUMN_BIGG_ID + " = '%s' AND\n d." + Constants.COLUMN_BIGG_ID
-      + " = " + Constants.REFSEQ_NAME;
+      + " LIKE " + Constants.REFSEQ_NAME;
     return getString(query, label);
   }
 
@@ -451,7 +462,7 @@ public class BiGGDB {
         + Constants.COLUMN_ID + " = m." + Constants.COLUMN_GENOME_ID + " AND m."
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Could not retrieve NCBI taxon identifier for model ''{0}'', because of {1}.",
         biggId, Utils.getMessage(exc)));
     }
@@ -468,9 +479,9 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPARTMENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a compartment or not: {1}.", biggId,
-        Utils.getMessage(exc)));
+      logger.warning(
+        format("Could not determine if ''{0}'' is a compartment or not: {1}.",
+          biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -485,9 +496,9 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPONENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a metabolite or not: {1}.", biggId,
-        Utils.getMessage(exc)));
+      logger.warning(
+        format("Could not determine if ''{0}'' is a metabolite or not: {1}.",
+          biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -502,9 +513,9 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.MODEL + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a model or not: {1}.", biggId,
-        Utils.getMessage(exc)));
+      logger.warning(
+        format("Could not determine if ''{0}'' is a model or not: {1}.", biggId,
+          Utils.getMessage(exc)));
     }
     return false;
   }
@@ -522,9 +533,9 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.REACTION + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(MessageFormat.format(
-        "Could not determine if ''{0}'' is a reaction or not: {1}.", biggId,
-        Utils.getMessage(exc)));
+      logger.warning(
+        format("Could not determine if ''{0}'' is a reaction or not: {1}.",
+          biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -549,7 +560,7 @@ public class BiGGDB {
     if ((charge == null) || (charge.trim().length() == 0)) {
       return null;
     }
-    return charge != null ? Integer.valueOf(Integer.parseInt(charge)) : null;
+    return Integer.parseInt(charge);
   }
 
 

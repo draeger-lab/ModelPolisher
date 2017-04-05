@@ -1,10 +1,10 @@
 package edu.ucsd.sbrg.json;
 
+import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -49,9 +49,9 @@ import edu.ucsd.sbrg.util.UpdateListener;
  */
 public class JSONparser {
 
-  private static final String  GENE_PRODUCT_PREFIX  = "G";
-  private static final String  REACTION_PREFIX      = "R";
-  private static final String  METABOLITE_PREFIX    = "M";
+  private static final String GENE_PRODUCT_PREFIX = "G";
+  private static final String REACTION_PREFIX = "R";
+  private static final String METABOLITE_PREFIX = "M";
   /**
    * Regex pattern to split JSON arrays into their respective values at ",",
    * keeping both quotation marks in the process
@@ -61,7 +61,7 @@ public class JSONparser {
   /**
    * Regex pattern for biomass prefix exclusion
    */
-  private static Pattern       PATTERN_BIOMASS_CASE_INSENSITIVE =
+  private static Pattern PATTERN_BIOMASS_CASE_INSENSITIVE =
     Pattern.compile("(.*)([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(.*)");
 
 
@@ -135,7 +135,7 @@ public class JSONparser {
     // fields, non-conforming models might still get parsed, omitting
     // superfluous information
     if (root.size() < 4 || root.size() > 10) {
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "The number of fields in the JSON-Model is not in the expected range of 4-10: ''{0}''\nSome properties might not get parsed.",
         root.size()));
     }
@@ -208,8 +208,7 @@ public class JSONparser {
       logger.fine("There is no compartments field in this model");
     }
     int compSize = compartments.size();
-    logger.info(MessageFormat.format(
-      "There are {0} compartments in this model.", compSize));
+    logger.info(format("There are {0} compartments in this model.", compSize));
     if (compSize == 0) {
       return;
     }
@@ -235,8 +234,7 @@ public class JSONparser {
         "There is no metabolites field in this model");
     }
     int metSize = metabolites.size();
-    logger.info(MessageFormat.format("There are {0} metabolites in this model.",
-      metSize));
+    logger.info(format("There are {0} metabolites in this model.", metSize));
     if (metSize == 0) {
       return;
     }
@@ -271,7 +269,7 @@ public class JSONparser {
         }
         String csense = crop(current.path("_constraint_sense").toString());
         if (csense != null && !csense.isEmpty() && !csense.equals("E")) {
-          logger.severe(MessageFormat.format(
+          logger.severe(format(
             "Unsupported nonequality relationship for metabolite with id ''{0}''.",
             species.getId()));
         }
@@ -313,8 +311,7 @@ public class JSONparser {
         "There is no genes field in this model");
     }
     int genSize = genes.size();
-    logger.info(
-      MessageFormat.format("There are {0} genes in this model.", genSize));
+    logger.info(format("There are {0} genes in this model.", genSize));
     if (genSize == 0) {
       return;
     }
@@ -371,8 +368,7 @@ public class JSONparser {
         "There is no reactions field in this model");
     }
     int reactSize = reactions.size();
-    logger.info(MessageFormat.format("There are {0} reactions in this model.",
-      reactSize));
+    logger.info(format("There are {0} reactions in this model.", reactSize));
     if (reactSize == 0) {
       return;
     }
@@ -447,9 +443,9 @@ public class JSONparser {
               Species species = model.getSpecies(metId.toBiGGId());
               if (species == null) {
                 species = model.createSpecies(metId.toBiGGId());
-                logger.info(MessageFormat.format(
-                  " Species ''{0}'' in reaction ''{1}'' is not defined!", metId,
-                  r.getId()));
+                logger.info(
+                  format(" Species ''{0}'' in reaction ''{1}'' is not defined!",
+                    metId, r.getId()));
               }
               if (coeff < 0d) {
                 ModelBuilder.buildReactants(r, pairOf(-coeff, species));
@@ -571,7 +567,7 @@ public class JSONparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.fine(MessageFormat.format(
+      logger.fine(format(
         "Changed id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.",
         id, newId));
     }
@@ -596,7 +592,7 @@ public class JSONparser {
    * @param exc
    */
   private void logException(Exception exc) {
-    logger.warning(MessageFormat.format("{0}: {1}",
-      exc.getClass().getSimpleName(), Utils.getMessage(exc)));
+    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(),
+      Utils.getMessage(exc)));
   }
 }
