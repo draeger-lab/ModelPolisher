@@ -15,3 +15,8 @@ ModelPolisher is essentially a command-line based tool. You can run it locally u
 The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
 
 The article http://nar.oxfordjournals.org/content/44/D1/D515 describes BiGG Models knowledge-base including ModelPolisher, http://nar.oxfordjournals.org/content/44/D1/D515
+
+# Licenses
+
+ModelPolisher is distributed under the MIT License (see LICENSE).
+An Overview of all dependencies is provided in THIRD-PARTY.txt, their respective licenses can be found in the licenses folder.

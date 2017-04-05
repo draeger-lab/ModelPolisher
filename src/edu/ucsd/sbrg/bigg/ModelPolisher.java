@@ -3,6 +3,8 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static java.text.MessageFormat.format;
+
 import java.awt.Window;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,12 +21,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.ErrorManager;
 import java.util.logging.Level;
@@ -36,7 +39,6 @@ import javax.xml.stream.XMLStreamException;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.util.ValuePair;
@@ -126,6 +128,14 @@ public class ModelPolisher extends Launcher {
   }
 
   /**
+   *
+   */
+  private static Parameters parameters = new Parameters();
+  /**
+   *
+   */
+  private static BiGGDB bigg = null;
+  /**
    * Localization support.
    */
   private static final transient ResourceBundle baseBundle =
@@ -186,22 +196,24 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param bigg
    * @param input
    * @param output
-   * @param parameters
    * @throws IOException
    * @throws XMLStreamException
    */
-  public void batchProcess(BiGGDB bigg, File input, File output,
-    Parameters parameters) throws IOException, XMLStreamException {
+  public void batchProcess(File input, File output, SBProperties args)
+    throws IOException, XMLStreamException {
     // We test if non-existing path denotes a file or directory by checking if
     // it contains at least one period in its name. If so, we assume it is a
     // file.
+    if (!input.exists()) {
+      throw new IOException(format(
+        "Could not find a file at ''{0}'' to read from.", input.toString()));
+    }
+    initParameters(args);
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
       && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format("Creating directory {0}.",
-        output.getAbsolutePath()));
+      logger.info(format("Creating directory {0}.", output.getAbsolutePath()));
       output.mkdir();
     }
     if (input.isFile()) {
@@ -221,14 +233,21 @@ public class ModelPolisher extends Launcher {
           output =
             new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
-        polish(bigg, input, output, parameters);
+        getDB(args);
+        readAndPolish(input, output);
       }
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(MessageFormat.format("Cannot open file {0}.",
-          input.getAbsolutePath()));
+        throw new IOException(
+          format("Cannot write a whole directory to file {0}.",
+            output.getAbsolutePath()));
       }
-      for (File file : input.listFiles()) {
+      File[] files = input.listFiles();
+      if (files == null) {
+        logger.severe("There were no files in the provided directory.");
+        return;
+      }
+      for (File file : files) {
         File target = null;
         fileTypes = getFileType(file);
         if (!fileTypes[0]) {
@@ -238,7 +257,7 @@ public class ModelPolisher extends Launcher {
           target = new File(
             Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
         }
-        batchProcess(bigg, file, target, parameters);
+        batchProcess(file, target, args);
       }
     }
   }
@@ -255,8 +274,7 @@ public class ModelPolisher extends Launcher {
     try {
       iStream = new FileInputStream(input);
     } catch (FileNotFoundException exc) {
-      logger.severe(
-        MessageFormat.format("Could not open file at ''{0}''", input.toPath()));
+      logger.severe(format("Could not open file at ''{0}''", input.toPath()));
     }
     // If it's null, something went horribly wrong and a nullPointerException
     // should be thrown
@@ -288,9 +306,7 @@ public class ModelPolisher extends Launcher {
       BufferedWriter writer =
         new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
       writer.write(doc);
-      logger.info(MessageFormat.format("Wrote corrected file to ''{0}''",
-        input.toPath()));
-      writer.flush();
+      logger.info(format("Wrote corrected file to ''{0}''", input.toPath()));
       writer.close();
     } catch (IOException exc) {
       logger.severe("Could not read whole file");
@@ -356,22 +372,20 @@ public class ModelPolisher extends Launcher {
               System.out.write(message.getBytes());
             } catch (IOException exc) {
               reportError(null, exc, ErrorManager.FORMAT_FAILURE);
-              return;
             }
           }
         }
       }, getLogPackages());
     }
-    Parameters parameters = initParameters(args);
-    BiGGDB bigg = setDBMode(args, parameters.annotateWithBiGG);
     // Gives users the choice to pass an alternative model notes XHTML file to
     // the program.
     try {
-      batchProcess(bigg, new File(args.getProperty(IOOptions.INPUT)),
-        new File(args.getProperty(IOOptions.OUTPUT)), parameters);
-    } catch (SBMLException | XMLStreamException | IOException exc) {
+      batchProcess(new File(args.getProperty(IOOptions.INPUT)),
+        new File(args.getProperty(IOOptions.OUTPUT)), args);
+    } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
     }
+    bigg.closeConnection();
   }
 
 
@@ -542,8 +556,11 @@ public class ModelPolisher extends Launcher {
    *        Arguments from commandline
    * @return Parameters for commandLineMode
    */
-  private Parameters initParameters(SBProperties args) {
-    Parameters parameters = new Parameters();
+  private void initParameters(SBProperties args) {
+    if (parameters.includeAnyURI != null) {
+      logger.fine("Parameters are already set for this session");
+      return;
+    }
     String documentTitlePattern = null;
     if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
       documentTitlePattern =
@@ -583,7 +600,6 @@ public class ModelPolisher extends Launcher {
       args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
     parameters.sbmlValidation =
       args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-    return parameters;
   }
 
 
@@ -591,7 +607,7 @@ public class ModelPolisher extends Launcher {
    * @param string
    * @return
    */
-  private boolean isNotStrNullOrEmpty(String string) {
+  private boolean iStrNotNullOrEmpty(String string) {
     return !(string == null || string.isEmpty());
   }
 
@@ -610,7 +626,7 @@ public class ModelPolisher extends Launcher {
   private File parseFileOption(SBProperties args, Option<File> option) {
     if (args.containsKey(option)) {
       File notesFile = new File(args.getProperty(option));
-      if ((notesFile != null) && notesFile.exists() && notesFile.canRead()) {
+      if (notesFile.exists() && notesFile.canRead()) {
         return notesFile;
       }
     }
@@ -619,28 +635,52 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param bigg
    * @param input
    * @param output
-   * @param parameters
    * @throws XMLStreamException
    * @throws IOException
    */
-  public void polish(BiGGDB bigg, File input, File output,
-    Parameters parameters) throws XMLStreamException, IOException {
+  private void readAndPolish(File input, File output)
+    throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.severe(
-      MessageFormat.format("Reading input file {0}.", input.getAbsolutePath()));
-    SBMLDocument doc = null;
+    logger.info(format("Reading input file {0}.", input.getAbsolutePath()));
+    List<SBMLDocument> docs = new ArrayList<>();
     // reading or parsing input
     if (fileTypes[1]) {
-      doc = COBRAparser.read(input, parameters.omitGenericTerms);
+      docs.addAll(COBRAparser.read(input, parameters.omitGenericTerms));
     } else if (fileTypes[2]) {
-      doc = JSONparser.read(input);
+      docs.add(JSONparser.read(input));
     } else {
       checkHTMLTags(input);
-      doc = SBMLReader.read(input, new UpdateListener());
+      docs.add(SBMLReader.read(input, new UpdateListener()));
     }
+    if (docs.size() == 0) {
+      logger.severe(
+        format("Could not parse any model from input file ''{0}'' , aborting.",
+          input.toString()));
+      return;
+    }
+    int count = 0;
+    for (SBMLDocument doc : docs) {
+      if (count != 0) {
+        String newPath = FileTools.removeFileExtension(output.getPath());
+        if (count > 1) {
+          newPath = newPath.substring(0, newPath.length() - 2);
+        }
+        newPath += "_" + count + ".xml";
+        output = new File(newPath);
+      }
+      polish(doc, output);
+      count++;
+    }
+    time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
+    logger.info(format("Done in {0, number, ##}:{1, number, ##} min.",
+      (time / 60), (time % 60)));
+  }
+
+
+  private void polish(SBMLDocument doc, File output)
+    throws IOException, XMLStreamException {
     if (!doc.isSetLevelAndVersion()
       || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info("Trying to convert the model to Level 3 Version 1.");
@@ -670,14 +710,13 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
-    logger.info(MessageFormat.format("Writing output file {0}",
-      output.getAbsolutePath()));
+    logger.info(format("Writing output file {0}", output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
       getVersionNumber(), ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
-      logger.info(MessageFormat.format("Packing archive file {0}", archive));
+      logger.info(format("Packing archive file {0}", archive));
       switch (parameters.compression) {
       case ZIP:
         ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive,
@@ -693,39 +732,30 @@ public class ModelPolisher extends Launcher {
         validate(archive);
       }
     }
-    time = System.currentTimeMillis() - time;
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTimeInMillis(time);
-    logger.info(
-      MessageFormat.format("Done ({0,time, ssss} s).", calendar.getTime()));
   }
 
 
   /**
    * Sets DB to use, depending on provided arguments:
    * If annotateWithBigg is true and all arguments are provided, PostgreSQL is
-   * used
-   * If arguments are missing, the local SQLite DB is used instead
-   * else BiggAnnotation is disabled
+   * used, if arguments are missing, the local SQLite DB is used instead
    *
    * @param args:
    *        Arguments from Commandline
    * @return The corresponding DB
    */
-  private BiGGDB setDBMode(SBProperties args, boolean annotateWithBiGG) {
-    if (!annotateWithBiGG)
-      return null;
-    BiGGDB bigg = null;
+  private void getDB(SBProperties args) {
+    if (!parameters.annotateWithBiGG || bigg != null)
+      return;
     String dbName = args.getProperty(DBOptions.DBNAME);
     String host = args.getProperty(DBOptions.HOST);
     String passwd = args.getProperty(DBOptions.PASSWD);
     String port = args.getProperty(DBOptions.PORT);
     String user = args.getProperty(DBOptions.USER);
-    boolean runPSQL = true;
-    runPSQL &= isNotStrNullOrEmpty(dbName);
-    runPSQL &= isNotStrNullOrEmpty(host);
-    runPSQL &= isNotStrNullOrEmpty(port);
-    runPSQL &= isNotStrNullOrEmpty(user);
+    boolean runPSQL = iStrNotNullOrEmpty(dbName);
+    runPSQL &= iStrNotNullOrEmpty(host);
+    runPSQL &= iStrNotNullOrEmpty(port);
+    runPSQL &= iStrNotNullOrEmpty(user);
     SQLConnector connectorBase = new SQLConnector();
     if (runPSQL) {
       try {
@@ -742,7 +772,6 @@ public class ModelPolisher extends Launcher {
         exc.printStackTrace();
       }
     }
-    return bigg;
   }
 
 
@@ -750,8 +779,6 @@ public class ModelPolisher extends Launcher {
    * @param filename
    */
   private void validate(String filename) {
-    // org.sbml.jsbml.validator.SBMLValidator.main(new String[] {"-d", "p,u",
-    // compressedOutput});
     String output = "xml";
     String offcheck = "p,u";
     HashMap<String, String> parameters = new HashMap<String, String>();
@@ -761,7 +788,7 @@ public class ModelPolisher extends Launcher {
     SBMLErrorLog sbmlErrorLog =
       SBMLValidator.checkConsistency(filename, parameters);
     if (sbmlErrorLog != null) {
-      logger.info(MessageFormat.format(
+      logger.info(format(
         "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
         sbmlErrorLog.getErrorCount(), filename));
       // printErrors

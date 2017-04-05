@@ -3,17 +3,19 @@
  */
 package edu.ucsd.sbrg.cobra;
 
+import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -69,20 +71,134 @@ public class COBRAparser {
   private static final String REACTION_PREFIX = "R";
   private static final String METABOLITE_PREFIX = "M";
   /**
+   *
+   */
+  private MatlabFields mlField;
+  /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
     Logger.getLogger(COBRAparser.class.getName());
-  private String resource;
-
 
   /**
-   * @param matFile
-   * @return
-   * @throws IOException
+   *
    */
-  public static SBMLDocument read(File matFile) throws IOException {
-    return read(matFile, false);
+  private class MatlabFields {
+
+    MLArray description;
+    MLCell author;
+    MLCell citations;
+    MLCell comments;
+    MLCell confidenceScores;
+    MLCell ecNumbers;
+    MLCell genedate;
+    MLCell geneindex;
+    MLCell genesource;
+    MLCell genes;
+    MLCell grRules;
+    MLCell metCHEBIID;
+    MLCell metFormulas;
+    MLCell metHMDB;
+    MLCell metInchiString;
+    MLCell metKeggID;
+    MLCell metNames;
+    MLCell metPubChemID;
+    MLCell metSmile;
+    MLCell mets;
+    MLCell name;
+    MLCell notes;
+    MLCell organism;
+    MLCell rxnKeggID;
+    MLCell rxns;
+    MLCell rxnNames;
+    MLCell subSystems;
+    MLChar csense;
+    MLDouble lb;
+    MLDouble metCharge;
+    MLDouble ub;
+    MLNumericArray<?> b;
+    MLNumericArray<?> coefficients;
+    MLNumericArray<?> rev;
+    MLSparse S;
+    MLStructure struct;
+
+
+    /**
+     * @param struct
+     */
+    MatlabFields(MLStructure struct) {
+      this.struct = struct;
+      initializeFields();
+    }
+
+
+    /**
+     *
+     */
+    void initializeFields() {
+      b = toMLNumericArray(getStructField(ModelField.b));
+      citations = toMLCell(getStructField(ModelField.citations));
+      coefficients = toMLNumericArray(getStructField(ModelField.c));
+      comments = toMLCell(getStructField(ModelField.comments));
+      confidenceScores = toMLCell(getStructField(ModelField.confidenceScores));
+      description = toMLCell(getStructField(ModelField.description));
+      csense = toMLChar(getStructField(ModelField.csense));
+      ecNumbers = toMLCell(getStructField(ModelField.ecNumbers));
+      genes = toMLCell(getStructField(ModelField.mets));
+      grRules = toMLCell(getStructField(ModelField.grRules));
+      lb = toMLDouble(getStructField(ModelField.lb));
+      mets = toMLCell(getStructField(ModelField.mets));
+      metCharge = toMLDouble(getStructField(ModelField.metCharge));
+      metCHEBIID = toMLCell(getStructField(ModelField.metCHEBIID));
+      metFormulas = toMLCell(getStructField(ModelField.metFormulas));
+      metHMDB = toMLCell(getStructField(ModelField.metHMDB));
+      metInchiString = toMLCell(getStructField(ModelField.metInchiString));
+      metKeggID = toMLCell(getStructField(ModelField.metKEGGID));
+      metNames = toMLCell(getStructField(ModelField.metNames));
+      metPubChemID = toMLCell(getStructField(ModelField.metPubChemID));
+      metSmile = toMLCell(getStructField(ModelField.metSmile));
+      rev = toMLNumericArray(getStructField(ModelField.rev));
+      rxns = toMLCell(getStructField(ModelField.rxns));
+      rxnKeggID = toMLCell(getStructField(ModelField.rxnKeggID));
+      rxnNames = toMLCell(getStructField(ModelField.rxnNames));
+      S = toMLSparse(getStructField(ModelField.S));
+      subSystems = toMLCell(getStructField(ModelField.subSystems));
+      ub = toMLDouble(getStructField(ModelField.ub));
+    }
+
+
+    /**
+     *
+     */
+    void setDescriptionFields() {
+      MLStructure descrStruct = (MLStructure) description;
+      name = toMLCell(getStructField(descrStruct, ModelField.name));
+      organism = toMLCell(getStructField(descrStruct, ModelField.organism));
+      author = toMLCell(getStructField(descrStruct, ModelField.author));
+      geneindex = toMLCell(getStructField(descrStruct, ModelField.geneindex));
+      genedate = toMLCell(getStructField(descrStruct, ModelField.genedate));
+      genesource = toMLCell(getStructField(descrStruct, ModelField.genesource));
+      notes = toMLCell(getStructField(descrStruct, ModelField.notes));
+    }
+
+
+    /**
+     * @param field
+     * @return
+     */
+    MLArray getStructField(ModelField field) {
+      return struct.getField(field.name());
+    }
+
+
+    /**
+     * @param struct
+     * @param field
+     * @return
+     */
+    MLArray getStructField(MLStructure struct, ModelField field) {
+      return struct.getField(field.name());
+    }
   }
 
 
@@ -92,7 +208,7 @@ public class COBRAparser {
    * @return
    * @throws IOException
    */
-  public static SBMLDocument read(File matFile, boolean omitGenericTerms)
+  public static List<SBMLDocument> read(File matFile, boolean omitGenericTerms)
     throws IOException {
     COBRAparser parser = new COBRAparser();
     parser.setOmitGenericTerms(omitGenericTerms);
@@ -101,9 +217,51 @@ public class COBRAparser {
 
 
   /**
+   * @param reader
+   * @return
+   */
+  private List<MLArray> getModels(MatFileReader reader) {
+    Map<String, MLArray> content = reader.getContent();
+    Iterator<String> keyIter = content.keySet().iterator();
+    List<MLArray> models = new ArrayList<>();
+    while (keyIter.hasNext()) {
+      String key = keyIter.next();
+      MLArray array = content.get(key);
+      if ((array.getSize() == 1) && array.isStruct()) {
+        models.add(array);
+      }
+    }
+    if (content.keySet().size() > 1) {
+      logger.warning(format(
+        "There are several models in this file. Of ''{0}'' top level structures ''{1}'' could be verified as models and will be parsed.",
+        content.keySet().size(), models.size()));
+    }
+    return models;
+  }
+
+
+  /**
+   * @param models
+   * @return
+   */
+  private List<SBMLDocument> parseModels(List<MLArray> models) {
+    List<SBMLDocument> docs = new ArrayList<>();
+    for (MLArray model : models) {
+      ModelBuilder builder = new ModelBuilder(3, 1);
+      builder.buildModel(SBMLtools.toSId(model.getName()), null);
+      SBMLDocument doc = builder.getSBMLDocument();
+      doc.addTreeNodeChangeListener(new UpdateListener());
+      parseModel(builder, model);
+      docs.add(doc);
+    }
+    return docs;
+  }
+
+
+  /**
    *
    */
-  public COBRAparser() {
+  private COBRAparser() {
     super();
     setOmitGenericTerms(false);
   }
@@ -140,49 +298,26 @@ public class COBRAparser {
    * @return
    * @throws IOException
    */
-  private SBMLDocument parse(File matFile) throws IOException {
-    MatFileReader mfr = new MatFileReader(matFile);
-    ModelBuilder builder = new ModelBuilder(3, 1);
-    SBMLDocument doc = builder.getSBMLDocument();
-    doc.addTreeNodeChangeListener(new UpdateListener());
-    Map<String, MLArray> content = mfr.getContent();
-    if (content.keySet().size() > 1) {
-      logger.warning(MessageFormat.format(
-        "Parsing only one randomly selected model of {0} available models in the given file {1}.",
-        content.keySet().size(), matFile.getAbsolutePath()));
-    }
-    MLArray array = null;
-    Iterator<String> keyIter = content.keySet().iterator();
-    // Get a model from matFile to parse, skip over non-model entries
-    do {
-      String key = keyIter.next();
-      array = content.get(key);
-      builder.buildModel(SBMLtools.toSId(array.getName()), null);
-    } while ((array.getSize() != 1) && !array.isStruct() && keyIter.hasNext());
-    if ((array.getSize() != 1) && !array.isStruct()) {
-      throw new IllegalArgumentException(MessageFormat.format(
-        "Expected data struct of size 1, but found array ''{1}'' of size {0,number,integer}.",
-        array.getSize(), array.getName()));
-    }
-    parseModel(builder, array);
-    return doc;
+  private List<SBMLDocument> parse(File matFile) throws IOException {
+    MatFileReader reader = new MatFileReader(matFile);
+    return parseModels(getModels(reader));
   }
 
 
   /**
    * @param builder
-   * @param genes
    */
-  private void parseGenes(ModelBuilder builder, MLCell genes) {
-    if (genes == null) {
+  private void parseGenes(ModelBuilder builder) {
+    if (mlField.genes == null) {
       logger.info("No genes in this Model");
       return;
     }
     Model model = builder.getModel();
     FBCModelPlugin modelPlug =
       (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-    for (int i = 0; i < genes.getSize(); i++) {
-      String id = toString(genes.get(i), genes.getName(), i + 1);
+    for (int i = 0; i < mlField.genes.getSize(); i++) {
+      String id =
+        toString(mlField.genes.get(i), mlField.genes.getName(), i + 1);
       if ((id != null) && (id.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(id));
@@ -202,25 +337,13 @@ public class COBRAparser {
 
   /**
    * @param builder
-   * @param mets
-   * @param metNames
-   * @param metFormulas
-   * @param metCharge
-   * @param metCHEBIID
-   * @param metHMDB
-   * @param metInchiString
-   * @param metKeggID
-   * @param metPubChemID
-   * @param metSmile
    */
-  private void parseMetabolites(ModelBuilder builder, MLCell mets,
-    MLCell metNames, MLCell metFormulas, MLDouble metCharge, MLCell metCHEBIID,
-    MLCell metHMDB, MLCell metInchiString, MLCell metKeggID,
-    MLCell metPubChemID, MLCell metSmile) {
+  private void parseMetabolites(ModelBuilder builder) {
     Model model = builder.getModel();
     registry = new RegistryLocalProvider();
-    for (int i = 0; i < mets.getSize(); i++) {
-      String id = toString(mets.get(i), mets.getName(), i + 1);
+    for (int i = 0; (mlField.mets != null)
+      && (i < mlField.mets.getSize()); i++) {
+      String id = toString(mlField.mets.get(i), mlField.mets.getName(), i + 1);
       if ((id != null) && (id.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(id));
@@ -228,57 +351,61 @@ public class COBRAparser {
             biggId.setPrefix(METABOLITE_PREFIX);
           }
           Species species = model.createSpecies(biggId.toBiGGId());
-          species.setName(toString(metNames.get(i), metNames.getName(), i + 1));
-          if ((metFormulas != null) || (metCharge != null)) {
+          if (mlField.metNames != null) {
+            species.setName(toString(mlField.metNames.get(i),
+              mlField.metNames.getName(), i + 1));
+          }
+          if ((mlField.metFormulas != null) || (mlField.metCharge != null)) {
             FBCSpeciesPlugin specPlug =
               (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-            if (exists(metFormulas, i)) {
-              specPlug.setChemicalFormula(
-                toString(metFormulas.get(i), metFormulas.getName(), i + 1));
+            if (exists(mlField.metFormulas, i)) {
+              specPlug.setChemicalFormula(toString(mlField.metFormulas.get(i),
+                mlField.metFormulas.getName(), i + 1));
             }
-            if ((metCharge != null) && (metCharge.getSize() > 0)
-              && (metCharge.get(i) != null)) {
-              double charge = metCharge.get(i).doubleValue();
+            if ((mlField.metCharge != null) && (mlField.metCharge.getSize() > i)
+              && (mlField.metCharge.get(i) != null)) {
+              double charge = mlField.metCharge.get(i);
               specPlug.setCharge((int) charge);
               if (charge - ((int) charge) != 0d) {
-                logger.warning(MessageFormat.format(
-                  "Non-integer charge {0,number} was trunkated to {1}.", charge,
-                  specPlug.getCharge()));
+                logger.warning(
+                  format("Non-integer charge {0,number} was trunkated to {1}.",
+                    charge, specPlug.getCharge()));
               }
             }
           }
           CVTerm term = new CVTerm();
           term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
           term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
-          addResource(metCHEBIID, i, term, "ChEBI");
-          addResource(metHMDB, i, term, "HMDB");
-          addResource(metInchiString, i, term, "InChI");
+          addResource(mlField.metCHEBIID, i, term, "ChEBI");
+          addResource(mlField.metHMDB, i, term, "HMDB");
+          addResource(mlField.metInchiString, i, term, "InChI");
           // all kegg resources
           do {
-            if (addResource(metKeggID, i, term, "KEGG Compound"))
+            if (addResource(mlField.metKeggID, i, term, "KEGG Compound"))
               break;
-            if (addResource(metKeggID, i, term, "KEGG Drug"))
+            if (addResource(mlField.metKeggID, i, term, "KEGG Drug"))
               break;
-            if (addResource(metKeggID, i, term, "KEGG Genes"))
+            if (addResource(mlField.metKeggID, i, term, "KEGG Genes"))
               break;
-            if (addResource(metKeggID, i, term, "KEGG Glycan"))
+            if (addResource(mlField.metKeggID, i, term, "KEGG Glycan"))
               break;
-            if (addResource(metKeggID, i, term, "KEGG Pathway"))
+            if (addResource(mlField.metKeggID, i, term, "KEGG Pathway"))
               break;
           } while (false);
           do {
-            if (addResource(metPubChemID, i, term, "PubChem-compound"))
+            if (addResource(mlField.metPubChemID, i, term, "PubChem-compound"))
               break;
-            if (addResource(metPubChemID, i, term, "PubChem-substance"))
+            if (addResource(mlField.metPubChemID, i, term, "PubChem-substance"))
               break;
           } while (false);
           if (term.getResourceCount() > 0) {
             species.addCVTerm(term);
           }
-          if ((metSmile != null) && (metSmile.get(i) != null)) {
+          if ((mlField.metSmile != null) && (mlField.metSmile.get(i) != null)) {
             // For some reason, the mat files appear to store the creation date
             // in the field smile, rather than a smiles string.
-            String smile = toString(metSmile.get(i), metSmile.getName(), i + 1);
+            String smile = toString(mlField.metSmile.get(i),
+              mlField.metSmile.getName(), i + 1);
             Date date = parseDate(smile);
             if (date != null) {
               species.createHistory().setCreatedDate(date);
@@ -346,10 +473,10 @@ public class COBRAparser {
           if ((resource != null) && !resource.isEmpty()) {
             term.addResource(resource);
             success = true;
-            logger.finest(MessageFormat.format(
+            logger.finest(format(
               " Added resource URI ''{0}'' to provided CVTerm", resource));
           } else {
-            logger.severe(MessageFormat.format(
+            logger.severe(format(
               "Could not obtain resource URI for collection ''{0}'' and id ''{1}''.",
               catalog, id));
           }
@@ -402,13 +529,12 @@ public class COBRAparser {
     if (collection != null) {
       validId = registry.checkRegExp(id, collection.getName());
       if (!validId) {
-        logger.warning(MessageFormat.format(
-          "Identifier ''{0}'' did not match the pattern ''{1}''", id,
-          collection.getRegexp()));
+        logger.warning(
+          format("Identifier ''{0}'' did not match the pattern ''{1}''", id,
+            collection.getRegexp()));
       }
     } else {
-      logger.severe(
-        MessageFormat.format("Unknown collection ''{0}''", catalog));
+      logger.severe(format("Unknown collection ''{0}''", catalog));
     }
     return validId;
   }
@@ -487,7 +613,7 @@ public class COBRAparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.info(MessageFormat.format(
+      logger.info(format(
         "Changed metabolite id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.",
         id, newId));
     }
@@ -501,23 +627,22 @@ public class COBRAparser {
    * @return
    */
   private Model parseModel(ModelBuilder builder, MLArray array) {
-    // TODO: always check for null!
     MLStructure struct = (MLStructure) array;
-    // Check that the given data structure only contains allowable entries:
-    // New struct to store values we match in a case insensitive way
+    // Check that the given data structure only contains allowable entries
     MLStructure correctedStruct =
       new MLStructure(struct.getName(), struct.getDimensions());
     for (MLArray field : struct.getAllFields()) {
       boolean invalidField = false;
       String fieldName = field.getName();
       try {
-        logger.finest(MessageFormat.format("Found model component {0}.",
-          ModelField.valueOf(fieldName)));
+        logger.finest(
+          format("Found model component {0}.", ModelField.valueOf(fieldName)));
       } catch (IllegalArgumentException exc) {
         logException(exc);
         invalidField = true;
       }
       finally {
+        // TODO: refactor into a lean method if possible
         // For each non matched struct field, check if an enum variant exists in
         // a case insensitive way
         if (invalidField) {
@@ -526,13 +651,13 @@ public class COBRAparser {
             if (variantLC.equals(fieldName.toLowerCase())
               || variantLC.startsWith(fieldName.toLowerCase())) {
               if (correctedStruct.getField(variant.name()) != null) {
-                logger.warning(MessageFormat.format(
+                logger.warning(format(
                   "Field for possible match is already present: ''{0}''. ''{1}'' will be omitted.",
                   variant.name(), fieldName));
                 break;
               }
               correctedStruct.setField(variant.name(), field);
-              logger.warning(MessageFormat.format(
+              logger.warning(format(
                 "Changed name of unmatched "
                   + "enum variant ''{0}'' to possible match ''{1}''",
                 fieldName, variant.name()));
@@ -541,7 +666,7 @@ public class COBRAparser {
             }
           }
           if (invalidField) {
-            logger.warning(MessageFormat.format(
+            logger.warning(format(
               "Could not find correct variant for field ''{0}''", fieldName));
           }
         } else {
@@ -551,104 +676,64 @@ public class COBRAparser {
     }
     // parse model
     Model model = builder.getModel();
-    parseDescription(model,
-      correctedStruct.getField(ModelField.description.name()));
-    // Generate basic unit:
-    UnitDefinition ud =
-      builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
-    ModelBuilder.buildUnit(ud, 1d, -3, Unit.Kind.MOLE, 1d);
-    ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
-    ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
-    // parse metabolites
-    MLCell mets = toMLCell(correctedStruct, ModelField.mets);
-    MLCell metNames = toMLCell(correctedStruct, ModelField.metNames);
-    MLCell metFormulas = toMLCell(correctedStruct, ModelField.metFormulas);
-    MLDouble metCharge = toMLDouble(correctedStruct, ModelField.metCharge);
-    MLCell metCHEBIID = toMLCell(correctedStruct, ModelField.metCHEBIID);
-    MLCell metHMDB = toMLCell(correctedStruct, ModelField.metHMDB);
-    MLCell metInchiString =
-      toMLCell(correctedStruct, ModelField.metInchiString);
-    MLCell metKeggID = toMLCell(correctedStruct, ModelField.metKEGGID);
-    MLCell metPubChemID = toMLCell(correctedStruct, ModelField.metPubChemID);
-    MLCell metSmile = toMLCell(correctedStruct, ModelField.metSmile);
-    parseMetabolites(builder, mets, metNames, metFormulas, metCharge,
-      metCHEBIID, metHMDB, metInchiString, metKeggID, metPubChemID, metSmile);
-    // parse genes
-    MLCell genes = toMLCell(correctedStruct.getField(ModelField.mets.name()));
-    parseGenes(builder, genes);
-    // parse reactions
-    MLCell rxns = toMLCell(correctedStruct, ModelField.rxns);
-    MLCell rxnNames = toMLCell(correctedStruct, ModelField.rxnNames);
-    MLCell rxnKeggID = toMLCell(correctedStruct, ModelField.rxnKeggID);
-    MLCell ecNumbers = toMLCell(correctedStruct, ModelField.ecNumbers);
-    MLCell confidenceScores =
-      toMLCell(correctedStruct, ModelField.confidenceScores);
-    MLCell citations = toMLCell(correctedStruct, ModelField.citations);
-    MLCell comments = toMLCell(correctedStruct, ModelField.comments);
-    MLNumericArray<?> rev = toMLNumericArray(correctedStruct, ModelField.rev);
-    MLDouble lb = toMLDouble(correctedStruct.getField(ModelField.lb.name()));
-    MLDouble ub = toMLDouble(correctedStruct.getField(ModelField.ub.name()));
-    MLSparse S = toMLSparse(correctedStruct.getField(ModelField.S.name()));
-    parseRxns(builder, rxns, rxnNames, rev, S, mets, lb, ub, rxnKeggID,
-      ecNumbers, confidenceScores, citations, comments);
+    buildBasicUnits(builder);
+    mlField = new MatlabFields(correctedStruct);
+    parseDescription(model);
+    parseMetabolites(builder);
+    parseGenes(builder);
+    parseRxns(builder);
     // parse gprs
-    MLCell grRules = toMLCell(correctedStruct, ModelField.grRules);
-    for (int i = 0; i < grRules.getSize(); i++) {
+    for (int i = 0; (mlField.grRules != null)
+      && (i < mlField.grRules.getSize()); i++) {
       String geneReactionRule =
-        toString(grRules.get(i), grRules.getName(), i + 1);
+        toString(mlField.grRules.get(i), mlField.grRules.getName(), i + 1);
       if (model.getReaction(i) == null) {
-        logger.severe(MessageFormat.format(
-          "Could not create GPR for reaction with index ''{0}''.", i));
+        logger.severe(
+          format("Could not create GPR for reaction with index ''{0}''.", i));
       } else {
         SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule,
           omitGenericTerms);
       }
     }
     // parse subsystems
-    MLCell subSystems = toMLCell(correctedStruct, ModelField.subSystems);
-    if ((subSystems != null) && (subSystems.getSize() > 0)) {
-      parseSubsystems(model, subSystems);
+    if ((mlField.subSystems != null) && (mlField.subSystems.getSize() > 0)) {
+      parseSubsystems(model);
     }
     FBCModelPlugin fbc =
       (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     Objective obj = fbc.createObjective("obj");
     obj.setType(Objective.Type.MAXIMIZE);
     fbc.getListOfObjectives().setActiveObjective(obj.getId());
-    MLChar csense = toMLChar(correctedStruct, ModelField.csense);
-    if (csense != null) {
-      for (int i = 0; i < csense.getSize(); i++) {
-        char c = csense.getChar(0, i);
-        // TODO: only 'E' (equality) is supported for now!
-        if (c != 'E') {
-          logger.severe(MessageFormat.format(
-            "Unsupported nonequality relationship for metabolite with id ''{0}''.",
-            model.getSpecies(i).getId()));
-        }
+    for (int i = 0; (mlField.csense != null)
+      && (i < mlField.csense.getSize()); i++) {
+      char c = mlField.csense.getChar(i, 0);
+      // TODO: only 'E' (equality) is supported for now!
+      if (c != 'E' && model.getListOfSpecies().size() > i) {
+        logger.severe(format(
+          "Unsupported nonequality relationship for metabolite with id ''{0}''.",
+          model.getSpecies(i).getId()));
       }
     }
-    MLNumericArray<?> coefficients =
-      toMLNumericArray(correctedStruct, ModelField.c);
-    if (coefficients != null) {
-      for (int i = 0; i < coefficients.getSize(); i++) {
-        double coef = coefficients.get(i).doubleValue();
-        if (coef != 0d) {
-          Reaction r = model.getReaction(i);
-          FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
-          fo.setCoefficient(coef);
-          fo.setReaction(r);
+    for (int i = 0; (mlField.coefficients != null)
+      && (i < mlField.coefficients.getSize()); i++) {
+      double coef = mlField.coefficients.get(i).doubleValue();
+      if (coef != 0d) {
+        Reaction r = model.getReaction(i);
+        if (r == null) {
+          break;
         }
+        FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
+        fo.setCoefficient(coef);
+        fo.setReaction(r);
       }
     }
-    MLNumericArray<?> b = toMLNumericArray(correctedStruct, ModelField.b);
-    if (b != null) {
-      for (int i = 0; i < b.getSize(); i++) {
-        double bVal = b.get(i).doubleValue();
-        if (bVal != 0d) {
-          // TODO: this should be incorporated into FBC version 3.
-          logger.warning(MessageFormat.format(
-            "Skipping unsupported non-zero b-value of {0,number,######.####} for metabolite {1}",
-            bVal, model.getSpecies(i).getId()));
-        }
+    for (int i = 0; (mlField.b != null) && (i < mlField.b.getSize()); i++) {
+      double bVal = mlField.b.get(i).doubleValue();
+      if (bVal != 0d && model.getListOfSpecies().size() > i) {
+        // TODO: this should be incorporated into FBC version 3.
+        logger.warning(format(
+          "Skipping unsupported non-zero b-value of {0,number,######.####} for metabolite {1}",
+          bVal, model.getSpecies(i).getId()));
       }
     }
     return model;
@@ -656,58 +741,60 @@ public class COBRAparser {
 
 
   /**
-   * @param model
-   * @param descriptionField
+   * @param builder
    */
-  private void parseDescription(Model model, MLArray descriptionField) {
-    if (descriptionField != null) {
-      if (descriptionField.isChar()) {
-        MLChar description = (MLChar) descriptionField;
+  private void buildBasicUnits(ModelBuilder builder) {
+    UnitDefinition ud =
+      builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
+    ModelBuilder.buildUnit(ud, 1d, -3, Unit.Kind.MOLE, 1d);
+    ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
+    ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
+  }
+
+
+  /**
+   * @param model
+   */
+  private void parseDescription(Model model) {
+    if (mlField.description != null) {
+      if (mlField.description.isChar()) {
+        MLChar description = (MLChar) mlField.description;
         if (description.getDimensions()[0] == 1) {
           model.setName(description.getString(0));
         } else {
-          logger.warning(
-            MessageFormat.format("Found more than one identifier in cell {0}",
-              descriptionField.contentToString()));
+          logger.warning(format("Found more than one identifier in cell {0}",
+            mlField.description.contentToString()));
         }
-      } else if (descriptionField.isStruct()) {
-        MLStructure descrStruct = (MLStructure) descriptionField;
-        MLCell name = toMLCell(descrStruct, ModelField.name);
-        MLCell organism = toMLCell(descrStruct, ModelField.organism);
-        MLCell author = toMLCell(descrStruct, ModelField.author);
-        MLCell geneindex = toMLCell(descrStruct, ModelField.geneindex);
-        MLCell genedate = toMLCell(descrStruct, ModelField.genedate);
-        MLCell genesource = toMLCell(descrStruct, ModelField.genesource);
-        MLCell notes = toMLCell(descrStruct, ModelField.notes);
-        if (name != null) {
-          model.setName(toString(name));
+      } else if (mlField.description.isStruct()) {
+        mlField.setDescriptionFields();
+        if (mlField.name != null) {
+          model.setName(toString(mlField.name));
         }
-        if (organism != null) {
+        if (mlField.organism != null) {
           // TODO
         }
-        if (author != null) {
+        if (mlField.author != null) {
           // TODO
         }
-        if (geneindex != null) {
+        if (mlField.geneindex != null) {
           // TODO
         }
-        if (genedate != null) {
+        if (mlField.genedate != null) {
           // TODO
         }
-        if (genesource != null) {
+        if (mlField.genesource != null) {
           // TODO
         }
-        if (notes != null) {
+        if (mlField.notes != null) {
           try {
-            model.appendNotes(SBMLtools.toNotesString(toString(notes)));
+            model.appendNotes(SBMLtools.toNotesString(toString(mlField.notes)));
           } catch (XMLStreamException exc) {
             logException(exc);
           }
         }
       }
     } else {
-      logger.warning(
-        MessageFormat.format("Missing field: {0}", ModelField.description));
+      logger.warning(format("Missing field: {0}", ModelField.description));
     }
   }
 
@@ -716,34 +803,24 @@ public class COBRAparser {
    * @param exc
    */
   private void logException(Exception exc) {
-    logger.warning(MessageFormat.format("{0}: {1}",
-      exc.getClass().getSimpleName(), Utils.getMessage(exc)));
-  }
-
-
-  /**
-   * @param struct
-   * @param field
-   * @return
-   */
-  private MLNumericArray<?> toMLNumericArray(MLStructure struct,
-    ModelField field) {
-    return toMLNumericArray(struct.getField(field.name()));
+    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(),
+      Utils.getMessage(exc)));
   }
 
 
   /**
    * @param model
-   * @param subSystems
    */
-  private void parseSubsystems(Model model, MLCell subSystems) {
+  private void parseSubsystems(Model model) {
     Map<String, Group> nameToGroup = new HashMap<>(); // this is to avoid
     // creating the identical
     // group multiple times.
     GroupsModelPlugin groupsModelPlugin =
       (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-    for (int i = 0; i < subSystems.getSize(); i++) {
-      String name = toString(subSystems.get(i), subSystems.getName(), i + 1);
+    for (int i = 0; (mlField.subSystems != null)
+      && (i < mlField.subSystems.getSize()); i++) {
+      String name = toString(mlField.subSystems.get(i),
+        mlField.subSystems.getName(), i + 1);
       Group group = nameToGroup.get(name);
       if (group == null) {
         group = groupsModelPlugin.createGroup();
@@ -755,7 +832,7 @@ public class COBRAparser {
         SBMLUtils.createSubsystemLink(model.getReaction(i),
           group.createMember());
       } else {
-        logger.severe(MessageFormat.format(
+        logger.severe(format(
           "Reaction at index ''{0}'' was null. Could not create subsystem link.",
           i));
       }
@@ -764,59 +841,14 @@ public class COBRAparser {
 
 
   /**
-   * @param struct
-   * @param field
-   * @return
-   */
-  private MLDouble toMLDouble(MLStructure struct, ModelField field) {
-    return toMLDouble(struct.getField(field.name()));
-  }
-
-
-  /**
-   * @param struct
-   * @param field
-   * @return an {@link MLCell} or {@code null} if no such entry exists in the
-   *         given data structure.
-   */
-  private MLCell toMLCell(MLStructure struct, ModelField field) {
-    return toMLCell(struct.getField(field.name()));
-  }
-
-
-  /**
-   * @param struct
-   * @param field
-   * @return
-   */
-  private MLChar toMLChar(MLStructure struct, ModelField field) {
-    return toMLChar(struct.getField(field.name()));
-  }
-
-
-  /**
    * @param builder
-   * @param rxns
-   * @param rxnNames
-   * @param rev
-   * @param S
-   * @param mets
-   * @param lb
-   * @param ub
-   * @param rxnKeggID
-   * @param ecNumbers
-   * @param confidenceScores
-   * @param citations
-   * @param comments
    */
   @SuppressWarnings("unchecked")
-  private <T extends Number> void parseRxns(ModelBuilder builder, MLCell rxns,
-    MLCell rxnNames, MLNumericArray<T> rev, MLSparse S, MLCell mets,
-    MLDouble lb, MLDouble ub, MLCell rxnKeggID, MLCell ecNumbers,
-    MLCell confidenceScores, MLCell citations, MLCell comments) {
+  private <T extends Number> void parseRxns(ModelBuilder builder) {
     Model model = builder.getModel();
-    for (int j = 0; j < rxns.getSize(); j++) {
-      String rId = toString(rxns.get(j), rxns.getName(), j + 1);
+    for (int j = 0; (mlField.rxns != null)
+      && (j < mlField.rxns.getSize()); j++) {
+      String rId = toString(mlField.rxns.get(j), mlField.rxns.getName(), j + 1);
       if ((rId != null) && (rId.length() > 0)) {
         try {
           BiGGId biggId = new BiGGId(correctId(rId));
@@ -824,21 +856,31 @@ public class COBRAparser {
             biggId.setPrefix(REACTION_PREFIX);
           }
           Reaction r = model.createReaction(biggId.toBiGGId());
-          r.setName(toString(rxnNames.get(j), rxnNames.getName(), j + 1));
-          r.setReversible(rev.get(j).doubleValue() != 0d);
+          if (mlField.rxnNames != null) {
+            r.setName(toString(mlField.rxnNames.get(j),
+              mlField.rxnNames.getName(), j + 1));
+          }
+          if (mlField.rev != null) {
+            r.setReversible(mlField.rev.get(j).doubleValue() != 0d);
+          }
           FBCReactionPlugin rPlug =
             (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
-          rPlug.setLowerFluxBound(builder.buildParameter(r.getId() + "_lb",
-            null, lb.get(j), true, (String) null));
-          rPlug.setUpperFluxBound(builder.buildParameter(r.getId() + "_ub",
-            null, ub.get(j), true, (String) null));
+          if (mlField.lb != null) {
+            rPlug.setLowerFluxBound(builder.buildParameter(r.getId() + "_lb",
+              null, mlField.lb.get(j), true, (String) null));
+          }
+          if (mlField.ub != null) {
+            rPlug.setUpperFluxBound(builder.buildParameter(r.getId() + "_ub",
+              null, mlField.ub.get(j), true, (String) null));
+          }
           // Take the current column of S and look for all non-zero coefficients
-          for (int i = 0; i < S.getM(); i++) {
-            double coeff = S.get(i, j).doubleValue();
+          for (int i = 0; (mlField.S != null) && (i < mlField.S.getM()); i++) {
+            double coeff = mlField.S.get(i, j);
             if (coeff != 0d) {
               try {
-                BiGGId metId = new BiGGId(
-                  correctId(toString(mets.get(i), mets.getName(), i + 1)));
+                BiGGId metId =
+                  new BiGGId(correctId(toString(mlField.mets.get(i),
+                    mlField.mets.getName(), i + 1)));
                 metId.setPrefix(METABOLITE_PREFIX);
                 Species species = model.getSpecies(metId.toBiGGId());
                 if (coeff < 0d) { // Reactant
@@ -847,51 +889,55 @@ public class COBRAparser {
                   ModelBuilder.buildProducts(r, pairOf(coeff, species));
                 }
               } catch (IllegalArgumentException exc) {
-                logger.warning(MessageFormat.format(
+                logger.warning(format(
                   "Could not add reaction participant because of invalid id: {0}",
                   Utils.getMessage(exc)));
               }
             }
           }
-          if (exists(rxnKeggID, j)) {
-            parseRxnKEGGids(
-              toString(rxnKeggID.get(j), rxnKeggID.getName(), j + 1), r);
+          if (mlField.rxnKeggID != null && exists(mlField.rxnKeggID, j)) {
+            parseRxnKEGGids(toString(mlField.rxnKeggID.get(j),
+              mlField.rxnKeggID.getName(), j + 1), r);
           }
-          if (exists(ecNumbers, j)) {
-            parseECcodes(toString(ecNumbers.get(j), ecNumbers.getName(), j + 1),
-              r);
+          if (mlField.ecNumbers != null && exists(mlField.ecNumbers, j)) {
+            parseECcodes(toString(mlField.ecNumbers.get(j),
+              mlField.ecNumbers.getName(), j + 1), r);
           }
-          if (exists(comments, j)) {
-            String comment =
-              toString(comments.get(j), comments.getName(), j + 1);
+          if (mlField.comments != null && exists(mlField.comments, j)) {
+            String comment = toString(mlField.comments.get(j),
+              mlField.comments.getName(), j + 1);
             appendComment(comment, r);
           }
-          if (exists(confidenceScores, j)) {
-            MLArray cell = confidenceScores.get(j);
+          if (mlField.confidenceScores != null
+            && exists(mlField.confidenceScores, j)) {
+            MLArray cell = mlField.confidenceScores.get(j);
             if (cell instanceof MLDouble) {
+              if (cell.getSize() == 0) {
+                logger.warning(
+                  "Cell containing confidence score had 0x0 dimensions");
+                break;
+              }
               Double score = ((MLDouble) cell).get(0);
-              logger.fine(MessageFormat.format(
-                "Reaction {1} has confident score {0,number,##}.", score,
-                r.getId()));
+              logger.fine(
+                format("Reaction {1} has confident score {0,number,##}.", score,
+                  r.getId()));
               builder.buildParameter(
                 "P_confidenceScore_of_" + SBMLtools.toSId(rId), // id
-                MessageFormat.format("Confidence score of reaction {0}",
+                format("Confidence score of reaction {0}",
                   r.isSetName() ? r.getName() : r.getId()), // name
                 score, // value
                 true, // constant
                 Unit.Kind.DIMENSIONLESS // unit
               ).setSBOTerm(613); // TODO: there should be a specific term for
-              // confidence scores. Use "613 - reaction
-              // parameter" for now.
+              // confidence scores. Use "613 - reaction parameter" for now.
             } else {
-              logger.warning(
-                MessageFormat.format("Expected MLDouble, but received {0}.",
-                  cell.getClass().getSimpleName()));
+              logger.warning(format("Expected MLDouble, but received {0}.",
+                cell.getClass().getSimpleName()));
             }
           }
-          if (exists(citations, j)) {
-            parseCitation(
-              toString(citations.get(j), citations.getName(), j + 1), r);
+          if (mlField.citations != null && exists(mlField.citations, j)) {
+            parseCitation(toString(mlField.citations.get(j),
+              mlField.citations.getName(), j + 1), r);
           }
           if (r.getCVTermCount() > 0) {
             r.setMetaId(r.getId());
@@ -1013,8 +1059,8 @@ public class COBRAparser {
         }
       }
       if (!match) {
-        logger.warning(MessageFormat.format(
-          "Could not recognize any of the EC codes from {0}.", ec));
+        logger.warning(
+          format("Could not recognize any of the EC codes from {0}.", ec));
       }
       if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
         r.addCVTerm(term);
@@ -1072,13 +1118,12 @@ public class COBRAparser {
       if (validId(catalog, r)) {
         if (!resource.isEmpty()) {
           if (st.countTokens() > 1) {
-            logger.warning(MessageFormat.format(
+            logger.warning(format(
               "Skipping comment for resource: ''{0}'', only keeping reference ''{1}'' to {2}.",
               resource, r, catalog));
           }
           resource = registry.getURI(catalog, r);
-          logger.finest(
-            MessageFormat.format("Added resource ''{0}''", resource));
+          logger.finest(format("Added resource ''{0}''", resource));
           return term.addResource(resource);
         }
       }
@@ -1107,7 +1152,7 @@ public class COBRAparser {
       if (array.isCell()) {
         return (MLCell) array;
       }
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Expected data structure ''{1}'' to be of type cell, but received type {0}.",
         MLArray.typeToString(array.getType()), array.getName()));
     }
@@ -1124,7 +1169,7 @@ public class COBRAparser {
       if (array.isChar()) {
         return (MLChar) array;
       }
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Expected data structure ''{1}'' to be of type char, but received type {0}.",
         MLArray.typeToString(array.getType()), array.getName()));
     }
@@ -1139,10 +1184,9 @@ public class COBRAparser {
   private MLDouble toMLDouble(MLArray array) {
     if (array != null) {
       if (array.isDouble()) {
-        MLDouble real = (MLDouble) array;
-        return real;
+        return (MLDouble) array;
       }
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Expected data structure ''{1}'' to be of type double, but received type {0}.",
         MLArray.typeToString(array.getType()), array.getName()));
     }
@@ -1156,8 +1200,7 @@ public class COBRAparser {
    */
   private MLNumericArray<?> toMLNumericArray(MLArray array) {
     if (array instanceof MLNumericArray<?>) {
-      MLNumericArray<?> mlna = (MLNumericArray<?>) array;
-      return mlna;
+      return (MLNumericArray<?>) array;
     }
     return null;
   }
@@ -1169,10 +1212,9 @@ public class COBRAparser {
    */
   private MLSparse toMLSparse(MLArray array) {
     if (array.isSparse()) {
-      MLSparse sparse = (MLSparse) array;
-      return sparse;
+      return (MLSparse) array;
     }
-    logger.warning(MessageFormat.format(
+    logger.warning(format(
       "Expected data structure ''{1}'' to be of type sparse array, but received type {0}.",
       MLArray.typeToString(array.getType()), array.getName()));
     return null;
@@ -1195,8 +1237,8 @@ public class COBRAparser {
     if (array.isChar()) {
       MLChar string = (MLChar) array;
       if (string.getDimensions()[0] > 1) {
-        logger.fine(MessageFormat.format(
-          "Found more than one string in cell {0}", string.contentToString()));
+        logger.fine(format("Found more than one string in cell {0}",
+          string.contentToString()));
       }
       for (int i = 0; i < string.getDimensions()[0]; i++) {
         if (i > 0) {
@@ -1211,7 +1253,7 @@ public class COBRAparser {
         name = parentName;
         pos = "at position " + parentIndex;
       }
-      logger.warning(MessageFormat.format(
+      logger.warning(format(
         "Expected character string in data field ''{1}''{2}, but received data type {0}.",
         MLArray.typeToString(array.getType()), name, pos));
     }

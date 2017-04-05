@@ -14,17 +14,19 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static java.text.MessageFormat.format;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.sbml.jsbml.util.StringTools;
 import org.sqlite.SQLiteConfig;
+import org.sqlite.SQLiteOpenMode;
 
 /**
  * PostgreSQL database helper class.
@@ -98,7 +100,7 @@ public class SQLConnector {
       connection = DriverManager.getConnection(url, properties);
       connection.setCatalog(
         properties.getProperty(Keys.databaseName.toString()));
-      logger.info(MessageFormat.format(
+      logger.info(format(
         "Connected to SQL server {0}:{1,number,####} using database {2}.",
         getHost(), getPort(), getDatabaseName()));
       return connection;
@@ -176,8 +178,8 @@ public class SQLConnector {
       properties.setProperty(Keys.host.toString(), host);
       properties.setProperty(Keys.portNumber.toString(),
         Integer.toString(port));
-      logger.fine(MessageFormat.format("{0}@{1}:{2}, password={3}", user, host,
-        port, StringTools.fill(password.length(), '*')));
+      logger.fine(format("{0}@{1}:{2}, password={3}", user, host, port,
+        StringTools.fill(password.length(), '*')));
     }
   }
 
@@ -192,9 +194,10 @@ public class SQLConnector {
         connection.close();
       }
       SQLiteConfig config = new SQLiteConfig();
-      config.setReadOnly(true);
+      config.setOpenMode(SQLiteOpenMode.OPEN_MEMORY);
       connection =
         DriverManager.getConnection("jdbc:sqlite::resource:bigg.sqlite");
+      config.apply(connection);
       logger.info("Connected to the local SQLite version of BiGGDB.");
       return connection;
     }
