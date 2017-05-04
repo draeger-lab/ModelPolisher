@@ -3,6 +3,8 @@
  */
 package edu.ucsd.sbrg.util;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -19,7 +21,6 @@ import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
@@ -73,8 +74,9 @@ public class SBMLFix {
   public static void batchProcess(File input, File output) {
     if (!output.exists() && !output.isFile()
       && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(MessageFormat.format("Creating directory {0}.",
-        output.getAbsolutePath()));
+      logger.info(
+        MessageFormat.format(mpMessageBundle.getString("DIRECTORY_CREATED"),
+          output.getAbsolutePath()));
       output.mkdir();
     }
     if (input.isFile()) {
@@ -92,8 +94,9 @@ public class SBMLFix {
       }
     } else {
       if (!output.isDirectory()) {
-        logger.severe(MessageFormat.format("Cannot write to file {0}.",
-          output.getAbsolutePath()));
+        logger.severe(
+          MessageFormat.format(mpMessageBundle.getString("WRITE_TO_FILE_ERROR"),
+            output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
         File target = new File(
@@ -116,7 +119,7 @@ public class SBMLFix {
       for (Group group : gPlug.getListOfGroups()) {
         if (!group.isSetKind()) {
           logger.info(
-            MessageFormat.format("Adding missing kind attribute to group {0}.",
+            MessageFormat.format(mpMessageBundle.getString("ADD_KIND_TO_GROUP"),
               group.isSetName() ? group.getName() : group.getId()));
           group.setKind(Group.Kind.partonomy);
         }
@@ -173,13 +176,12 @@ public class SBMLFix {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
       logger.severe(MessageFormat.format(
-        "No active objective defined in model {0}.", modelDescriptor));
+        mpMessageBundle.getString("OBJ_NOT_DEFINED"), modelDescriptor));
       if (fbcPlug.getObjectiveCount() == 1) {
         activeObjective = fbcPlug.getObjective(0);
         fbcPlug.setActiveObjective(activeObjective);
         logger.info(MessageFormat.format(
-          "The problem could be successfully solved by declaring ''{0}'' the active objective.",
-          activeObjective.getId()));
+          mpMessageBundle.getString("OBJ_SOLUTION"), activeObjective.getId()));
       }
     } else {
       activeObjective = fbcPlug.getListOfObjectives().firstHit(
@@ -189,7 +191,7 @@ public class SBMLFix {
       Objective o = activeObjective;
       if (!o.isSetListOfFluxObjectives()) {
         logger.severe(MessageFormat.format(
-          "Trying to identify missing flux objective from model in model {0}.",
+          mpMessageBundle.getString("TRY_GUESS_MISSING_FLUX_OBJ"),
           modelDescriptor));
         if (listOfReactions != null) {
           if (fluxObjectives != null) {
@@ -211,8 +213,8 @@ public class SBMLFix {
                 strict = true;
               } else {
                 logger.severe(MessageFormat.format(
-                  "Operation failed! Could not identify reaction ''{0}'' in model {1}.",
-                  id, modelDescriptor));
+                  mpMessageBundle.getString("REACTION_UNKNOWN_ERROR"), id,
+                  modelDescriptor));
               }
             }
             return strict;
@@ -233,12 +235,12 @@ public class SBMLFix {
               return true;
             } else {
               logger.severe(
-                "Operation failed! Could not identify biomass reaction.");
+                mpMessageBundle.getString("REACTION_BIOMASS_UNKNOWN_ERROR"));
             }
           }
         } else {
           logger.severe(MessageFormat.format(
-            "Operation failed! Missing list of reactions in model {0}.",
+            mpMessageBundle.getString("REACTION_LIST_MISSING"),
             modelDescriptor));
         }
       }
@@ -260,9 +262,9 @@ public class SBMLFix {
     if ((fluxCoefficients != null) && (fluxCoefficients.length > i)) {
       coeff = fluxCoefficients[i];
     }
-    logger.info(MessageFormat.format(
-      "Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.",
-      r.getId(), coeff, modelDescriptor));
+    logger.info(
+      MessageFormat.format(mpMessageBundle.getString("ADDED_FLUX_OBJ"),
+        r.getId(), coeff, modelDescriptor));
     o.createFluxObjective(null, null, coeff, r);
   }
 
@@ -276,18 +278,18 @@ public class SBMLFix {
   public static void fixSBML(File in, File out)
     throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(
-      MessageFormat.format("Reading input file {0}", in.getAbsolutePath()));
+    logger.info(MessageFormat.format(
+      mpMessageBundle.getString("READ_FILE_INFO"), in.getAbsolutePath()));
     SBMLDocument doc = SBMLReader.read(in);
     Model model = doc.getModel();
     fixGroups(model);
     fixObjective(in.getAbsolutePath(), model);
-    logger.info(
-      MessageFormat.format("Writing output file {0}.", out.getAbsolutePath()));
+    logger.info(MessageFormat.format(
+      mpMessageBundle.getString("WRITE_FILE_INFO"), out.getAbsolutePath()));
     TidySBMLWriter.write(doc, out, ModelPolisher.class.getName(), "1.1", ' ',
       (short) 2);
     String archive = out.getAbsolutePath() + ".gz";
-    logger.info(MessageFormat.format("Packing archive file {0}.", archive));
+    logger.info(MessageFormat.format("ARCHIVE", archive));
     ZIPUtils.GZip(out.getAbsolutePath(), archive);
     logger.info(
       MessageFormat.format("Done. Time elapsed: {0,number,integer} ms",

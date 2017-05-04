@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
 import java.io.BufferedReader;
@@ -90,8 +91,7 @@ public class BiGGAnnotation {
     Model model = doc.getModel();
     replacements = new HashMap<>();
     if (!doc.isSetModel()) {
-      logger.info(
-        "This SBML document does not contain a model. Nothing to do.");
+      logger.info("NO_MODEL_FOUND");
       return doc;
     }
     annotate(model);
@@ -225,16 +225,17 @@ public class BiGGAnnotation {
             bigg.getChemicalFormula(biggId, species.getModel().getId()));
         } catch (IllegalArgumentException exc) {
           logger.severe(
-            format("Invalid chemical formula: {0}", Utils.getMessage(exc)));
+            format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"),
+              Utils.getMessage(exc)));
         }
       }
       Integer charge =
         bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
       if (species.isSetCharge()) {
         if ((charge != null) && (charge != species.getCharge())) {
-          logger.warning(format(
-            "Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.",
-            charge, species.getCharge(), species.getId()));
+          logger.warning(
+            format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge,
+              species.getCharge(), species.getId()));
         }
         species.unsetCharge();
       }
@@ -382,8 +383,7 @@ public class BiGGAnnotation {
       } else if (!collection.contains("identifiers.org")) {
         // TODO: find out if there are valid non identifiers.org ids
         logger.warning(format(
-          "Collection ''{0}'' does not match expected pattern. It will not be added as resource.",
-          collection));
+          mpMessageBundle.getString("PATTERN_MISMATCH_DROP"), collection));
         continue;
       }
       collection = collection.substring(collection.indexOf("org/") + 4,
@@ -415,13 +415,12 @@ public class BiGGAnnotation {
     String geneName = bigg.getGeneName("test");
     if (geneName != null) {
       if (geneName.isEmpty()) {
-        logger.fine(format("No gene name found in BiGG for label ''{0}''.",
+        logger.fine(format(mpMessageBundle.getString("NO_GENE_FOR_LABEL"),
           geneProduct.getName()));
       } else if (geneProduct.isSetName()
         && !geneProduct.getName().equals(geneName)) {
-        logger.warning(
-          format("Updating gene product name from ''{0}'' to ''{1}''.",
-            geneProduct.getName(), geneName));
+        logger.warning(format(mpMessageBundle.getString("UPDATE_GP_NAME"),
+          geneProduct.getName(), geneName));
       }
       geneProduct.setName(geneName);
     }
@@ -494,9 +493,8 @@ public class BiGGAnnotation {
       || collection.contains("unipathway.reaction")
       || collection.contains("reactome.org")
       || collection.contains("molecular-networks.com")) {
-      logger.fine(format(
-        "URI: ''{0}'' will be added without validity check. Collection not present in registry-lib",
-        resource));
+      logger.fine(
+        format(mpMessageBundle.getString("NO_URI_CHECK_WARN"), resource));
       return resource;
     }
     String identifier = RegistryUtilities.getIdentifierFromURI(resource);
@@ -506,34 +504,34 @@ public class BiGGAnnotation {
     if (type != null) {
       regexp = type.getRegexp();
     } else {
-      logger.severe(format("Please report this URI {0}", resource));
+      logger.severe(
+        format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
     if (!correct) {
-      logger.info(format(
-        "Identifier ''{0}'' does not match collection pattern ''{1}'' from collection ''{2}''!",
+      logger.info(format(mpMessageBundle.getString("PATTERN_MISMATCH_INFO"),
         identifier, regexp, collection));
       // We can correct the kegg collection
       if (resource.contains("kegg")) {
         if (identifier.startsWith("D")) {
-          logger.info("Changing kegg collection to kegg.drug");
+          logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
           resource =
             RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
         } else if (identifier.startsWith("G")) {
-          logger.info("Changing kegg collection to kegg.glycan");
+          logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
           resource =
             RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
         }
         // add possibly missing "gi:" prefix to identifier
       } else if (resource.contains("ncbigi")) {
         if (!identifier.toLowerCase().startsWith("gi:")) {
-          logger.info("Adding missing GI: prefix.");
+          logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
           resource =
             RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
         }
       } else if (resource.contains("go") && !resource.contains("goa")) {
         if (!identifier.toLowerCase().startsWith("go:")) {
-          logger.info("Adding missing GO: prefix.");
+          logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
           resource =
             RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
         }
@@ -542,7 +540,7 @@ public class BiGGAnnotation {
           identifier.length() - identifier.replace(".", "").length();
         if (missingDots < 1) {
           logger.warning(
-            format("Could not correct ec-code ''{0}''", identifier));
+            format(mpMessageBundle.getString("EC_CHANGE_FAILED"), identifier));
           return null;
         }
         String replacement = identifier;
@@ -551,9 +549,9 @@ public class BiGGAnnotation {
         }
         resource = RegistryUtilities.replace(resource, identifier, replacement);
       } else {
-        logger.warning(format(
-          "Could not update resource ''{0}''. Resource will not be added to the model.",
-          resource, collection));
+        logger.warning(
+          format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), resource,
+            collection));
         return null;
       }
     }

@@ -14,6 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -230,11 +231,10 @@ public class BiGGDB {
         if (collection != null && identifier != null) {
           resource = collection + identifier;
         } else if (collection == null) {
-          logger.info("Collection was null for this gene resource URI.");
+          logger.info(mpMessageBundle.getString("COLLECTION_NULL_GENE"));
           continue;
         } else {
-          logger.info(format(
-            "Identifier was null for collection ''{0}'' and this gene resource URI ",
+          logger.info(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"),
             collection));
           continue;
         }
@@ -462,8 +462,7 @@ public class BiGGDB {
         + Constants.COLUMN_ID + " = m." + Constants.COLUMN_GENOME_ID + " AND m."
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
-      logger.warning(format(
-        "Could not retrieve NCBI taxon identifier for model ''{0}'', because of {1}.",
+      logger.warning(format(mpMessageBundle.getString("GET_TAXON_ERROR"),
         biggId, Utils.getMessage(exc)));
     }
     return null;
@@ -479,9 +478,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPARTMENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a compartment or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_COMPARTMENT_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -496,9 +494,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPONENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a metabolite or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_METABOLITE_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -513,9 +510,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.MODEL + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a model or not: {1}.", biggId,
-          Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_MODEL_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -533,9 +529,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.REACTION + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a reaction or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_REACTION_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }

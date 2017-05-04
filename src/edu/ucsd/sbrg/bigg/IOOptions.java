@@ -3,6 +3,8 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+
 import java.io.File;
 
 import de.zbit.io.filefilter.MultipleFileFilter;
@@ -25,7 +27,7 @@ public interface IOOptions extends KeyProvider {
   public static final Option<File> INPUT  = new Option<File>("INPUT",
     File.class, "Input SBML file",
     new Range<File>(File.class,
-      new MultipleFileFilter("SBML, MAT or JSON files, or directories",
+      new MultipleFileFilter(mpMessageBundle.getString("INPUT_DESC"),
         SBFileFilter.createSBMLFileFilter(), SBFileFilter.createMATFileFilter(),
         SBFileFilter.createJSONFileFilter(),
         SBFileFilter.createDirectoryFilter())));
@@ -35,7 +37,7 @@ public interface IOOptions extends KeyProvider {
    * recursive conversion.
    */
   public static final Option<File> OUTPUT =
-    new Option<File>("OUTPUT", File.class, "Output SBML file",
+    new Option<File>("OUTPUT", File.class, mpMessageBundle.getString("OUTPUT_DESC"),
       new Range<File>(File.class,
         new MultipleFileFilter("SBML", SBFileFilter.createSBMLFileFilter(),
           SBFileFilter.createDirectoryFilter())));
