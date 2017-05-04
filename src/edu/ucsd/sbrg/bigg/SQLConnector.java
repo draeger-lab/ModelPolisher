@@ -14,6 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
 import java.sql.Connection;
@@ -100,9 +101,8 @@ public class SQLConnector {
       connection = DriverManager.getConnection(url, properties);
       connection.setCatalog(
         properties.getProperty(Keys.databaseName.toString()));
-      logger.info(format(
-        "Connected to SQL server {0}:{1,number,####} using database {2}.",
-        getHost(), getPort(), getDatabaseName()));
+      logger.info(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(),
+        getPort(), getDatabaseName()));
       return connection;
     }
 
@@ -198,7 +198,7 @@ public class SQLConnector {
       connection =
         DriverManager.getConnection("jdbc:sqlite::resource:bigg.sqlite");
       config.apply(connection);
-      logger.info("Connected to the local SQLite version of BiGGDB.");
+      logger.info(mpMessageBundle.getString("SQLITE_CONNECTED"));
       return connection;
     }
 
@@ -218,7 +218,7 @@ public class SQLConnector {
   public void close() throws SQLException {
     if ((connection != null) && !connection.isClosed()) {
       connection.close();
-      logger.fine("Connection to SQL server closed.");
+      logger.fine(mpMessageBundle.getString("CONNECTION_CLOSED"));
     }
   }
 

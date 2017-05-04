@@ -141,6 +141,11 @@ public class ModelPolisher extends Launcher {
   private static final transient ResourceBundle baseBundle =
     ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
   /**
+   * Bundle for ModelPolisher logger messages
+   */
+  public static transient ResourceBundle mpMessageBundle =
+    ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
@@ -207,13 +212,14 @@ public class ModelPolisher extends Launcher {
     // it contains at least one period in its name. If so, we assume it is a
     // file.
     if (!input.exists()) {
-      throw new IOException(format(
-        "Could not find a file at ''{0}'' to read from.", input.toString()));
+      throw new IOException(
+        format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
     initParameters(args);
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
       && !(input.isFile() && input.getName().equals(output.getName()))) {
-      logger.info(format("Creating directory {0}.", output.getAbsolutePath()));
+      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"),
+        output.getAbsolutePath()));
       output.mkdir();
     }
     if (input.isFile()) {
@@ -239,12 +245,12 @@ public class ModelPolisher extends Launcher {
     } else {
       if (!output.isDirectory()) {
         throw new IOException(
-          format("Cannot write a whole directory to file {0}.",
+          format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"),
             output.getAbsolutePath()));
       }
       File[] files = input.listFiles();
       if (files == null) {
-        logger.severe("There were no files in the provided directory.");
+        logger.severe(mpMessageBundle.getString("NO_FILES_ERROR"));
         return;
       }
       for (File file : files) {
@@ -274,7 +280,8 @@ public class ModelPolisher extends Launcher {
     try {
       iStream = new FileInputStream(input);
     } catch (FileNotFoundException exc) {
-      logger.severe(format("Could not open file at ''{0}''", input.toPath()));
+      logger.severe(
+        format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toPath()));
     }
     // If it's null, something went horribly wrong and a nullPointerException
     // should be thrown
@@ -289,7 +296,7 @@ public class ModelPolisher extends Launcher {
       reader.close();
       String doc = sb.toString();
       if (!doc.contains("<html ")) {
-        logger.fine("No replacement needed, continuing");
+        logger.fine(mpMessageBundle.getString("TAGS_FINE_INFO"));
         return;
       }
       doc = doc.replaceAll("<html ", "<body ");
@@ -300,16 +307,17 @@ public class ModelPolisher extends Launcher {
         Files.copy(input.toPath(), output);
       } catch (IOException e) {
         // We assume it was already corrected
-        logger.info("File was already corrected, skipping tag replacement");
+        logger.info(mpMessageBundle.getString("SKIP_TAG_REPLACEMENT"));
         return;
       }
       BufferedWriter writer =
         new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
       writer.write(doc);
-      logger.info(format("Wrote corrected file to ''{0}''", input.toPath()));
+      logger.info(format(mpMessageBundle.getString("WROTE_CORRECT_HTML"),
+        input.toPath()));
       writer.close();
     } catch (IOException exc) {
-      logger.severe("Could not read whole file");
+      logger.severe(mpMessageBundle.getString("READ_HTML_ERROR"));
     }
   }
 
@@ -396,17 +404,9 @@ public class ModelPolisher extends Launcher {
   @Override
   public String getCitation(boolean HTMLstyle) {
     if (HTMLstyle) {
-      return "<dl>\n"
-        + "  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n"
-        + "    <dd>\n"
-        + "      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n"
-        + "      <a href=\"https://dx.doi.org/10.1093/nar/gkv1049\" target=\"_blank\"\n"
-        + "      title=\"Access the publication about BiGG Models knowledgebase\">doi:10.1093/nar/gkv1049</a>\n"
-        + "    </dd>\n" + "  </dt>\n" + "</dl>";
+      return mpMessageBundle.getString("CITATION_HTML");
     }
-    return "King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). "
-      + "BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, "
-      + "doi:10.1093/nar/gkv1049.";
+    return mpMessageBundle.getString("CITATION");
   }
 
 
@@ -558,7 +558,7 @@ public class ModelPolisher extends Launcher {
    */
   private void initParameters(SBProperties args) {
     if (parameters.includeAnyURI != null) {
-      logger.fine("Parameters are already set for this session");
+      logger.fine(mpMessageBundle.getString("PARAMETERS_ALREADY_SET"));
       return;
     }
     String documentTitlePattern = null;
@@ -643,7 +643,8 @@ public class ModelPolisher extends Launcher {
   private void readAndPolish(File input, File output)
     throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
-    logger.info(format("Reading input file {0}.", input.getAbsolutePath()));
+    logger.info(format(mpMessageBundle.getString("READ_FILE_INFO"),
+      input.getAbsolutePath()));
     List<SBMLDocument> docs = new ArrayList<>();
     // reading or parsing input
     if (fileTypes[1]) {
@@ -655,9 +656,8 @@ public class ModelPolisher extends Launcher {
       docs.add(SBMLReader.read(input, new UpdateListener()));
     }
     if (docs.size() == 0) {
-      logger.severe(
-        format("Could not parse any model from input file ''{0}'' , aborting.",
-          input.toString()));
+      logger.severe(format(mpMessageBundle.getString("ALL_DOCS_PARSE_ERROR"),
+        input.toString()));
       return;
     }
     int count = 0;
@@ -674,8 +674,8 @@ public class ModelPolisher extends Launcher {
       count++;
     }
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
-    logger.info(format("Done in {0, number, ##}:{1, number, ##} min.",
-      (time / 60), (time % 60)));
+    logger.info(format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60),
+      (time % 60)));
   }
 
 
@@ -683,7 +683,7 @@ public class ModelPolisher extends Launcher {
     throws IOException, XMLStreamException {
     if (!doc.isSetLevelAndVersion()
       || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info("Trying to convert the model to Level 3 Version 1.");
+      logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
     // polishing
@@ -710,13 +710,14 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
-    logger.info(format("Writing output file {0}", output.getAbsolutePath()));
+    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"),
+      output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(),
       getVersionNumber(), ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
-      logger.info(format("Packing archive file {0}", archive));
+      logger.info(format(mpMessageBundle.getString("ARCHIVE"), archive));
       switch (parameters.compression) {
       case ZIP:
         ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive,
@@ -788,8 +789,7 @@ public class ModelPolisher extends Launcher {
     SBMLErrorLog sbmlErrorLog =
       SBMLValidator.checkConsistency(filename, parameters);
     if (sbmlErrorLog != null) {
-      logger.info(format(
-        "There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}.",
+      logger.info(format(mpMessageBundle.getString("VAL_ERR_COUNT"),
         sbmlErrorLog.getErrorCount(), filename));
       // printErrors
       for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
@@ -797,8 +797,7 @@ public class ModelPolisher extends Launcher {
         logger.warning(error.toString());
       }
     } else {
-      logger.info(
-        "No SBML validation possible, process terminated with errors.");
+      logger.info(mpMessageBundle.getString("VAL_ERROR"));
     }
   }
 }

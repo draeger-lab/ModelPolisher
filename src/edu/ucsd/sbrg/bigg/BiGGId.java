@@ -3,6 +3,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
 import java.util.StringTokenizer;
@@ -238,7 +239,7 @@ public class BiGGId {
         } catch (IllegalArgumentException exc) {
           // This is not a problem, we have the chance to fix it right
           // away.
-          logger.finer(format("Failed to correctly parse id ''{0}''. {1}",
+          logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"),
             biggId, Utils.getMessage(exc)));
           if (isSetCompartmentCode()) {
             setAbbreviation(getAbbreviation() + '_' + getCompartmentCode());
@@ -249,7 +250,7 @@ public class BiGGId {
       }
       if (elem.length() > 0) {
         throw new IllegalArgumentException(
-          format("Unknown BiGG id component {0}", elem));
+          format(mpMessageBundle.getString("ID_COMPONENT_UNKNOWN"), elem));
       }
     }
   }
@@ -262,7 +263,7 @@ public class BiGGId {
     try {
       setCompartmentCode(CompartmentCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(format("Failed to set CompartmentCode: ''{0}''",
+      logger.finer(format(mpMessageBundle.getString("SET_COMPART_CODE_FAILED"),
         Utils.getMessage(exc)));
     }
   }
@@ -279,7 +280,7 @@ public class BiGGId {
     } catch (IllegalArgumentException exc) {
       // this is not a warning because we try to fix the problem right
       // away.
-      logger.finer(format("Failed to correctly parse id ''{0}''. {1}", biggId,
+      logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId,
         Utils.getMessage(exc)));
       if (elem.endsWith("-")) {
         elem = elem.substring(0, elem.length() - 1) + '_';
@@ -300,8 +301,8 @@ public class BiGGId {
     try {
       setAbbreviation(abbreviation);
     } catch (IllegalArgumentException exc) {
-      logger.fine(
-        format("Could not set abbreviation: {0}", Utils.getMessage(exc)));
+      logger.fine(format(mpMessageBundle.getString("SET_ABREV_FAILED"),
+        Utils.getMessage(exc)));
     }
   }
 
@@ -325,7 +326,7 @@ public class BiGGId {
       this.abbreviation = abbreviation;
     } else {
       throw new IllegalArgumentException(
-        format("Invalid abbreviation: ''{0}''", abbreviation));
+        format(mpMessageBundle.getString("ABREV_INVALID"), abbreviation));
     }
   }
 
@@ -341,8 +342,8 @@ public class BiGGId {
     if (compartmentCode.matches("[a-z][a-z0-9]?")) {
       this.compartmentCode = compartmentCode;
     } else {
-      throw new IllegalArgumentException(
-        format("Invalid compartment code: ''{0}''", compartmentCode));
+      throw new IllegalArgumentException(format(
+        mpMessageBundle.getString("COMPART_CODE_INVALID"), compartmentCode));
     }
   }
 
@@ -368,12 +369,12 @@ public class BiGGId {
       prefix = id.substring(0, 1);
       id = id.substring(2);
     } else {
-      logger.fine(format("Id ''{0}'' seems to have no known prefix.", id));
+      logger.fine(format(mpMessageBundle.getString("ID_PREFIX_UNKNOWN"), id));
     }
     try {
       setPrefix(prefix);
     } catch (IllegalArgumentException exc) {
-      logger.fine(format("Failed setting prefix : ''{0}'' ", id));
+      logger.fine(format(mpMessageBundle.getString("SET_PREFIX_FAILED"), id));
     }
     return id;
   }
@@ -390,10 +391,11 @@ public class BiGGId {
       try {
         setPrefix(prefix);
       } catch (IllegalArgumentException exc) {
-        logger.fine(format("Failed setting prefix : ''{0}'' ", prefix));
+        logger.fine(
+          format(mpMessageBundle.getString("SET_PREFIX_FAILED"), prefix));
       }
     } else {
-      logger.fine(format(" ''{0}'' is not a known prefix.", prefix));
+      logger.fine(format(mpMessageBundle.getString("PREFIX_UNKNOWN"), prefix));
     }
   }
 
@@ -429,8 +431,8 @@ public class BiGGId {
     try {
       setTissueCode(tissueCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(
-        format("Failed to set TissueCode: ''{0}''", Utils.getMessage(exc)));
+      logger.finer(format(mpMessageBundle.getString("SET_TISS_CODE_FAILED"),
+        Utils.getMessage(exc)));
     }
   }
 
@@ -447,7 +449,7 @@ public class BiGGId {
       this.tissueCode = tissueCode;
     } else {
       throw new IllegalArgumentException(
-        format("Invalid tissue code: ''{0}''", tissueCode));
+        format(mpMessageBundle.getString("TISS_CODE_INVALID"), tissueCode));
     }
   }
 

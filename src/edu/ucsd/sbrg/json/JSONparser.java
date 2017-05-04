@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.json;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -129,17 +130,16 @@ public class JSONparser {
   private void parseModel(ModelBuilder builder, JsonNode root) {
     if (root.isMissingNode()) {
       throw new IllegalArgumentException(
-        "Root node is empty, model could not be parsed.");
+        mpMessageBundle.getString("ROOT_EMPTY_ERROR"));
     }
     // 4 is the minimum of required fields, 10 the maximum with optional
     // fields, non-conforming models might still get parsed, omitting
     // superfluous information
     if (root.size() < 4 || root.size() > 10) {
       logger.warning(format(
-        "The number of fields in the JSON-Model is not in the expected range of 4-10: ''{0}''\nSome properties might not get parsed.",
-        root.size()));
+        mpMessageBundle.getString("NUM_CHILDREN_NOT_IN_RANGE"), root.size()));
     }
-    logger.info("Started JSONparser");
+    logger.info(mpMessageBundle.getString("JSON_PARSER_STARTED"));
     // get Model and set all informational fields
     Model model = builder.getModel();
     JsonNode annotation = root.path("annotation");
@@ -148,7 +148,7 @@ public class JSONparser {
     JsonNode notes = root.path("notes");
     JsonNode version = root.path("version");
     if (annotation.isMissingNode()) {
-      logger.fine("There is no annotation for this model");
+      logger.fine(mpMessageBundle.getString("ANNOTATION_MISSING"));
     } else {
       if (!annotation.toString().isEmpty()) {
         try {
@@ -160,17 +160,17 @@ public class JSONparser {
     }
     if (id.isMissingNode()) {
       throw new IllegalArgumentException(
-        "Model id is required, but it is null");
+        mpMessageBundle.getString("MODEL_NULL_ERROR"));
     } else {
       model.setId(correctId(crop(id.toString())));
     }
     if (name.isMissingNode()) {
-      logger.fine("There is no name for this model");
+      logger.fine(mpMessageBundle.getString("NAME_MISSING"));
     } else {
       model.setName(crop(name.toString()));
     }
     if (notes.isMissingNode()) {
-      logger.fine("There are no notes for this model");
+      logger.fine(mpMessageBundle.getString("NOTES_MISSING"));
     } else {
       if (!notes.toString().isEmpty()) {
         try {
@@ -181,7 +181,7 @@ public class JSONparser {
       }
     }
     if (version.isMissingNode()) {
-      logger.fine("There is no version number provided for this model");
+      logger.fine(mpMessageBundle.getString("VERSION_NR_MISSING"));
     } else {
       model.setVersion(version.asInt());
     }
@@ -205,10 +205,10 @@ public class JSONparser {
    */
   private void parseCompartments(ModelBuilder builder, JsonNode compartments) {
     if (compartments.isMissingNode()) {
-      logger.fine("There is no compartments field in this model");
+      logger.fine(mpMessageBundle.getString("COMPART_MISSING"));
     }
     int compSize = compartments.size();
-    logger.info(format("There are {0} compartments in this model.", compSize));
+    logger.info(format(mpMessageBundle.getString("NUM_COMPART"), compSize));
     if (compSize == 0) {
       return;
     }
@@ -231,10 +231,10 @@ public class JSONparser {
   private void parseMetabolites(ModelBuilder builder, JsonNode metabolites) {
     if (metabolites.isMissingNode()) {
       throw new IllegalArgumentException(
-        "There is no metabolites field in this model");
+        mpMessageBundle.getString("METABOLITES_MISSING"));
     }
     int metSize = metabolites.size();
-    logger.info(format("There are {0} metabolites in this model.", metSize));
+    logger.info(format(mpMessageBundle.getString("NUM_METABOLITES"), metSize));
     if (metSize == 0) {
       return;
     }
@@ -269,9 +269,9 @@ public class JSONparser {
         }
         String csense = crop(current.path("_constraint_sense").toString());
         if (csense != null && !csense.isEmpty() && !csense.equals("E")) {
-          logger.severe(format(
-            "Unsupported nonequality relationship for metabolite with id ''{0}''.",
-            species.getId()));
+          logger.severe(
+            format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"),
+              species.getId()));
         }
         String compartment = crop(current.path("compartment").toString());
         if (compartment != null && !compartment.isEmpty()) {
@@ -308,10 +308,10 @@ public class JSONparser {
   private void parseGenes(ModelBuilder builder, JsonNode genes) {
     if (genes.isMissingNode()) {
       throw new IllegalArgumentException(
-        "There is no genes field in this model");
+        mpMessageBundle.getString("GENES_MISSING"));
     }
     int genSize = genes.size();
-    logger.info(format("There are {0} genes in this model.", genSize));
+    logger.info(format(mpMessageBundle.getString("NUM_GENES"), genSize));
     if (genSize == 0) {
       return;
     }
@@ -336,7 +336,7 @@ public class JSONparser {
           gp.setName(name);
         } else {
           throw new IllegalArgumentException(
-            "Name is missing for geneproduct " + gp.getId());
+            mpMessageBundle.getString("GP_NAME_MISSING") + gp.getId());
         }
         if (notes != null && !notes.isEmpty()) {
           try {
@@ -365,10 +365,10 @@ public class JSONparser {
   private void parseReactions(ModelBuilder builder, JsonNode reactions) {
     if (reactions.isMissingNode()) {
       throw new IllegalArgumentException(
-        "There is no reactions field in this model");
+        mpMessageBundle.getString("REACTIONS_MISSING"));
     }
     int reactSize = reactions.size();
-    logger.info(format("There are {0} reactions in this model.", reactSize));
+    logger.info(format(mpMessageBundle.getString("NUM_REACTIONS"), reactSize));
     if (reactSize == 0) {
       return;
     }
@@ -444,8 +444,8 @@ public class JSONparser {
               if (species == null) {
                 species = model.createSpecies(metId.toBiGGId());
                 logger.info(
-                  format(" Species ''{0}'' in reaction ''{1}'' is not defined!",
-                    metId, r.getId()));
+                  format(mpMessageBundle.getString("SPECIES_UNDEFINED"), metId,
+                    r.getId()));
               }
               if (coeff < 0d) {
                 ModelBuilder.buildReactants(r, pairOf(-coeff, species));
@@ -567,9 +567,8 @@ public class JSONparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.fine(format(
-        "Changed id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.",
-        id, newId));
+      logger.fine(
+        format(mpMessageBundle.getString("CHANGED_METABOLITE_ID"), id, newId));
     }
     return newId.toString();
   }
