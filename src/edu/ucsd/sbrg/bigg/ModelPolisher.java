@@ -757,18 +757,17 @@ public class ModelPolisher extends Launcher {
     runPSQL &= iStrNotNullOrEmpty(host);
     runPSQL &= iStrNotNullOrEmpty(port);
     runPSQL &= iStrNotNullOrEmpty(user);
-    SQLConnector connectorBase = new SQLConnector();
     if (runPSQL) {
       try {
         // Connect to PostgreSQL database and launch application:
-        bigg = new BiGGDB(connectorBase.new PostgreSQLConnector(host,
-          new Integer(port), user, passwd != null ? passwd : "", dbName));
+        bigg = new BiGGDB(new PostgreSQLConnector(host, new Integer(port), user,
+          passwd != null ? passwd : "", dbName));
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
       }
     } else {
       try {
-        bigg = new BiGGDB(connectorBase.new SQLiteConnector());
+        bigg = new BiGGDB(new SQLiteConnector());
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
       }

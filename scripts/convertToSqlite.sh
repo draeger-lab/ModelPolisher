@@ -7,7 +7,7 @@ echo "Started conversion of local PostgreSQL BiGGDB to SQLite..." \
 && echo "Finished cleanup for migration to SQLite." \
 && sqlite3 "" ".read create_db.sql" \
 && echo "Finished creating SQLite DB." \
-&& mv bigg.sqlite ../resources/ \
+&& mv bigg.sqlite ../resources/edu/ucsd/sbrg/bigg \
 && echo "Creating indices." \
 && python createIndices.py \
 && rm bigg.sql converted.sql \
