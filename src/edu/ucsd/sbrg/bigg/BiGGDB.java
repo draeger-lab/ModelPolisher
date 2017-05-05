@@ -45,10 +45,6 @@ public class BiGGDB {
    * The connection to the database.
    */
   private SQLConnector connect;
-  /**
-   *
-   */
-  private boolean isSQLiteConnection = false;
 
 
   /**
@@ -65,29 +61,13 @@ public class BiGGDB {
 
 
   /**
-   * Initialize a PostgreSQL connection
+   * Initialize a SQL connection
    *
    * @param connector
    * @throws SQLException
    */
-  public BiGGDB(SQLConnector.PostgreSQLConnector connector)
-    throws SQLException {
+  public BiGGDB(SQLConnector connector) throws SQLException {
     connect = connector;
-    if (!connector.isConnected()) {
-      connector.connect();
-    }
-  }
-
-
-  /**
-   * Initialize a SQLite connection
-   *
-   * @param connector
-   * @throws SQLException
-   */
-  public BiGGDB(SQLConnector.SQLiteConnector connector) throws SQLException {
-    connect = connector;
-    isSQLiteConnection = true;
     if (!connector.isConnected()) {
       connector.connect();
     }
@@ -399,25 +379,14 @@ public class BiGGDB {
   public TreeSet<String> getResources(BiGGId biggId, boolean includeAnyURI,
     boolean isReaction) throws SQLException {
     String type = isReaction ? Constants.REACTION : Constants.COMPONENT;
-    String selectConcat = "SELECT CONCAT(" + Constants.URL_PREFIX + ", s."
-      + Constants.SYNONYM + ")";
-    String typeCheck = "(CAST(s.type AS \"text\") = '" + Constants.COMPONENT
-      + "' OR CAST(s.type AS \"text\") = '"
-      + Constants.COMPARTMENTALIZED_COMPONENT + "')";
-    if (isSQLiteConnection) {
-      selectConcat =
-        "SELECT (" + Constants.URL_PREFIX + "|| s." + Constants.SYNONYM + ")";
-    }
-    if (isReaction) {
-      typeCheck = "CAST(s.type AS \"text\") = '" + Constants.REACTION + "'";
-    }
     ResultSet rst = connect.query(
-      selectConcat + " AS " + Constants.URL + " FROM " + type + " t, "
+      connect.selectConcat() + " AS " + Constants.URL + " FROM " + type + " t, "
         + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE t."
         + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
         + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
-        + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND " + typeCheck
-        + " AND t." + Constants.COLUMN_BIGG_ID + " = '%s'%s",
+        + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND "
+        + getTypeQuery(isReaction) + " AND t." + Constants.COLUMN_BIGG_ID
+        + " = '%s'%s",
       biggId.getAbbreviation(), includeAnyURI ? ""
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
     TreeSet<String> result = new TreeSet<>();
@@ -430,6 +399,20 @@ public class BiGGDB {
     }
     rst.getStatement().close();
     return result;
+  }
+
+
+  /**
+   * @param isReaction
+   * @return
+   */
+  private String getTypeQuery(boolean isReaction) {
+    if (isReaction) {
+      return "CAST(s.type AS \"text\") = '" + Constants.REACTION + "'";
+    }
+    return "(CAST(s.type AS \"text\") = '" + Constants.COMPONENT
+      + "' OR CAST(s.type AS \"text\") = '"
+      + Constants.COMPARTMENTALIZED_COMPONENT + "')";
   }
 
 

@@ -183,7 +183,7 @@
         <directory>resources</directory>
         <filtering>true</filtering>
         <excludes>
-          <exclude>bigg.zip</exclude>
+          <exclude>edu/ucsd/sbrg/bigg/bigg.zip</exclude>
         </excludes>
       </resource>
       <resource>
@@ -247,6 +247,18 @@
           <source>${jdk.version}</source>
           <target>${jdk.version}</target>
         </configuration>
+      </plugin>
+
+      <!-- Don't create default jar, we want jar-with-dependencies instead -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Assemble executable JAR -->
