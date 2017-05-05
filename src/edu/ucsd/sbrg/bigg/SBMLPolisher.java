@@ -14,6 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
 import java.io.IOException;
@@ -201,8 +202,7 @@ public class SBMLPolisher {
     Model model = nsb.getModel();
     Compartment c = (Compartment) model.findUniqueNamedSBase(cId);
     if (c == null) {
-      logger.warning(format(
-        "Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.",
+      logger.warning(format(mpMessageBundle.getString("CREATE_MISSING_COMP"),
         cId, nsb.getId(), nsb.getElementName()));
       c = model.createCompartment(cId);
       polish(c);
@@ -384,9 +384,9 @@ public class SBMLPolisher {
           compartmentId = species.getCompartment();
         }
       } else {
-        logger.warning(format(
-          "Invalid reference to a species ''{0}'' that doesn''t exist in the model.",
-          sr.getSpecies()));
+        logger.warning(
+          format(mpMessageBundle.getString("SPECIES_REFERENCE_INVALID"),
+            sr.getSpecies()));
       }
     }
     if ((compartmentId == null) || compartmentId.isEmpty()) {
@@ -402,7 +402,8 @@ public class SBMLPolisher {
    * @throws XMLStreamException
    */
   public void polish(Model model) throws XMLStreamException, IOException {
-    logger.info(format("Processing model {0}.", model.getId()));
+    logger.info(
+      format(mpMessageBundle.getString("PROCESSING_MODEL"), model.getId()));
     // initialize ProgressBar
     int count = 1 // for model properties
       + model.getUnitDefinitionCount() + model.getCompartmentCount()
@@ -551,8 +552,7 @@ public class SBMLPolisher {
             // TODO: sink reaction
           } else {
             logger.warning(format(
-              "Reaction ''{0}'' has been recognized as demand reaction, but this is not reflected in its BiGG id.",
-              r.getId()));
+              mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
             r.setSBOTerm(628); // demand reaction
           }
         } else if (r.getProductCount() == 0) {
@@ -560,8 +560,7 @@ public class SBMLPolisher {
             // TODO: source reaction
           } else {
             logger.warning(format(
-              "Reaction ''{0}'' has been recognized as demand reaction, but this is not reflected in its BiGG id.",
-              r.getId()));
+              mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
             r.setSBOTerm(628); // demand reaction
           }
         }
@@ -573,16 +572,13 @@ public class SBMLPolisher {
         AtomCheckResult<Reaction> defects =
           AtomBalanceCheck.checkAtomBalance(r, 1);
         if ((defects != null) && (defects.hasDefects())) {
-          logger.warning(format(
-            "There are missing atoms in reaction ''{0}''. Values lower than zero indicate missing atoms on the substrate side, whereas positive values indicate missing atoms on the product side: {1}",
+          logger.warning(format(mpMessageBundle.getString("ATOMS_MISSING"),
             r.getId(), defects.getDefects().toString()));
         } else if (defects == null) {
-          logger.fine(
-            format("Could not check the atom balance of reaction ''{0}''.",
-              r.getId()));
+          logger.fine(format(
+            mpMessageBundle.getString("CHECK_ATOM_BALANCE_FAILED"), r.getId()));
         } else {
-          logger.fine(format("There are no missing atoms in reaction ''{0}''.",
-            r.getId()));
+          logger.fine(format(mpMessageBundle.getString("ATOMS_OK"), r.getId()));
         }
       }
     }
@@ -599,28 +595,25 @@ public class SBMLPolisher {
       strict &=
         lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
       if (!strict) {
-        logger.warning(format(
-          "The flux bounds of reaction {0} can either not be resolved or they have illegal values.",
-          r.getId()));
+        logger.warning(
+          format(mpMessageBundle.getString("FLUX_BOUND_ERROR"), r.getId()));
       }
     } else {
-      logger.warning(format(
-        "Reaction {0} does not define both required flux bounds.", r.getId()));
+      logger.warning(
+        format(mpMessageBundle.getString("FLUX_BOUNDS_MISSING"), r.getId()));
     }
     if (strict && r.isSetListOfReactants()) {
       strict &= checkSpeciesReferences(r.getListOfReactants());
       if (!strict) {
         logger.warning(
-          format("Some reactants in reaction {0} have an illegal stoichiometry",
-            r.getId()));
+          format(mpMessageBundle.getString("ILLEGAL_STOICH_PROD"), r.getId()));
       }
     }
     if (strict && r.isSetListOfProducts()) {
       strict &= checkSpeciesReferences(r.getListOfProducts());
       if (!strict) {
         logger.warning(
-          format("Some products in reaction {0} have an illegal stoichiometry",
-            r.getId()));
+          format(mpMessageBundle.getString("ILLEGAL_STOICH_REACT"), r.getId()));
       }
     }
     return strict;
@@ -637,8 +630,7 @@ public class SBMLPolisher {
   public SBMLDocument polish(SBMLDocument doc)
     throws XMLStreamException, IOException {
     if (!doc.isSetModel()) {
-      logger.info(
-        "This SBML document does not contain a model. Nothing to do.");
+      logger.info(mpMessageBundle.getString("NO_MODEL_FOUND"));
       return doc;
     }
     Model model = doc.getModel();
@@ -658,12 +650,11 @@ public class SBMLPolisher {
     String id = species.getId();
     if (species.getId().endsWith("_boundary")) {
       logger.warning(
-        format("Found a species with invalid BiGG id ''{0}''.", id));
+        format(mpMessageBundle.getString("SPECIES_ID_INVALID"), id));
       id = id.substring(0, id.length() - 9);
       if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-        logger.warning(format(
-          "Species ''{0}'' is supposed to be on the system''s boundary, but its boundary condition flag was not correctly set.",
-          id));
+        logger.warning(
+          format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
         species.setBoundaryCondition(true);
       }
     } else if (!species.isSetBoundaryCondition()) {
@@ -689,10 +680,10 @@ public class SBMLPolisher {
       }
       if (biggId.isSetCompartmentCode() && species.isSetCompartment()
         && !biggId.getCompartmentCode().equals(species.getCompartment())) {
-        logger.warning(format(
-          "Changing compartment reference in species ''{0}'' from ''{1}'' to ''{2}'' so that it matches the compartment code of its BiGG id ''{0}''.",
-          species.getId(), species.getCompartment(),
-          biggId.getCompartmentCode()));
+        logger.warning(
+          format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"),
+            species.getId(), species.getCompartment(),
+            biggId.getCompartmentCode()));
         species.setCompartment(biggId.getCompartmentCode());
       }
     }
@@ -740,13 +731,12 @@ public class SBMLPolisher {
     if (objective.getFluxObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any flux
       // objectives.
-      logger.warning(format("Objective {0} does not have any flux objectives",
+      logger.warning(format(mpMessageBundle.getString("OBJ_FLUX_OBJ_MISSING"),
         objective.getId()));
     } else {
       if (objective.getFluxObjectiveCount() > 1) {
-        logger.warning(
-          format("Only one reaction should be the target of objective {0}.",
-            objective.getId()));
+        logger.warning(format(mpMessageBundle.getString("TOO_MUCH_OBJ_TARGETS"),
+          objective.getId()));
       }
       for (FluxObjective fluxObjective : objective.getListOfFluxObjectives()) {
         if (fluxObjective.isSetCoefficient()
@@ -754,9 +744,9 @@ public class SBMLPolisher {
           && Double.isFinite(fluxObjective.getCoefficient())) {
           strict &= true;
         } else {
-          logger.warning(format(
-            "A flux objective for reaction {0} has an illegal coefficient value.",
-            fluxObjective.getReaction()));
+          logger.warning(
+            format(mpMessageBundle.getString("FLUX_OBJ_COEFF_INVALID"),
+              fluxObjective.getReaction()));
         }
       }
     }
@@ -793,9 +783,9 @@ public class SBMLPolisher {
             strict &= true;
           } else {
             strict = false;
-            logger.warning(format(
-              "The parameter {0} is used as flux bound but an initial assignment changes its value.",
-              variable.getId()));
+            logger.warning(
+              format(mpMessageBundle.getString("FLUX_BOUND_STRICT_CHANGE"),
+                variable.getId()));
           }
         } else if (variable instanceof SpeciesReference) {
           strict = false;
@@ -816,7 +806,7 @@ public class SBMLPolisher {
     if (modelPlug.getObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any
       // Objectives in the model.
-      logger.warning(format("No objectives defined for model {0}.",
+      logger.warning(format(mpMessageBundle.getString("OBJ_MISSING"),
         modelPlug.getParent().getId()));
     } else {
       for (Objective objective : modelPlug.getListOfObjectives()) {
@@ -917,7 +907,7 @@ public class SBMLPolisher {
       model.getUnitDefinition("mmol_per_gDW_per_hr");
     if (mmol_per_gDW_per_hr == null) {
       mmol_per_gDW_per_hr = model.createUnitDefinition("mmol_per_gDW_per_hr");
-      logger.finest("Added basic mmol_per_gDW_per_hr unit definition to model");
+      logger.finest(mpMessageBundle.getString("ADDED_UNIT_DEF"));
     }
     if (mmol_per_gDW_per_hr.getUnitCount() < 1) {
       ModelBuilder.buildUnit(mmol_per_gDW_per_hr, 1d, -3, Unit.Kind.MOLE, 1d);
@@ -1024,7 +1014,8 @@ public class SBMLPolisher {
     }
     newName = newName.replace("_", " ");
     if (!newName.equals(name)) {
-      logger.fine(format("Changed name ''{0}'' to ''{1}''", name, newName));
+      logger.fine(
+        format(mpMessageBundle.getString("CHANGED_NAME"), name, newName));
     }
     return newName;
   }
