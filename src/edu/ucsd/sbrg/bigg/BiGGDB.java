@@ -14,6 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -44,10 +45,6 @@ public class BiGGDB {
    * The connection to the database.
    */
   private SQLConnector connect;
-  /**
-   *
-   */
-  private boolean isSQLiteConnection = false;
 
 
   /**
@@ -64,29 +61,13 @@ public class BiGGDB {
 
 
   /**
-   * Initialize a PostgreSQL connection
+   * Initialize a SQL connection
    *
    * @param connector
    * @throws SQLException
    */
-  public BiGGDB(SQLConnector.PostgreSQLConnector connector)
-    throws SQLException {
+  public BiGGDB(SQLConnector connector) throws SQLException {
     connect = connector;
-    if (!connector.isConnected()) {
-      connector.connect();
-    }
-  }
-
-
-  /**
-   * Initialize a SQLite connection
-   *
-   * @param connector
-   * @throws SQLException
-   */
-  public BiGGDB(SQLConnector.SQLiteConnector connector) throws SQLException {
-    connect = connector;
-    isSQLiteConnection = true;
     if (!connector.isConnected()) {
       connector.connect();
     }
@@ -230,11 +211,10 @@ public class BiGGDB {
         if (collection != null && identifier != null) {
           resource = collection + identifier;
         } else if (collection == null) {
-          logger.info("Collection was null for this gene resource URI.");
+          logger.info(mpMessageBundle.getString("COLLECTION_NULL_GENE"));
           continue;
         } else {
-          logger.info(format(
-            "Identifier was null for collection ''{0}'' and this gene resource URI ",
+          logger.info(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"),
             collection));
           continue;
         }
@@ -399,25 +379,14 @@ public class BiGGDB {
   public TreeSet<String> getResources(BiGGId biggId, boolean includeAnyURI,
     boolean isReaction) throws SQLException {
     String type = isReaction ? Constants.REACTION : Constants.COMPONENT;
-    String selectConcat = "SELECT CONCAT(" + Constants.URL_PREFIX + ", s."
-      + Constants.SYNONYM + ")";
-    String typeCheck = "(CAST(s.type AS \"text\") = '" + Constants.COMPONENT
-      + "' OR CAST(s.type AS \"text\") = '"
-      + Constants.COMPARTMENTALIZED_COMPONENT + "')";
-    if (isSQLiteConnection) {
-      selectConcat =
-        "SELECT (" + Constants.URL_PREFIX + "|| s." + Constants.SYNONYM + ")";
-    }
-    if (isReaction) {
-      typeCheck = "CAST(s.type AS \"text\") = '" + Constants.REACTION + "'";
-    }
     ResultSet rst = connect.query(
-      selectConcat + " AS " + Constants.URL + " FROM " + type + " t, "
+      connect.selectConcat() + " AS " + Constants.URL + " FROM " + type + " t, "
         + Constants.SYNONYM + " s, " + Constants.DATA_SOURCE + " d WHERE t."
         + Constants.COLUMN_ID + " = s." + Constants.COLUMN_OME_ID + " AND s."
         + Constants.COLUMN_DATA_SOURCE_ID + " = d." + Constants.COLUMN_ID
-        + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND " + typeCheck
-        + " AND t." + Constants.COLUMN_BIGG_ID + " = '%s'%s",
+        + " AND " + Constants.URL_PREFIX + " IS NOT NULL AND "
+        + getTypeQuery(isReaction) + " AND t." + Constants.COLUMN_BIGG_ID
+        + " = '%s'%s",
       biggId.getAbbreviation(), includeAnyURI ? ""
         : " AND " + Constants.URL_PREFIX + " like '%%identifiers.org%%'");
     TreeSet<String> result = new TreeSet<>();
@@ -430,6 +399,20 @@ public class BiGGDB {
     }
     rst.getStatement().close();
     return result;
+  }
+
+
+  /**
+   * @param isReaction
+   * @return
+   */
+  private String getTypeQuery(boolean isReaction) {
+    if (isReaction) {
+      return "CAST(s.type AS \"text\") = '" + Constants.REACTION + "'";
+    }
+    return "(CAST(s.type AS \"text\") = '" + Constants.COMPONENT
+      + "' OR CAST(s.type AS \"text\") = '"
+      + Constants.COMPARTMENTALIZED_COMPONENT + "')";
   }
 
 
@@ -462,8 +445,7 @@ public class BiGGDB {
         + Constants.COLUMN_ID + " = m." + Constants.COLUMN_GENOME_ID + " AND m."
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
-      logger.warning(format(
-        "Could not retrieve NCBI taxon identifier for model ''{0}'', because of {1}.",
+      logger.warning(format(mpMessageBundle.getString("GET_TAXON_ERROR"),
         biggId, Utils.getMessage(exc)));
     }
     return null;
@@ -479,9 +461,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPARTMENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a compartment or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_COMPARTMENT_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -496,9 +477,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.COMPONENT + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a metabolite or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_METABOLITE_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -513,9 +493,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.MODEL + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a model or not: {1}.", biggId,
-          Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_MODEL_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
@@ -533,9 +512,8 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + Constants.REACTION + " WHERE "
         + Constants.COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
-      logger.warning(
-        format("Could not determine if ''{0}'' is a reaction or not: {1}.",
-          biggId, Utils.getMessage(exc)));
+      logger.warning(format(mpMessageBundle.getString("IS_REACTION_FAILED"),
+        biggId, Utils.getMessage(exc)));
     }
     return false;
   }
