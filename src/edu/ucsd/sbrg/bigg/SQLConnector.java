@@ -34,7 +34,7 @@ public abstract class SQLConnector {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
-    Logger.getLogger(SQLConnector.class.getName());
+      Logger.getLogger(SQLConnector.class.getName());
 
 
   /**
@@ -97,5 +97,6 @@ public abstract class SQLConnector {
   /**
    * @return
    */
-  public abstract String selectConcat();
+  public abstract String concat(String... strings);
+
 }

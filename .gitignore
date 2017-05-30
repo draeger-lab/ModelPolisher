@@ -8,3 +8,6 @@ lib.zip
 /scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log
+/.DS_Store
+/minimalSysBio.xml
+/model_polisher.log
