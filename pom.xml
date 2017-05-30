@@ -14,10 +14,10 @@
   <!-- =================================================================== -->
 
   <name>${project.artifactId}</name>
-  <version>1.6</version>
+  <version>1.7</version>
   <url>https://github.com/SBRG/ModelPolisher/</url>
   <inceptionYear>2014</inceptionYear>
-  <description>ModelPolisher accesses the BiGG Models knowledgebase to annotate SBML models.</description>
+  <description>ModelPolisher accesses the BiGG Models knowledge-base to annotate SBML models.</description>
 
   <properties>
     <jdk.version>1.8</jdk.version>
@@ -50,7 +50,7 @@
 
   <developers>
     <developer>
-      <email>andraeger@eng.ucsd.edu</email>
+      <email>draeger@informatik.uni-tuebingen.de</email>
       <name>Andreas Dräger</name>
       <url>https://github.com/draeger/</url>
       <id>draeger</id>

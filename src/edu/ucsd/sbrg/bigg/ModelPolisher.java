@@ -1,4 +1,4 @@
-/**
+/*
  * 
  */
 package edu.ucsd.sbrg.bigg;
@@ -26,12 +26,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.ErrorManager;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
@@ -52,8 +49,6 @@ import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogOptions;
-import de.zbit.util.logging.LogUtil;
-import de.zbit.util.logging.OneLineFormatter;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
@@ -87,6 +82,10 @@ public class ModelPolisher extends Launcher {
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
     Boolean checkMassBalance = null;
+    /**
+     * @see ModelPolisherOptions#NO_MODEL_NOTES
+     */
+    Boolean noModelNotes = null;
     /**
      * @see ModelPolisherOptions#COMPRESSION_TYPE
      */
@@ -130,7 +129,7 @@ public class ModelPolisher extends Launcher {
   /**
    *
    */
-  private static Parameters parameters = new Parameters();
+  private Parameters parameters;
   /**
    *
    */
@@ -139,17 +138,17 @@ public class ModelPolisher extends Launcher {
    * Localization support.
    */
   private static final transient ResourceBundle baseBundle =
-    ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
+      ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
   /**
    * Bundle for ModelPolisher logger messages
    */
   public static transient ResourceBundle mpMessageBundle =
-    ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+      ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
-    Logger.getLogger(ModelPolisher.class.getName());
+      Logger.getLogger(ModelPolisher.class.getName());
   /**
    * Generated serial version identifier.
    */
@@ -172,8 +171,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#addCopyrightToSplashScreen()
    */
   @Override
@@ -182,8 +180,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#addVersionNumberToSplashScreen()
    */
   @Override
@@ -207,7 +204,7 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    */
   public void batchProcess(File input, File output, SBProperties args)
-    throws IOException, XMLStreamException {
+      throws IOException, XMLStreamException {
     // We test if non-existing path denotes a file or directory by checking if
     // it contains at least one period in its name. If so, we assume it is a
     // file.
@@ -217,7 +214,7 @@ public class ModelPolisher extends Launcher {
     }
     initParameters(args);
     if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
-      && !(input.isFile() && input.getName().equals(output.getName()))) {
+        && !(input.isFile() && input.getName().equals(output.getName()))) {
       logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"),
         output.getAbsolutePath()));
       output.mkdir();
@@ -237,7 +234,7 @@ public class ModelPolisher extends Launcher {
             fName = FileTools.removeFileExtension(fName) + ".xml";
           }
           output =
-            new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
+              new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
         }
         getDB(args);
         readAndPolish(input, output);
@@ -311,7 +308,7 @@ public class ModelPolisher extends Launcher {
         return;
       }
       BufferedWriter writer =
-        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
+          new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
       writer.write(doc);
       logger.info(format(mpMessageBundle.getString("WROTE_CORRECT_HTML"),
         input.toPath()));
@@ -334,57 +331,19 @@ public class ModelPolisher extends Launcher {
     boolean[] fileFilters = new boolean[3];
     fileFilters[0] = SBFileFilter.isSBMLFile(input);
     fileFilters[1] =
-      SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
+        SBFileFilter.hasFileType(input, SBFileFilter.FileType.MAT_FILES);
     fileFilters[2] =
-      SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
+        SBFileFilter.hasFileType(input, SBFileFilter.FileType.JSON_FILES);
     return fileFilters;
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#commandLineMode(de.zbit.AppConf)
    */
   @Override
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
-    if (args.containsKey(LogOptions.LOG_FILE)) {
-      LogUtil.addHandler(new ConsoleHandler() {
-
-        /**
-         * Formatter
-         */
-        OneLineFormatter formatter = new OneLineFormatter(false, false, false);
-
-
-        /*
-         * (non-Javadoc)
-         * @see java.util.logging.StreamHandler#flush()
-         */
-        @Override
-        public synchronized void flush() {
-          System.out.flush();
-        }
-
-
-        /*
-         * (non-Javadoc)
-         * @see
-         * java.util.logging.ConsoleHandler#publish(java.util.logging.LogRecord)
-         */
-        @Override
-        public void publish(LogRecord record) {
-          if (record.getLevel().intValue() == Level.INFO.intValue()) {
-            try {
-              String message = formatter.format(record);
-              System.out.write(message.getBytes());
-            } catch (IOException exc) {
-              reportError(null, exc, ErrorManager.FORMAT_FAILURE);
-            }
-          }
-        }
-      }, getLogPackages());
-    }
     // Gives users the choice to pass an alternative model notes XHTML file to
     // the program.
     try {
@@ -397,8 +356,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getCitation(boolean)
    */
   @Override
@@ -410,8 +368,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getCmdLineOptions()
    */
   @Override
@@ -425,8 +382,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getInstitute()
    */
   @Override
@@ -435,8 +391,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getInteractiveOptions()
    */
   @Override
@@ -448,8 +403,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getLogPackages()
    */
   @Override
@@ -458,8 +412,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getOrganization()
    */
   @Override
@@ -468,8 +421,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getProvider()
    */
   @Override
@@ -478,8 +430,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getURLlicenseFile()
    */
   @Override
@@ -492,8 +443,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getURLOnlineUpdate()
    */
   @Override
@@ -502,8 +452,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getVersionNumber()
    */
   @Override
@@ -513,8 +462,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getYearOfProgramRelease()
    */
   @Override
@@ -527,8 +475,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#getYearWhenProjectWasStarted()
    */
   @Override
@@ -541,8 +488,7 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /* (non-Javadoc)
    * @see de.zbit.Launcher#initGUI(de.zbit.AppConf)
    */
   @Override
@@ -557,14 +503,11 @@ public class ModelPolisher extends Launcher {
    * @return Parameters for commandLineMode
    */
   private void initParameters(SBProperties args) {
-    if (parameters.includeAnyURI != null) {
-      logger.fine(mpMessageBundle.getString("PARAMETERS_ALREADY_SET"));
-      return;
-    }
+    parameters = new Parameters();
     String documentTitlePattern = null;
     if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
       documentTitlePattern =
-        args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
+          args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
     }
     double[] coefficients = null;
     if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
@@ -577,29 +520,21 @@ public class ModelPolisher extends Launcher {
     }
     String fObj[] = null;
     if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
-      String fObjectives =
-        args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
+      String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
     }
-    parameters.annotateWithBiGG =
-      args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
-    parameters.checkMassBalance =
-      args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
-    parameters.compression = ModelPolisherOptions.Compression.valueOf(
-      args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
-    parameters.documentNotesFile =
-      parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
+    parameters.annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
+    parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
+    parameters.noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
+    parameters.compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
+    parameters.documentNotesFile = parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
     parameters.documentTitlePattern = documentTitlePattern;
     parameters.fluxCoefficients = coefficients;
     parameters.fluxObjectives = fObj;
-    parameters.includeAnyURI =
-      args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
-    parameters.modelNotesFile =
-      parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
-    parameters.omitGenericTerms =
-      args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
-    parameters.sbmlValidation =
-      args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
+    parameters.includeAnyURI = args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
+    parameters.modelNotesFile = parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
+    parameters.omitGenericTerms = args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
+    parameters.sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
   }
 
 
@@ -641,7 +576,7 @@ public class ModelPolisher extends Launcher {
    * @throws IOException
    */
   private void readAndPolish(File input, File output)
-    throws XMLStreamException, IOException {
+      throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
     logger.info(format(mpMessageBundle.getString("READ_FILE_INFO"),
       input.getAbsolutePath()));
@@ -680,9 +615,9 @@ public class ModelPolisher extends Launcher {
 
 
   private void polish(SBMLDocument doc, File output)
-    throws IOException, XMLStreamException {
+      throws IOException, XMLStreamException {
     if (!doc.isSetLevelAndVersion()
-      || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+        || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
       org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
@@ -702,11 +637,16 @@ public class ModelPolisher extends Launcher {
     // Annotation
     if (parameters.annotateWithBiGG) {
       BiGGAnnotation annotation = new BiGGAnnotation(bigg, polisher);
-      if (parameters.documentNotesFile != null) {
-        annotation.setDocumentNotesFile(parameters.documentNotesFile);
-      }
-      if (parameters.modelNotesFile != null) {
-        annotation.setModelNotesFile(parameters.modelNotesFile);
+      if ((parameters.noModelNotes != null) && parameters.noModelNotes.booleanValue()) {
+        annotation.setDocumentNotesFile(null);
+        annotation.setModelNotesFile(null);
+      } else {
+        if (parameters.documentNotesFile != null) {
+          annotation.setDocumentNotesFile(parameters.documentNotesFile);
+        }
+        if (parameters.modelNotesFile != null) {
+          annotation.setModelNotesFile(parameters.modelNotesFile);
+        }
       }
       doc = annotation.annotate(doc);
     }
@@ -746,8 +686,9 @@ public class ModelPolisher extends Launcher {
    * @return The corresponding DB
    */
   private void getDB(SBProperties args) {
-    if (!parameters.annotateWithBiGG || bigg != null)
+    if (!parameters.annotateWithBiGG || bigg != null) {
       return;
+    }
     String dbName = args.getProperty(DBOptions.DBNAME);
     String host = args.getProperty(DBOptions.HOST);
     String passwd = args.getProperty(DBOptions.PASSWD);
@@ -781,12 +722,12 @@ public class ModelPolisher extends Launcher {
   private void validate(String filename) {
     String output = "xml";
     String offcheck = "p,u";
-    HashMap<String, String> parameters = new HashMap<String, String>();
+    Map<String, String> parameters = new HashMap<String, String>();
     parameters.put("output", output);
     parameters.put("offcheck", offcheck);
     logger.info("Validating  " + filename + "\n");
     SBMLErrorLog sbmlErrorLog =
-      SBMLValidator.checkConsistency(filename, parameters);
+        SBMLValidator.checkConsistency(filename, parameters);
     if (sbmlErrorLog != null) {
       logger.info(format(mpMessageBundle.getString("VAL_ERR_COUNT"),
         sbmlErrorLog.getErrorCount(), filename));
@@ -799,4 +740,5 @@ public class ModelPolisher extends Launcher {
       logger.info(mpMessageBundle.getString("VAL_ERROR"));
     }
   }
+
 }

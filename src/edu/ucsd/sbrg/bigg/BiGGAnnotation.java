@@ -14,9 +14,15 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
 import org.identifiers.registry.RegistryLocalProvider;
@@ -28,7 +34,9 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBO;
+import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
+import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -38,24 +46,33 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.util.Pair;
 
+import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
+/**
+ * 
+ * @author Thomas Zajac
+ */
 public class BiGGAnnotation {
 
-  /*
+  /**
    * 
    */
   private BiGGDB bigg;
-  /*
+  /**
    * 
    */
   private SBMLPolisher polisher;
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger =
-    Logger.getLogger(BiGGAnnotation.class.getName());
+  public static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
+  /**
+   * Localization support.
+   */
+  private static final transient ResourceBundle baseBundle =
+      ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * Default model notes.
    */
@@ -87,7 +104,7 @@ public class BiGGAnnotation {
    * @throws XMLStreamException
    */
   public SBMLDocument annotate(SBMLDocument doc)
-    throws XMLStreamException, IOException {
+      throws XMLStreamException, IOException {
     Model model = doc.getModel();
     replacements = new HashMap<>();
     if (!doc.isSetModel()) {
@@ -95,11 +112,77 @@ public class BiGGAnnotation {
       return doc;
     }
     annotate(model);
-    if (replacements.containsKey("${title}")) {
+    if (replacements.containsKey("${title}") && (documentNotesFile != null)) {
       doc.appendNotes(parseNotes(documentNotesFile, replacements));
     }
-    model.appendNotes(parseNotes(modelNotes, replacements));
+    if (modelNotes != null) {
+      model.appendNotes(parseNotes(modelNotes, replacements));
+    }
+
+    // Recursively sort and group all annotations in the SBMLDocument.
+    mergeMIRIAMannotations(doc);
+
     return doc;
+  }
+
+  /**
+   * Recursively goes through all annotations in the given {@link SBase} and
+   * alphabetically sort annotations after grouping them by {@link org.sbml.jsbml.CVTerm.Qualifier}.
+   * 
+   * @param sbase
+   */
+  public void mergeMIRIAMannotations(SBase sbase) {
+    if (sbase.isSetAnnotation()) {
+      SortedMap<Qualifier, SortedSet<String>> miriam = new TreeMap<>();
+      boolean doMerge = false;
+      doMerge = hashMIRIAMuris(sbase, miriam);
+      if (doMerge) {
+        sbase.getAnnotation().unsetCVTerms();
+        for (Entry<Qualifier, SortedSet<String>> entry : miriam.entrySet()) {
+          logger.info(format(baseBundle.getString("MERGING_MIRIAM_RESOURCES"),
+            entry.getKey(), sbase.getClass().getSimpleName(), sbase.getId()));
+          sbase.addCVTerm(new CVTerm(entry.getKey(), entry.getValue().toArray(new String[0])));
+        }
+      }
+    }
+    for (int i = 0; i < sbase.getChildCount(); i++) {
+      TreeNode node = sbase.getChildAt(i);
+      if (node instanceof SBase) {
+        mergeMIRIAMannotations((SBase) node);
+      }
+    }
+  }
+
+
+  /**
+   * @param sbase
+   * @param miriam
+   * @return
+   */
+  private boolean hashMIRIAMuris(SBase sbase, SortedMap<Qualifier, SortedSet<String>> miriam) {
+    boolean doMerge = false;
+    for (int i = 0; i < sbase.getCVTermCount(); i++) {
+      CVTerm term = sbase.getCVTerm(i);
+      Qualifier qualifier = term.getQualifier();
+      if (!miriam.containsKey(qualifier)) {
+        if (sbase instanceof Model) {
+          if (!qualifier.isModelQualifier()) {
+            logger.info(format(baseBundle.getString("CORRECTING_INVALID_QUALIFIERS"),
+              qualifier.getElementNameEquivalent(), sbase.getId()));
+            qualifier = Qualifier.getModelQualifierFor(qualifier.getElementNameEquivalent());
+          }
+        } else if (!qualifier.isBiologicalQualifier()) {
+          logger.info(format(baseBundle.getString("CORRECTING_INVALID_MODEL_QUALIFIER"),
+            qualifier.getElementNameEquivalent(), sbase.getClass().getSimpleName(), sbase.getId()));
+          qualifier = Qualifier.getBiologicalQualifierFor(qualifier.getElementNameEquivalent());
+        }
+        miriam.put(qualifier, new TreeSet<String>());
+      } else {
+        doMerge = true;
+      }
+      miriam.get(qualifier).addAll(term.getResources());
+    }
+    return doMerge;
   }
 
 
@@ -109,13 +192,13 @@ public class BiGGAnnotation {
   public void annotatePublications(Model model) {
     try {
       List<Pair<String, String>> publications =
-        bigg.getPublications(model.getId());
+          bigg.getPublications(model.getId());
       if (publications.size() > 0) {
         String resources[] = new String[publications.size()];
         int i = 0;
         for (Pair<String, String> publication : publications) {
           resources[i++] =
-            polisher.createURI(publication.getKey(), publication.getValue());
+              polisher.createURI(publication.getKey(), publication.getValue());
         }
         model.addCVTerm(
           new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
@@ -146,8 +229,11 @@ public class BiGGAnnotation {
       compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
         polisher.createURI("bigg.compartment", biggId)));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
-      if (!compartment.isSetName()) {
-        compartment.setName(bigg.getCompartmentName(biggId));
+      if (!compartment.isSetName() || compartment.getName().equals("default")) {
+        String name = bigg.getCompartmentName(biggId);
+        if ((name != null) && !name.isEmpty()) {
+          compartment.setName(name);
+        }
       }
     }
   }
@@ -201,7 +287,7 @@ public class BiGGAnnotation {
       }
       try {
         TreeSet<String> linkOut =
-          bigg.getResources(biggId, polisher.includeAnyURI, false);
+            bigg.getResources(biggId, polisher.includeAnyURI, false);
         // convert to set to remove possible duplicates; TreeSet should
         // respect current order
         for (String resource : linkOut) {
@@ -218,7 +304,7 @@ public class BiGGAnnotation {
         species.setMetaId(species.getId());
       }
       FBCSpeciesPlugin fbcSpecPlug =
-        (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+          (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
       if (!fbcSpecPlug.isSetChemicalFormula()) {
         try {
           fbcSpecPlug.setChemicalFormula(
@@ -230,7 +316,7 @@ public class BiGGAnnotation {
         }
       }
       Integer charge =
-        bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+          bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
       if (species.isSetCharge()) {
         if ((charge != null) && (charge != species.getCharge())) {
           logger.warning(
@@ -292,7 +378,7 @@ public class BiGGAnnotation {
       polisher.omitGenericTerms);
     Model model = reaction.getModel();
     List<String> subsystems =
-      bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
+        bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
     if (subsystems.size() > 0) {
       String groupKey = "GROUP_FOR_NAME";
       if (model.getUserObject(groupKey) == null) {
@@ -300,14 +386,14 @@ public class BiGGAnnotation {
       }
       @SuppressWarnings("unchecked")
       Map<String, Group> groupForName =
-        (Map<String, Group>) model.getUserObject(groupKey);
+      (Map<String, Group>) model.getUserObject(groupKey);
       for (String subsystem : subsystems) {
         Group group;
         if (groupForName.containsKey(subsystem)) {
           group = groupForName.get(subsystem);
         } else {
           GroupsModelPlugin groupsModelPlugin =
-            (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
+              (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
           group = groupsModelPlugin.createGroup(
             "g" + (groupsModelPlugin.getGroupCount() + 1));
           group.setName(subsystem);
@@ -320,7 +406,7 @@ public class BiGGAnnotation {
     }
     try {
       TreeSet<String> linkOut =
-        bigg.getResources(biggId, polisher.includeAnyURI, true);
+          bigg.getResources(biggId, polisher.includeAnyURI, true);
       for (String resource : linkOut) {
         cvTerm.addResource(resource);
       }
@@ -343,7 +429,7 @@ public class BiGGAnnotation {
   public void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug =
-        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
         annotateGeneProduct(geneProduct);
       }
@@ -358,7 +444,7 @@ public class BiGGAnnotation {
     String label = null;
     String id = geneProduct.getId();
     if (geneProduct.isSetLabel()
-      && !geneProduct.getLabel().equalsIgnoreCase("None")) {
+        && !geneProduct.getLabel().equalsIgnoreCase("None")) {
       label = geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
       label = id;
@@ -377,7 +463,7 @@ public class BiGGAnnotation {
       // get Collection part from uri without url prefix - all uris should
       // begin with http://identifiers.org, else this may fail
       String collection =
-        RegistryUtilities.getDataCollectionPartFromURI(resource);
+          RegistryUtilities.getDataCollectionPartFromURI(resource);
       if (collection == null) {
         continue;
       } else if (!collection.contains("identifiers.org")) {
@@ -418,7 +504,7 @@ public class BiGGAnnotation {
         logger.fine(format(mpMessageBundle.getString("NO_GENE_FOR_LABEL"),
           geneProduct.getName()));
       } else if (geneProduct.isSetName()
-        && !geneProduct.getName().equals(geneName)) {
+          && !geneProduct.getName().equals(geneName)) {
         logger.warning(format(mpMessageBundle.getString("UPDATE_GP_NAME"),
           geneProduct.getName(), geneName));
       }
@@ -454,7 +540,7 @@ public class BiGGAnnotation {
     replacements.put("${bigg.timestamp}",
       format("{0,date}", bigg.getBiGGVersion()));
     replacements.put("${species_table}", ""); // XHTMLBuilder.table(header,
-                                              // data, "Species", attributes));
+    // data, "Species", attributes));
     if (!model.isSetName()) {
       model.setName(organism);
     }
@@ -486,13 +572,13 @@ public class BiGGAnnotation {
    */
   protected static String checkResourceUrl(String resource) {
     String collection =
-      RegistryUtilities.getDataCollectionPartFromURI(resource);
+        RegistryUtilities.getDataCollectionPartFromURI(resource);
     RegistryLocalProvider registry = new RegistryLocalProvider();
     // not present in provided registry, cannot be checked this way
     if (collection.contains("metanetx")
-      || collection.contains("unipathway.reaction")
-      || collection.contains("reactome.org")
-      || collection.contains("molecular-networks.com")) {
+        || collection.contains("unipathway.reaction")
+        || collection.contains("reactome.org")
+        || collection.contains("molecular-networks.com")) {
       logger.fine(
         format(mpMessageBundle.getString("NO_URI_CHECK_WARN"), resource));
       return resource;
@@ -516,28 +602,28 @@ public class BiGGAnnotation {
         if (identifier.startsWith("D")) {
           logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
           resource =
-            RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
+              RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
         } else if (identifier.startsWith("G")) {
           logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
           resource =
-            RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
+              RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
         }
         // add possibly missing "gi:" prefix to identifier
       } else if (resource.contains("ncbigi")) {
         if (!identifier.toLowerCase().startsWith("gi:")) {
           logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
           resource =
-            RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
+              RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
         }
       } else if (resource.contains("go") && !resource.contains("goa")) {
         if (!identifier.toLowerCase().startsWith("go:")) {
           logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
           resource =
-            RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
+              RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
         }
       } else if (resource.contains("ec-code")) {
         int missingDots =
-          identifier.length() - identifier.replace(".", "").length();
+            identifier.length() - identifier.replace(".", "").length();
         if (missingDots < 1) {
           logger.warning(
             format(mpMessageBundle.getString("EC_CHANGE_FAILED"), identifier));
@@ -568,7 +654,7 @@ public class BiGGAnnotation {
    * @throws IOException
    */
   private String parseNotes(String location, Map<String, String> replacements)
-    throws IOException {
+      throws IOException {
     StringBuilder sb = new StringBuilder();
     try (InputStream is = getClass().getResourceAsStream(location);
         InputStreamReader isReader = new InputStreamReader(
@@ -600,7 +686,6 @@ public class BiGGAnnotation {
     return sb.toString();
   }
 
-
   /**
    * @return the modelNotes
    */
@@ -608,20 +693,19 @@ public class BiGGAnnotation {
     return new File(modelNotes);
   }
 
-
   /**
    * @param modelNotes
    *        the modelNotes to set
    */
   public void setModelNotesFile(File modelNotes) {
-    this.modelNotes = modelNotes.getAbsolutePath();
+    this.modelNotes = modelNotes != null ? modelNotes.getAbsolutePath() : null;
   }
-
 
   /**
    * @param documentNotesFile
    */
   public void setDocumentNotesFile(File documentNotesFile) {
-    this.documentNotesFile = documentNotesFile.getAbsolutePath();
+    this.documentNotesFile = documentNotesFile != null ? documentNotesFile.getAbsolutePath() : null;
   }
+
 }

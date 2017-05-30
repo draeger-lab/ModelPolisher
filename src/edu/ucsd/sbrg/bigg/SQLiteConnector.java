@@ -10,24 +10,22 @@ import java.util.logging.Logger;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteOpenMode;
 
-import edu.ucsd.sbrg.bigg.BiGGDBContract.Constants;
-
 /**
  * Created by mephenor on 05.05.17.
  */
 public class SQLiteConnector extends SQLConnector {
 
   /**
-   *
+   * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-    Logger.getLogger(PostgreSQLConnector.class.getName());
+  private static final transient Logger logger = Logger.getLogger(SQLiteConnector.class.getName());
 
 
   /**
    * @return
    * @throws SQLException
    */
+  @Override
   public Connection connect() throws SQLException {
     if (isConnected()) {
       connection.close();
@@ -35,21 +33,26 @@ public class SQLiteConnector extends SQLConnector {
     SQLiteConfig config = new SQLiteConfig();
     config.setOpenMode(SQLiteOpenMode.OPEN_MEMORY);
     connection = DriverManager.getConnection(
-      "jdbc:sqlite::resource:edu/ucsd/sbrg/bigg/bigg.sqlite");
+        "jdbc:sqlite::resource:edu/ucsd/sbrg/bigg/bigg.sqlite");
     config.apply(connection);
     logger.info(mpMessageBundle.getString("SQLITE_CONNECTED"));
     return connection;
   }
 
-  /**
-   * Workaround for SELECT CONCAT not being present in sqlite
-   * @return
-   */
-  public String selectConcat() {
-    return "SELECT (" + Constants.URL_PREFIX + "|| s." + Constants.SYNONYM
-      + ")";
+  // Workaround for SELECT CONCAT not being present in sqlite
+  @Override
+  public String concat(String...strings) {
+    StringBuilder sb = new StringBuilder();
+    sb.append('(');
+    for (int i = 0; i < strings.length; i++) {
+      if (i > 0) {
+        sb.append("|| ");
+      }
+      sb.append(strings[i]);
+    }
+    sb.append(')');
+    return sb.toString();
   }
-
 
   /**
    * @throws ClassNotFoundException
@@ -57,4 +60,5 @@ public class SQLiteConnector extends SQLConnector {
   public SQLiteConnector() throws ClassNotFoundException {
     Class.forName("org.sqlite.JDBC");
   }
+
 }
