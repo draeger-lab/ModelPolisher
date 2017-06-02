@@ -11,49 +11,47 @@ import java.util.logging.Logger;
 
 import org.sbml.jsbml.util.StringTools;
 
-import edu.ucsd.sbrg.bigg.BiGGDBContract.Constants;
-
 /**
  * Created by mephenor on 05.05.17.
  */
 public class PostgreSQLConnector extends SQLConnector {
 
   private enum Keys {
-                     /**
-                      *
-                      */
-                     databaseName,
-                     /**
-                      *
-                      */
-                     dbms,
-                     /**
-                      *
-                      */
-                     host,
-                     /**
-                      *
-                      */
-                     password,
-                     /**
-                      *
-                      */
-                     portNumber,
-                     /**
-                      *
-                      */
-                     server_name,
-                     /**
-                      *
-                      */
-                     user
+    /**
+     *
+     */
+    databaseName,
+    /**
+     *
+     */
+    dbms,
+    /**
+     *
+     */
+    host,
+    /**
+     *
+     */
+    password,
+    /**
+     *
+     */
+    portNumber,
+    /**
+     *
+     */
+    server_name,
+    /**
+     *
+     */
+    user
   }
 
   /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger =
-    Logger.getLogger(PostgreSQLConnector.class.getName());
+      Logger.getLogger(PostgreSQLConnector.class.getName());
   /**
    *
    */
@@ -64,12 +62,13 @@ public class PostgreSQLConnector extends SQLConnector {
    * @return
    * @throws SQLException
    */
+  @Override
   public Connection connect() throws SQLException {
     if (isConnected()) {
       connection.close();
     }
     String url = "jdbc:" + properties.getProperty(Keys.dbms.toString()) + "://"
-      + getHost() + ":" + getPort() + "/" + getDatabaseName();
+        + getHost() + ":" + getPort() + "/" + getDatabaseName();
     connection = DriverManager.getConnection(url, properties);
     connection.setCatalog(properties.getProperty(Keys.databaseName.toString()));
     logger.info(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(),
@@ -120,12 +119,19 @@ public class PostgreSQLConnector extends SQLConnector {
   }
 
 
-  /**
-   * Might not be present in other db formats, so make it PSQL specific
-   */
-  public String selectConcat() {
-    return "SELECT CONCAT(" + Constants.URL_PREFIX + ", s." + Constants.SYNONYM
-      + ")";
+  // Might not be present in other db formats, so make it PSQL specific
+  @Override
+  public String concat(String... strings) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("CONCAT(");
+    for (int i = 0; i < strings.length; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      sb.append(strings[i]);
+    }
+    sb.append(')');
+    return sb.toString();
   }
 
 
@@ -160,4 +166,5 @@ public class PostgreSQLConnector extends SQLConnector {
     logger.fine(format("{0}@{1}:{2}, password={3}", user, host, port,
       StringTools.fill(password.length(), '*')));
   }
+
 }
