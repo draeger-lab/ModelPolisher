@@ -1,7 +1,7 @@
 ### Configuring SQLite DB
 
-Before running ModelPolisher for the first time, please run configurSQLiteDB.sh, which is located in the scripts directory. \
-This will extract the provided db and create the Indices. Packing of the db into the jar is done by Maven. \
+Before running ModelPolisher for the first time from source or building with maven, please run configurSQLiteDB.sh, which is located in the scripts directory. \
+This will extract the provided db and create the Indices. Packing of the db into the jar is then done by Maven. \
 Zip and Python are required for this to work.
 
 ### Converting DB

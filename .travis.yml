@@ -8,6 +8,7 @@ notifications:
   email: false
 before_install:
 - git clone https://github.com/SBRG/bigg_models_data
+- cd scripts && ./configureSQLiteDB.sh && cd ..
 - mkdir out
 install:
 - travis_retry ./gradlew fatJar

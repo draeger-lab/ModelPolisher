@@ -33,7 +33,6 @@ import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLException;
 import org.sbml.jsbml.SBO;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
@@ -65,47 +64,47 @@ public class SBMLPolisher {
    * 
    */
   public static final transient Pattern PATTERN_DEFAULT_FLUX_BOUND =
-    Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
+      Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
   /**
    * 
    */
   public static final transient Pattern PATTERN_ATP_MAINTENANCE =
-    Pattern.compile(".*[Aa][Tt][Pp][Mm]");
+      Pattern.compile(".*[Aa][Tt][Pp][Mm]");
   /**
    * 
    */
   public static final transient Pattern PATTERN_BIOMASS_CASE_INSENSITIVE =
-    Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
+      Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
   /**
    * 
    */
   public static final transient Pattern PATTERN_BIOMASS_CASE_SENSITIVE =
-    Pattern.compile(".*BIOMASS.*");
+      Pattern.compile(".*BIOMASS.*");
   /**
    * 
    */
   public static final transient Pattern PATTERN_DEMAND_REACTION =
-    Pattern.compile(".*_[Dd][Mm]_.*");
+      Pattern.compile(".*_[Dd][Mm]_.*");
   /**
    * 
    */
   public static final transient Pattern PATTERN_EXCHANGE_REACTION =
-    Pattern.compile(".*_[Ee][Xx]_.*");
+      Pattern.compile(".*_[Ee][Xx]_.*");
   /**
    * A {@link Logger} for this class.
    */
   public static final transient Logger logger =
-    Logger.getLogger(SBMLPolisher.class.getName());
+      Logger.getLogger(SBMLPolisher.class.getName());
   /**
    * 
    */
   public static final transient Pattern PATTERN_SINK_OLD_STYLE =
-    Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
+      Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
   /**
    * 
    */
   public static final transient Pattern PATTERN_SINK_REACTION =
-    Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
+      Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
   /**
    * 
    */
@@ -178,7 +177,7 @@ public class SBMLPolisher {
    */
   public boolean checkBound(Parameter bound) {
     return (bound != null) && bound.isConstant() && bound.isSetValue()
-      && !Double.isNaN(bound.getValue());
+        && !Double.isNaN(bound.getValue());
   }
 
 
@@ -194,7 +193,7 @@ public class SBMLPolisher {
         return;
       }
     } else if ((nsb instanceof Reaction)
-      && !((Reaction) nsb).isSetCompartment()) {
+        && !((Reaction) nsb).isSetCompartment()) {
       return;
     }
     String cId = (nsb instanceof Species) ? ((Species) nsb).getCompartment()
@@ -220,8 +219,8 @@ public class SBMLPolisher {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
       strict &= sr.isConstant() && sr.isSetStoichiometry()
-        && !sr.isSetStoichiometryMath() && !Double.isNaN(sr.getValue())
-        && Double.isFinite(sr.getValue());
+          && !sr.isSetStoichiometryMath() && !Double.isNaN(sr.getValue())
+          && Double.isFinite(sr.getValue());
     }
     return strict;
   }
@@ -313,7 +312,7 @@ public class SBMLPolisher {
       Model model = c.getModel();
       // Let's take the model's default unless we don't have anything defined.
       if ((model == null) || !(model.isSetLengthUnits()
-        || model.isSetAreaUnits() || model.isSetVolumeUnits())) {
+          || model.isSetAreaUnits() || model.isSetVolumeUnits())) {
         // TODO: set compartment units.
         /*
          * This is a temporary solution until we agree on something better.
@@ -331,7 +330,7 @@ public class SBMLPolisher {
     String label = null;
     String id = geneProduct.getId();
     if (geneProduct.isSetLabel()
-      && !geneProduct.getLabel().equalsIgnoreCase("None")) {
+        && !geneProduct.getLabel().equalsIgnoreCase("None")) {
       label = geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
       label = id;
@@ -347,7 +346,7 @@ public class SBMLPolisher {
       geneProduct.setMetaId(id);
     }
     if (!geneProduct.isSetName()
-      || geneProduct.getName().equalsIgnoreCase("None")) {
+        || geneProduct.getName().equalsIgnoreCase("None")) {
       geneProduct.setName(label);
     }
   }
@@ -377,8 +376,8 @@ public class SBMLPolisher {
       Species species = model.getSpecies(sr.getSpecies());
       if (species != null) {
         if (!species.isSetCompartment() || (compartmentId == null)
-          || (!compartmentId.isEmpty()
-            && !compartmentId.equals(species.getCompartment()))) {
+            || (!compartmentId.isEmpty()
+                && !compartmentId.equals(species.getCompartment()))) {
           compartmentId = null;
         } else {
           compartmentId = species.getCompartment();
@@ -406,14 +405,14 @@ public class SBMLPolisher {
       format(mpMessageBundle.getString("PROCESSING_MODEL"), model.getId()));
     // initialize ProgressBar
     int count = 1 // for model properties
-      + model.getUnitDefinitionCount() + model.getCompartmentCount()
-      + model.getParameterCount() + model.getReactionCount()
-      + model.getSpeciesCount() + model.getInitialAssignmentCount();
+        + model.getUnitDefinitionCount() + model.getCompartmentCount()
+        + model.getParameterCount() + model.getReactionCount()
+        + model.getSpeciesCount() + model.getInitialAssignmentCount();
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug =
-        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       count +=
-        fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
+          fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
     }
     progress = new ProgressBar(count);
     progress.DisplayBar(); // "Processing model " + model.getId());
@@ -436,13 +435,13 @@ public class SBMLPolisher {
       strict &= polishListOfInitialAssignments(model, strict);
     }
     FBCModelPlugin modelPlug =
-      (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     if (modelPlug.isSetListOfObjectives()) {
       strict &= polishListOfObjectives(strict, modelPlug);
     }
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug =
-        (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       if (fbcModelPlug.isSetListOfGeneProducts()) {
         polishListOfGeneProducts(fbcModelPlug);
       }
@@ -505,7 +504,7 @@ public class SBMLPolisher {
       }
       if (r.isSetListOfProducts()) {
         String cId =
-          compartmentId = polish(r.getListOfProducts(), SBO.getProduct());
+            compartmentId = polish(r.getListOfProducts(), SBO.getProduct());
         if (cId == null) {
           compartmentId = null;
         } else {
@@ -540,7 +539,7 @@ public class SBMLPolisher {
     // This is a check if we are producing invalid SBML.
     if ((r.getReactantCount() == 0) && (r.getProductCount() == 0)) {
       ResourceBundle bundle =
-        ResourceManager.getBundle("org.sbml.jsbml.resources.cfg.Messages");
+          ResourceManager.getBundle("org.sbml.jsbml.resources.cfg.Messages");
       logger.severe(format(
         bundle.getString("SBMLCoreParser.reactionWithoutParticipantsError"),
         r.getId()));
@@ -566,11 +565,11 @@ public class SBMLPolisher {
         }
       }
       if (isCheckMassBalance()
-        && ((r.getSBOTerm() < 627) || (630 < r.getSBOTerm()))) {
+          && ((r.getSBOTerm() < 627) || (630 < r.getSBOTerm()))) {
         // check atom balance only if the reaction is not identified as biomass
         // production, demand, exchange or ATP maintenance.
         AtomCheckResult<Reaction> defects =
-          AtomBalanceCheck.checkAtomBalance(r, 1);
+            AtomBalanceCheck.checkAtomBalance(r, 1);
         if ((defects != null) && (defects.hasDefects())) {
           logger.warning(format(mpMessageBundle.getString("ATOMS_MISSING"),
             r.getId(), defects.getDefects().toString()));
@@ -583,7 +582,7 @@ public class SBMLPolisher {
       }
     }
     FBCReactionPlugin rPlug =
-      (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+        (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     Parameter lb = rPlug.getLowerFluxBoundInstance();
     Parameter ub = rPlug.getUpperFluxBoundInstance();
     boolean strict = polishFluxBound(lb) && polishFluxBound(ub);
@@ -593,7 +592,7 @@ public class SBMLPolisher {
       strict &= checkBound(ub);
       strict &= ub.isSetValue() && (ub.getValue() > Double.NEGATIVE_INFINITY);
       strict &=
-        lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
+          lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
       if (!strict) {
         logger.warning(
           format(mpMessageBundle.getString("FLUX_BOUND_ERROR"), r.getId()));
@@ -628,7 +627,7 @@ public class SBMLPolisher {
    * @throws IOException
    */
   public SBMLDocument polish(SBMLDocument doc)
-    throws XMLStreamException, IOException {
+      throws XMLStreamException, IOException {
     if (!doc.isSetModel()) {
       logger.info(mpMessageBundle.getString("NO_MODEL_FOUND"));
       return doc;
@@ -679,7 +678,7 @@ public class SBMLPolisher {
         species.setMetaId(species.getId());
       }
       if (biggId.isSetCompartmentCode() && species.isSetCompartment()
-        && !biggId.getCompartmentCode().equals(species.getCompartment())) {
+          && !biggId.getCompartmentCode().equals(species.getCompartment())) {
         logger.warning(
           format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"),
             species.getId(), species.getCompartment(),
@@ -740,8 +739,8 @@ public class SBMLPolisher {
       }
       for (FluxObjective fluxObjective : objective.getListOfFluxObjectives()) {
         if (fluxObjective.isSetCoefficient()
-          && !Double.isNaN(fluxObjective.getCoefficient())
-          && Double.isFinite(fluxObjective.getCoefficient())) {
+            && !Double.isNaN(fluxObjective.getCoefficient())
+            && Double.isFinite(fluxObjective.getCoefficient())) {
           strict &= true;
         } else {
           logger.warning(
@@ -779,7 +778,7 @@ public class SBMLPolisher {
       if (variable != null) {
         if (variable instanceof Parameter) {
           if (!variable.isSetSBOTerm()
-            || !SBO.isChildOf(variable.getSBOTerm(), 625)) { // flux bound
+              || !SBO.isChildOf(variable.getSBOTerm(), 625)) { // flux bound
             strict &= true;
           } else {
             strict = false;
@@ -814,8 +813,8 @@ public class SBMLPolisher {
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &=
-            SBMLFix.fixObjective(model.getId(), model.getListOfReactions(),
-              modelPlug, fluxCoefficients, fluxObjectives);
+              SBMLFix.fixObjective(model.getId(), model.getListOfReactions(),
+                modelPlug, fluxCoefficients, fluxObjectives);
         }
         if (objective.isSetListOfFluxObjectives()) {
           strict &= polishListOfFluxObjectives(strict, objective);
@@ -904,7 +903,7 @@ public class SBMLPolisher {
     progress.DisplayBar(); // "Processing unit definitions");
     int udCount = model.getUnitDefinitionCount();
     UnitDefinition mmol_per_gDW_per_hr =
-      model.getUnitDefinition("mmol_per_gDW_per_hr");
+        model.getUnitDefinition("mmol_per_gDW_per_hr");
     if (mmol_per_gDW_per_hr == null) {
       mmol_per_gDW_per_hr = model.createUnitDefinition("mmol_per_gDW_per_hr");
       logger.finest(mpMessageBundle.getString("ADDED_UNIT_DEF"));
@@ -1010,7 +1009,7 @@ public class SBMLPolisher {
     }
     if (newName.matches(".*_C?\\d*.*\\d*")) {
       newName = newName.substring(0, newName.lastIndexOf('_')) + " - "
-        + newName.substring(newName.lastIndexOf('_') + 1);
+          + newName.substring(newName.lastIndexOf('_') + 1);
     }
     newName = newName.replace("_", " ");
     if (!newName.equals(name)) {
