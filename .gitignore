@@ -1,10 +1,11 @@
+.gradle/
 .idea/
 .settings/
 .classpath
 .project
+/build/
 /target/
 /resources/edu/ucsd/sbrg/bigg/bigg.sqlite
-lib.zip
 /scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log

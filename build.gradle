@@ -1,0 +1,171 @@
+apply plugin: "java"
+
+defaultTasks "clean", "fatJar"
+// Java versions for compilation and output
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+archivesBaseName = "ModelPolisher"
+
+version = "1.7"
+
+sourceSets {
+    main.java.srcDirs = ["src"]
+    main.resources.srcDirs = ["resources"]
+    main.resources.excludes = ["**/bigg.zip"]
+    test.java.srcDirs = ["test"]
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://www.ebi.ac.uk/~maven/m2repo"
+        url "http://jsbml.sourceforge.net/m2repo/"
+
+    }
+    // local dependencies
+    flatDir {
+        dirs "lib/de/zbit/SysBio/1390"
+        dirs "lib/org/identifiers/registry-lib/1.1.1"
+    }
+}
+
+dependencies {
+    compile "org.sbml.jsbml:jsbml:1.2"
+    compile "de.zbit:SysBio:1390"
+    compile "org.postgresql:postgresql:9.4-1202-jdbc41"
+    compile "com.diffplug.matsim:matfilerw:2.1.0"
+    compile "com.fasterxml.jackson.core:jackson-core:2.8.8"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.8.8"
+    compile "org.identifiers:registry-lib:1.1.1"
+    compile "org.xerial:sqlite-jdbc:3.8.7"
+    testCompile "junit:junit:4.+"
+}
+
+test {
+    testLogging {
+        events "PASSED", "FAILED", "SKIPPED"
+    }
+    // otherwise tests just run, if test task is specified explicitly
+    dependsOn compileJava
+}
+
+// config for all jar tasks
+tasks.withType(Jar) {
+    destinationDir = file("$rootDir/target")
+    manifest {
+        attributes(
+                "Version": version,
+                "Implementation-Title": "ModelPolisher",
+                "Implementation-Version": version,
+                "Specification-Vendor": "University of California, San Diego",
+                "Specification-Title": "ModelPolisher",
+                "Implementation-Vendor-Id": "edu.ucsd.sbrg",
+                "Implementation-Vendor": "University of California, San Diego",
+                "Main-Class": "edu.ucsd.sbrg.bigg.ModelPolisher"
+        )
+    }
+}
+
+// with dependencies
+task fatJar(type: Jar) {
+    baseName = project.name + "-fat"
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+//with dependencies, without bigg.sqlite
+task lightJar(type: Jar) {
+    exclude("**/bigg.sqlite")
+    baseName = project.name + "-noDB-fat"
+    def deps = []
+    from {
+        deps = configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    with jar
+}
+
+// without dependencies and bigg.sqlite
+task bareJar(type: Jar) {
+    exclude("**/bigg.sqlite")
+    baseName = project.name + "-noDB"
+}
+
+// zip lib folder for release
+task zipLibs(type: Zip) {
+    from "lib"
+    into "lib"
+    include "**/**"
+    archiveName = "lib.zip"
+    destinationDir = file("target/")
+}
+
+// zip script files for release
+task zipScripts(type: Zip) {
+    from "scripts"
+    into "scripts"
+    include "**/**"
+    archiveName = "scripts.zip"
+    destinationDir = file("target/")
+}
+
+// create all four jars for release
+task release() {
+    dependsOn jar
+    dependsOn fatJar
+    dependsOn bareJar
+    dependsOn lightJar
+    dependsOn tasks["zipLibs"]
+    dependsOn tasks["zipScripts"]
+    // necessary, as order is not defined by dependsOn
+    jar.mustRunAfter classes
+    fatJar.mustRunAfter jar
+    bareJar.mustRunAfter fatJar
+    lightJar.mustRunAfter bareJar
+}
+
+// clean up target directory
+clean.doFirst {
+    file("target").deleteDir()
+}
+
+// run db setup script, if bigg.sqlite is missing
+if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()) {
+    if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.zip").exists()) {
+        throw new FileNotFoundException("Could not find zipped bigg db at " +
+                "expected path \"resources/edu/ucsd/sbrg/bigg/bigg.zip\"")
+    }
+    task setupDB(type: Exec) {
+        commandLine "sh", "scripts/configureSQLiteDB.sh"
+        println "Setup DB"
+    }
+    // run before resources are beeing processed
+    processResources.dependsOn setupDB
+}
+
+// bump jar version in travis.yml
+if (project.file(".travis.yml").exists()) {
+    task bumpVersionTravis() {
+        ArrayList<String> content = new ArrayList<>()
+        File travisFile = new File(".travis.yml")
+        String MPVersion = /ModelPolisher.*\d{1,2}(.\d{1,2}){1,2}.jar/
+
+        travisFile.eachLine {
+            line ->
+                content.add(line.replaceAll(MPVersion, "ModelPolisher-fat-" +
+                        "${version}.jar"))
+        }
+        FileWriter fileWriter = new FileWriter(travisFile)
+        BufferedWriter writer = new BufferedWriter(fileWriter)
+        content.each {
+            line -> writer.writeLine(line)
+        }
+        writer.close()
+    }
+    processResources.dependsOn bumpVersionTravis
+}
