@@ -1,8 +1,7 @@
 import sqlite3
 
-
 def main():
-    connection = sqlite3.connect('../resources/edu/ucsd/sbrg/bigg/bigg.sqlite')
+    connection = sqlite3.connect("../resources/edu/ucsd/sbrg/bigg/bigg.sqlite")
     cursor = connection.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
