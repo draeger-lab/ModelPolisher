@@ -62,32 +62,32 @@ import edu.ucsd.sbrg.util.SBMLUtils;
 public class SBMLPolisher {
 
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_DEFAULT_FLUX_BOUND =
       Pattern.compile(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_ATP_MAINTENANCE =
       Pattern.compile(".*[Aa][Tt][Pp][Mm]");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_BIOMASS_CASE_INSENSITIVE =
       Pattern.compile(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_BIOMASS_CASE_SENSITIVE =
       Pattern.compile(".*BIOMASS.*");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_DEMAND_REACTION =
       Pattern.compile(".*_[Dd][Mm]_.*");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_EXCHANGE_REACTION =
       Pattern.compile(".*_[Ee][Xx]_.*");
@@ -97,21 +97,21 @@ public class SBMLPolisher {
   public static final transient Logger logger =
       Logger.getLogger(SBMLPolisher.class.getName());
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_SINK_OLD_STYLE =
       Pattern.compile(".*_[Ss][Ii][Nn][Kk]_.*");
   /**
-   * 
+   *
    */
   public static final transient Pattern PATTERN_SINK_REACTION =
       Pattern.compile(".*_[Ss]([Ii][Nn])?[Kk]_.*");
   /**
-   * 
+   *
    */
   private boolean checkMassBalance = true;
   /**
-   * 
+   *
    */
   private String documentTitlePattern = "[biggId] - [organism]";
   /**
@@ -143,15 +143,15 @@ public class SBMLPolisher {
   }
 
   /**
-   * 
+   *
    */
   private AbstractProgressBar progress;
   /**
-   * 
+   *
    */
   private double[] fluxCoefficients;
   /**
-   * 
+   *
    */
   private String[] fluxObjectives;
 
@@ -171,7 +171,7 @@ public class SBMLPolisher {
    * <li>constant
    * <li>defined value
    * other than {@link Double#NaN}
-   * 
+   *
    * @param bound
    * @return {@code true} if the given parameter can be used as a flux bound in
    *         strict FBC models, {@code false} otherwise.
@@ -493,29 +493,14 @@ public class SBMLPolisher {
       String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
       if (r.isSetListOfReactants()) {
         String cId = polish(r.getListOfReactants(), SBO.getReactant());
-        if (cId == null) {
-          compartmentId = null;
-        } else {
-          if (compartmentId == null) {
-            compartmentId = cId;
-          } else if (!compartmentId.equals(cId)) {
-            compartmentId = null;
-          }
-        }
+        checkCId(cId, compartmentId);
       }
       if (r.isSetListOfProducts()) {
         String cId =
             compartmentId = polish(r.getListOfProducts(), SBO.getProduct());
-        if (cId == null) {
-          compartmentId = null;
-        } else {
-          if (compartmentId == null) {
-            compartmentId = cId;
-          } else if (!compartmentId.equals(cId)) {
-            compartmentId = null;
-          }
-        }
+        checkCId(cId,compartmentId);
       }
+
       // TODO: it was decided not to do this:
       // if ((compartmentId != null) && !r.isSetCompartment()) {
       // r.setCompartment(compartmentId);
@@ -617,6 +602,19 @@ public class SBMLPolisher {
       }
     }
     return strict;
+  }
+
+
+  private void checkCId(String cId, String compartmentId) {
+    if (cId == null) {
+      compartmentId = null;
+    } else {
+      if (compartmentId == null) {
+        compartmentId = cId;
+      } else if (!compartmentId.equals(cId)) {
+        compartmentId = null;
+      }
+    }
   }
 
 
