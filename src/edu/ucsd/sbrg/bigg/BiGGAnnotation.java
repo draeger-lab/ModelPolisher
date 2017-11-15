@@ -497,7 +497,7 @@ public class BiGGAnnotation {
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
-    String geneName = bigg.getGeneName("test");
+    String geneName = bigg.getGeneName(label);
     if (geneName != null) {
       if (geneName.isEmpty()) {
         logger.fine(format(mpMessageBundle.getString("NO_GENE_FOR_LABEL"),
