@@ -1,0 +1,2 @@
+The supplied style file is a modified version of the one found in the JSBML dev folder.
+This version is adjusted to work with the "Eclipse Code Formatter" plugin for IntelliJ IDEA.

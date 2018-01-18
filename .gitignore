@@ -5,6 +5,7 @@
 .project
 /build/
 /target/
+/resources/edu/ucsd/sbrg/bigg/bigg.zip
 /resources/edu/ucsd/sbrg/bigg/bigg.sqlite
 /scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
