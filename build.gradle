@@ -85,6 +85,13 @@ task bareJar(type: Jar) {
     with jar
 }
 
+// without dependencies, bigg.sqlite included
+task slimJar(type: Jar) {
+    baseName = project.name + "-slim"
+    with jar
+}
+
+
 // zip lib folder for release
 task zipLibs(type: Zip) {
     from "lib"
@@ -111,9 +118,10 @@ task release() {
     dependsOn tasks["zipLibs"]
     dependsOn tasks["zipScripts"]
     // necessary, as order is not defined by dependsOn
-    fatJar.mustRunAfter classes
-    bareJar.mustRunAfter fatJar
-    lightJar.mustRunAfter bareJar
+    bareJar.mustRunAfter classes
+    // slimJar.mustRunAfter bareJar
+    lightJar.mustRunAfter slimJar
+    fatJar.mustRunAfter lightJar
 }
 
 // clean up target directory
