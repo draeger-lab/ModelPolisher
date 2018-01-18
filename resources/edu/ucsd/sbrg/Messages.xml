@@ -31,7 +31,7 @@
   </comment>
   
   <entry key="PROVIDER">{0}&#10;{1}</entry>
-  <entry key="ORGANIZATION">${project.organization.name}</entry>
+  <entry key="ORGANIZATION">University of California, San Diego</entry>
   <entry key="INSTITUTE">Systems Biology Research Group</entry>
   <entry key="LICENSE">${project.license.url}</entry>
   <entry key="INCEPTION_YEAR">${project.inceptionYear}</entry>
