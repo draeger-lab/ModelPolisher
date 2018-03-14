@@ -14,12 +14,12 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.tree.TreeNode;
@@ -29,6 +29,7 @@ import org.identifiers.registry.RegistryLocalProvider;
 import org.identifiers.registry.RegistryUtilities;
 import org.identifiers.registry.data.DataType;
 import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -36,7 +37,6 @@ import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBO;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
-import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -51,17 +51,17 @@ import de.zbit.util.Utils;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
- * 
+ *
  * @author Thomas Zajac
  */
 public class BiGGAnnotation {
 
   /**
-   * 
+   *
    */
   private BiGGDB bigg;
   /**
-   * 
+   *
    */
   private SBMLPolisher polisher;
   /**
@@ -78,11 +78,11 @@ public class BiGGAnnotation {
    */
   private String modelNotes = "ModelNotes.html";
   /**
-   * 
+   *
    */
   protected Map<String, String> replacements;
   /**
-   * 
+   *
    */
   private String documentNotesFile = "SBMLDocumentNotes.html";
 
@@ -128,7 +128,7 @@ public class BiGGAnnotation {
   /**
    * Recursively goes through all annotations in the given {@link SBase} and
    * alphabetically sort annotations after grouping them by {@link org.sbml.jsbml.CVTerm.Qualifier}.
-   * 
+   *
    * @param sbase
    */
   public void mergeMIRIAMannotations(SBase sbase) {
@@ -307,16 +307,15 @@ public class BiGGAnnotation {
           (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
       if (!fbcSpecPlug.isSetChemicalFormula()) {
         try {
-          fbcSpecPlug.setChemicalFormula(
-            bigg.getChemicalFormula(biggId, species.getModel().getId()));
+          String formula = bigg.getChemicalFormula(biggId, species.getModel().getId());
+          fbcSpecPlug.setChemicalFormula(formula);
         } catch (IllegalArgumentException exc) {
           logger.severe(
             format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"),
               Utils.getMessage(exc)));
         }
       }
-      Integer charge =
-          bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+      Integer charge = bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
       if (species.isSetCharge()) {
         if ((charge != null) && (charge != species.getCharge())) {
           logger.warning(

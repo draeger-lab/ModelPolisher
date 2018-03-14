@@ -34,6 +34,7 @@ import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBO;
+import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.SpeciesReference;
 import org.sbml.jsbml.Unit;
@@ -957,7 +958,7 @@ public class SBMLPolisher {
         if (ud == null) {
           ud = model.createUnitDefinition(UnitDefinition.TIME);
           model.setTimeUnits(ud.getId());
-          Unit timeUnit = unit.clone();
+          Unit timeUnit = safeClone(unit);
           timeUnit.setExponent(1d);
           ud.setName("Hour");
           ud.addUnit(timeUnit);
@@ -971,7 +972,7 @@ public class SBMLPolisher {
         unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF,
           unit.getKind().getUnitOntologyIdentifier()));
         if (!substanceExists) {
-          substanceUnits.addUnit(unit.clone());
+          substanceUnits.addUnit(safeClone(unit));
         }
         break;
       case MOLE:
@@ -980,7 +981,8 @@ public class SBMLPolisher {
             createURI("unit", "UO:0000040")));
         }
         if (!substanceExists) {
-          substanceUnits.addUnit(unit.clone());
+          Unit u = safeClone(unit);
+          substanceUnits.addUnit(u);
         }
         break;
       default:
@@ -990,6 +992,20 @@ public class SBMLPolisher {
     while (progress.getCallNumber() < udCount) {
       progress.DisplayBar();
     }
+  }
+
+
+  /**
+   * @param sbase
+   * @return
+   */
+  private <T extends SBase> T safeClone(T sbase) {
+    @SuppressWarnings("unchecked")
+    T sb = (T) sbase.clone();
+    if (sb.isSetMetaId()) {
+      sb.unsetMetaId();
+    }
+    return sb;
   }
 
 
