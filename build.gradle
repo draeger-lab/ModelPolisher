@@ -18,7 +18,7 @@ sourceSets {
 repositories {
     mavenCentral()
     maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
-    maven {url "http://jsbml.sourceforge.net/m2repo/" }
+    maven { url "http://jsbml.sourceforge.net/m2repo/" }
     // local dependencies
     flatDir {
         dirs "lib/de/zbit/SysBio/1390"
