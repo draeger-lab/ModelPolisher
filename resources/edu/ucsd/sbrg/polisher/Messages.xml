@@ -51,6 +51,7 @@
     <entry key="DOC_TITLE_PATTERN_DESC">This option allows you to define the title of the SBML document's description and hence the head line when the file is displayed in a web browser.</entry>
     <entry key="EC_CHANGE_FAILED">Could not correct ec-code ''{0}''</entry>
     <entry key="EC_CODES_UNKNOWN">Could not recognize any of the EC codes from {0}.</entry>
+    <entry key="FAILED_WRITE_NOTES">Could not append document and model notes.</entry>
     <entry key="FIELD_ALREADY_PRESENT">Field for possible match is already present: ''{0}''. ''{1}'' will be omitted.</entry>
     <entry key="FIELD_MISSING">Missing field: {0}</entry>
     <entry key="FINISHED_TIME">Done in {0,number,##}:{1,number,##} min.</entry>
