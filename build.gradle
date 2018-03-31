@@ -27,23 +27,15 @@ repositories {
 }
 
 dependencies {
-    compile "org.sbml.jsbml:jsbml:1.2"
+    compile "org.sbml.jsbml:jsbml:1.3.1"
     compile "de.zbit:SysBio:1390"
-    compile "org.postgresql:postgresql:9.4-1202-jdbc41"
-    compile "com.diffplug.matsim:matfilerw:2.1.0"
-    compile "com.fasterxml.jackson.core:jackson-core:2.8.8"
-    compile "com.fasterxml.jackson.core:jackson-databind:2.8.8"
     compile "org.identifiers:registry-lib:1.1.1"
-    compile "org.xerial:sqlite-jdbc:3.8.7"
-    testCompile "junit:junit:4.+"
-}
-
-test {
-    testLogging {
-        events "PASSED", "FAILED", "SKIPPED"
-    }
-    // otherwise tests just run, if test task is specified explicitly
-    dependsOn compileJava
+    compile "org.xerial:sqlite-jdbc:3.21.0"
+    compile "org.postgresql:postgresql:42.2.2"
+    compile "com.diffplug.matsim:matfilerw:2.1.0"
+    compile "com.fasterxml.jackson.core:jackson-core:2.9.5"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.9.5"
+    testCompile "junit:junit:5.1.0"
 }
 
 // config for all jar tasks
@@ -77,10 +69,9 @@ task fatJar(type: Jar) {
 //with dependencies, without bigg.sqlite
 task lightJar(type: Jar) {
     exclude("**/bigg.sqlite")
-    baseName = project.name + "-noDB-fat"
-    def deps = []
+    baseName = project.name + "-noDB"
     from {
-        deps = configurations.compile.collect {
+        configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
@@ -90,7 +81,8 @@ task lightJar(type: Jar) {
 // without dependencies and bigg.sqlite
 task bareJar(type: Jar) {
     exclude("**/bigg.sqlite")
-    baseName = project.name + "-noDB"
+    baseName = project.name + "-slim-noDB"
+    with jar
 }
 
 // zip lib folder for release
@@ -113,21 +105,20 @@ task zipScripts(type: Zip) {
 
 // create all four jars for release
 task release() {
-    dependsOn jar
     dependsOn fatJar
     dependsOn bareJar
     dependsOn lightJar
     dependsOn tasks["zipLibs"]
     dependsOn tasks["zipScripts"]
     // necessary, as order is not defined by dependsOn
-    jar.mustRunAfter classes
-    fatJar.mustRunAfter jar
+    fatJar.mustRunAfter classes
     bareJar.mustRunAfter fatJar
     lightJar.mustRunAfter bareJar
 }
 
 // clean up target directory
 clean.doFirst {
+    file(".gradle").deleteDir()
     file("target").deleteDir()
 }
 
@@ -157,8 +148,7 @@ if (project.file(".travis.yml").exists()) {
                 content.add(line.replaceAll(MPVersion, "ModelPolisher-fat-" +
                         "${version}.jar"))
         }
-        FileWriter fileWriter = new FileWriter(travisFile)
-        BufferedWriter writer = new BufferedWriter(fileWriter)
+        BufferedWriter writer = new BufferedWriter(new FileWriter(travisFile))
         content.each {
             line -> writer.writeLine(line)
         }
