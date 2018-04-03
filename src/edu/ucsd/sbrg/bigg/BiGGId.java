@@ -26,8 +26,7 @@ public class BiGGId {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-    Logger.getLogger(BiGGId.class.getName());
+  private static final transient Logger logger = Logger.getLogger(BiGGId.class.getName());
   /**
    * 
    */
@@ -69,8 +68,7 @@ public class BiGGId {
    * @param compartmentCode
    * @param tissueCode
    */
-  public BiGGId(String prefix, String abbreviation, String compartmentCode,
-    String tissueCode) {
+  public BiGGId(String prefix, String abbreviation, String compartmentCode, String tissueCode) {
     this();
     setConstructorPrefix(prefix);
     setCheckAbbreviation(abbreviation);
@@ -117,13 +115,9 @@ public class BiGGId {
       return false;
     }
     if (tissueCode == null) {
-      if (other.tissueCode != null) {
-        return false;
-      }
-    } else if (!tissueCode.equals(other.tissueCode)) {
-      return false;
-    }
-    return true;
+      return other.tissueCode == null;
+    } else
+      return tissueCode.equals(other.tissueCode);
   }
 
 
@@ -167,13 +161,10 @@ public class BiGGId {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-      prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
-    result = prime * result
-      + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
+    result = prime * result + ((abbreviation == null) ? 0 : abbreviation.hashCode());
+    result = prime * result + ((compartmentCode == null) ? 0 : compartmentCode.hashCode());
     result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-    result =
-      prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
+    result = prime * result + ((tissueCode == null) ? 0 : tissueCode.hashCode());
     return result;
   }
 
@@ -214,13 +205,12 @@ public class BiGGId {
    * @param id
    *        the identifier to be parsed into a bigg_id.
    */
-  public void parseBiGGId(String id) {
+  private void parseBiGGId(String id) {
     String biggId = id;
     id = setParsedPrefix(id);
     id = id.replace("__", "-");
     if (id.matches(".*-[a-z][a-z0-9]?")) {
-      id = id.substring(0, id.lastIndexOf('-')) + '-'
-        + biggId.substring(biggId.lastIndexOf('_'));
+      id = id.substring(0, id.lastIndexOf('-')) + '-' + biggId.substring(biggId.lastIndexOf('_'));
     }
     StringTokenizer st = new StringTokenizer(id, "_");
     while (st.hasMoreElements()) {
@@ -239,8 +229,7 @@ public class BiGGId {
         } catch (IllegalArgumentException exc) {
           // This is not a problem, we have the chance to fix it right
           // away.
-          logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"),
-            biggId, Utils.getMessage(exc)));
+          logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId, Utils.getMessage(exc)));
           if (isSetCompartmentCode()) {
             setAbbreviation(getAbbreviation() + '_' + getCompartmentCode());
           }
@@ -249,8 +238,7 @@ public class BiGGId {
         continue;
       }
       if (elem.length() > 0) {
-        throw new IllegalArgumentException(
-          format(mpMessageBundle.getString("ID_COMPONENT_UNKNOWN"), elem));
+        throw new IllegalArgumentException(format(mpMessageBundle.getString("ID_COMPONENT_UNKNOWN"), elem));
       }
     }
   }
@@ -263,8 +251,7 @@ public class BiGGId {
     try {
       setCompartmentCode(CompartmentCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(format(mpMessageBundle.getString("SET_COMPART_CODE_FAILED"),
-        Utils.getMessage(exc)));
+      logger.finer(format(mpMessageBundle.getString("SET_COMPART_CODE_FAILED"), Utils.getMessage(exc)));
     }
   }
 
@@ -274,23 +261,20 @@ public class BiGGId {
    * @param elem
    * @return
    */
-  private String setCheckCompartmentCode(String biggId, String elem) {
+  public void setCheckCompartmentCode(String biggId, String elem) {
     try {
       setCompartmentCode(elem);
     } catch (IllegalArgumentException exc) {
-      // this is not a warning because we try to fix the problem right
-      // away.
-      logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId,
-        Utils.getMessage(exc)));
+      // this is not a warning because we try to fix the problem right away.
+      logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId, Utils.getMessage(exc)));
+      if (isSetCompartmentCode()) {
+        unsetCompartmentCode();
+      }
       if (elem.endsWith("-")) {
         elem = elem.substring(0, elem.length() - 1) + '_';
       }
       setCheckAbbreviation(getAbbreviation() + "_" + elem.replace("-", "__"));
-      if (isSetCompartmentCode()) {
-        unsetCompartmentCode();
-      }
     }
-    return elem;
   }
 
 
@@ -301,8 +285,7 @@ public class BiGGId {
     try {
       setAbbreviation(abbreviation);
     } catch (IllegalArgumentException exc) {
-      logger.fine(format(mpMessageBundle.getString("SET_ABREV_FAILED"),
-        Utils.getMessage(exc)));
+      logger.fine(format(mpMessageBundle.getString("SET_ABREV_FAILED"), Utils.getMessage(exc)));
     }
   }
 
@@ -325,8 +308,7 @@ public class BiGGId {
     if (abbreviation.matches("[\\w&&[^_]][\\w]*")) {
       this.abbreviation = abbreviation;
     } else {
-      throw new IllegalArgumentException(
-        format(mpMessageBundle.getString("ABREV_INVALID"), abbreviation));
+      throw new IllegalArgumentException(format(mpMessageBundle.getString("ABREV_INVALID"), abbreviation));
     }
   }
 
@@ -342,8 +324,7 @@ public class BiGGId {
     if (compartmentCode.matches("[a-z][a-z0-9]?")) {
       this.compartmentCode = compartmentCode;
     } else {
-      throw new IllegalArgumentException(format(
-        mpMessageBundle.getString("COMPART_CODE_INVALID"), compartmentCode));
+      throw new IllegalArgumentException(format(mpMessageBundle.getString("COMPART_CODE_INVALID"), compartmentCode));
     }
   }
 
@@ -385,14 +366,11 @@ public class BiGGId {
    * @return
    */
   public void setConstructorPrefix(String prefix) {
-    if (prefix.matches("[RMG]") || prefix.matches("R_[Ee][Xx]")
-      || prefix.matches("R_[Dd][Mm]")
-      || prefix.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
+    if (prefix.matches("[RMG]|R_[Ee][Xx]|R_[Dd][Mm]|R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
       try {
         setPrefix(prefix);
       } catch (IllegalArgumentException exc) {
-        logger.fine(
-          format(mpMessageBundle.getString("SET_PREFIX_FAILED"), prefix));
+        logger.fine(format(mpMessageBundle.getString("SET_PREFIX_FAILED"), prefix));
       }
     } else {
       logger.fine(format(mpMessageBundle.getString("PREFIX_UNKNOWN"), prefix));
@@ -418,8 +396,7 @@ public class BiGGId {
       // TODO refine the pattern.
       this.prefix = prefix;
     } else {
-      throw new IllegalArgumentException(
-        format("Invalid prefix: ''{0}''", prefix));
+      throw new IllegalArgumentException(format("Invalid prefix: ''{0}''", prefix));
     }
   }
 
@@ -431,8 +408,7 @@ public class BiGGId {
     try {
       setTissueCode(tissueCode);
     } catch (IllegalArgumentException exc) {
-      logger.finer(format(mpMessageBundle.getString("SET_TISS_CODE_FAILED"),
-        Utils.getMessage(exc)));
+      logger.finer(format(mpMessageBundle.getString("SET_TISS_CODE_FAILED"), Utils.getMessage(exc)));
     }
   }
 
@@ -448,8 +424,7 @@ public class BiGGId {
     if (tissueCode.matches("[A-Z][A-Z0-9]?")) {
       this.tissueCode = tissueCode;
     } else {
-      throw new IllegalArgumentException(
-        format(mpMessageBundle.getString("TISS_CODE_INVALID"), tissueCode));
+      throw new IllegalArgumentException(format(mpMessageBundle.getString("TISS_CODE_INVALID"), tissueCode));
     }
   }
 
