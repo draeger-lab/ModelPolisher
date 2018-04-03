@@ -32,7 +32,7 @@ dependencies {
     compile "org.identifiers:registry-lib:1.1.1"
     compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
-    compile "com.diffplug.matsim:matfilerw:2.1.0"
+    compile "com.diffplug.matsim:matfilerw:3.0.1"
     compile "com.fasterxml.jackson.core:jackson-core:2.9.5"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.5"
     testCompile "junit:junit:5.1.0"
