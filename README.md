@@ -24,7 +24,7 @@ The article http://nar.oxfordjournals.org/content/44/D1/D515 describes BiGG Mode
 
 # Usage
 
-After cloning or updating this project, make sure to delete `bigg.zip` and `bigg.sqlite` within the folder `resources`. Afterwards run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
+After cloning or updating this project run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
 
 # Licenses
 
