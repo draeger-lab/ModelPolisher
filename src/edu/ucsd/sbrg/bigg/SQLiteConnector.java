@@ -32,16 +32,16 @@ public class SQLiteConnector extends SQLConnector {
     }
     SQLiteConfig config = new SQLiteConfig();
     config.setOpenMode(SQLiteOpenMode.OPEN_MEMORY);
-    connection = DriverManager.getConnection(
-        "jdbc:sqlite::resource:edu/ucsd/sbrg/bigg/bigg.sqlite");
+    connection = DriverManager.getConnection("jdbc:sqlite::resource:edu/ucsd/sbrg/bigg/bigg.sqlite");
     config.apply(connection);
     logger.info(mpMessageBundle.getString("SQLITE_CONNECTED"));
     return connection;
   }
 
+
   // Workaround for SELECT CONCAT not being present in sqlite
   @Override
-  public String concat(String...strings) {
+  public String concat(String... strings) {
     StringBuilder sb = new StringBuilder();
     sb.append('(');
     for (int i = 0; i < strings.length; i++) {
@@ -54,11 +54,11 @@ public class SQLiteConnector extends SQLConnector {
     return sb.toString();
   }
 
+
   /**
    * @throws ClassNotFoundException
    */
-  public SQLiteConnector() throws ClassNotFoundException {
+  SQLiteConnector() throws ClassNotFoundException {
     Class.forName("org.sqlite.JDBC");
   }
-
 }
