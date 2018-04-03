@@ -51,24 +51,23 @@ import de.zbit.util.Utils;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
- * 
  * @author Thomas Zajac
  *         This code runs only, if ANNOTATE_WITH_BIGG is true
  */
 public class BiGGAnnotation {
 
   /**
-   * 
+   * BiGGBD instance, contains methods to run specific queries against the actual db
    */
   private BiGGDB bigg;
   /**
-   * 
+   * SBMLPolisher instance, containing methods and booleans used by BiGGAnnotation
    */
   private SBMLPolisher polisher;
   /**
    * A {@link Logger} for this class.
    */
-  public static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
+  static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
   /**
    * Localization support.
    */
@@ -122,6 +121,47 @@ public class BiGGAnnotation {
 
 
   /**
+   * @param model
+   */
+  private void annotate(Model model) {
+    String organism = bigg.getOrganism(model.getId());
+    Integer taxonId = bigg.getTaxonId(model.getId());
+    if (taxonId != null) {
+      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, polisher.createURI("taxonomy", taxonId)));
+    }
+    // Note: date is probably not accurate.
+    // Date date = bigg.getModelCreationDate(model.getId());
+    // if (date != null) {
+    // History history = model.createHistory();
+    // history.setCreatedDate(date);
+    // }
+    String name = polisher.getDocumentTitlePattern();
+    name = name.replace("[biggId]", model.getId());
+    name = name.replace("[organism]", organism);
+    replacements.put("${title}", name);
+    replacements.put("${organism}", organism);
+    replacements.put("${bigg_id}", model.getId());
+    replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+    replacements.put("${bigg.timestamp}", format("{0,date}", bigg.getBiGGVersion()));
+    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header, data, "Species", attributes));
+    if (!model.isSetName()) {
+      model.setName(organism);
+    }
+    if (bigg.isModel(model.getId())) {
+      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, polisher.createURI("bigg.model", model.getId())));
+    }
+    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
+      model.setMetaId(model.getId());
+    }
+    annotatePublications(model);
+    annotateListOfCompartments(model);
+    annotateListOfSpecies(model);
+    annotateListOfReactions(model);
+    annotateListOfGeneProducts(model);
+  }
+
+
+  /**
    * Replaces generic placeholders in notes files and appends both note types
    *
    * @param doc
@@ -144,7 +184,7 @@ public class BiGGAnnotation {
    *
    * @param sbase
    */
-  public void mergeMIRIAMannotations(SBase sbase) {
+  private void mergeMIRIAMannotations(SBase sbase) {
     if (sbase.isSetAnnotation()) {
       SortedMap<Qualifier, SortedSet<String>> miriam = new TreeMap<>();
       boolean doMerge = hashMIRIAMuris(sbase, miriam);
@@ -223,7 +263,7 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateListOfCompartments(Model model) {
+  private void annotateListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
       annotateCompartment(model.getCompartment(i));
     }
@@ -251,7 +291,7 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateListOfSpecies(Model model) {
+  private void annotateListOfSpecies(Model model) {
     for (int i = 0; i < model.getSpeciesCount(); i++) {
       annotateSpecies(model.getSpecies(i));
     }
@@ -261,7 +301,7 @@ public class BiGGAnnotation {
   /**
    * @param species
    */
-  public void annotateSpecies(Species species) {
+  private void annotateSpecies(Species species) {
     BiGGId biggId = polisher.extractBiGGId(species.getId());
     if (biggId == null) {
       return;
@@ -373,7 +413,7 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateListOfReactions(Model model) {
+  private void annotateListOfReactions(Model model) {
     for (int i = 0; i < model.getReactionCount(); i++) {
       annotateReaction(model.getReaction(i));
     }
@@ -395,6 +435,7 @@ public class BiGGAnnotation {
     if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
       reaction.setMetaId(id);
     }
+    BiGGId biggId = polisher.extractBiGGId(id);
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
@@ -403,7 +444,6 @@ public class BiGGAnnotation {
       reaction.setName(polisher.polishName(name));
     }
     SBMLUtils.parseGPR(reaction, bigg.getGeneReactionRule(id, reaction.getModel().getId()), polisher.omitGenericTerms);
-    BiGGId biggId = polisher.extractBiGGId(id);
     parseSubsystems(reaction, biggId);
     setCVTermResources(reaction, biggId);
   }
@@ -471,7 +511,7 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  public void annotateListOfGeneProducts(Model model) {
+  private void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
@@ -562,47 +602,6 @@ public class BiGGAnnotation {
       }
       geneProduct.setName(geneName);
     }
-  }
-
-
-  /**
-   * @param model
-   */
-  public void annotate(Model model) {
-    String organism = bigg.getOrganism(model.getId());
-    Integer taxonId = bigg.getTaxonId(model.getId());
-    if (taxonId != null) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, polisher.createURI("taxonomy", taxonId)));
-    }
-    // Note: date is probably not accurate.
-    // Date date = bigg.getModelCreationDate(model.getId());
-    // if (date != null) {
-    // History history = model.createHistory();
-    // history.setCreatedDate(date);
-    // }
-    String name = polisher.getDocumentTitlePattern();
-    name = name.replace("[biggId]", model.getId());
-    name = name.replace("[organism]", organism);
-    replacements.put("${title}", name);
-    replacements.put("${organism}", organism);
-    replacements.put("${bigg_id}", model.getId());
-    replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-    replacements.put("${bigg.timestamp}", format("{0,date}", bigg.getBiGGVersion()));
-    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header, data, "Species", attributes));
-    if (!model.isSetName()) {
-      model.setName(organism);
-    }
-    if (bigg.isModel(model.getId())) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, polisher.createURI("bigg.model", model.getId())));
-    }
-    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
-      model.setMetaId(model.getId());
-    }
-    annotatePublications(model);
-    annotateListOfCompartments(model);
-    annotateListOfSpecies(model);
-    annotateListOfReactions(model);
-    annotateListOfGeneProducts(model);
   }
 
 
@@ -732,7 +731,7 @@ public class BiGGAnnotation {
   /**
    * @return the modelNotes
    */
-  public File getModelNotesFile() {
+  File getModelNotesFile() {
     return new File(modelNotes);
   }
 
@@ -741,7 +740,7 @@ public class BiGGAnnotation {
    * @param modelNotes
    *        the modelNotes to set
    */
-  public void setModelNotesFile(File modelNotes) {
+  void setModelNotesFile(File modelNotes) {
     this.modelNotes = modelNotes != null ? modelNotes.getAbsolutePath() : null;
   }
 
@@ -749,7 +748,7 @@ public class BiGGAnnotation {
   /**
    * @param documentNotesFile
    */
-  public void setDocumentNotesFile(File documentNotesFile) {
+  void setDocumentNotesFile(File documentNotesFile) {
     this.documentNotesFile = documentNotesFile != null ? documentNotesFile.getAbsolutePath() : null;
   }
 }
