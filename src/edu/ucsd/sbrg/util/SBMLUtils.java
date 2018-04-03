@@ -14,19 +14,7 @@ import java.util.logging.Logger;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.And;
-import org.sbml.jsbml.ext.fbc.Association;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
-import org.sbml.jsbml.ext.fbc.ListOfObjectives;
-import org.sbml.jsbml.ext.fbc.LogicalOperator;
-import org.sbml.jsbml.ext.fbc.Objective;
-import org.sbml.jsbml.ext.fbc.Or;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
@@ -42,8 +30,7 @@ public class SBMLUtils {
   /**
    * A {@link Logger} for this class.
    */
-  private static final Logger logger =
-    Logger.getLogger(SBMLUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(SBMLUtils.class.getName());
   /**
    * Key to link from {@link Reaction} directly to {@link Member}s referencing
    * that reaction.
@@ -57,8 +44,8 @@ public class SBMLUtils {
    * @param model
    * @return
    */
-  public static Association convertToAssociation(ASTNode ast, String reactionId,
-    Model model, boolean omitGenericTerms) {
+  public static Association convertToAssociation(ASTNode ast, String reactionId, Model model,
+    boolean omitGenericTerms) {
     int level = model.getLevel(), version = model.getVersion();
     if (ast.isLogical()) {
       LogicalOperator operator;
@@ -74,8 +61,7 @@ public class SBMLUtils {
         }
       }
       for (ASTNode child : ast.getListOfNodes()) {
-        Association tmp =
-          convertToAssociation(child, reactionId, model, omitGenericTerms);
+        Association tmp = convertToAssociation(child, reactionId, model, omitGenericTerms);
         if (tmp.getClass().equals(operator.getClass())) {
           // flatten binary trees to compact representation
           LogicalOperator lo = (LogicalOperator) tmp;
@@ -99,8 +85,7 @@ public class SBMLUtils {
    * @param model
    * @return
    */
-  public static GeneProductRef createGPR(String identifier, String reactionId,
-    Model model) {
+  public static GeneProductRef createGPR(String identifier, String reactionId, Model model) {
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
     String id = SBMLUtils.updateGeneId(identifier);
@@ -108,15 +93,12 @@ public class SBMLUtils {
     if (!model.containsUniqueNamedSBase(id)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
-        logger.warning(MessageFormat.format(
-          mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
-        FBCModelPlugin fbcPlug =
-          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
+        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         gp = fbcPlug.createGeneProduct(id);
         gp.setLabel(id);
       } else {
-        logger.info(MessageFormat.format(
-          mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
+        logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
         gp.setId(id);
       }
     }
@@ -129,27 +111,22 @@ public class SBMLUtils {
    * @param r
    * @param geneReactionRule
    */
-  public static void parseGPR(Reaction r, String geneReactionRule,
-    boolean omitGenericTerms) {
-    FBCReactionPlugin plugin =
-      (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+  public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
+    FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
       try {
         Association association = SBMLUtils.convertToAssociation(
-          ASTNode.parseFormula(geneReactionRule,
-            new CobraFormulaParser(new StringReader(""))),
-          r.getId(), r.getModel(), omitGenericTerms);
-        if (!plugin.isSetGeneProductAssociation() || !association.equals(
-          plugin.getGeneProductAssociation().getAssociation())) {
-          GeneProductAssociation gpa =
-            new GeneProductAssociation(r.getLevel(), r.getVersion());
+          ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
+          omitGenericTerms);
+        if (!plugin.isSetGeneProductAssociation()
+          || !association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+          GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
           gpa.setAssociation(association);
           plugin.setGeneProductAssociation(gpa);
         }
       } catch (Throwable exc) {
         logger.warning(
-          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"),
-            geneReactionRule, Utils.getMessage(exc)));
+          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
       }
     }
   }
@@ -177,8 +154,7 @@ public class SBMLUtils {
    * @param geneProductAssociation
    * @return
    */
-  public static Set<String> setOfGeneLinks(
-    GeneProductAssociation geneProductAssociation) {
+  public static Set<String> setOfGeneLinks(GeneProductAssociation geneProductAssociation) {
     if (geneProductAssociation.isSetAssociation()) {
       return setOfGeneLinks(geneProductAssociation.getAssociation());
     }
@@ -205,8 +181,7 @@ public class SBMLUtils {
    * @param newId
    * @param fbcModelPlug
    */
-  public static void updateReactionRef(String oldId, String newId,
-    FBCModelPlugin fbcModelPlug) {
+  public static void updateReactionRef(String oldId, String newId, FBCModelPlugin fbcModelPlug) {
     if ((fbcModelPlug != null) && fbcModelPlug.isSetListOfObjectives()) {
       ListOfObjectives loo = fbcModelPlug.getListOfObjectives();
       for (Objective objective : loo) {
@@ -228,8 +203,7 @@ public class SBMLUtils {
   public static void setRequiredAttributes(Reaction r) {
     // TODO: make defaults user settings or take from L2V5.
     if (!r.isSetId()) {
-      logger.severe(MessageFormat.format(
-        mpMessageBundle.getString("ID_MISSING_FOR_TYPE"), r.getElementName()));
+      logger.severe(MessageFormat.format(mpMessageBundle.getString("ID_MISSING_FOR_TYPE"), r.getElementName()));
     }
     if (!r.isSetFast()) {
       r.setFast(false);
@@ -254,6 +228,7 @@ public class SBMLUtils {
    * @param r
    * @param member
    */
+  @SuppressWarnings("unchecked")
   public static void createSubsystemLink(Reaction r, Member member) {
     member.setIdRef(r);
     if (r.getUserObject(SUBSYSTEM_LINK) == null) {
