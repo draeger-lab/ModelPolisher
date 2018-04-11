@@ -197,7 +197,7 @@ public class SBMLFix {
              * Search for biomass reaction in the model and use this as
              * objective.
              */
-            final Pattern pattern = SBMLPolisher.PATTERN_BIOMASS_CASE_INSENSITIVE;
+            final Pattern pattern = SBMLPolisher.Patterns.BIOMASS_CASE_INSENSITIVE.getPattern();
             Reaction rBiomass = listOfReactions.firstHit((obj) -> {
               return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
             });
