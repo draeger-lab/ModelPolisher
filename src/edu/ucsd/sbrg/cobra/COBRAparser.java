@@ -660,41 +660,113 @@ public class COBRAparser {
     // Check that the given data structure only contains allowable entries
     MLStructure correctedStruct = new MLStructure(struct.getName(), struct.getDimensions());
     for (MLArray field : struct.getAllFields()) {
-      boolean invalidField = false;
-      String fieldName = field.getName();
-      try {
-        logger.finest(format(mpMessageBundle.getString("FOUND_COMPO"), ModelField.valueOf(fieldName)));
-      } catch (IllegalArgumentException exc) {
-        logException(exc);
-        invalidField = true;
-      }
-      finally {
-        // TODO: refactor into a lean method if possible
-        // For each non matched struct field, check if an enum variant exists in
-        // a case insensitive way
-        if (invalidField) {
-          for (ModelField variant : ModelField.values()) {
-            String variantLC = variant.name().toLowerCase();
-            if (variantLC.equals(fieldName.toLowerCase()) || variantLC.startsWith(fieldName.toLowerCase())) {
-              if (correctedStruct.getField(variant.name()) != null) {
-                logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
-                break;
-              }
-              correctedStruct.setField(variant.name(), field);
-              logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
-              invalidField = false;
-              break;
-            }
-          }
-          if (invalidField) {
-            logger.warning(format(mpMessageBundle.getString("CORRECT_VARIANT_FAILED"), fieldName));
-          }
-        } else {
-          correctedStruct.setField(fieldName, field);
-        }
+      checkModelField(correctedStruct, field);
+    }
+    Model model = parseModel(correctedStruct, builder);
+    parseGPRsAndSubsystems(model);
+    FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+    Objective obj = fbc.createObjective("obj");
+    obj.setType(Objective.Type.MAXIMIZE);
+    fbc.getListOfObjectives().setActiveObjective(obj.getId());
+    parseCSense(model);
+    buildReactantsProducts(model, obj);
+    parseBValue(model);
+  }
+
+
+  /**
+   * @param model
+   */
+  private void parseCSense(Model model) {
+    for (int i = 0; (mlField.csense != null) && (i < mlField.csense.getSize()); i++) {
+      char c = mlField.csense.getChar(i, 0);
+      // TODO: only 'E' (equality) is supported for now!
+      if (c != 'E' && model.getListOfSpecies().size() > i) {
+        logger.severe(format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
       }
     }
-    // parse model
+  }
+
+
+  /**
+   * @param model
+   * @param obj
+   */
+  private void buildReactantsProducts(Model model, Objective obj) {
+    for (int i = 0; (mlField.coefficients != null) && (i < mlField.coefficients.getSize()); i++) {
+      double coefficient = mlField.coefficients.get(i).doubleValue();
+      if (coefficient != 0d) {
+        Reaction r = model.getReaction(i);
+        if (r == null) {
+          break;
+        }
+        FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
+        fo.setCoefficient(coefficient);
+        fo.setReaction(r);
+      }
+    }
+  }
+
+
+  /**
+   * @param model
+   */
+  private void parseBValue(Model model) {
+    for (int i = 0; (mlField.b != null) && (i < mlField.b.getSize()); i++) {
+      double bVal = mlField.b.get(i).doubleValue();
+      if (bVal != 0d && model.getListOfSpecies().size() > i) {
+        // TODO: this should be incorporated into FBC version 3.
+        logger.warning(format(mpMessageBundle.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
+      }
+    }
+  }
+
+
+  /**
+   * @param correctedStruct
+   * @param field
+   */
+  private void checkModelField(MLStructure correctedStruct, MLArray field) {
+    boolean invalidField = false;
+    String fieldName = field.getName();
+    try {
+      logger.finest(format(mpMessageBundle.getString("FOUND_COMPO"), ModelField.valueOf(fieldName)));
+    } catch (IllegalArgumentException exc) {
+      logException(exc);
+      invalidField = true;
+    }
+    finally {
+      // For each non matched struct field, check if an enum variant exists in a case insensitive way
+      if (invalidField) {
+        for (ModelField variant : ModelField.values()) {
+          String variantLC = variant.name().toLowerCase();
+          if (variantLC.equals(fieldName.toLowerCase()) || variantLC.startsWith(fieldName.toLowerCase())) {
+            if (correctedStruct.getField(variant.name()) != null) {
+              logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
+              break;
+            }
+            correctedStruct.setField(variant.name(), field);
+            logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
+            invalidField = false;
+            break;
+          }
+        }
+        if (invalidField) {
+          logger.warning(format(mpMessageBundle.getString("CORRECT_VARIANT_FAILED"), fieldName));
+        }
+      } else {
+        correctedStruct.setField(fieldName, field);
+      }
+    }
+  }
+
+
+  /**
+   * @param builder
+   * @param correctedStruct
+   * @return
+   */
+  private Model parseModel(MLStructure correctedStruct, ModelBuilder builder) {
     Model model = builder.getModel();
     buildBasicUnits(builder);
     mlField = new MatlabFields(correctedStruct);
@@ -702,7 +774,14 @@ public class COBRAparser {
     parseMetabolites(builder);
     parseGenes(builder);
     parseRxns(builder);
-    // parse gprs
+    return model;
+  }
+
+
+  /**
+   * @param model
+   */
+  private void parseGPRsAndSubsystems(Model model) {
     for (int i = 0; (mlField.grRules != null) && (i < mlField.grRules.getSize()); i++) {
       String geneReactionRule = toString(mlField.grRules.get(i), mlField.grRules.getName(), i + 1);
       if (model.getReaction(i) == null) {
@@ -711,39 +790,8 @@ public class COBRAparser {
         SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
       }
     }
-    // parse subsystems
     if ((mlField.subSystems != null) && (mlField.subSystems.getSize() > 0)) {
       parseSubsystems(model);
-    }
-    FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-    Objective obj = fbc.createObjective("obj");
-    obj.setType(Objective.Type.MAXIMIZE);
-    fbc.getListOfObjectives().setActiveObjective(obj.getId());
-    for (int i = 0; (mlField.csense != null) && (i < mlField.csense.getSize()); i++) {
-      char c = mlField.csense.getChar(i, 0);
-      // TODO: only 'E' (equality) is supported for now!
-      if (c != 'E' && model.getListOfSpecies().size() > i) {
-        logger.severe(format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
-      }
-    }
-    for (int i = 0; (mlField.coefficients != null) && (i < mlField.coefficients.getSize()); i++) {
-      double coef = mlField.coefficients.get(i).doubleValue();
-      if (coef != 0d) {
-        Reaction r = model.getReaction(i);
-        if (r == null) {
-          break;
-        }
-        FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
-        fo.setCoefficient(coef);
-        fo.setReaction(r);
-      }
-    }
-    for (int i = 0; (mlField.b != null) && (i < mlField.b.getSize()); i++) {
-      double bVal = mlField.b.get(i).doubleValue();
-      if (bVal != 0d && model.getListOfSpecies().size() > i) {
-        // TODO: this should be incorporated into FBC version 3.
-        logger.warning(format(mpMessageBundle.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
-      }
     }
   }
 
@@ -763,44 +811,44 @@ public class COBRAparser {
    * @param model
    */
   private void parseDescription(Model model) {
-    if (mlField.description != null) {
-      if (mlField.description.isChar()) {
-        MLChar description = (MLChar) mlField.description;
-        if (description.getDimensions()[0] == 1) {
-          model.setName(description.getString(0));
-        } else {
-          logger.warning(format(mpMessageBundle.getString("MANY_IDS_IN_DESC"), mlField.description.contentToString()));
-        }
-      } else if (mlField.description.isStruct()) {
-        mlField.setDescriptionFields();
-        if (mlField.name != null) {
-          model.setName(toString(mlField.name));
-        }
-        if (mlField.organism != null) {
-          // TODO
-        }
-        if (mlField.author != null) {
-          // TODO
-        }
-        if (mlField.geneindex != null) {
-          // TODO
-        }
-        if (mlField.genedate != null) {
-          // TODO
-        }
-        if (mlField.genesource != null) {
-          // TODO
-        }
-        if (mlField.notes != null) {
-          try {
-            model.appendNotes(SBMLtools.toNotesString(toString(mlField.notes)));
-          } catch (XMLStreamException exc) {
-            logException(exc);
-          }
+    if (mlField.description == null) {
+      logger.warning(format(mpMessageBundle.getString("FIELD_MISSING"), ModelField.description));
+      return;
+    }
+    if (mlField.description.isChar()) {
+      MLChar description = (MLChar) mlField.description;
+      if (description.getDimensions()[0] == 1) {
+        model.setName(description.getString(0));
+      } else {
+        logger.warning(format(mpMessageBundle.getString("MANY_IDS_IN_DESC"), mlField.description.contentToString()));
+      }
+    } else if (mlField.description.isStruct()) {
+      mlField.setDescriptionFields();
+      if (mlField.name != null) {
+        model.setName(toString(mlField.name));
+      }
+      if (mlField.organism != null) {
+        // TODO
+      }
+      if (mlField.author != null) {
+        // TODO
+      }
+      if (mlField.geneindex != null) {
+        // TODO
+      }
+      if (mlField.genedate != null) {
+        // TODO
+      }
+      if (mlField.genesource != null) {
+        // TODO
+      }
+      if (mlField.notes != null) {
+        try {
+          model.appendNotes(SBMLtools.toNotesString(toString(mlField.notes)));
+        } catch (XMLStreamException exc) {
+          logException(exc);
         }
       }
-    } else {
-      logger.warning(format(mpMessageBundle.getString("FIELD_MISSING"), ModelField.description));
     }
   }
 
@@ -843,89 +891,91 @@ public class COBRAparser {
    * @param builder
    */
   @SuppressWarnings("unchecked")
-  private <T extends Number> void parseRxns(ModelBuilder builder) {
-    Model model = builder.getModel();
+  private void parseRxns(ModelBuilder builder) {
     for (int j = 0; (mlField.rxns != null) && (j < mlField.rxns.getSize()); j++) {
-      String rId = toString(mlField.rxns.get(j), mlField.rxns.getName(), j + 1);
-      if ((rId != null) && (rId.length() > 0)) {
+      parseRxn(builder, j);
+    }
+  }
+
+
+  /**
+   * @param builder
+   * @param index
+   */
+  private void parseRxn(ModelBuilder builder, int index) {
+    Model model = builder.getModel();
+    String reactionId = toString(mlField.rxns.get(index), mlField.rxns.getName(), index + 1);
+    if (reactionId.length() < 1) {
+      return;
+    }
+    BiGGId biggId = new BiGGId(correctId(reactionId));
+    if (!biggId.isSetPrefix()) {
+      biggId.setPrefix(REACTION_PREFIX);
+    }
+    Reaction reaction = model.createReaction(biggId.toBiGGId());
+    setNameAndReversibility(reaction, index);
+    setReactionBounds(builder, reaction, index);
+    buildReactantsProducts(model, reaction, index);
+    parseAnnotations(builder, reaction, reactionId, index);
+    if (reaction.getCVTermCount() > 0) {
+      reaction.setMetaId(reaction.getId());
+    }
+  }
+
+
+  /**
+   * @param reaction
+   * @param index
+   */
+  private void setNameAndReversibility(Reaction reaction, int index) {
+    if (mlField.rxnNames != null) {
+      reaction.setName(toString(mlField.rxnNames.get(index), mlField.rxnNames.getName(), index + 1));
+    }
+    if (mlField.rev != null) {
+      reaction.setReversible(mlField.rev.get(index).doubleValue() != 0d);
+    }
+  }
+
+
+  /**
+   * @param builder
+   * @param reaction
+   * @param index
+   */
+  private void setReactionBounds(ModelBuilder builder, Reaction reaction, int index) {
+    FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+    if (mlField.lb != null) {
+      rPlug.setLowerFluxBound(
+        builder.buildParameter(reaction.getId() + "_lb", null, mlField.lb.get(index), true, (String) null));
+    }
+    if (mlField.ub != null) {
+      rPlug.setUpperFluxBound(
+        builder.buildParameter(reaction.getId() + "_ub", null, mlField.ub.get(index), true, (String) null));
+    }
+  }
+
+
+  /**
+   * @param model
+   * @param reaction
+   * @param index
+   */
+  private void buildReactantsProducts(Model model, Reaction reaction, int index) {
+    // Take the current column of S and look for all non-zero coefficients
+    for (int i = 0; (mlField.S != null) && (i < mlField.S.getM()); i++) {
+      double coeff = mlField.S.get(i, index);
+      if (coeff != 0d) {
         try {
-          BiGGId biggId = new BiGGId(correctId(rId));
-          if (!biggId.isSetPrefix()) {
-            biggId.setPrefix(REACTION_PREFIX);
-          }
-          Reaction r = model.createReaction(biggId.toBiGGId());
-          if (mlField.rxnNames != null) {
-            r.setName(toString(mlField.rxnNames.get(j), mlField.rxnNames.getName(), j + 1));
-          }
-          if (mlField.rev != null) {
-            r.setReversible(mlField.rev.get(j).doubleValue() != 0d);
-          }
-          FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
-          if (mlField.lb != null) {
-            rPlug.setLowerFluxBound(
-              builder.buildParameter(r.getId() + "_lb", null, mlField.lb.get(j), true, (String) null));
-          }
-          if (mlField.ub != null) {
-            rPlug.setUpperFluxBound(
-              builder.buildParameter(r.getId() + "_ub", null, mlField.ub.get(j), true, (String) null));
-          }
-          // Take the current column of S and look for all non-zero coefficients
-          for (int i = 0; (mlField.S != null) && (i < mlField.S.getM()); i++) {
-            double coeff = mlField.S.get(i, j);
-            if (coeff != 0d) {
-              try {
-                BiGGId metId = new BiGGId(correctId(toString(mlField.mets.get(i), mlField.mets.getName(), i + 1)));
-                metId.setPrefix(METABOLITE_PREFIX);
-                Species species = model.getSpecies(metId.toBiGGId());
-                if (coeff < 0d) { // Reactant
-                  ModelBuilder.buildReactants(r, pairOf(-coeff, species));
-                } else if (coeff > 0d) { // Product
-                  ModelBuilder.buildProducts(r, pairOf(coeff, species));
-                }
-              } catch (IllegalArgumentException exc) {
-                logger.warning(format(mpMessageBundle.getString("REACT_PARTIC_INVALID"), Utils.getMessage(exc)));
-              }
-            }
-          }
-          if (mlField.rxnKeggID != null && exists(mlField.rxnKeggID, j)) {
-            parseRxnKEGGids(toString(mlField.rxnKeggID.get(j), mlField.rxnKeggID.getName(), j + 1), r);
-          }
-          if (mlField.ecNumbers != null && exists(mlField.ecNumbers, j)) {
-            parseECcodes(toString(mlField.ecNumbers.get(j), mlField.ecNumbers.getName(), j + 1), r);
-          }
-          if (mlField.comments != null && exists(mlField.comments, j)) {
-            String comment = toString(mlField.comments.get(j), mlField.comments.getName(), j + 1);
-            appendComment(comment, r);
-          }
-          if (mlField.confidenceScores != null && exists(mlField.confidenceScores, j)) {
-            MLArray cell = mlField.confidenceScores.get(j);
-            if (cell instanceof MLDouble) {
-              if (cell.getSize() == 0) {
-                logger.warning(mpMessageBundle.getString("CONF_CELL_WRONG_DIMS"));
-                break;
-              }
-              Double score = ((MLDouble) cell).get(0);
-              logger.fine(format(mpMessageBundle.getString("DISPLAY_CONF_SCORE"), score, r.getId()));
-              builder.buildParameter("P_confidenceScore_of_" + SBMLtools.toSId(rId), // id
-                format("Confidence score of reaction {0}", r.isSetName() ? r.getName() : r.getId()), // name
-                score, // value
-                true, // constant
-                Unit.Kind.DIMENSIONLESS // unit
-              ).setSBOTerm(613); // TODO: there should be a specific term for
-              // confidence scores. Use "613 - reaction parameter" for now.
-            } else {
-              logger.warning(
-                format(mpMessageBundle.getString("TYPE_MISMATCH_MLDOUBLE"), cell.getClass().getSimpleName()));
-            }
-          }
-          if (mlField.citations != null && exists(mlField.citations, j)) {
-            parseCitation(toString(mlField.citations.get(j), mlField.citations.getName(), j + 1), r);
-          }
-          if (r.getCVTermCount() > 0) {
-            r.setMetaId(r.getId());
+          BiGGId metId = new BiGGId(correctId(toString(mlField.mets.get(i), mlField.mets.getName(), i + 1)));
+          metId.setPrefix(METABOLITE_PREFIX);
+          Species species = model.getSpecies(metId.toBiGGId());
+          if (coeff < 0d) { // Reactant
+            ModelBuilder.buildReactants(reaction, pairOf(-coeff, species));
+          } else if (coeff > 0d) { // Product
+            ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
           }
         } catch (IllegalArgumentException exc) {
-          logException(exc);
+          logger.warning(format(mpMessageBundle.getString("REACT_PARTIC_INVALID"), Utils.getMessage(exc)));
         }
       }
     }
@@ -933,39 +983,109 @@ public class COBRAparser {
 
 
   /**
-   * @param citation
-   * @param r
+   * @param builder
+   * @param reaction
+   * @param rId
+   * @param index
    */
-  private void parseCitation(String citation, Reaction r) {
-    StringBuilder otherCitation = new StringBuilder();
-    if (!isEmptyString(citation)) {
-      CVTerm term = new CVTerm(CVTerm.Type.BIOLOGICAL_QUALIFIER, CVTerm.Qualifier.BQB_IS_DESCRIBED_BY);
-      StringTokenizer st = new StringTokenizer(citation, ",");
-      while (st.hasMoreElements()) {
-        String ref = st.nextElement().toString().trim();
-        if (!addResource(ref, term, "PubMed")) {
-          if (!addResource(ref, term, "DOI")) {
-            if (otherCitation.length() > 0) {
-              otherCitation.append(", ");
-            }
-            otherCitation.append(ref);
-          }
+  private void parseAnnotations(ModelBuilder builder, Reaction reaction, String rId, int index) {
+    if (exists(mlField.rxnKeggID, index)) {
+      parseRxnKEGGids(toString(mlField.rxnKeggID.get(index), mlField.rxnKeggID.getName(), index + 1), reaction);
+    }
+    if (exists(mlField.ecNumbers, index)) {
+      parseECcodes(toString(mlField.ecNumbers.get(index), mlField.ecNumbers.getName(), index + 1), reaction);
+    }
+    if (exists(mlField.comments, index)) {
+      String comment = toString(mlField.comments.get(index), mlField.comments.getName(), index + 1);
+      appendComment(comment, reaction);
+    }
+    if (exists(mlField.confidenceScores, index)) {
+      MLArray cell = mlField.confidenceScores.get(index);
+      if (cell instanceof MLDouble) {
+        if (cell.getSize() == 0) {
+          logger.warning(mpMessageBundle.getString("CONF_CELL_WRONG_DIMS"));
+          return;
+        }
+        Double score = ((MLDouble) cell).get(0);
+        logger.fine(format(mpMessageBundle.getString("DISPLAY_CONF_SCORE"), score, reaction.getId()));
+        builder.buildParameter("P_confidenceScore_of_" + SBMLtools.toSId(rId), // id
+          format("Confidence score of reaction {0}", reaction.isSetName() ? reaction.getName() : reaction.getId()), // name
+          score, // value
+          true, // constant
+          Unit.Kind.DIMENSIONLESS // unit
+        ).setSBOTerm(613);
+        // TODO: there should be a specific term for confidence scores.
+        // Use "613 - reaction parameter" for now.
+      } else {
+        logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_MLDOUBLE"), cell.getClass().getSimpleName()));
+      }
+    }
+    if (exists(mlField.citations, index)) {
+      parseCitation(toString(mlField.citations.get(index), mlField.citations.getName(), index + 1), reaction);
+    }
+  }
+
+
+  /**
+   * @param keggId
+   * @param reaction
+   */
+  private void parseRxnKEGGids(String keggId, Reaction reaction) {
+    if (isEmptyString(keggId)) {
+      return;
+    }
+    String catalog = "kegg.reaction";
+    DataType collection = RegistryUtilities.getDataType(catalog);
+    String regexp = "";
+    if (collection != null) {
+      regexp = collection.getRegexp();
+    }
+    CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
+    StringTokenizer st = new StringTokenizer(keggId, DELIM);
+    while (st.hasMoreElements()) {
+      String kId = st.nextElement().toString().trim();
+      if (!kId.isEmpty() && RegistryUtilities.checkRegexp(kId, regexp)) {
+        term.addResource(registry.getURI(catalog, kId));
+      }
+    }
+    if (term.getResourceCount() == 0) {
+      // This is actually bad.. should only be KEGG ids, not EC-Codes
+      parseECcodes(keggId, reaction);
+    }
+    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+      reaction.addCVTerm(term);
+    }
+  }
+
+
+  /**
+   * @param ec
+   * @param reaction
+   */
+  private void parseECcodes(String ec, Reaction reaction) {
+    if (isEmptyString(ec)) {
+      return;
+    }
+    CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_HAS_PROPERTY);
+    StringTokenizer st = new StringTokenizer(ec, DELIM);
+    boolean match = false;
+    while (st.hasMoreElements()) {
+      String ecCode = st.nextElement().toString().trim();
+      // if (ecCode.startsWith("E") || ecCode.startsWith("T")) {
+      // ecCode = ecCode.substring(1);
+      // }
+      if ((ecCode != null) && !ecCode.isEmpty() && validId("ec-code", ecCode)) {
+        String resource = registry.getURI("ec-code", ecCode);
+        if ((resource != null) && !term.getResources().contains(resource)) {
+          match = term.addResource(resource);
         }
       }
-      if (otherCitation.length() > 0) {
-        try {
-          if (r.isSetNotes()) {
-            r.appendNotes("\n\nReference: " + otherCitation);
-          } else {
-            r.appendNotes(SBMLtools.toNotesString("Reference: " + otherCitation.toString()));
-          }
-        } catch (XMLStreamException exc) {
-          logException(exc);
-        }
-      }
-      if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-        r.addCVTerm(term);
-      }
+    }
+    if (!match) {
+      logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
+    }
+    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+      reaction.addCVTerm(term);
     }
   }
 
@@ -986,63 +1106,40 @@ public class COBRAparser {
 
 
   /**
-   * @param keggId
-   * @param r
+   * @param citation
+   * @param reaction
    */
-  private void parseRxnKEGGids(String keggId, Reaction r) {
-    if (!isEmptyString(keggId)) {
-      String catalog = "kegg.reaction";
-      DataType collection = RegistryUtilities.getDataType(catalog);
-      String regexp = "";
-      if (collection != null) {
-        regexp = collection.getRegexp();
-      }
-      CVTerm term = findOrCreateCVTerm(r, CVTerm.Qualifier.BQB_IS);
-      StringTokenizer st = new StringTokenizer(keggId, DELIM);
-      while (st.hasMoreElements()) {
-        String kId = st.nextElement().toString().trim();
-        if (!kId.isEmpty() && RegistryUtilities.checkRegexp(kId, regexp)) {
-          term.addResource(registry.getURI(catalog, kId));
+  private void parseCitation(String citation, Reaction reaction) {
+    StringBuilder otherCitation = new StringBuilder();
+    if (isEmptyString(citation)) {
+      return;
+    }
+    CVTerm term = new CVTerm(CVTerm.Type.BIOLOGICAL_QUALIFIER, CVTerm.Qualifier.BQB_IS_DESCRIBED_BY);
+    StringTokenizer st = new StringTokenizer(citation, ",");
+    while (st.hasMoreElements()) {
+      String ref = st.nextElement().toString().trim();
+      if (!addResource(ref, term, "PubMed")) {
+        if (!addResource(ref, term, "DOI")) {
+          if (otherCitation.length() > 0) {
+            otherCitation.append(", ");
+          }
+          otherCitation.append(ref);
         }
-      }
-      if (term.getResourceCount() == 0) {
-        // This is actually bad.. should only be KEGG ids, not EC-Codes
-        parseECcodes(keggId, r);
-      }
-      if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-        r.addCVTerm(term);
       }
     }
-  }
-
-
-  /**
-   * @param ec
-   * @param r
-   */
-  private void parseECcodes(String ec, Reaction r) {
-    if (!isEmptyString(ec)) {
-      CVTerm term = findOrCreateCVTerm(r, CVTerm.Qualifier.BQB_HAS_PROPERTY);
-      StringTokenizer st = new StringTokenizer(ec, DELIM);
-      boolean match = false;
-      while (st.hasMoreElements()) {
-        String ecCode = st.nextElement().toString().trim();
-        // if (ecCode.startsWith("E") || ecCode.startsWith("T")) {
-        // ecCode = ecCode.substring(1);
-        // }
-        if ((ecCode != null) && !ecCode.isEmpty() && validId("ec-code", ecCode)) {
-          String resource = registry.getURI("ec-code", ecCode);
-          if ((resource != null) && !term.getResources().contains(resource)) {
-            match = term.addResource(resource);
-          }
+    if (otherCitation.length() > 0) {
+      try {
+        if (reaction.isSetNotes()) {
+          reaction.appendNotes("\n\nReference: " + otherCitation);
+        } else {
+          reaction.appendNotes(SBMLtools.toNotesString("Reference: " + otherCitation.toString()));
         }
+      } catch (XMLStreamException exc) {
+        logException(exc);
       }
-      if (!match) {
-        logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
-      }
-      if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-        r.addCVTerm(term);
-      }
+    }
+    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+      reaction.addCVTerm(term);
     }
   }
 
