@@ -74,8 +74,7 @@ public class SBMLUtils {
       }
       return operator;
     }
-    GeneProductRef gpr = createGPR(ast.toString(), reactionId, model);
-    return gpr;
+    return createGPR(ast.toString(), reactionId, model);
   }
 
 
