@@ -16,6 +16,10 @@ The online version of ModelPolisher is described in this article: http://journal
 
 The article http://nar.oxfordjournals.org/content/44/D1/D515 describes BiGG Models knowledge-base including ModelPolisher, http://nar.oxfordjournals.org/content/44/D1/D515
 
+# Usage
+
+After cloning or updating this project, make sure to delete `bigg.zip` and `bigg.sqlite` within the folder `resources`. Afterwards run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
+
 # Licenses
 
 ModelPolisher is distributed under the MIT License (see LICENSE).
