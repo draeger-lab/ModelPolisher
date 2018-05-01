@@ -90,6 +90,8 @@ public class BiGGDB {
   }
 
 
+  // TODO: this currently only works for models which provide a model id that is present in bigg
+  // subsystems for a reaction vary across models
   /**
    * @param modelBiGGid
    * @param reactionBiGGid
@@ -115,15 +117,35 @@ public class BiGGDB {
 
 
   /**
-   * @param biggId
+   * Get chemical formula for unknown model id
+   *
+   * @param componentId
+   * @param compartmentId
    * @return
    */
-  String getChemicalFormula(BiGGId biggId, String modelId) {
+  String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
+    String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
+      + " cc " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
+      + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
+      + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
+      + " AND length(mcc." + COLUMN_FORMULA + ") > 0";
+    return getString(query, componentId, compartmentId);
+  }
+
+
+  /**
+   * Get chemical formula for models that are present in BiGG
+   *
+   * @param biggId
+   * @param modelId
+   * @return
+   */
+  String getChemicalFormula(String biggId, String modelId) {
     String query = "SELECT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
       + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
       + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
       + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID + ";";
-    return getString(query, biggId.getAbbreviation(), modelId);
+    return getString(query, biggId, modelId);
   }
 
 
@@ -378,6 +400,9 @@ public class BiGGDB {
       ResultSet rst = connector.query(query, args);
       String result = rst.next() ? rst.getString(1) : "";
       rst.getStatement().close();
+      if (rst.next()) {
+        logger.warning(format(mpMessageBundle.getString("RST_ONLY_FIRST_USED"), query));
+      }
       return result;
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
@@ -461,6 +486,29 @@ public class BiGGDB {
 
 
   /**
+   * Get charge for unknown model id
+   *
+   * @param componentId
+   * @param compartmentId
+   * @return
+   */
+  Integer getChargeByCompartment(String componentId, String compartmentId) {
+    String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
+      + " cc " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
+      + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
+      + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
+      + " AND length(mcc." + COLUMN_CHARGE + ") > 0";
+    String charge = getString(query, componentId, compartmentId);
+    if (charge == null || charge.trim().length() == 0){
+      return null;
+    }
+    return Integer.parseInt(charge);
+  }
+
+
+  /**
+   * Get charge for known model id
+   *
    * @param biggId
    * @param modelId
    * @return
