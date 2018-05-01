@@ -5,5 +5,5 @@ if [ ! -f ../resources/edu/ucsd/sbrg/bigg/bigg.zip ]; then
     mv bigg.zip ../resources/edu/ucsd/sbrg/bigg
 fi
 
-unzip -od ../resources/edu/ucsd/sbrg/bigg ../resources/edu/ucsd/sbrg/bigg/bigg.zip
+unzip -od ../resources/edu/ucsd/sbrg/bigg ../resources/edu/ucsd/sbrg/bigg/bigg.zip 
 python3 createIndices.py

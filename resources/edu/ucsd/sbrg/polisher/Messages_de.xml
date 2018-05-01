@@ -123,6 +123,7 @@
     <entry key="READ_FILE_INFO">Lese Datei {0}.</entry>
     <entry key="READ_HTML_ERROR">Konnte Datei nicht vollständig lesen</entry>
     <entry key="ROOT_EMPTY_ERROR">Die Root Node ist leer, Model konnte nicht geparsed werden.</entry>
+    <entry key="RST_ONLY_FIRST_USED">ResultSet enthält mehr als ein Element, aber nur das erste wird benutzt für Query {0}</entry>
     <entry key="SBML_VAL_DESC">Wenn wahr, wird die geschaffene SBML Datei mit dem Online Validierungsservice auf http://sbml.org validiert.</entry>
     <entry key="SET_ABREV_FAILED">Konnte Abkürzung nicht setzen: {0}</entry>
     <entry key="SET_COMPART_CODE_FAILED">Konnte Compartment Code nicht setzen: ''{0}''</entry>
