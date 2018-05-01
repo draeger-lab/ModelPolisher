@@ -13,9 +13,9 @@ before_install:
 install:
 - travis_retry ./gradlew fatJar
 script:
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/RECON1.xml --output=out/RECON1.xml --annotate-with-bigg=true --log-level=SEVERE
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/ecoli_core_model.xml --output=out/ecoli_core_model.xml --annotate-with-bigg=true --log-level=SEVERE
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/yeast_7.00.xml --output=out/yeast_7.00.xml --annotate-with-bigg=true --log-level=SEVERE
+- travis_wait java -jar target/ModelPolisher-fat-1.8.jar --input=bigg_models_data/models/RECON1.xml --output=out/RECON1.xml --annotate-with-bigg=true --log-level=SEVERE
+- travis_wait java -jar target/ModelPolisher-fat-1.8.jar --input=bigg_models_data/models/ecoli_core_model.xml --output=out/ecoli_core_model.xml --annotate-with-bigg=true --log-level=SEVERE
+- travis_wait java -jar target/ModelPolisher-fat-1.8.jar --input=bigg_models_data/models/yeast_7.00.xml --output=out/yeast_7.00.xml --annotate-with-bigg=true --log-level=SEVERE
 - ls -lish out
 git:
   depth: 10

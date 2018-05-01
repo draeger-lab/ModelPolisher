@@ -387,15 +387,28 @@ public class BiGGAnnotation {
    */
   @SuppressWarnings("deprecation")
   private void FBCSetFormulaCharge(Species species, BiGGId biggId) {
+    String modelId = species.getModel().getId();
+    String compartmentCode = biggId.getCompartmentCode();
     FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
     if (!fbcSpecPlug.isSetChemicalFormula()) {
+      String chemicalFormula = null;
+      if (bigg.isModel(modelId)) {
+        chemicalFormula = bigg.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
+      } else if (compartmentCode != null && !compartmentCode.equals("")) {
+        chemicalFormula = bigg.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
+      }
       try {
-        fbcSpecPlug.setChemicalFormula(bigg.getChemicalFormula(biggId, species.getModel().getId()));
+        fbcSpecPlug.setChemicalFormula(chemicalFormula);
       } catch (IllegalArgumentException exc) {
         logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
       }
     }
-    Integer charge = bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+    Integer charge = null;
+    if (bigg.isModel(modelId)) {
+      charge = bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+    } else if (compartmentCode != null && !compartmentCode.equals("")) {
+      charge = bigg.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
+    }
     if (species.isSetCharge()) {
       if ((charge != null) && (charge != species.getCharge())) {
         logger.warning(

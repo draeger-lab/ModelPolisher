@@ -6,7 +6,7 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 archivesBaseName = "ModelPolisher"
 
-version = "1.7"
+version = "1.8"
 
 sourceSets {
     main.java.srcDirs = ["src"]
@@ -32,6 +32,7 @@ dependencies {
     compile "org.identifiers:registry-lib:1.1.1"
     compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
+    compile "org.biojava:biojava-ontology:5.0.0"
     compile "com.diffplug.matsim:matfilerw:3.0.1"
     compile "com.fasterxml.jackson.core:jackson-core:2.9.5"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.5"
@@ -86,6 +87,7 @@ task bareJar(type: Jar) {
 }
 
 // without dependencies, bigg.sqlite included
+// not included in release
 task slimJar(type: Jar) {
     baseName = project.name + "-slim"
     with jar
@@ -110,7 +112,7 @@ task zipScripts(type: Zip) {
     destinationDir = file("target/")
 }
 
-// create all four jars for release
+// create all three jars for release
 task release() {
     dependsOn fatJar
     dependsOn bareJar
