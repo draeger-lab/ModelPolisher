@@ -1,14 +1,14 @@
 # ModelPolisher 
 **Annotating Systems Biology Models**
 
+<img align="right" src="doc/img/ModelPolisherIcon256.png" width="64"/>
+
 *Authors:* [Andreas Dräger](https://github.com/draeger/), [Thomas J. Zajac](https://github.com/mephenor/), [Matthias König](https://github.com/matthiaskoenig)
 
 [![Build Status](https://travis-ci.org/SBRG/ModelPolisher.svg?branch=master&style=plastic)](https://travis-ci.org/SBRG/ModelPolisher)
 [![Stable version](https://img.shields.io/badge/Stable_version-1.7-brightgreen.svg?style=plastic)](https://github.com/draeger-lab/ModelPolisher/releases/)
 [![DOI](http://img.shields.io/badge/DOI-10.1371%20%2F%20journal.pone.0149263-blue.svg?style=plastic)](https://doi.org/10.1371/journal.pone.0149263)
 [![License (MIT)](https://img.shields.io/badge/license-MIT-blue.svg?style=plastic)](http://opensource.org/licenses/MIT)
-
-<img align="right" src="doc/img/ModelPolisherIcon256.png" width="64"/>
 
 ModelPolisher accesses the [BiGG Models knowledgebase](http://bigg.ucsd.edu) to annotate and autocomplete [SBML](http://sbml.org) models.
 Thereby, the program mainly relies on [BiGG identifiers](https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines) for model components.
@@ -29,4 +29,4 @@ After cloning or updating this project, make sure to delete `bigg.zip` and `bigg
 # Licenses
 
 ModelPolisher is distributed under the MIT License (see LICENSE).
-An Overview of all dependencies is provided in THIRD-PARTY.txt, their respective licenses can be found in the licenses folder.
+An Overview of all dependencies is provided in [THIRD-PARTY.txt](https://github.com/draeger-lab/ModelPolisher/blob/master/THIRD-PARTY.txt), their respective licenses can be found in the licenses folder.
