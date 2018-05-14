@@ -1,14 +1,20 @@
-# ModelPolisher [![Build Status](https://travis-ci.org/SBRG/ModelPolisher.svg?branch=master)](https://travis-ci.org/SBRG/ModelPolisher)
+# ModelPolisher 
+**Annotating Systems Biology Models**
 
-<img src="doc/img/ModelPolisherIcon256.png" width="64"/>
+*Authors:* [Andreas Dräger](https://github.com/draeger/), [Thomas J. Zajac](https://github.com/mephenor/), [Matthias König](https://github.com/matthiaskoenig)
+
+[![Build Status](https://travis-ci.org/SBRG/ModelPolisher.svg?branch=master&style=plastic)](https://travis-ci.org/SBRG/ModelPolisher)
+[![Stable version](https://img.shields.io/badge/Stable_version-1.7-brightgreen.svg?style=plastic)](https://github.com/draeger-lab/ModelPolisher/releases/)
+[![DOI](http://img.shields.io/badge/DOI-10.1371%20%2F%20journal.pone.0149263-blue.svg?style=plastic)](https://doi.org/10.1371/journal.pone.0149263)
+[![License (MIT)](https://img.shields.io/badge/license-MIT-blue.svg?style=plastic)](http://opensource.org/licenses/MIT)
+
+<img align="right" src="doc/img/ModelPolisherIcon256.png" width="64"/>
 
 ModelPolisher accesses the [BiGG Models knowledgebase](http://bigg.ucsd.edu) to annotate and autocomplete [SBML](http://sbml.org) models.
 Thereby, the program mainly relies on [BiGG identifiers](https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines) for model components.
-In addition, it fixes some obvious errors in the models.
+Moreover, it fixes some apparent errors in the models.
 
-An online version of this program is available at https://webservices.cs.uni-tuebingen.de: Just click on the program's icon and upload a file using the link on the left.
-
-ModelPolisher is essentially a command-line based tool. You can run it locally using your own installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where "VERSION" needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially _java.lang.OutOfMemoryError: GC overhead limit exceeded_, please use the jvm Xmx flag (e.g. `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
+ModelPolisher is primarily a command-line based tool. You can run it locally using your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where "VERSION" needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially _java.lang.OutOfMemoryError: GC overhead limit exceeded_, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
 
 # How to cite ModelPolisher?
 
