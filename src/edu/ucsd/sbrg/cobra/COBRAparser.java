@@ -23,9 +23,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.identifiers.registry.RegistryLocalProvider;
-import org.identifiers.registry.RegistryUtilities;
-import org.identifiers.registry.data.DataType;
+import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -268,10 +266,6 @@ public class COBRAparser {
    *
    */
   private boolean omitGenericTerms;
-  /**
-   *
-   */
-  private RegistryLocalProvider registry;
 
 
   /**
@@ -347,7 +341,6 @@ public class COBRAparser {
    */
   private void parseMetabolites(ModelBuilder builder) {
     Model model = builder.getModel();
-    registry = new RegistryLocalProvider();
     for (int i = 0; (mlField.mets != null) && (i < mlField.mets.getSize()); i++) {
       parseMetabolite(model, i);
     }
@@ -508,8 +501,8 @@ public class COBRAparser {
       if ((id != null) && !id.isEmpty()) {
         id = checkId(id);
         if (validId(catalog, id)) {
-          String resource = registry.getURI(catalog, id);
-          if ((resource != null) && !resource.isEmpty()) {
+          String resource = Registry.getURI(catalog, id);
+          if (!resource.isEmpty()) {
             term.addResource(resource);
             success = true;
             logger.finest(format(mpMessageBundle.getString("ADDED_URI_COBRA"), resource));
@@ -558,12 +551,12 @@ public class COBRAparser {
     if (id.isEmpty()) {
       return false;
     }
-    DataType collection = RegistryUtilities.getDataType(catalog);
+    String pattern = Registry.getPattern(catalog);
     boolean validId = false;
-    if (collection != null) {
-      validId = registry.checkRegExp(id, collection.getName());
+    if (!pattern.equals("")) {
+      validId = Registry.checkPattern(id, catalog);
       if (!validId) {
-        logger.warning(format(mpMessageBundle.getString("PATTERN_MISMATCH"), id, collection.getRegexp()));
+        logger.warning(format(mpMessageBundle.getString("PATTERN_MISMATCH"), id, pattern));
       }
     } else {
       logger.severe(format(mpMessageBundle.getString("COLLECTION_UNKNOWN"), catalog));
@@ -1035,17 +1028,13 @@ public class COBRAparser {
       return;
     }
     String catalog = "kegg.reaction";
-    DataType collection = RegistryUtilities.getDataType(catalog);
-    String regexp = "";
-    if (collection != null) {
-      regexp = collection.getRegexp();
-    }
+    String pattern = Registry.getPattern(catalog);
     CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
-      if (!kId.isEmpty() && RegistryUtilities.checkRegexp(kId, regexp)) {
-        term.addResource(registry.getURI(catalog, kId));
+      if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
+        term.addResource(Registry.getURI(catalog, kId));
       }
     }
     if (term.getResourceCount() == 0) {
@@ -1075,7 +1064,7 @@ public class COBRAparser {
       // ecCode = ecCode.substring(1);
       // }
       if ((ecCode != null) && !ecCode.isEmpty() && validId("ec-code", ecCode)) {
-        String resource = registry.getURI("ec-code", ecCode);
+        String resource = Registry.getURI("ec-code", ecCode);
         if ((resource != null) && !term.getResources().contains(resource)) {
           match = term.addResource(resource);
         }
@@ -1195,7 +1184,7 @@ public class COBRAparser {
           if (st.countTokens() > 1) {
             logger.warning(format(mpMessageBundle.getString("SKIP_COMMENT"), resource, r, catalog));
           }
-          resource = registry.getURI(catalog, r);
+          resource = Registry.getURI(catalog, r);
           logger.finest(format(mpMessageBundle.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }
