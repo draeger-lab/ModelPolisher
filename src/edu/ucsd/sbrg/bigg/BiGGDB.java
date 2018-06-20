@@ -90,7 +90,7 @@ public class BiGGDB {
   }
 
 
-  // TODO: this currently only works for models which provide a model id that is present in bigg
+  // fixme: this currently only works for models which provide a model id that is present in bigg
   // subsystems for a reaction vary across models
   /**
    * @param modelBiGGid
@@ -125,7 +125,7 @@ public class BiGGDB {
    */
   String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
     String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
-      + " cc " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
+      + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
       + " AND length(mcc." + COLUMN_FORMULA + ") > 0";
@@ -187,7 +187,7 @@ public class BiGGDB {
    */
   private Date getDate(String query) throws SQLException {
     ResultSet rst = connector.query(query);
-    Date result = rst.next() ? result = rst.getDate(1) : null;
+    Date result = rst.next() ? rst.getDate(1) : null;
     rst.getStatement().close();
     return result;
   }
@@ -268,7 +268,7 @@ public class BiGGDB {
    */
   private Integer getInt(String query, Object... args) throws SQLException {
     ResultSet rst = connector.query(query, args);
-    Integer result = rst.next() ? result = rst.getInt(1) : null;
+    Integer result = rst.next() ? rst.getInt(1) : null;
     rst.getStatement().close();
     return result;
   }
@@ -494,12 +494,12 @@ public class BiGGDB {
    */
   Integer getChargeByCompartment(String componentId, String compartmentId) {
     String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
-      + " cc " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
+      + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
       + " AND length(mcc." + COLUMN_CHARGE + ") > 0";
     String charge = getString(query, componentId, compartmentId);
-    if (charge == null || charge.trim().length() == 0){
+    if (charge == null || charge.trim().length() == 0) {
       return null;
     }
     return Integer.parseInt(charge);
