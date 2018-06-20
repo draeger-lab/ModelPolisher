@@ -21,11 +21,11 @@ public class ECOparser {
    * @see <a href="https://github.com/draeger-lab/ModelPolisher/issues/5">Issue 5</>
    */
   enum ConfidenceScoreTerm {
-    BIOCHEMICAL("ECO:0000005", 0), // maybe use ECO:0000002 ?
+    BIOCHEMICAL("ECO:0000002", 0),
     GENETIC("ECO:0000073", 1),
     SEQUENCE("ECO:0000044", 2),
-    PHYSIOLOGICAL("ECO:000551", 3),
-    MODELING("", 4); // no evidence
+    PHYSIOLOGICAL("ECO:0005551", 3),
+    MODELING("0000001", 4);
 
     private String ECOTerm;
     private int confidenceScore;
@@ -97,6 +97,10 @@ public class ECOparser {
     }
   }
 
+
+  public static String getResourceURL(String term){
+    return "http://identifiers-org/eco/" + term;
+  }
 
   /**
    * Traverse top-down from root and build the DAG

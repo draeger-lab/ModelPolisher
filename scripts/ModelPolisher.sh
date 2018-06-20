@@ -9,9 +9,9 @@
 
 ## Find location of this script ##
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-cd $DIR/..
+cd ${DIR}/..
 
-## Launch the program
-java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en target/ModelPolisher-1.7.jar $@
+## Launch the program".travis.yml"
+java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en target/ModelPolisher-fat-1.8.jar $@
 
 exit 0

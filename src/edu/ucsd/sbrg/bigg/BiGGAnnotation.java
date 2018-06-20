@@ -25,9 +25,7 @@ import java.util.logging.Logger;
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
-import org.identifiers.registry.RegistryLocalProvider;
-import org.identifiers.registry.RegistryUtilities;
-import org.identifiers.registry.data.DataType;
+import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
@@ -548,10 +546,6 @@ public class BiGGAnnotation {
     if (label == null) {
       return;
     }
-    // label is stored without "G_" prefix in BiGG
-    if (label.startsWith("G_")) {
-      label = label.substring(2);
-    }
     setCVTermResources(geneProduct, label);
     if (geneProduct.getCVTermCount() > 0) {
       geneProduct.setMetaId(id);
@@ -567,17 +561,20 @@ public class BiGGAnnotation {
   private void setCVTermResources(GeneProduct geneProduct, String label) {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
+    // label is stored without "G_" prefix in BiGG
+    if (label.startsWith("G_")) {
+      label = label.substring(2);
+    }
     for (String resource : bigg.getGeneIds(label)) {
       // get Collection part from uri without url prefix - all uris should
       // begin with http://identifiers.org, else this may fail
-      String collection = RegistryUtilities.getDataCollectionPartFromURI(resource);
+      String collection = Registry.getDataCollectionPartFromURI(resource);
       if (collection == null) {
         continue;
-      } else if (!collection.contains("identifiers.org")) {
-        logger.warning(format(mpMessageBundle.getString("PATTERN_MISMATCH_DROP"), collection));
+      } else if (!resource.contains("identifiers.org")) {
+        logger.severe(format(mpMessageBundle.getString("PATTERN_MISMATCH_DROP"), collection));
         continue;
       }
-      collection = collection.substring(collection.indexOf("org/") + 4, collection.length() - 1);
       switch (collection) {
       case "interpro":
       case "pdb":
@@ -630,42 +627,38 @@ public class BiGGAnnotation {
    * @return corrected resource URI
    */
   static String checkResourceUrl(String resource) {
-    String collection = RegistryUtilities.getDataCollectionPartFromURI(resource);
+    String collection = Registry.getDataCollectionPartFromURI(resource);
     if (!isCheckable(resource, collection)) {
       return resource;
     }
-    DataType type = RegistryUtilities.getDataType(collection);
-    RegistryLocalProvider registry = new RegistryLocalProvider();
-    String identifier = RegistryUtilities.getIdentifierFromURI(resource);
-    String regexp;
-    if (type != null) {
-      regexp = type.getRegexp();
-    } else {
+    String identifier = Registry.getIdentifierFromURI(resource);
+    String regexp = Registry.getPattern(collection);
+    if (regexp.equals("")) {
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
-    Boolean correct = registry.checkRegExp(identifier, collection);
+    Boolean correct = Registry.checkPattern(identifier, collection);
     if (!correct) {
       logger.info(format(mpMessageBundle.getString("PATTERN_MISMATCH_INFO"), identifier, regexp, collection));
       // We can correct the kegg collection
       if (resource.contains("kegg")) {
         if (identifier.startsWith("D")) {
           logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
-          resource = RegistryUtilities.replace(resource, "kegg.compound", "kegg.drug");
+          resource = Registry.replace(resource, "kegg.compound", "kegg.drug");
         } else if (identifier.startsWith("G")) {
           logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
-          resource = RegistryUtilities.replace(resource, "kegg.compound", "kegg.glycan");
+          resource = Registry.replace(resource, "kegg.compound", "kegg.glycan");
         }
         // add possibly missing "gi:" prefix to identifier
       } else if (resource.contains("ncbigi")) {
         if (!identifier.toLowerCase().startsWith("gi:")) {
           logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
-          resource = RegistryUtilities.replace(resource, identifier, "GI:" + identifier);
+          resource = Registry.replace(resource, identifier, "GI:" + identifier);
         }
       } else if (resource.contains("go") && !resource.contains("goa")) {
         if (!identifier.toLowerCase().startsWith("go:")) {
           logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
-          resource = RegistryUtilities.replace(resource, identifier, "GO:" + identifier);
+          resource = Registry.replace(resource, identifier, "GO:" + identifier);
         }
       } else if (resource.contains("ec-code")) {
         int missingDots = identifier.length() - identifier.replace(".", "").length();
@@ -677,7 +670,7 @@ public class BiGGAnnotation {
         for (int count = missingDots; count < 3; count++) {
           replacement += ".-";
         }
-        resource = RegistryUtilities.replace(resource, identifier, replacement);
+        resource = Registry.replace(resource, identifier, replacement);
       } else {
         logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), resource, collection));
         return null;
@@ -695,8 +688,7 @@ public class BiGGAnnotation {
   private static boolean isCheckable(String resource, String collection) {
     // not present in provided registry, cannot be checked this way, might add a function checking the online version
     boolean checkable = true;
-    if (collection.contains("metanetx") || collection.contains("unipathway.reaction")
-      || collection.contains("reactome.org") || collection.contains("molecular-networks.com")) {
+    if (collection.contains("molecular-networks.com")) {
       logger.fine(format(mpMessageBundle.getString("NO_URI_CHECK_WARN"), resource));
       checkable = false;
     }
