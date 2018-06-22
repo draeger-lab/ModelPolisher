@@ -23,6 +23,8 @@
     <entry key="CHANGE_KEGG_GLYCAN">Changing KEGG collection to kegg.glycan</entry>
     <entry key="CHANGED_METABOLITE_ID">Changed id from ''{0}'' to ''{1}'' in order to match the BiGG id specification.</entry>
     <entry key="CHANGED_NAME">Changed name ''{0}'' to ''{1}''</entry>
+    <entry key="CHANGED_REACTOME">Reactome URL {0} changed to {1}</entry>
+    <entry key="CHANGED_RHEA">Changed rhea resource to {0}</entry>
     <entry key="CHANGED_TO_VARIANT">Changed name of unmatched enum variant ''{0}'' to possible match ''{1}''</entry>
     <entry key="CHARGE_CONTRADICTION">Charge {0,number,integer} in BiGG Models contradicts attribute value {1,number,integer} on species ''{2}''.</entry>
     <entry key="CHARGE_TO_INT_COBRA">Non-integer charge {0,number} was truncated to {1}.</entry>
