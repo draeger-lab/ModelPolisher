@@ -215,10 +215,10 @@ public class BiGGDB {
         if (collection != null && identifier != null) {
           resource = collection + identifier;
         } else if (collection == null) {
-          logger.info(mpMessageBundle.getString("COLLECTION_NULL_GENE"));
+          logger.fine(mpMessageBundle.getString("COLLECTION_NULL_GENE"));
           continue;
         } else {
-          logger.info(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"), collection));
+          logger.warning(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"), collection));
           continue;
         }
         if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {

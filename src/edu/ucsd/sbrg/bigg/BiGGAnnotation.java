@@ -14,18 +14,17 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
@@ -46,6 +45,7 @@ import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
@@ -628,53 +628,31 @@ public class BiGGAnnotation {
    */
   static String checkResourceUrl(String resource) {
     String collection = Registry.getDataCollectionPartFromURI(resource);
-    if (!isCheckable(resource, collection)) {
-      return resource;
-    }
     String identifier = Registry.getIdentifierFromURI(resource);
+    if (collection.isEmpty()) {
+      // not a valid resource URI, drop
+      return null;
+    } else if (!isCheckable(resource, collection)) {
+      return resource;
+    } else if (!resource.contains("identifiers.org")) {
+      collection = Registry.getCollectionFor(resource);
+      if (!collection.isEmpty()) {
+        resource = Registry.getURI(collection, identifier);
+      }
+    }
     String regexp = Registry.getPattern(collection);
     if (regexp.equals("")) {
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
     Boolean correct = Registry.checkPattern(identifier, collection);
+    String report_resource = resource;
     if (!correct) {
       logger.info(format(mpMessageBundle.getString("PATTERN_MISMATCH_INFO"), identifier, regexp, collection));
-      // We can correct the kegg collection
-      if (resource.contains("kegg")) {
-        if (identifier.startsWith("D")) {
-          logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
-          resource = Registry.replace(resource, "kegg.compound", "kegg.drug");
-        } else if (identifier.startsWith("G")) {
-          logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
-          resource = Registry.replace(resource, "kegg.compound", "kegg.glycan");
-        }
-        // add possibly missing "gi:" prefix to identifier
-      } else if (resource.contains("ncbigi")) {
-        if (!identifier.toLowerCase().startsWith("gi:")) {
-          logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
-          resource = Registry.replace(resource, identifier, "GI:" + identifier);
-        }
-      } else if (resource.contains("go") && !resource.contains("goa")) {
-        if (!identifier.toLowerCase().startsWith("go:")) {
-          logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
-          resource = Registry.replace(resource, identifier, "GO:" + identifier);
-        }
-      } else if (resource.contains("ec-code")) {
-        int missingDots = identifier.length() - identifier.replace(".", "").length();
-        if (missingDots < 1) {
-          logger.warning(format(mpMessageBundle.getString("EC_CHANGE_FAILED"), identifier));
-          return null;
-        }
-        String replacement = identifier;
-        for (int count = missingDots; count < 3; count++) {
-          replacement += ".-";
-        }
-        resource = Registry.replace(resource, identifier, replacement);
-      } else {
-        logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), resource, collection));
-        return null;
-      }
+      resource = fixResource(resource, identifier);
+    }
+    if (resource == null) {
+      logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), report_resource, collection));
     }
     logger.fine(format("Added resource ", resource));
     return resource;
@@ -686,13 +664,129 @@ public class BiGGAnnotation {
    * @param collection
    */
   private static boolean isCheckable(String resource, String collection) {
-    // not present in provided registry, cannot be checked this way, might add a function checking the online version
+    // not present in miriam
     boolean checkable = true;
     if (collection.contains("molecular-networks.com")) {
       logger.fine(format(mpMessageBundle.getString("NO_URI_CHECK_WARN"), resource));
       checkable = false;
     }
     return checkable;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixResource(String resource, String identifier) {
+    if (resource.contains("kegg")) {
+      // We can correct the kegg collection
+      resource = fixKEGGCollection(resource, identifier);
+    } else if (resource.contains("ncbigi")) {
+      // add possibly missing "gi:" prefix to identifier
+      resource = fixGI(resource, identifier);
+    } else if (resource.contains("go") && !resource.contains("goa")) {
+      resource = fixGO(resource, identifier);
+    } else if (resource.contains("ec-code")) {
+      resource = fixECCode(resource, identifier);
+    } else if (resource.contains("rhea") && resource.contains("#")) {
+      // remove last part, it's invalid either way, even though it gets resolved due to misinterpretation as non
+      // existing anchor
+      resource = resource.split("#")[0];
+      logger.info(format(mpMessageBundle.getString("CHANGED_RHEA"), resource));
+    } else if (resource.contains("reactome")) {
+      String resource_old = resource;
+      resource = fixReactome(resource, identifier);
+      logger.info(format(mpMessageBundle.getString("CHANGED_REACTOME"), resource_old, resource));
+    } else {
+      resource = null;
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixKEGGCollection(String resource, String identifier) {
+    if (identifier.startsWith("D")) {
+      logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
+      resource = Registry.replace(resource, "kegg.compound", "kegg.drug");
+    } else if (identifier.startsWith("G")) {
+      logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
+      resource = Registry.replace(resource, "kegg.compound", "kegg.glycan");
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixGI(String resource, String identifier) {
+    if (!identifier.toLowerCase().startsWith("gi:")) {
+      logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
+      return Registry.replace(resource, identifier, "GI:" + identifier);
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixGO(String resource, String identifier) {
+    if (!identifier.toLowerCase().startsWith("go:")) {
+      logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
+      return Registry.replace(resource, identifier, "GO:" + identifier);
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixECCode(String resource, String identifier) {
+    int missingDots = identifier.length() - identifier.replace(".", "").length();
+    if (missingDots < 1) {
+      logger.warning(format(mpMessageBundle.getString("EC_CHANGE_FAILED"), identifier));
+      return null;
+    }
+    String replacement = identifier;
+    for (int count = missingDots; count < 3; count++) {
+      replacement += ".-";
+    }
+    return Registry.replace(resource, identifier, replacement);
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixReactome(String resource, String identifier) {
+    if (!identifier.startsWith("R-ALL-REACT_")) {
+      return null;
+    }
+    identifier = identifier.split("_")[1];
+    resource = Registry.replace(resource, "R-ALL-REACT_", "");
+    String collection = Registry.getDataCollectionPartFromURI(resource);
+    if (Registry.checkPattern(identifier, collection)) {
+      return Registry.getURI(collection, identifier);
+    } else {
+      return null;
+    }
   }
 
 
