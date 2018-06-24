@@ -67,14 +67,15 @@ public class ECOparser {
     return ConfidenceScoreTerm.getECOTermFromScore(confidenceScores);
   }
 
-  public static int getConfidenceScoreForTerm(String query){
-    if(!ontology.containsTerm(query)){
+
+  public static int getConfidenceScoreForTerm(String query) {
+    if (!ontology.containsTerm(query)) {
       // logger.sever(mpMessageBundle.get("TERM_NOT_IN_ONTOLOGY"))
       return -1;
     }
     Term term = ontology.getTerm(query);
-    for(ConfidenceScoreTerm confidenceScoreTerm : ConfidenceScoreTerm.values()){
-      if(term.getName().equals(confidenceScoreTerm.getECOTerm())){
+    for (ConfidenceScoreTerm confidenceScoreTerm : ConfidenceScoreTerm.values()) {
+      if (term.getName().equals(confidenceScoreTerm.getECOTerm())) {
         return confidenceScoreTerm.getConfidenceScore();
       }
     }
@@ -98,9 +99,10 @@ public class ECOparser {
   }
 
 
-  public static String getResourceURL(String term){
+  public static String getResourceURL(String term) {
     return "http://identifiers-org/eco/" + term;
   }
+
 
   /**
    * Traverse top-down from root and build the DAG
