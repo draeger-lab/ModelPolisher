@@ -14,7 +14,50 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.*;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_BIGG_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_CHARGE;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPARTMENT_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPONENT_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DATA_SOURCE_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DATE_TIME;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DESCRIPTION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_FIRST_CREATED;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_FORMULA;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_GENE_REACTION_RULE;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_GENOME_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_MODEL_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_NAME;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_OME_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_ORGANISM;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_PSEUDOREACTION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_PUBLICATION_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REACTION_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REFERENCE_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REFERENCE_TYPE;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_SUBSYSTEM;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_TAXON_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_TYPE;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPARTMENT;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPONENT;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.DATABASE_VERSION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.DATA_SOURCE;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.GENOME;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.GENOME_REGION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MCC;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MODEL;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MODEL_REACTION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.OLD_BIGG_ID;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.PUBLICATION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.PUBLICATION_MODEL;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REACTION;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REFSEQ_NAME;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REFSEQ_PATTERN;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.SYNONYM;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.URL;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.URL_PREFIX;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
@@ -127,7 +170,7 @@ public class BiGGDB {
     String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
-      + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
+      + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
       + " AND length(mcc." + COLUMN_FORMULA + ") > 0";
     return getString(query, componentId, compartmentId);
   }
@@ -496,7 +539,7 @@ public class BiGGDB {
     String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
-      + COLUMN_COMPONENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
+      + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
       + " AND length(mcc." + COLUMN_CHARGE + ") > 0";
     String charge = getString(query, componentId, compartmentId);
     if (charge == null || charge.trim().length() == 0) {

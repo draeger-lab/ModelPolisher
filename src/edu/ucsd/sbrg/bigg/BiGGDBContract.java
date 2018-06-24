@@ -32,6 +32,7 @@ final class BiGGDBContract {
     static final String COLUMN_BIGG_ID = "bigg_id";
     static final String COLUMN_CHARGE = "charge";
     static final String COLUMN_COMPARTMENTALIZED_COMPONENT_ID = "compartmentalized_component_id";
+    static final String COLUMN_COMPARTMENT_ID = "compartment_id";
     static final String COLUMN_COMPONENT_ID = "component_id";
     static final String COLUMN_DATA_SOURCE_ID = "data_source_id";
     static final String COLUMN_DATE_TIME = "date_time";
