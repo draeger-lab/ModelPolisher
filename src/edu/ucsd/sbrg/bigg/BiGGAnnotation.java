@@ -524,9 +524,9 @@ public class BiGGAnnotation {
    */
   private void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-      for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-        annotateGeneProduct(geneProduct);
+      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
+        annotateGeneProduct(geneProduct, fbcModelPlugin);
       }
     }
   }
@@ -535,7 +535,7 @@ public class BiGGAnnotation {
   /**
    * @param geneProduct
    */
-  private void annotateGeneProduct(GeneProduct geneProduct) {
+  private void annotateGeneProduct(GeneProduct geneProduct, FBCModelPlugin fbcModelPlugin) {
     String label = null;
     String id = geneProduct.getId();
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
@@ -546,6 +546,8 @@ public class BiGGAnnotation {
     if (label == null) {
       return;
     }
+    // fix not updated geneProductReferece in Association
+    SBMLUtils.updateGeneProductReference(geneProduct);
     setCVTermResources(geneProduct, label);
     if (geneProduct.getCVTermCount() > 0) {
       geneProduct.setMetaId(id);

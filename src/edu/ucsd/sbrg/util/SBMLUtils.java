@@ -11,10 +11,24 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.swing.tree.TreeNode;
+
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.ext.fbc.And;
+import org.sbml.jsbml.ext.fbc.Association;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
+import org.sbml.jsbml.ext.fbc.GeneProductRef;
+import org.sbml.jsbml.ext.fbc.ListOfObjectives;
+import org.sbml.jsbml.ext.fbc.LogicalOperator;
+import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
@@ -172,6 +186,33 @@ public class SBMLUtils {
       id = "G_" + id;
     }
     return id;
+  }
+
+
+  /**
+   * Apply updated GeneID to geneProductReferenece
+   * 
+   * @param gp
+   */
+  public static void updateGeneProductReference(GeneProduct gp) {
+    String id = gp.getId();
+    if (id.startsWith("G_")) {
+      id = id.split("G_")[1];
+    }
+    for (Reaction r : gp.getModel().getListOfReactions()) {
+      for (int childIdx = 0; childIdx < r.getChildCount(); childIdx++) {
+        TreeNode child = r.getChildAt(childIdx);
+        if (child instanceof GeneProductAssociation) {
+          Association association = ((GeneProductAssociation) child).getAssociation();
+          if (association instanceof GeneProductRef) {
+            GeneProductRef gpr = (GeneProductRef) association;
+            if (id.equals(gpr.getGeneProduct())) {
+              gpr.setGeneProduct(gp.getId());
+            }
+          }
+        }
+      }
+    }
   }
 
 

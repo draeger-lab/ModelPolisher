@@ -17,7 +17,6 @@ package edu.ucsd.sbrg.bigg;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
-import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
