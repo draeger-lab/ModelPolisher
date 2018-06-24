@@ -57,13 +57,11 @@ public class JSONparser {
    * Regex pattern to split JSON arrays into their respective values at ",",
    * keeping both quotation marks in the process
    */
-  private static final Pattern METABOLITE_DELIMITER =
-    Pattern.compile("((?<=\\w)|(?<=\")),(?=\")");
+  private static final Pattern METABOLITE_DELIMITER = Pattern.compile("((?<=\\w)|(?<=\")),(?=\")");
   /**
    * Regex pattern for biomass prefix exclusion
    */
-  private static Pattern PATTERN_BIOMASS_CASE_INSENSITIVE =
-    Pattern.compile("(.*)([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(.*)");
+  private static Pattern PATTERN_BIOMASS_CASE_INSENSITIVE = Pattern.compile("(.*)([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(.*)");
 
 
   /**
@@ -76,8 +74,7 @@ public class JSONparser {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-    Logger.getLogger(JSONparser.class.getName());
+  private static final transient Logger logger = Logger.getLogger(JSONparser.class.getName());
 
 
   /**
@@ -110,8 +107,7 @@ public class JSONparser {
     ModelBuilder builder = new ModelBuilder(3, 1);
     SBMLDocument doc = builder.getSBMLDocument();
     doc.addTreeNodeChangeListener(new UpdateListener());
-    builder.buildModel(correctId(crop(root.path("id").toString())),
-      crop(root.path("name").toString()));
+    builder.buildModel(correctId(crop(root.path("id").toString())), crop(root.path("name").toString()));
     parseModel(builder, root);
     return doc;
   }
@@ -129,15 +125,13 @@ public class JSONparser {
    */
   private void parseModel(ModelBuilder builder, JsonNode root) {
     if (root.isMissingNode()) {
-      throw new IllegalArgumentException(
-        mpMessageBundle.getString("ROOT_EMPTY_ERROR"));
+      throw new IllegalArgumentException(mpMessageBundle.getString("ROOT_EMPTY_ERROR"));
     }
     // 4 is the minimum of required fields, 10 the maximum with optional
     // fields, non-conforming models might still get parsed, omitting
     // superfluous information
     if (root.size() < 4 || root.size() > 10) {
-      logger.warning(format(
-        mpMessageBundle.getString("NUM_CHILDREN_NOT_IN_RANGE"), root.size()));
+      logger.warning(format(mpMessageBundle.getString("NUM_CHILDREN_NOT_IN_RANGE"), root.size()));
     }
     logger.info(mpMessageBundle.getString("JSON_PARSER_STARTED"));
     // get Model and set all informational fields
@@ -159,8 +153,7 @@ public class JSONparser {
       }
     }
     if (id.isMissingNode()) {
-      throw new IllegalArgumentException(
-        mpMessageBundle.getString("MODEL_NULL_ERROR"));
+      throw new IllegalArgumentException(mpMessageBundle.getString("MODEL_NULL_ERROR"));
     } else {
       model.setId(correctId(crop(id.toString())));
     }
@@ -186,8 +179,7 @@ public class JSONparser {
       model.setVersion(version.asInt());
     }
     // Generate basic unit:
-    UnitDefinition ud =
-      builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
+    UnitDefinition ud = builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
     ModelBuilder.buildUnit(ud, 1d, -3, Unit.Kind.MOLE, 1d);
     ModelBuilder.buildUnit(ud, 1d, 0, Unit.Kind.GRAM, -1d);
     ModelBuilder.buildUnit(ud, 3600d, 0, Unit.Kind.SECOND, -1d);
@@ -230,8 +222,7 @@ public class JSONparser {
    */
   private void parseMetabolites(ModelBuilder builder, JsonNode metabolites) {
     if (metabolites.isMissingNode()) {
-      throw new IllegalArgumentException(
-        mpMessageBundle.getString("METABOLITES_MISSING"));
+      throw new IllegalArgumentException(mpMessageBundle.getString("METABOLITES_MISSING"));
     }
     int metSize = metabolites.size();
     logger.info(format(mpMessageBundle.getString("NUM_METABOLITES"), metSize));
@@ -244,9 +235,7 @@ public class JSONparser {
       String id = crop(current.path("id").toString());
       if ((id != null) && (!id.isEmpty())) {
         BiGGId biggId = new BiGGId(correctId(id));
-        if (!biggId.isSetPrefix()
-          && !PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(biggId.toBiGGId())
-                                              .find()) {
+        if (!biggId.isSetPrefix() && !PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(biggId.toBiGGId()).find()) {
           biggId.setPrefix(METABOLITE_PREFIX);
         }
         Species species = model.createSpecies(biggId.toBiGGId());
@@ -257,8 +246,7 @@ public class JSONparser {
         String charge = crop(current.path("charge").toString());
         String formula = crop(current.path("formula").toString());
         if ((formula != null) || (charge != null)) {
-          FBCSpeciesPlugin specPlug =
-            (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+          FBCSpeciesPlugin specPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
           if (!formula.isEmpty()) {
             specPlug.setChemicalFormula(formula);
           }
@@ -269,9 +257,7 @@ public class JSONparser {
         }
         String csense = crop(current.path("_constraint_sense").toString());
         if (csense != null && !csense.isEmpty() && !csense.equals("E")) {
-          logger.severe(
-            format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"),
-              species.getId()));
+          logger.severe(format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"), species.getId()));
         }
         String compartment = crop(current.path("compartment").toString());
         if (compartment != null && !compartment.isEmpty()) {
@@ -307,8 +293,7 @@ public class JSONparser {
    */
   private void parseGenes(ModelBuilder builder, JsonNode genes) {
     if (genes.isMissingNode()) {
-      throw new IllegalArgumentException(
-        mpMessageBundle.getString("GENES_MISSING"));
+      throw new IllegalArgumentException(mpMessageBundle.getString("GENES_MISSING"));
     }
     int genSize = genes.size();
     logger.info(format(mpMessageBundle.getString("NUM_GENES"), genSize));
@@ -316,8 +301,7 @@ public class JSONparser {
       return;
     }
     Model model = builder.getModel();
-    FBCModelPlugin modelPlug =
-      (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+    FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     // "name", "id", "notes", "annotations"
     for (int counter = 0; counter < genSize; counter++) {
       JsonNode current = genes.path(counter);
@@ -335,8 +319,7 @@ public class JSONparser {
         if (name != null && name.length() > 0) {
           gp.setName(name);
         } else {
-          throw new IllegalArgumentException(
-            mpMessageBundle.getString("GP_NAME_MISSING") + gp.getId());
+          throw new IllegalArgumentException(mpMessageBundle.getString("GP_NAME_MISSING") + gp.getId());
         }
         if (notes != null && !notes.isEmpty()) {
           try {
@@ -364,8 +347,7 @@ public class JSONparser {
   @SuppressWarnings("unchecked")
   private void parseReactions(ModelBuilder builder, JsonNode reactions) {
     if (reactions.isMissingNode()) {
-      throw new IllegalArgumentException(
-        mpMessageBundle.getString("REACTIONS_MISSING"));
+      throw new IllegalArgumentException(mpMessageBundle.getString("REACTIONS_MISSING"));
     }
     int reactSize = reactions.size();
     logger.info(format(mpMessageBundle.getString("NUM_REACTIONS"), reactSize));
@@ -386,23 +368,19 @@ public class JSONparser {
         if (name != null && !name.isEmpty()) {
           r.setName(name);
         }
-        FBCReactionPlugin rPlug =
-          (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+        FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
         // used the definition of reversibility given by the cobrapy sbml module
         if (current.path("lower_bound").asDouble() < 0) {
           r.setReversible(true);
         }
-        rPlug.setLowerFluxBound(builder.buildParameter(r.getId() + "_lb", null,
-          current.path("lower_bound").asDouble(), true, (String) null));
-        rPlug.setUpperFluxBound(builder.buildParameter(r.getId() + "_ub", null,
-          current.path("upper_bound").asDouble(), true, (String) null));
-        String[] metabolites = METABOLITE_DELIMITER.split(
-          crop(current.path("metabolites").toString()));
+        rPlug.setLowerFluxBound(
+          builder.buildParameter(r.getId() + "_lb", null, current.path("lower_bound").asDouble(), true, (String) null));
+        rPlug.setUpperFluxBound(
+          builder.buildParameter(r.getId() + "_ub", null, current.path("upper_bound").asDouble(), true, (String) null));
+        String[] metabolites = METABOLITE_DELIMITER.split(crop(current.path("metabolites").toString()));
         for (int i = 0; i < metabolites.length; i++) {
-          String type = crop(
-            metabolites[i].substring(0, metabolites[i].indexOf("\":") + 1));
-          String value = metabolites[i].substring(
-            metabolites[i].indexOf("\":") + 2, metabolites[i].length());
+          String type = crop(metabolites[i].substring(0, metabolites[i].indexOf("\":") + 1));
+          String value = metabolites[i].substring(metabolites[i].indexOf("\":") + 2, metabolites[i].length());
           // The JSON Strings for value are inconsistent, some use
           // quotation marks, some do not
           if (value.startsWith("\"")) {
@@ -415,8 +393,7 @@ public class JSONparser {
             logException(e);
           }
           BiGGId metId = new BiGGId(correctId(type));
-          if (!PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(metId.toBiGGId())
-                                               .find()) {
+          if (!PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(metId.toBiGGId()).find()) {
             metId.setPrefix(METABOLITE_PREFIX);
           }
           if (ast.getChildCount() > 1) {
@@ -427,8 +404,7 @@ public class JSONparser {
               param.setId(paramString);
               param.setConstant(false);
             }
-            String mId =
-              correctId(r.getId() + "_Reac_Prod_" + metId.toBiGGId());
+            String mId = correctId(r.getId() + "_Reac_Prod_" + metId.toBiGGId());
             AssignmentRule rule = model.createAssignmentRule();
             rule.setMath(ast);
             rule.setMetaId(mId);
@@ -443,9 +419,7 @@ public class JSONparser {
               Species species = model.getSpecies(metId.toBiGGId());
               if (species == null) {
                 species = model.createSpecies(metId.toBiGGId());
-                logger.info(
-                  format(mpMessageBundle.getString("SPECIES_UNDEFINED"), metId,
-                    r.getId()));
+                logger.info(format(mpMessageBundle.getString("SPECIES_UNDEFINED"), metId, r.getId()));
               }
               if (coeff < 0d) {
                 ModelBuilder.buildReactants(r, pairOf(-coeff, species));
@@ -455,15 +429,13 @@ public class JSONparser {
             }
           }
         }
-        String geneReactionRule =
-          crop(current.path("gene_reaction_rule").toString());
+        String geneReactionRule = crop(current.path("gene_reaction_rule").toString());
         if (geneReactionRule != null && !geneReactionRule.isEmpty()) {
           SBMLUtils.parseGPR(r, geneReactionRule, false);
         }
         String subsystem = crop(current.path("subsystem").toString());
         if (subsystem != null && !subsystem.isEmpty()) {
-          GroupsModelPlugin groupsModelPlugin =
-            (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
+          GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
           Group group = null;
           for (Group existingGroup : groupsModelPlugin.getListOfGroups()) {
             if (name.equals(existingGroup.getName())) {
@@ -478,8 +450,7 @@ public class JSONparser {
           }
           SBMLUtils.createSubsystemLink(r, group.createMember());
         }
-        FBCModelPlugin fbc =
-          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         Objective obj = fbc.getObjective(0);
         if (obj == null) {
           obj = fbc.createObjective("obj");
@@ -556,8 +527,7 @@ public class JSONparser {
     // May contain letters, digits or '_'
     for (int i = 0; i < id.length(); i++) {
       c = id.charAt(i);
-      if (((c == ' ') || (c < 48) || ((57 < c) && (c < 65))
-        || ((90 < c) && (c < 97)))) {
+      if (((c == ' ') || (c < 48) || ((57 < c) && (c < 65)) || ((90 < c) && (c < 97)))) {
         if (i < id.length() - 1) {
           newId.append('_'); // Replace spaces and special characters
           // with "_"
@@ -567,8 +537,7 @@ public class JSONparser {
       }
     }
     if (!newId.toString().equals(id)) {
-      logger.fine(
-        format(mpMessageBundle.getString("CHANGED_METABOLITE_ID"), id, newId));
+      logger.fine(format(mpMessageBundle.getString("CHANGED_METABOLITE_ID"), id, newId));
     }
     return newId.toString();
   }
@@ -591,7 +560,6 @@ public class JSONparser {
    * @param exc
    */
   private void logException(Exception exc) {
-    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(),
-      Utils.getMessage(exc)));
+    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(), Utils.getMessage(exc)));
   }
 }

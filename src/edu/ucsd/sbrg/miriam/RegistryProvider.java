@@ -1,11 +1,8 @@
 package edu.ucsd.sbrg.miriam;
 
-import edu.ucsd.sbrg.miriam.xjc.Miriam;
-import edu.ucsd.sbrg.miriam.xjc.Uri;
-import edu.ucsd.sbrg.miriam.xjc.Uris;
-
 import javax.xml.bind.JAXBException;
-import java.util.HashMap;
+
+import edu.ucsd.sbrg.miriam.xjc.Miriam;
 
 public class RegistryProvider {
 
