@@ -7,7 +7,7 @@ echo "Started conversion of local PostgreSQL BiGGDB to SQLite..." \
 && echo "Finished dumping PostgreSQL DB data." \
 && python cleanup_dump.py \
 && echo "Finished cleanup for migration to SQLite." \
-&& sqlite3 "PRAGMA foreign_keys = ON" ".read schema.sql" ".read converted.sql" ".save bigg.sqlite" \
+&& sqlite3 "" ".read schema.sql" ".read converted.sql" ".save bigg.sqlite" \
 && echo "Finished creating SQLite DB." \
 && echo "Generating checksum..." \
 && md5sum bigg.sqlite > bigg.md5 \

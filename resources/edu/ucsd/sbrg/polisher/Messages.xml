@@ -125,6 +125,7 @@
     <entry key="READ_FILE_INFO">Reading input file {0}.</entry>
     <entry key="READ_HTML_ERROR">Could not read whole file</entry>
     <entry key="ROOT_EMPTY_ERROR">Root node is empty, model could not be parsed.</entry>
+    <entry key="RST_NOT_UNIQUE">Result obtained for {0} and parameters {1} not unique, omitting.</entry>
     <entry key="RST_ONLY_FIRST_USED">ResultSet contains more than one element, but only first one is used for query {0}</entry>
     <entry key="SBML_VAL_DESC">If true, the created SBML file will be validated through the online validator service at http://sbml.org.</entry>
     <entry key="SET_ABREV_FAILED">Could not set abbreviation: {0}</entry>

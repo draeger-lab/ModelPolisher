@@ -65,6 +65,7 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
@@ -144,7 +145,7 @@ public class BiGGDB {
     String query = "SELECT DISTINCT mr." + COLUMN_SUBSYSTEM + "\n FROM " + REACTION + " r, " + MODEL + " m, "
       + MODEL_REACTION + " mr\n" + "WHERE m." + COLUMN_BIGG_ID + " = '%s' AND\n r." + COLUMN_BIGG_ID
       + " = '%s' AND\n m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND\n r." + COLUMN_ID + " = mr."
-      + COLUMN_REACTION_ID + " AND\n length(mr." + COLUMN_SUBSYSTEM + ") > 0";
+      + COLUMN_REACTION_ID + " AND\n LENGTH(mr." + COLUMN_SUBSYSTEM + ") > 0";
     List<String> list = new LinkedList<>();
     try {
       ResultSet rst = connector.query(query, modelBiGGid, reactionBiGGid);
@@ -171,8 +172,8 @@ public class BiGGDB {
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
-      + " AND length(mcc." + COLUMN_FORMULA + ") > 0";
-    return getString(query, componentId, compartmentId);
+      + " AND LENGTH(mcc." + COLUMN_FORMULA + ") > 0";
+    return getStringUnique(query, componentId, compartmentId);
   }
 
 
@@ -184,10 +185,11 @@ public class BiGGDB {
    * @return
    */
   String getChemicalFormula(String biggId, String modelId) {
-    String query = "SELECT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
-      + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
-      + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
-      + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID + ";";
+    String query =
+      "SELECT DISTINCT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
+        + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID
+        + " AND\n cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
+        + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID;
     return getString(query, biggId, modelId);
   }
 
@@ -293,8 +295,8 @@ public class BiGGDB {
    * @param modelId
    * @return
    */
-  public String getGeneReactionRule(String reactionId, String modelId) {
-    return getString("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
+  public List<String> getGeneReactionRule(String reactionId, String modelId) {
+    return getReactionRules("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
       + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS " + COLUMN_GENE_REACTION_RULE + FROM
       + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r." + COLUMN_ID + " = mr." + COLUMN_REACTION_ID
       + " AND m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND mr." + COLUMN_GENE_REACTION_RULE
@@ -432,6 +434,30 @@ public class BiGGDB {
       + COMPARTMENTALIZED_COMPONENT + "')";
   }
 
+  /**
+   * @param query
+   * @param args
+   * @return
+   */
+  public List<String> getReactionRules(String query, Object... args) {
+    try {
+      ResultSet rst = connector.query(query, args);
+      List<String> result = new ArrayList<>();
+      if (rst.isBeforeFirst()) {
+        while (rst.next()) {
+          String tmp = rst.getString(1);
+          if (tmp != null) {
+            result.add(tmp);
+          }
+        }
+      }
+      rst.getStatement().close();
+      return result;
+    } catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return new ArrayList<>();
+  }
 
   /**
    * @param query
@@ -441,11 +467,19 @@ public class BiGGDB {
   public String getString(String query, Object... args) {
     try {
       ResultSet rst = connector.query(query, args);
-      String result = rst.next() ? rst.getString(1) : "";
-      rst.getStatement().close();
+      String result = "";
+      if (rst.isBeforeFirst()) {
+        while (rst.next()) {
+          result = rst.getString(1);
+          if (result != null) {
+            break;
+          }
+        }
+      }
       if (rst.next()) {
         logger.warning(format(mpMessageBundle.getString("RST_ONLY_FIRST_USED"), query));
       }
+      rst.getStatement().close();
       return result;
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
@@ -453,6 +487,35 @@ public class BiGGDB {
     return "";
   }
 
+  /**
+   * @param query
+   * @param args
+   * @return
+   */
+  public String getStringUnique(String query, Object... args) {
+    String type = query.contains("mcc.formula")? "formula":"charge";
+    try {
+      ResultSet rst = connector.query(query, args);
+      String result = "";
+      if (rst.isBeforeFirst()) {
+        while (rst.next()) {
+          result = rst.getString(1);
+          if (result != null) {
+            break;
+          }
+        }
+      }
+      if (rst.next()) {
+        logger.warning(format(mpMessageBundle.getString("RST_NOT_UNIQUE"), type, args));
+        return "";
+      }
+      rst.getStatement().close();
+      return result;
+    } catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return "";
+  }
 
   /**
    * @param biggId
@@ -540,8 +603,8 @@ public class BiGGDB {
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
-      + " AND length(mcc." + COLUMN_CHARGE + ") > 0";
-    String charge = getString(query, componentId, compartmentId);
+      + " AND LENGTH(CAST( mcc." + COLUMN_CHARGE + " AS text)) > 0";
+    String charge = getStringUnique(query, componentId, compartmentId);
     if (charge == null || charge.trim().length() == 0) {
       return null;
     }
@@ -557,10 +620,11 @@ public class BiGGDB {
    * @return
    */
   public Integer getCharge(String biggId, String modelId) {
-    String query = "SELECT mcc." + COLUMN_CHARGE + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
-      + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
-      + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
-      + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID;
+    String query =
+      "SELECT DISTINCT mcc." + COLUMN_CHARGE + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT + " cc,\n"
+        + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
+        + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
+        + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID;
     String charge = getString(query, biggId, modelId);
     if ((charge == null) || (charge.trim().length() == 0)) {
       return null;
