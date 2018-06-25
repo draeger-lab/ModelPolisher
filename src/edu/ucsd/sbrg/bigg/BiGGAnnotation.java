@@ -454,7 +454,10 @@ public class BiGGAnnotation {
     if ((name != null) && !name.equals(reaction.getName())) {
       reaction.setName(polisher.polishName(name));
     }
-    SBMLUtils.parseGPR(reaction, bigg.getGeneReactionRule(id, reaction.getModel().getId()), polisher.omitGenericTerms);
+    List<String> geneReactionRules = bigg.getGeneReactionRule(id, reaction.getModel().getId());
+    for (String geneRactionRule : geneReactionRules) {
+      SBMLUtils.parseGPR(reaction, geneRactionRule, polisher.omitGenericTerms);
+    }
     parseSubsystems(reaction, biggId);
     setCVTermResources(reaction, biggId);
   }
@@ -546,7 +549,7 @@ public class BiGGAnnotation {
     if (label == null) {
       return;
     }
-    // fix not updated geneProductReferece in Association
+    // fix not updated geneProductReference in Association
     SBMLUtils.updateGeneProductReference(geneProduct);
     setCVTermResources(geneProduct, label);
     if (geneProduct.getCVTermCount() > 0) {

@@ -63,6 +63,7 @@ def clean_schema():
                 or line.startswith("CREATE EXTENSION") \
                 or line.startswith("COMMENT") \
                 or "OWNER" in line \
+                or "is_version" in line \
                 or "SELECT pg_catalog.setval(" in line \
                 or "SCHEMA" in line:
             line = ""
@@ -95,18 +96,27 @@ def fix_index(line):
 def clean_data():
     with open("bigg.sql") as file:
         content = file.readlines()
-    output = []
+    output = ["BEGIN;"]
+    found_start = False
     for line in content:
-        if line.startswith("--") \
+        if line.startswith("SET search_path = public, pg_catalog;"):
+            line = ""
+            found_start = True
+        elif not found_start:
+            continue
+        elif line.startswith("--") \
                 or line.startswith("SET") \
                 or line.startswith("COPY") \
-                or "SELECT pg_catalog.setval(" in line \
-                or "database_version" in line:
+                or "SELECT pg_catalog.setval(" in line:
             line = ""
+        elif "database_version" in line:
+            line = line.replace("is_version, ", "")
+            line = line.replace("'is_version', ", "")
         line = line.replace("true", "1")
         line = line.replace("false", "0")
         if line.strip() != "":
             output.append(line)
+    output.append("COMMIT;")
     with open("converted.sql", "w") as db:
         db.write("".join(output))
 
