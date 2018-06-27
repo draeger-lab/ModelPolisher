@@ -13,7 +13,7 @@ elif [ ! $(which python3) ]; then
 fi
 
 echo "Fetching checksum file"
-curl -L -o bigg.zip.md5 https://www.dropbox.com/s/7nreu6rgy1j2mex/bigg.zip.md5\?dl=\0
+curl -L -o bigg.zip.md5 https://www.dropbox.com/s/a7y8ag0rkgzs0y6/bigg.zip.md5?dl=0
 cp bigg.zip.md5 ../resources/edu/ucsd/sbrg/bigg/
 
 # check if db exists and is valid
@@ -26,7 +26,7 @@ if [ ! -f ../resources/edu/ucsd/sbrg/bigg/bigg.zip ] || ! md5sum -c ../resources
         else
             echo "Fetching bigg.zip"
         fi
-        curl -L -o bigg.zip https://www.dropbox.com/s/0j3pozc7a0p2b94/bigg.zip\?dl\=0
+        curl -L -o bigg.zip https://www.dropbox.com/s/yxti7sba6hrhukb/bigg.zip?dl=0
         counter=$((counter+1))
     done
     # cleanup
