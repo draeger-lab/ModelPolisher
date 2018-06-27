@@ -131,10 +131,28 @@ public class SBMLUtils {
         Association association = SBMLUtils.convertToAssociation(
           ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
           omitGenericTerms);
-        if (!plugin.isSetGeneProductAssociation()
-          || !association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+        if (!plugin.isSetGeneProductAssociation()) {
           GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
           gpa.setAssociation(association);
+          plugin.setGeneProductAssociation(gpa);
+        } else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+          Association old_association = plugin.getGeneProductAssociation().getAssociation();
+          GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+          // link all GPRs fetched with or
+          LogicalOperator or = new Or(r.getLevel(), r.getVersion());
+          if (!omitGenericTerms) {
+            or.setSBOTerm(174); // OR
+          }
+          if (old_association instanceof GeneProductRef || old_association instanceof And) {
+            or.addAssociation(old_association);
+            or.addAssociation(association);
+            gpa.setAssociation(or);
+          } else {
+            // should be LogicalOperator based on outer if
+            // TODO: fix or nestedness
+            ((LogicalOperator) old_association).addAssociation(association);
+            gpa.setAssociation(old_association);
+          }
           plugin.setGeneProductAssociation(gpa);
         }
       } catch (Throwable exc) {
@@ -199,6 +217,7 @@ public class SBMLUtils {
     if (id.startsWith("G_")) {
       id = id.split("G_")[1];
     }
+    // does findUniqueSBase work here?
     for (Reaction r : gp.getModel().getListOfReactions()) {
       for (int childIdx = 0; childIdx < r.getChildCount(); childIdx++) {
         TreeNode child = r.getChildAt(childIdx);
@@ -209,7 +228,32 @@ public class SBMLUtils {
             if (id.equals(gpr.getGeneProduct())) {
               gpr.setGeneProduct(gp.getId());
             }
+          } else if (association instanceof LogicalOperator) {
+            processNested(association, gp, id);
           }
+        }
+      }
+    }
+  }
+
+
+  /**
+   * @param association
+   * @param gp
+   * @param id
+   */
+  private static void processNested(Association association, GeneProduct gp, String id) {
+    for (int idx = 0; idx < association.getChildCount(); idx++) {
+      TreeNode child = association.getChildAt(idx);
+      if (child instanceof LogicalOperator) {
+        processNested((Association) child, gp, id);
+      } else {
+        // has to GeneProductReference
+        GeneProductRef gpr = (GeneProductRef) child;
+        if (id.equals(gpr.getGeneProduct())) {
+          // if should be unique
+          gpr.setGeneProduct(gp.getId());
+          break;
         }
       }
     }

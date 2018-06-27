@@ -659,7 +659,7 @@ public class BiGGAnnotation {
     if (resource == null) {
       logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), report_resource, collection));
     }
-    logger.fine(format("Added resource ", resource));
+    logger.fine(format("Added resource {0}", resource));
     return resource;
   }
 
