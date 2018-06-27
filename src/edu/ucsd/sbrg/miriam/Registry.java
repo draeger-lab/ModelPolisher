@@ -159,9 +159,17 @@ public class Registry {
    * @return
    */
   public static String getIdentifierFromURI(String resource) {
-    String[] split = resource.split("/");
-    int len = split.length;
-    return split[len - 1];
+    String identifiersURL = "identifiers.org";
+    if (resource.contains(identifiersURL)) {
+      // We know where the id should be in identifiers.org URLs
+      resource = resource.substring(resource.indexOf(identifiersURL) + identifiersURL.length() + 1);
+      return resource.substring(resource.indexOf("/")+1);
+    } else {
+      // assume last part after slash is ID
+      String[] split = resource.split("/");
+      int len = split.length;
+      return split[len - 1];
+    }
   }
 
 
