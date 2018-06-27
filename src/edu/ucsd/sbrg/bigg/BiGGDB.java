@@ -126,10 +126,7 @@ public class BiGGDB {
    */
   public Date getBiGGVersion() {
     try {
-      long now = System.nanoTime();
-      Date date = getDate(SELECT + COLUMN_DATE_TIME + FROM + DATABASE_VERSION);
-      logger.finest(format("{0}",System.nanoTime()-now));
-      return date;
+      return getDate(SELECT + COLUMN_DATE_TIME + FROM + DATABASE_VERSION);
     } catch (SQLException exc) {
       logger.finest(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
@@ -145,7 +142,6 @@ public class BiGGDB {
    * @return
    */
   public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
-    long now = System.nanoTime();
     String query = "SELECT DISTINCT mr." + COLUMN_SUBSYSTEM + "\n FROM " + REACTION + " r, " + MODEL + " m, "
       + MODEL_REACTION + " mr\n" + "WHERE m." + COLUMN_BIGG_ID + " = '%s' AND\n r." + COLUMN_BIGG_ID
       + " = '%s' AND\n m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND\n r." + COLUMN_ID + " = mr."
@@ -159,8 +155,6 @@ public class BiGGDB {
       rst.getStatement().close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return list;
   }
@@ -174,15 +168,12 @@ public class BiGGDB {
    * @return
    */
   String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
-    long now = System.nanoTime();
     String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
-      + " AND LENGTH(mcc." + COLUMN_FORMULA + ") > 0";
-    String result =getStringUnique(query, componentId, compartmentId);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+      + " AND LENGTH(mcc." + COLUMN_FORMULA + ") > 0 ORDER BY mcc." + COLUMN_FORMULA;
+    return getStringUnique(query, componentId, compartmentId);
   }
 
 
@@ -194,15 +185,12 @@ public class BiGGDB {
    * @return
    */
   String getChemicalFormula(String biggId, String modelId) {
-    long now = System.nanoTime();
     String query =
       "SELECT DISTINCT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
         + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID
         + " AND\n cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
         + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID;
-    String result = getString(query, biggId, modelId);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+    return getString(query, biggId, modelId);
   }
 
 
@@ -211,11 +199,8 @@ public class BiGGDB {
    * @return
    */
   String getCompartmentName(BiGGId biggId) {
-    long now = System.nanoTime();
-    String result =  getString(SELECT + COLUMN_NAME + FROM + COMPARTMENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
+    return getString(SELECT + COLUMN_NAME + FROM + COMPARTMENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
       biggId.getAbbreviation());
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
   }
 
 
@@ -236,11 +221,8 @@ public class BiGGDB {
    * @return
    */
   String getComponentType(BiGGId biggId) {
-    long now = System.nanoTime();
-    String result =  getString(SELECT + COLUMN_TYPE + FROM + COMPONENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
+    return getString(SELECT + COLUMN_TYPE + FROM + COMPONENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
       biggId.getAbbreviation());
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
   }
 
 
@@ -265,7 +247,6 @@ public class BiGGDB {
    * @return
    */
   public TreeSet<String> getGeneIds(String label) {
-    long now = System.nanoTime();
     TreeSet<String> set = new TreeSet<>();
     String query = SELECT + URL_PREFIX + ", s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, "
       + GENOME_REGION + " gr\n" + "WHERE d." + COLUMN_ID + " = s." + COLUMN_DATA_SOURCE_ID + " AND\n s." + COLUMN_OME_ID
@@ -293,8 +274,6 @@ public class BiGGDB {
       rst.getStatement().close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return set;
   }
@@ -305,13 +284,10 @@ public class BiGGDB {
    * @return
    */
   String getGeneName(String label) {
-    long now = System.nanoTime();
     String query = "SELECT s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, " + GENOME_REGION
       + " gr\n" + "WHERE d." + COLUMN_ID + " = s." + COLUMN_DATA_SOURCE_ID + " AND\n s." + COLUMN_OME_ID + " = gr."
       + COLUMN_ID + " AND\n gr." + COLUMN_BIGG_ID + " = '%s' AND\n d." + COLUMN_BIGG_ID + " LIKE " + REFSEQ_NAME;
-    String result =  getString(query, label);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+    return getString(query, label);
   }
 
 
@@ -321,15 +297,12 @@ public class BiGGDB {
    * @return
    */
   public List<String> getGeneReactionRule(String reactionId, String modelId) {
-    long now = System.nanoTime();
-    List<String> result = getReactionRules("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
+    return getReactionRules("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
       + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS " + COLUMN_GENE_REACTION_RULE + FROM
       + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r." + COLUMN_ID + " = mr." + COLUMN_REACTION_ID
       + " AND m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND mr." + COLUMN_GENE_REACTION_RULE
       + " IS NOT NULL AND " + " LENGTH(mr." + COLUMN_GENE_REACTION_RULE + ") > 0 AND r." + COLUMN_BIGG_ID
-      + " = '%s' AND m." + COLUMN_BIGG_ID + " = '%s'", reactionId, modelId);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+      + " = '%s' AND m." + COLUMN_BIGG_ID + " = '%s' ORDER BY mr." + COLUMN_ID, reactionId, modelId);
   }
 
 
@@ -380,11 +353,8 @@ public class BiGGDB {
    * @return
    */
   String getOrganism(String biggId) {
-    long now = System.nanoTime();
-    String result = getString("SELECT g." + COLUMN_ORGANISM + FROM + GENOME + " g, " + MODEL + " m WHERE m." + COLUMN_GENOME_ID
+    return getString("SELECT g." + COLUMN_ORGANISM + FROM + GENOME + " g, " + MODEL + " m WHERE m." + COLUMN_GENOME_ID
       + " = g." + COLUMN_ID + " AND m." + COLUMN_BIGG_ID + " = '%s'", biggId);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
   }
 
 
@@ -394,10 +364,7 @@ public class BiGGDB {
    * @throws SQLException
    */
   public List<Pair<String, String>> getPublications(BiGGId biggId) throws SQLException {
-    long now = System.nanoTime();
-    List<Pair<String, String>> result = getPublications(biggId.getAbbreviation());
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+    return getPublications(biggId.getAbbreviation());
   }
 
 
@@ -407,7 +374,6 @@ public class BiGGDB {
    * @throws SQLException
    */
   public List<Pair<String, String>> getPublications(String biggId) throws SQLException {
-    long now = System.nanoTime();
     ResultSet rst =
       connector.query("SELECT p." + COLUMN_REFERENCE_TYPE + ", p." + COLUMN_REFERENCE_ID + " FROM  " + PUBLICATION
         + " p, " + PUBLICATION_MODEL + " pm, " + MODEL + " m WHERE p." + COLUMN_ID + " = pm." + COLUMN_PUBLICATION_ID
@@ -418,7 +384,6 @@ public class BiGGDB {
       list.add(pairOf(key.equals("pmid") ? "pubmed" : key, rst.getString(2)));
     }
     rst.getStatement().close();
-    logger.finest(format("{0}",System.nanoTime()-now));
     return list;
   }
 
@@ -428,10 +393,7 @@ public class BiGGDB {
    * @return
    */
   public String getReactionName(String biggId) {
-    long now = System.nanoTime();
-    String result = getString(SELECT + COLUMN_NAME + FROM + REACTION + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId);
-    logger.finest(format("{0}",System.nanoTime()-now));
-    return result;
+    return getString(SELECT + COLUMN_NAME + FROM + REACTION + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId);
   }
 
 
@@ -443,7 +405,6 @@ public class BiGGDB {
    * @throws SQLException
    */
   public TreeSet<String> getResources(BiGGId biggId, boolean includeAnyURI, boolean isReaction) throws SQLException {
-    long now = System.nanoTime();
     String type = isReaction ? REACTION : COMPONENT;
     ResultSet rst = connector.query(
       SELECT + connector.concat(URL_PREFIX, "s." + SYNONYM) + " AS " + URL + FROM + type + " t, " + SYNONYM + " s, "
@@ -460,7 +421,6 @@ public class BiGGDB {
       }
     }
     rst.getStatement().close();
-    logger.finest(format("{0}",System.nanoTime()-now));
     return result;
   }
 
@@ -516,14 +476,13 @@ public class BiGGDB {
       if (rst.isBeforeFirst()) {
         while (rst.next()) {
           result = rst.getString(1);
-          if (result != null) {
+          if (result != null && !result.trim().isEmpty()) {
             break;
           }
         }
       }
-      if (rst.next()) {
-        logger.warning(format(mpMessageBundle.getString("RST_ONLY_FIRST_USED"), query));
-      }
+      // Only a result set from getCharge() can have multiple entries, as it is corrected later on,
+      // we don't need to do anything here
       rst.getStatement().close();
       return result;
     } catch (SQLException exc) {
@@ -540,21 +499,24 @@ public class BiGGDB {
    * @return
    */
   public String getStringUnique(String query, String componentID, String compartmentID) {
-    String type = query.contains("mcc.formula") ? "formula" : "charge";
+    String type = query.contains("charge") ? "charge" : "formula";
     try {
       ResultSet rst = connector.query(query, componentID, compartmentID);
       String result = "";
       if (rst.isBeforeFirst()) {
         while (rst.next()) {
           result = rst.getString(1);
-          if (result != null) {
+          if (result != null && !result.trim().isEmpty()) {
             break;
           }
         }
       }
       if (rst.next()) {
-        logger.info(format(mpMessageBundle.getString("RST_NOT_UNIQUE"), type, componentID, compartmentID));
-        return "";
+        String tmp = rst.getString(1);
+        if (tmp != null && !tmp.trim().isEmpty()) {
+          logger.info(format(mpMessageBundle.getString("RST_NOT_UNIQUE"), type, componentID, compartmentID));
+          return "";
+        }
       }
       rst.getStatement().close();
       return result;
@@ -570,14 +532,11 @@ public class BiGGDB {
    * @return
    */
   public Integer getTaxonId(String biggId) {
-    long now = System.nanoTime();
     try {
       return getInt(SELECT + COLUMN_TAXON_ID + FROM + GENOME + " g, " + MODEL + " m WHERE g." + COLUMN_ID + " = m."
         + COLUMN_GENOME_ID + " AND m." + COLUMN_BIGG_ID + " = '%s'", biggId);
     } catch (SQLException exc) {
       logger.warning(format(mpMessageBundle.getString("GET_TAXON_ERROR"), biggId, Utils.getMessage(exc)));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return null;
   }
@@ -588,13 +547,10 @@ public class BiGGDB {
    * @return
    */
   public boolean isCompartment(String biggId) {
-    long now = System.nanoTime();
     try {
       return getInt("SELECT COUNT(*) FROM " + COMPARTMENT + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(format(mpMessageBundle.getString("IS_COMPARTMENT_FAILED"), biggId, Utils.getMessage(exc)));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return false;
   }
@@ -605,13 +561,10 @@ public class BiGGDB {
    * @return
    */
   public boolean isMetabolite(String biggId) {
-    long now = System.nanoTime();
     try {
       return getInt("SELECT COUNT(*) FROM " + COMPONENT + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(format(mpMessageBundle.getString("IS_METABOLITE_FAILED"), biggId, Utils.getMessage(exc)));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return false;
   }
@@ -622,13 +575,10 @@ public class BiGGDB {
    * @return
    */
   public boolean isModel(String biggId) {
-    long now = System.nanoTime();
     try {
       return getInt("SELECT COUNT(*) FROM " + MODEL + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(format(mpMessageBundle.getString("IS_MODEL_FAILED"), biggId, Utils.getMessage(exc)));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return false;
   }
@@ -639,7 +589,6 @@ public class BiGGDB {
    * @return
    */
   public boolean isReaction(String biggId) {
-    long now = System.nanoTime();
     if (biggId.startsWith("R_")) {
       biggId = biggId.substring(2);
     }
@@ -647,8 +596,6 @@ public class BiGGDB {
       return getInt("SELECT COUNT(*) FROM " + REACTION + WHERE + COLUMN_BIGG_ID + " = '%s'", biggId) > 0;
     } catch (SQLException exc) {
       logger.warning(format(mpMessageBundle.getString("IS_REACTION_FAILED"), biggId, Utils.getMessage(exc)));
-    } finally {
-      logger.finest(format("{0}",System.nanoTime()-now));
     }
     return false;
   }
@@ -662,14 +609,12 @@ public class BiGGDB {
    * @return
    */
   Integer getChargeByCompartment(String componentId, String compartmentId) {
-    long now = System.nanoTime();
     String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
-      + " AND LENGTH(CAST( mcc." + COLUMN_CHARGE + " AS text)) > 0";
+      + " AND LENGTH(CAST( mcc." + COLUMN_CHARGE + " AS text)) > 0 ORDER BY mcc." + COLUMN_CHARGE;
     String charge = getStringUnique(query, componentId, compartmentId);
-    logger.finest(format("{0}",System.nanoTime()-now));
     if (charge == null || charge.trim().length() == 0) {
       return null;
     }
@@ -685,14 +630,12 @@ public class BiGGDB {
    * @return
    */
   public Integer getCharge(String biggId, String modelId) {
-    long now = System.nanoTime();
     String query =
       "SELECT DISTINCT mcc." + COLUMN_CHARGE + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT + " cc,\n"
         + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
         + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID
         + " = '%s' AND\n m." + COLUMN_BIGG_ID + " = '%s' AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID;
     String charge = getString(query, biggId, modelId);
-    logger.finest(format("{0}",System.nanoTime()-now));
     if ((charge == null) || (charge.trim().length() == 0)) {
       return null;
     }
@@ -705,10 +648,8 @@ public class BiGGDB {
    * @return
    */
   public boolean isPseudoreaction(String reactionId) {
-    long now = System.nanoTime();
     String query = SELECT + COLUMN_PSEUDOREACTION + FROM + REACTION + WHERE + COLUMN_BIGG_ID + " = '%s'";
     String result = getString(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
-    logger.finest(format("{0}",System.nanoTime()-now));
     return (result != null) && result.equals("t");
   }
 }
