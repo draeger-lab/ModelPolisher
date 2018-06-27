@@ -458,7 +458,7 @@ public class ModelPolisher extends Launcher {
       count++;
     }
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
-    logger.info(format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
+    logger.info(String.format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
   }
 
 

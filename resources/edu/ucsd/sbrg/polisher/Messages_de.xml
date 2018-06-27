@@ -56,7 +56,7 @@
     <entry key="FAILED_WRITE_NOTES">Konnte Model und Dokument Notizen nicht hinzufügen.</entry>
     <entry key="FIELD_ALREADY_PRESENT">Feld für möglichen Treffer existiert bereits: ''{0}''. ''{1}'' wird ausgelassen</entry>
     <entry key="FIELD_MISSING">Fehlendes Feld: {0}</entry>
-    <entry key="FINISHED_TIME">Beendet in {0,number,##}:{1,number,##} min.</entry>
+    <entry key="FINISHED_TIME">Beendet in %02d:%02d min.</entry>
     <entry key="FLUX_BOUND_ERROR">Die flux bounds von Reaktion {0} können entweder nicht gelöst werden oder haben unzulässige Werte.</entry>
     <entry key="FLUX_BOUNDS_MISSING">Reaktion {0} definiert nicht beide benötigte flux bounds.</entry>
     <entry key="FLUX_BOUND_STRICT_CHANGE">Das Parameter {0} wird als flux bound verwendet, aber eine initiale Zuweisung überschreibt seinen Wert.</entry>
@@ -126,7 +126,6 @@
     <entry key="READ_HTML_ERROR">Konnte Datei nicht vollständig lesen</entry>
     <entry key="ROOT_EMPTY_ERROR">Die Root Node ist leer, Model konnte nicht geparsed werden.</entry>
     <entry key="RST_NOT_UNIQUE">Resultat für {0} und parameter {1} und {2} nicht eindeutig. Das Resultat wird verworfen.</entry>
-    <entry key="RST_ONLY_FIRST_USED">ResultSet enthält mehr als ein Element, aber nur das erste wird benutzt für Query {0}</entry>
     <entry key="SBML_VAL_DESC">Wenn wahr, wird die geschaffene SBML Datei mit dem Online Validierungsservice auf http://sbml.org validiert.</entry>
     <entry key="SET_ABREV_FAILED">Konnte Abkürzung nicht setzen: {0}</entry>
     <entry key="SET_COMPART_CODE_FAILED">Konnte Compartment Code nicht setzen: ''{0}''</entry>

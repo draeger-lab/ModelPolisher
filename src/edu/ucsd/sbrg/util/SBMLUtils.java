@@ -125,41 +125,77 @@ public class SBMLUtils {
    * @param geneReactionRule
    */
   public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
-    FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
       try {
         Association association = SBMLUtils.convertToAssociation(
           ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
           omitGenericTerms);
-        if (!plugin.isSetGeneProductAssociation()) {
-          GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
-          gpa.setAssociation(association);
-          plugin.setGeneProductAssociation(gpa);
-        } else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
-          Association old_association = plugin.getGeneProductAssociation().getAssociation();
-          GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
-          // link all GPRs fetched with or
-          LogicalOperator or = new Or(r.getLevel(), r.getVersion());
-          if (!omitGenericTerms) {
-            or.setSBOTerm(174); // OR
-          }
-          if (old_association instanceof GeneProductRef || old_association instanceof And) {
-            or.addAssociation(old_association);
-            or.addAssociation(association);
-            gpa.setAssociation(or);
-          } else {
-            // should be LogicalOperator based on outer if
-            // TODO: fix or nestedness
-            ((LogicalOperator) old_association).addAssociation(association);
-            gpa.setAssociation(old_association);
-          }
-          plugin.setGeneProductAssociation(gpa);
-        }
+        parseGPR(r, association, omitGenericTerms);
       } catch (Throwable exc) {
         logger.warning(
           MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
       }
     }
+  }
+
+
+  /**
+   * @param r
+   * @param association
+   * @param omitGenericTerms
+   */
+  private static void parseGPR(Reaction r, Association association, boolean omitGenericTerms) {
+    FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+    if (!plugin.isSetGeneProductAssociation()) {
+      GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+      gpa.setAssociation(association);
+      plugin.setGeneProductAssociation(gpa);
+    } else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+      mergeAssociation(r, association, plugin, omitGenericTerms);
+    }
+  }
+
+
+  /**
+   * @param r
+   * @param association
+   * @param plugin
+   * @param omitGenericTerms
+   */
+  private static void mergeAssociation(Reaction r, Association association, FBCReactionPlugin plugin,
+    boolean omitGenericTerms) {
+    Association old_association = plugin.getGeneProductAssociation().getAssociation();
+    plugin.getGeneProductAssociation().unsetAssociation();
+    GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+    // link all GPRs fetched with or
+    LogicalOperator or = new Or(r.getLevel(), r.getVersion());
+    if (!omitGenericTerms) {
+      or.setSBOTerm(174); // OR
+    }
+    if (old_association instanceof And) {
+      or.addAssociation(old_association);
+      or.addAssociation(association);
+      gpa.setAssociation(or);
+    } else if (old_association instanceof GeneProductRef) {
+      if (association instanceof Or) {
+        or = (Or) association;
+      } else {
+        or.addAssociation(association);
+      }
+      or.addAssociation(old_association);
+      gpa.setAssociation(or);
+    } else { // OR
+      if (association instanceof Or) {
+        for (int idx = 0; idx < association.getChildCount(); idx++) {
+          TreeNode child = association.getChildAt(idx);
+          ((LogicalOperator) old_association).addAssociation((Association) child);
+        }
+      } else {
+        ((LogicalOperator) old_association).addAssociation(association);
+      }
+      gpa.setAssociation(old_association);
+    }
+    plugin.setGeneProductAssociation(gpa);
   }
 
 
