@@ -298,10 +298,10 @@ public class BiGGDB {
    */
   public List<String> getGeneReactionRule(String reactionId, String modelId) {
     return getReactionRules("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
-      + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS " + COLUMN_GENE_REACTION_RULE + FROM
+      + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS " + COLUMN_GENE_REACTION_RULE + " FROM "
       + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r." + COLUMN_ID + " = mr." + COLUMN_REACTION_ID
       + " AND m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND mr." + COLUMN_GENE_REACTION_RULE
-      + " IS NOT NULL AND " + " LENGTH(mr." + COLUMN_GENE_REACTION_RULE + ") > 0 AND r." + COLUMN_BIGG_ID
+      + " IS NOT NULL AND  LENGTH(mr." + COLUMN_GENE_REACTION_RULE + ") > 0 AND r." + COLUMN_BIGG_ID
       + " = '%s' AND m." + COLUMN_BIGG_ID + " = '%s' ORDER BY mr." + COLUMN_ID, reactionId, modelId);
   }
 
