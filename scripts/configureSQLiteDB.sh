@@ -12,15 +12,25 @@ elif [ ! $(which python3) ]; then
     exit 1
 fi
 
+function check_md5sum() {
+    WORKDIR=$(pwd)
+    cd ../resources/edu/ucsd/sbrg/bigg/
+    md5sum -c bigg.zip.md5
+    # invert return value with XOR, we want to jump into condition if this fails
+    VAL=$(($? ^ 1))
+    cd "$WORKDIR"
+    return $VAL
+}
+
 echo "Fetching checksum file"
 curl -L -o bigg.zip.md5 https://www.dropbox.com/s/a7y8ag0rkgzs0y6/bigg.zip.md5?dl=0
 cp bigg.zip.md5 ../resources/edu/ucsd/sbrg/bigg/
 
 # check if db exists and is valid
-if [ ! -f ../resources/edu/ucsd/sbrg/bigg/bigg.zip ] || ! md5sum -c ../resources/edu/ucsd/sbrg/bigg/bigg.zip.md5; then
+if [ ! -f ../resources/edu/ucsd/sbrg/bigg/bigg.zip ] ||  check_md5sum; then
     # retry 3 times, if validation fails
     counter=0
-    while [ ${counter} -lt 4 ] && { [ ! -f bigg.zip ] || ! md5sum -c bigg.zip.md5 ; }; do
+    while [ ${counter} -lt 4 ] && { [ ! -f bigg.zip ] || ! md5sum -c bigg.zip.md5; }; do
         if [ ${counter} -gt 0 ]; then
             echo "Failed validating integrity of bigg.zip, retrying ${counter}/3"
         else
