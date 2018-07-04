@@ -16,6 +16,7 @@ import javax.swing.tree.TreeNode;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.ext.fbc.And;
 import org.sbml.jsbml.ext.fbc.Association;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -187,8 +188,9 @@ public class SBMLUtils {
     } else { // OR
       if (association instanceof Or) {
         for (int idx = 0; idx < association.getChildCount(); idx++) {
-          TreeNode child = association.getChildAt(idx);
-          ((LogicalOperator) old_association).addAssociation((Association) child);
+          GeneProductRef child = (GeneProductRef) association.getChildAt(idx);
+          ((Or) association).removeAssociation(idx);
+          ((LogicalOperator) old_association).addAssociation(child);
         }
       } else {
         ((LogicalOperator) old_association).addAssociation(association);
