@@ -5,7 +5,7 @@
 
 *Authors:* [Andreas Dräger](https://github.com/draeger/), [Thomas J. Zajac](https://github.com/mephenor/), [Matthias König](https://github.com/matthiaskoenig)
 
-[![Build Status](https://travis-ci.org/draeger-lab/ModelPolisher.svg?branch=master&style=plastic)](https://travis-ci.org/draeger-lab/ModelPolisher)
+[![Build Status](https://travis-ci.org/draeger-lab/ModelPolisher.svg?branch=master?style=plastic)](https://travis-ci.org/draeger-lab/ModelPolisher)
 [![Stable version](https://img.shields.io/badge/Stable_version-1.7-brightgreen.svg?style=plastic)](https://github.com/draeger-lab/ModelPolisher/releases/)
 [![DOI](http://img.shields.io/badge/DOI-10.1371%20%2F%20journal.pone.0149263-blue.svg?style=plastic)](https://doi.org/10.1371/journal.pone.0149263)
 [![License (MIT)](https://img.shields.io/badge/license-MIT-blue.svg?style=plastic)](http://opensource.org/licenses/MIT)
@@ -20,7 +20,7 @@ ModelPolisher is primarily a command-line based tool. You can run it locally usi
 
 The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
 
-The article http://nar.oxfordjournals.org/content/44/D1/D515 describes BiGG Models knowledge-base including ModelPolisher, http://nar.oxfordjournals.org/content/44/D1/D515
+The article ["BiGG Models: A platform for integrating, standardizing and sharing genome-scale models"](https://nar.oxfordjournals.org/content/44/D1/D515) describes BiGG Models knowledge-base including ModelPolisher.
 
 # Usage
 
