@@ -1,7 +1,9 @@
 #!/bin/python3
 
 import re
-import os
+
+from os import chdir, path
+from sys import argv
 
 parens = re.compile("\(.*\);")
 using = re.compile("USING.*")
@@ -121,4 +123,6 @@ def clean_data():
         db.write("".join(output))
 
 
+scripts_dir = path.dirname(path.abspath(argv[0]))
+chdir(scripts_dir)
 main()
