@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# from https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within/246128#246128
+SCRIPTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+cd "$SCRIPTS_PATH"
+
 echo "Started conversion of local PostgreSQL BiGGDB to SQLite..." \
 && pg_dump --schema-only bigg > bigg_schema.sql \
 && echo "Finished dumping PostgreSQL DB schema" \
