@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+cd "$SCRIPTS_PATH"
+
 # check if all necessary programs are present
 if [ ! $(which curl) ]; then
     echo "curl is missing!"

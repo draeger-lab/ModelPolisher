@@ -132,10 +132,6 @@ clean.doFirst {
 
 // run db setup script, if bigg.sqlite is missing
 if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()) {
-    if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.zip").exists()) {
-        throw new FileNotFoundException("Could not find zipped bigg db at " +
-                "expected path \"resources/edu/ucsd/sbrg/bigg/bigg.zip\"")
-    }
     task setupDB(type: Exec) {
         commandLine "sh", "scripts/configureSQLiteDB.sh"
         println "Setup DB"
