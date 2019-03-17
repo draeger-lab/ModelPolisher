@@ -7,7 +7,7 @@
 ## Find location of this script ##
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-# Default argument values, all other values have to be provided as 
+# Default argument values, all other values have to be provided as
 # arguments for the given mode
 ANNOTATE=false
 COMPRESSION_TYPE=GZIP
@@ -38,7 +38,7 @@ for OPT in $*; do
     --flux-objectives=*) FLUX_OBJECTIVES="${OPT#*=}";;
     --document-title-pattern=*) DOCUMENT_TITLE_PATTERN="${OPT#*=}";;
     --model-notes-file=*) MODEL_NOTES_FILE="{OPT#*=}";;
-    --document-notes-file=*) DOCUMENT_NOTES_FILE="{OPT#*=}";;	
+    --document-notes-file=*) DOCUMENT_NOTES_FILE="{OPT#*=}";;
   esac
 done
 
@@ -79,7 +79,7 @@ if [ -n "$INCLUDE_ANY_URI" ]
 then
     ARGS+=" --include-any-uri=$INCLUDE_ANY_URI"
 fi
-if [ -n "$FLUX_COEFFICENTS" ]
+if [ -n "$FLUX_COEFFICIENTS" ]
 then
     ARGS+=" --flux-coefficients=$FLUX_COEFFICIENTS"
 fi
@@ -89,18 +89,18 @@ then
 fi
 if [ -n "$DOCUMENT_TITLE_PATTERN" ]
 then
-    ARGS+=" --document-title-pattern=$DOCUMENT_TILE_PATTERN"
+    ARGS+=" --document-title-pattern=$DOCUMENT_TITLE_PATTERN"
 fi
 if [ -n "$MODEL_NOTES_FILE" ]
 then
-    ARGS+=" --model-notes-file=$MODEL_NOTES_FILE" 
+    ARGS+=" --model-notes-file=$MODEL_NOTES_FILE"
 fi
 if [ -n "$DOCUMENT_NOTES_FILE" ]
 then
-    ARGS+=" --document-notes-file=$DOCUMENT_NOTES_FILE" 
+    ARGS+=" --document-notes-file=$DOCUMENT_NOTES_FILE"
 fi
 
-"${DIR}/ModelPolisher.sh" $ARGS 
+"${DIR}/ModelPolisher.sh" $ARGS
 
 if [ -e "${DIR}/ModelPolisherTemplate.sh" ] && [ ! -e "${DIR}/ModelPolisherTemplate.bckp" ];
 then
