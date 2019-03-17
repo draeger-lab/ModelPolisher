@@ -28,7 +28,12 @@ The article ["BiGG Models: A platform for integrating, standardizing and sharing
 
 # Usage
 
-After cloning or updating this project run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
+After cloning or updating this project run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.  
+Afterwards ModelPolisher can be built using Gradle, choosing one of four relevant tasks provided:
+* fatJar (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
+* lightJar: with dependencies, without SQLite DB
+* slimJar: without dependencies, but with SQLite DB included
+* bareJar: without dependencies and SQLite DB
 
 # Licenses
 

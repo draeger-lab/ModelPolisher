@@ -34,11 +34,12 @@ dependencies {
     compile "com.diffplug.matsim:matfilerw:3.0.1"
     compile "com.fasterxml.jackson.core:jackson-core:2.9.5"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.5"
-    testCompile "junit:junit:5.1.0"
+    testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
 }
 
 // config for all jar tasks
 tasks.withType(Jar) {
+    dependsOn test
     destinationDir = file("$rootDir/target")
     manifest {
         attributes(
