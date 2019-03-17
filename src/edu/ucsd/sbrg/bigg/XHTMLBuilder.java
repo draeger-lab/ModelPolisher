@@ -5,7 +5,6 @@ package edu.ucsd.sbrg.bigg;
 
 import java.util.Map;
 
-
 /**
  * @author Andreas Dr&auml;ger
  */
@@ -17,15 +16,12 @@ public class XHTMLBuilder {
   private XHTMLBuilder() {
   }
 
+
   /**
    * @param header
    * @param data
    * @param caption
    * @param attributes
-   * @param border
-   * @param padding
-   * @param spacing
-   * @param style
    * @return
    */
   public static String table(Object header[], Object data[][], String caption, Map<String, String> attributes) {
@@ -68,17 +64,17 @@ public class XHTMLBuilder {
     return sb.toString();
   }
 
+
   /**
    * @param sb
    * @param entry
    */
-  public static void appendAttribute(StringBuilder sb,
-    Map.Entry<String, String> entry) {
+  public static void appendAttribute(StringBuilder sb, Map.Entry<String, String> entry) {
     appendAttribute(sb, entry.getKey(), entry.getValue());
   }
 
+
   /**
-   * 
    * @param sb
    * @param key
    * @param value
@@ -93,8 +89,8 @@ public class XHTMLBuilder {
     sb.append('"');
   }
 
+
   /**
-   * 
    * @param content
    * @return
    */
@@ -105,5 +101,4 @@ public class XHTMLBuilder {
     sb.append("\n</p>\n");
     return sb.toString();
   }
-
 }

@@ -39,8 +39,7 @@ public class UpdateListener implements TreeNodeChangeListener {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-    Logger.getLogger(UpdateListener.class.getName());
+  private static final transient Logger logger = Logger.getLogger(UpdateListener.class.getName());
   /**
    * Stores links from geneIds to {@link Association} objects where these are
    * used.
@@ -74,11 +73,9 @@ public class UpdateListener implements TreeNodeChangeListener {
         if (nsb instanceof Reaction) {
           Reaction r = (Reaction) nsb;
           Model model = r.getModel();
-          FBCModelPlugin fbcModelPlug =
-            (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+          FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
           SBMLUtils.updateReactionRef(oldId, newId, fbcModelPlug);
-          Set<Member> subsystems =
-            (Set<Member>) r.getUserObject(SBMLUtils.SUBSYSTEM_LINK);
+          Set<Member> subsystems = (Set<Member>) r.getUserObject(SBMLUtils.SUBSYSTEM_LINK);
           if (subsystems != null) {
             for (Member m : subsystems) {
               m.setIdRef(newId);
@@ -94,8 +91,7 @@ public class UpdateListener implements TreeNodeChangeListener {
           }
         } else {
           logger.severe(
-            MessageFormat.format(mpMessageBundle.getString("ID_CHANGE_WARNING"),
-              nsb.getElementName(), oldId, newId));
+            MessageFormat.format(mpMessageBundle.getString("ID_CHANGE_WARNING"), nsb.getElementName(), oldId, newId));
         }
       }
     }
@@ -113,8 +109,7 @@ public class UpdateListener implements TreeNodeChangeListener {
     // being added.
     if (node instanceof GeneProductRef) {
       GeneProductRef gpr = (GeneProductRef) node;
-      Set<GeneProductRef> geneRefs =
-        geneIdToAssociation.get(gpr.getGeneProduct());
+      Set<GeneProductRef> geneRefs = geneIdToAssociation.get(gpr.getGeneProduct());
       if (geneRefs == null) {
         geneRefs = new HashSet<GeneProductRef>();
         geneIdToAssociation.put(gpr.getGeneProduct(), geneRefs);

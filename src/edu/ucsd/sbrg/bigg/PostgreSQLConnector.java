@@ -50,8 +50,7 @@ public class PostgreSQLConnector extends SQLConnector {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger =
-      Logger.getLogger(PostgreSQLConnector.class.getName());
+  private static final transient Logger logger = Logger.getLogger(PostgreSQLConnector.class.getName());
   /**
    *
    */
@@ -67,12 +66,11 @@ public class PostgreSQLConnector extends SQLConnector {
     if (isConnected()) {
       connection.close();
     }
-    String url = "jdbc:" + properties.getProperty(Keys.dbms.toString()) + "://"
-        + getHost() + ":" + getPort() + "/" + getDatabaseName();
+    String url = "jdbc:" + properties.getProperty(Keys.dbms.toString()) + "://" + getHost() + ":" + getPort() + "/"
+      + getDatabaseName();
     connection = DriverManager.getConnection(url, properties);
     connection.setCatalog(properties.getProperty(Keys.databaseName.toString()));
-    logger.info(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(),
-      getPort(), getDatabaseName()));
+    logger.info(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(), getPort(), getDatabaseName()));
     return connection;
   }
 
@@ -80,7 +78,7 @@ public class PostgreSQLConnector extends SQLConnector {
   /**
    * @return
    */
-  public String getDatabaseName() {
+  private String getDatabaseName() {
     return getProperty(Keys.databaseName);
   }
 
@@ -88,7 +86,7 @@ public class PostgreSQLConnector extends SQLConnector {
   /**
    * @return
    */
-  public String getHost() {
+  private String getHost() {
     return getProperty(Keys.host);
   }
 
@@ -96,7 +94,7 @@ public class PostgreSQLConnector extends SQLConnector {
   /**
    * @return
    */
-  public int getPort() {
+  private int getPort() {
     String port = getProperty(Keys.portNumber);
     return (port != null) ? Integer.parseInt(port) : -1;
   }
@@ -105,7 +103,7 @@ public class PostgreSQLConnector extends SQLConnector {
   /**
    * @return the properties
    */
-  protected Properties getProperties() {
+  private Properties getProperties() {
     return properties;
   }
 
@@ -151,20 +149,17 @@ public class PostgreSQLConnector extends SQLConnector {
    * @param dbName
    * @throws ClassNotFoundException
    */
-  public PostgreSQLConnector(String host, int port, String user,
-    String password, String dbName) throws ClassNotFoundException {
+  PostgreSQLConnector(String host, int port, String user, String password, String dbName)
+    throws ClassNotFoundException {
     Class.forName("org.postgresql.Driver");
     properties = new Properties();
     properties.setProperty(Keys.dbms.toString(), "postgresql");
     properties.setProperty(Keys.host.toString(), host);
     properties.setProperty(Keys.user.toString(), user);
     properties.setProperty(Keys.databaseName.toString(), dbName);
-    properties.setProperty(Keys.password.toString(),
-      password != null ? password : "");
+    properties.setProperty(Keys.password.toString(), password != null ? password : "");
     properties.setProperty(Keys.host.toString(), host);
     properties.setProperty(Keys.portNumber.toString(), Integer.toString(port));
-    logger.fine(format("{0}@{1}:{2}, password={3}", user, host, port,
-      StringTools.fill(password.length(), '*')));
+    logger.fine(format("{0}@{1}:{2}, password={3}", user, host, port, StringTools.fill(password.length(), '*')));
   }
-
 }

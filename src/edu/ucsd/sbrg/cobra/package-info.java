@@ -1,7 +1,6 @@
 /*
  * 
  */
-
 /**
  * @author Andreas Dr&auml;ger
  */

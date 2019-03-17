@@ -5,6 +5,7 @@
 .project
 /build/
 /target/
+/resources/edu/ucsd/sbrg/bigg/bigg.zip
 /resources/edu/ucsd/sbrg/bigg/bigg.sqlite
 /scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
@@ -12,3 +13,4 @@ jsbml.log
 /.DS_Store
 /minimalSysBio.xml
 /model_polisher.log
+/out

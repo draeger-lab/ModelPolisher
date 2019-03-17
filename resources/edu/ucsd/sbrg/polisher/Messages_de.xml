@@ -23,6 +23,8 @@
     <entry key="CHANGE_KEGG_GLYCAN">Ändere KEGG collection zu kegg.glycan</entry>
     <entry key="CHANGED_METABOLITE_ID">Id von ''{0}'' zu ''{1}'' geändert, um der BiGG Id Spezifikation zu entsprechen.</entry>
     <entry key="CHANGED_NAME">Name geändert von ''{0}'' zu ''{1}''</entry>
+    <entry key="CHANGED_REACTOME">Reactome URL {0} zu {1} geändert</entry>
+    <entry key="CHANGED_RHEA">Rhea resource geändert zu {0}</entry>
     <entry key="CHANGED_TO_VARIANT">Namen der nicht getroffenen Enum Variante ''{0}'' zum möglichen Treffer ''{1}'' geändert</entry>
     <entry key="CHARGE_CONTRADICTION">Ladung {0,number,integer} in BiGG Models widerspricht dem eingetragenen Wert {1,number,integer} für Species ''{2}''.</entry>
     <entry key="CHARGE_TO_INT_COBRA">Nicht Integer Ladung {0,number} wurde gekürzt zu {1}.</entry>
@@ -51,9 +53,10 @@
     <entry key="DOC_TITLE_PATTERN_DESC">Diese Option erlaubt die Titel Zeile des SBML Dokuments zu ändern und somit den Titel, der für das Dokument in eienm Browser angezeigt wird.</entry>
     <entry key="EC_CHANGE_FAILED">Konnte EC-Code ''{0}'' nicht berichtigen</entry>
     <entry key="EC_CODES_UNKNOWN">Konnte keinen der EC-Codes aus {0} erkennen.</entry>
+    <entry key="FAILED_WRITE_NOTES">Konnte Model und Dokument Notizen nicht hinzufügen.</entry>
     <entry key="FIELD_ALREADY_PRESENT">Feld für möglichen Treffer existiert bereits: ''{0}''. ''{1}'' wird ausgelassen</entry>
     <entry key="FIELD_MISSING">Fehlendes Feld: {0}</entry>
-    <entry key="FINISHED_TIME">Beendet in {0,number,##}:{1,number,##} min.</entry>
+    <entry key="FINISHED_TIME">Beendet in %02d:%02d min.</entry>
     <entry key="FLUX_BOUND_ERROR">Die flux bounds von Reaktion {0} können entweder nicht gelöst werden oder haben unzulässige Werte.</entry>
     <entry key="FLUX_BOUNDS_MISSING">Reaktion {0} definiert nicht beide benötigte flux bounds.</entry>
     <entry key="FLUX_BOUND_STRICT_CHANGE">Das Parameter {0} wird als flux bound verwendet, aber eine initiale Zuweisung überschreibt seinen Wert.</entry>
@@ -122,6 +125,7 @@
     <entry key="READ_FILE_INFO">Lese Datei {0}.</entry>
     <entry key="READ_HTML_ERROR">Konnte Datei nicht vollständig lesen</entry>
     <entry key="ROOT_EMPTY_ERROR">Die Root Node ist leer, Model konnte nicht geparsed werden.</entry>
+    <entry key="RST_NOT_UNIQUE">Resultat für {0} und parameter {1} und {2} nicht eindeutig. Das Resultat wird verworfen.</entry>
     <entry key="SBML_VAL_DESC">Wenn wahr, wird die geschaffene SBML Datei mit dem Online Validierungsservice auf http://sbml.org validiert.</entry>
     <entry key="SET_ABREV_FAILED">Konnte Abkürzung nicht setzen: {0}</entry>
     <entry key="SET_COMPART_CODE_FAILED">Konnte Compartment Code nicht setzen: ''{0}''</entry>
