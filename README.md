@@ -16,6 +16,10 @@ Moreover, it fixes some apparent errors in the models.
 
 ModelPolisher is primarily a command-line based tool. You can run it locally using your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where "VERSION" needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially _java.lang.OutOfMemoryError: GC overhead limit exceeded_, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
 
+# Caveat
+
+COBRAparser currently does not work with Java 9 due to an incompatibility in its dependency. Please use Java 8.
+
 # How to cite ModelPolisher?
 
 The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
@@ -24,7 +28,7 @@ The article ["BiGG Models: A platform for integrating, standardizing and sharing
 
 # Usage
 
-After cloning or updating this project, make sure to delete `bigg.zip` and `bigg.sqlite` within the folder `resources`. Afterwards run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
+After cloning or updating this project run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.
 
 # Licenses
 

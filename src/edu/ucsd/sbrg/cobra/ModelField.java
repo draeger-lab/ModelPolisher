@@ -5,7 +5,9 @@ package edu.ucsd.sbrg.cobra;
 
 /**
  * For more information about COBRA model fields, see the following
- * <a href="http://www.nature.com/protocolexchange/system/uploads/1808/original/Supplementary_Material.pdf?1304792680">Supplementary Material</a>.
+ * <a href=
+ * "http://www.nature.com/protocolexchange/system/uploads/1808/original/Supplementary_Material.pdf?1304792680">Supplementary
+ * Material</a>.
  * 
  * @author Andreas Dr&auml;ger
  */
@@ -14,6 +16,7 @@ public enum ModelField {
    * Matrix of constraints, form <i>&mu; &sdot; A &sdot; v + B &sdot; v =
    * 0</i> or g(<i>&mu;</i>) &sdot; <i>A &sdot; v + B &sdot; v = 0</i> with
    * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu</i>;
+   * 
    * @see #B
    */
   A,
@@ -42,6 +45,7 @@ public enum ModelField {
    * Matrix of constraints, form <i>&mu; &sdot; A &sdot; v + B &sdot; v =
    * 0</i> or g(<i>&mu;</i>) &sdot; <i>A &sdot; v + B &sdot; v = 0</i> with
    * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu</i>;
+   * 
    * @see #A
    */
   B,
@@ -252,6 +256,7 @@ public enum ModelField {
   rxnNames,
   /**
    * E. C. number for each reaction
+   * 
    * @see #ecNumbers
    */
   rxnECNumbers,
@@ -259,6 +264,7 @@ public enum ModelField {
    * Cell array of strings which can contain optional information on references
    * for each specific reaction.
    * Example:
+   * 
    * <pre>
    * 'Na coupled transport of pyruvate, lactate, and short chain fatty acids, i.e., acetate, propionate, and butyrate mediated by SMCT1
    * </pre>

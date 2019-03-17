@@ -11,9 +11,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.swing.tree.TreeNode;
+
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.ext.fbc.And;
 import org.sbml.jsbml.ext.fbc.Association;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -42,8 +45,7 @@ public class SBMLUtils {
   /**
    * A {@link Logger} for this class.
    */
-  private static final Logger logger =
-    Logger.getLogger(SBMLUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(SBMLUtils.class.getName());
   /**
    * Key to link from {@link Reaction} directly to {@link Member}s referencing
    * that reaction.
@@ -57,8 +59,8 @@ public class SBMLUtils {
    * @param model
    * @return
    */
-  public static Association convertToAssociation(ASTNode ast, String reactionId,
-    Model model, boolean omitGenericTerms) {
+  public static Association convertToAssociation(ASTNode ast, String reactionId, Model model,
+    boolean omitGenericTerms) {
     int level = model.getLevel(), version = model.getVersion();
     if (ast.isLogical()) {
       LogicalOperator operator;
@@ -74,8 +76,7 @@ public class SBMLUtils {
         }
       }
       for (ASTNode child : ast.getListOfNodes()) {
-        Association tmp =
-          convertToAssociation(child, reactionId, model, omitGenericTerms);
+        Association tmp = convertToAssociation(child, reactionId, model, omitGenericTerms);
         if (tmp.getClass().equals(operator.getClass())) {
           // flatten binary trees to compact representation
           LogicalOperator lo = (LogicalOperator) tmp;
@@ -88,8 +89,7 @@ public class SBMLUtils {
       }
       return operator;
     }
-    GeneProductRef gpr = createGPR(ast.toString(), reactionId, model);
-    return gpr;
+    return createGPR(ast.toString(), reactionId, model);
   }
 
 
@@ -99,8 +99,7 @@ public class SBMLUtils {
    * @param model
    * @return
    */
-  public static GeneProductRef createGPR(String identifier, String reactionId,
-    Model model) {
+  public static GeneProductRef createGPR(String identifier, String reactionId, Model model) {
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
     String id = SBMLUtils.updateGeneId(identifier);
@@ -108,15 +107,12 @@ public class SBMLUtils {
     if (!model.containsUniqueNamedSBase(id)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
-        logger.warning(MessageFormat.format(
-          mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
-        FBCModelPlugin fbcPlug =
-          (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
+        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         gp = fbcPlug.createGeneProduct(id);
         gp.setLabel(id);
       } else {
-        logger.info(MessageFormat.format(
-          mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
+        logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
         gp.setId(id);
       }
     }
@@ -129,29 +125,79 @@ public class SBMLUtils {
    * @param r
    * @param geneReactionRule
    */
-  public static void parseGPR(Reaction r, String geneReactionRule,
-    boolean omitGenericTerms) {
-    FBCReactionPlugin plugin =
-      (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+  public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
     if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
       try {
         Association association = SBMLUtils.convertToAssociation(
-          ASTNode.parseFormula(geneReactionRule,
-            new CobraFormulaParser(new StringReader(""))),
-          r.getId(), r.getModel(), omitGenericTerms);
-        if (!plugin.isSetGeneProductAssociation() || !association.equals(
-          plugin.getGeneProductAssociation().getAssociation())) {
-          GeneProductAssociation gpa =
-            new GeneProductAssociation(r.getLevel(), r.getVersion());
-          gpa.setAssociation(association);
-          plugin.setGeneProductAssociation(gpa);
-        }
+          ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
+          omitGenericTerms);
+        parseGPR(r, association, omitGenericTerms);
       } catch (Throwable exc) {
         logger.warning(
-          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"),
-            geneReactionRule, Utils.getMessage(exc)));
+          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
       }
     }
+  }
+
+
+  /**
+   * @param r
+   * @param association
+   * @param omitGenericTerms
+   */
+  private static void parseGPR(Reaction r, Association association, boolean omitGenericTerms) {
+    FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+    if (!plugin.isSetGeneProductAssociation()) {
+      GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+      gpa.setAssociation(association);
+      plugin.setGeneProductAssociation(gpa);
+    } else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+      mergeAssociation(r, association, plugin, omitGenericTerms);
+    }
+  }
+
+
+  /**
+   * @param r
+   * @param association
+   * @param plugin
+   * @param omitGenericTerms
+   */
+  private static void mergeAssociation(Reaction r, Association association, FBCReactionPlugin plugin,
+    boolean omitGenericTerms) {
+    Association old_association = plugin.getGeneProductAssociation().getAssociation();
+    plugin.getGeneProductAssociation().unsetAssociation();
+    GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+    // link all GPRs fetched with or
+    LogicalOperator or = new Or(r.getLevel(), r.getVersion());
+    if (!omitGenericTerms) {
+      or.setSBOTerm(174); // OR
+    }
+    if (old_association instanceof And) {
+      or.addAssociation(old_association);
+      or.addAssociation(association);
+      gpa.setAssociation(or);
+    } else if (old_association instanceof GeneProductRef) {
+      if (association instanceof Or) {
+        or = (Or) association;
+      } else {
+        or.addAssociation(association);
+      }
+      or.addAssociation(old_association);
+      gpa.setAssociation(or);
+    } else { // OR
+      if (association instanceof Or) {
+        for (int idx = 0; idx < association.getChildCount(); idx++) {
+          GeneProductRef child = (GeneProductRef) association.getChildAt(idx);
+          ((Or) association).removeAssociation(idx);
+          ((LogicalOperator) old_association).addAssociation(child);
+        }
+      } else {
+        ((LogicalOperator) old_association).addAssociation(association);
+      }
+      gpa.setAssociation(old_association);
+    }
+    plugin.setGeneProductAssociation(gpa);
   }
 
 
@@ -177,8 +223,7 @@ public class SBMLUtils {
    * @param geneProductAssociation
    * @return
    */
-  public static Set<String> setOfGeneLinks(
-    GeneProductAssociation geneProductAssociation) {
+  public static Set<String> setOfGeneLinks(GeneProductAssociation geneProductAssociation) {
     if (geneProductAssociation.isSetAssociation()) {
       return setOfGeneLinks(geneProductAssociation.getAssociation());
     }
@@ -201,12 +246,64 @@ public class SBMLUtils {
 
 
   /**
+   * Apply updated GeneID to geneProductReferenece
+   * 
+   * @param gp
+   */
+  public static void updateGeneProductReference(GeneProduct gp) {
+    String id = gp.getId();
+    if (id.startsWith("G_")) {
+      id = id.split("G_")[1];
+    }
+    // does findUniqueSBase work here?
+    for (Reaction r : gp.getModel().getListOfReactions()) {
+      for (int childIdx = 0; childIdx < r.getChildCount(); childIdx++) {
+        TreeNode child = r.getChildAt(childIdx);
+        if (child instanceof GeneProductAssociation) {
+          Association association = ((GeneProductAssociation) child).getAssociation();
+          if (association instanceof GeneProductRef) {
+            GeneProductRef gpr = (GeneProductRef) association;
+            if (id.equals(gpr.getGeneProduct())) {
+              gpr.setGeneProduct(gp.getId());
+            }
+          } else if (association instanceof LogicalOperator) {
+            processNested(association, gp, id);
+          }
+        }
+      }
+    }
+  }
+
+
+  /**
+   * @param association
+   * @param gp
+   * @param id
+   */
+  private static void processNested(Association association, GeneProduct gp, String id) {
+    for (int idx = 0; idx < association.getChildCount(); idx++) {
+      TreeNode child = association.getChildAt(idx);
+      if (child instanceof LogicalOperator) {
+        processNested((Association) child, gp, id);
+      } else {
+        // has to GeneProductReference
+        GeneProductRef gpr = (GeneProductRef) child;
+        if (id.equals(gpr.getGeneProduct())) {
+          // if should be unique
+          gpr.setGeneProduct(gp.getId());
+          break;
+        }
+      }
+    }
+  }
+
+
+  /**
    * @param oldId
    * @param newId
    * @param fbcModelPlug
    */
-  public static void updateReactionRef(String oldId, String newId,
-    FBCModelPlugin fbcModelPlug) {
+  public static void updateReactionRef(String oldId, String newId, FBCModelPlugin fbcModelPlug) {
     if ((fbcModelPlug != null) && fbcModelPlug.isSetListOfObjectives()) {
       ListOfObjectives loo = fbcModelPlug.getListOfObjectives();
       for (Objective objective : loo) {
@@ -228,8 +325,7 @@ public class SBMLUtils {
   public static void setRequiredAttributes(Reaction r) {
     // TODO: make defaults user settings or take from L2V5.
     if (!r.isSetId()) {
-      logger.severe(MessageFormat.format(
-        mpMessageBundle.getString("ID_MISSING_FOR_TYPE"), r.getElementName()));
+      logger.severe(MessageFormat.format(mpMessageBundle.getString("ID_MISSING_FOR_TYPE"), r.getElementName()));
     }
     if (!r.isSetFast()) {
       r.setFast(false);
@@ -254,6 +350,7 @@ public class SBMLUtils {
    * @param r
    * @param member
    */
+  @SuppressWarnings("unchecked")
   public static void createSubsystemLink(Reaction r, Member member) {
     member.setIdRef(r);
     if (r.getUserObject(SUBSYSTEM_LINK) == null) {
