@@ -12,6 +12,6 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}/..
 
 ## Launch the program".travis.yml"
-java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en target/ModelPolisher-fat-1.8.jar $@
+java -jar -Xms8G -Xmx8G -Xss128M -Duser.language=en target/ModelPolisher-fat-1.7.jar $@
 
 exit 0
