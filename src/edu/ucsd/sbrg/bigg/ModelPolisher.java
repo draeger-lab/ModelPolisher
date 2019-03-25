@@ -220,7 +220,7 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    */
   private void batchProcess(File input, File output, SBProperties args) throws IOException, XMLStreamException {
-    if (!input.exists()) {
+    if (input == null || !input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
     initParameters(args);
@@ -266,13 +266,13 @@ public class ModelPolisher extends Launcher {
     double[] coefficients = null;
     if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
       String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
-      String coeff[] = c.substring(1, c.length() - 1).split(",");
+      String[] coeff = c.substring(1, c.length() - 1).split(",");
       coefficients = new double[coeff.length];
       for (int i = 0; i < coeff.length; i++) {
         coefficients[i] = Double.parseDouble(coeff[i].trim());
       }
     }
-    String fObj[] = null;
+    String[] fObj = null;
     if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
       String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
@@ -410,12 +410,14 @@ public class ModelPolisher extends Launcher {
         bigg = new BiGGDB(new PostgreSQLConnector(host, new Integer(port), user, passwd != null ? passwd : "", dbName));
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
+        System.exit(1);
       }
     } else {
       try {
         bigg = new BiGGDB(new SQLiteConnector());
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
+        System.exit(1);
       }
     }
   }
@@ -480,7 +482,7 @@ public class ModelPolisher extends Launcher {
     // Replace tags and replace file for processing
     try {
       StringBuilder sb = new StringBuilder();
-      String line = "";
+      String line;
       while ((line = reader.readLine()) != null) {
         sb.append(line).append("\n");
       }
