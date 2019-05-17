@@ -14,7 +14,7 @@ ModelPolisher accesses the [BiGG Models knowledgebase](http://bigg.ucsd.edu) to 
 Thereby, the program mainly relies on [BiGG identifiers](https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines) for model components.
 Moreover, it fixes some apparent errors in the models.
 
-ModelPolisher is primarily a command-line based tool. You can run it locally using your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where "VERSION" needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially _java.lang.OutOfMemoryError: GC overhead limit exceeded_, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
+ModelPolisher is primarily a command-line based tool. You can run it locally using your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where `VERSION` needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially `_java.lang.OutOfMemoryError: GC overhead limit exceeded_`, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
 
 # Caveat
 
@@ -26,14 +26,21 @@ The online version of ModelPolisher is described in this article: http://journal
 
 The article ["BiGG Models: A platform for integrating, standardizing and sharing genome-scale models"](https://nar.oxfordjournals.org/content/44/D1/D515) describes BiGG Models knowledge-base including ModelPolisher.
 
-# Usage
+# Build
 
 After cloning or updating this project run `configureSQLiteDB` to download and prepare the correct version of BiGG Models database from Dropbox.  
 Afterwards ModelPolisher can be built using Gradle, choosing one of four relevant tasks provided:
-* fatJar (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
-* lightJar: with dependencies, without SQLite DB
-* slimJar: without dependencies, but with SQLite DB included
-* bareJar: without dependencies and SQLite DB
+* `fatJar`: (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
+* `lightJar`: with dependencies, without SQLite DB
+* `slimJar`: without dependencies, but with SQLite DB included
+* `bareJar`: without dependencies and SQLite DB
+
+To build the `fatJar` use
+```
+gradle fatJar
+```
+which builds the jar in `./target/`
+
 
 # Licenses
 
