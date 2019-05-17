@@ -1,4 +1,10 @@
 #!/bin/bash
+#---------------------------------------------------------------------------
+# Setup database
+#---------------------------------------------------------------------------
+# Download and prepare the correct version of BiGG Models database
+# from Dropbox.
+#---------------------------------------------------------------------------
 
 SCRIPTS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 cd "$SCRIPTS_PATH"
