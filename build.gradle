@@ -137,7 +137,7 @@ clean.doFirst {
 // run db setup script, if bigg.sqlite is missing
 if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()) {
     task setupDB(type: Exec) {
-        commandLine("sh", "scripts/configureSQLiteDB.sh")
+        commandLine './scripts/configureSQLiteDB.sh'
         println "Setup DB"
     }
     // run before resources are being processed
