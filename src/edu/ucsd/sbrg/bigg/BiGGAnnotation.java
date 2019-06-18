@@ -39,6 +39,7 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.bigg.BiGGDB;
 
 /**
  * @author Thomas Zajac
@@ -295,7 +296,7 @@ public class BiGGAnnotation {
     BiGGId biggId = polisher.extractBiGGId(species.getId());
     if (biggId == null) {
       //try getting urilist from annotations bqbiol is
-      //pass list of uri string in method getbiggidfromurilist and get String biggId
+      //pass list of uri string in method getSpeciesbiggidfromurilist and get String biggId
       //set biggId = "M_"+"biggId"
       return;
     }
@@ -303,6 +304,60 @@ public class BiGGAnnotation {
     setSBOTermFromComponentType(species, biggId);
     setCVTermResources(species, biggId);
     FBCSetFormulaCharge(species, biggId);
+  }
+
+  /**
+   * @param list_Uri
+   */
+  private String getSpeciesBiGGIdFromUriList(ArrayList<String> list_Uri){
+    String biggId = null;
+    for(String uri : list_Uri){
+      String dataSource, synonym_id, currentBiGGId;
+      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
+      uri = uri.substring(0,uri.lastIndexOf('/'));
+      dataSource = uri.substring(uri.lastIndexOf('/')+1);
+
+      //updating the dataSource and synonym_id to match bigg database
+      switch (dataSource){
+        case "metanetx.chemical" :
+          dataSource = "mnx.chemical";
+          break;
+
+        case "chebi" : break;
+
+        case "kegg.compound" : break;
+
+        case "hmdb" : break;
+
+        case "lipidmaps" : break;
+
+        case "kegg.drug" : break;
+
+        case "seed.compound" : break;
+
+        case "biocyc" : break;
+
+        case "sgd" :
+          return null; //it maps to a gene not a component
+
+        case "uniprot" :
+          return null; //it maps to a gene not a component
+
+        default:
+          return null; //the dataSource must belong one of above
+      }
+
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,1);
+
+      if(biggId==null){
+        biggId = currentBiGGId;
+      }else {
+        //we must get same biggId from each synonym
+        if(!currentBiGGId.equals(biggId))
+          return null;
+      }
+    }
+    return "M_"+biggId;
   }
 
   /**
