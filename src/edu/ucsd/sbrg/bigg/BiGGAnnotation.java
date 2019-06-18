@@ -295,6 +295,7 @@ public class BiGGAnnotation {
   private void annotateSpecies(Species species) {
     BiGGId biggId = polisher.extractBiGGId(species.getId());
     if (biggId == null) {
+      //TODO
       //try getting urilist from annotations bqbiol is
       //pass list of uri string in method getSpeciesbiggidfromurilist and get String biggId
       //set biggId = "M_"+"biggId"
@@ -496,6 +497,13 @@ public class BiGGAnnotation {
       reaction.setMetaId(id);
     }
     BiGGId biggId = polisher.extractBiGGId(id);
+
+    //TODO:
+    //if biggId is null
+    //extract String BigId R_... (run getReactionBiGGIdFromUriList)
+    //update id
+    //update biggId
+
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
@@ -509,6 +517,48 @@ public class BiGGAnnotation {
     }
     parseSubsystems(reaction, biggId);
     setCVTermResources(reaction, biggId);
+  }
+
+  /**
+   * @param list_Uri
+   */
+  private String getReactionBiGGIdFromUriList(ArrayList<String> list_Uri){
+    String biggId = null;
+    for(String uri : list_Uri){
+      String dataSource, synonym_id, currentBiGGId;
+      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
+      uri = uri.substring(0,uri.lastIndexOf('/'));
+      dataSource = uri.substring(uri.lastIndexOf('/')+1);
+
+      //updating the dataSource and synonym_id to match bigg database
+      switch (dataSource){
+        case "metanetx.reaction":
+          dataSource = "mnx.equation";
+          break;
+
+        case "kegg.reaction" : break;
+
+        case "ec-code" :
+          dataSource = "ec";
+          break;
+
+        case "rhea" : break;
+
+        default:
+          return null; //the dataSource must belong one of above
+      }
+
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,2);
+
+      if(biggId==null){
+        biggId = currentBiGGId;
+      }else {
+        //we must get same biggId from each synonym
+        if(!currentBiGGId.equals(biggId))
+          return null;
+      }
+    }
+    return "R_"+biggId;
   }
 
 
