@@ -54,5 +54,6 @@ final class BiGGDBContract {
     static final String COLUMN_SUBSYSTEM = "subsystem";
     static final String COLUMN_TAXON_ID = "taxon_id";
     static final String COLUMN_TYPE = "type";
+    static final String COLUMN_SYNONYM = "synonym";
   }
 }

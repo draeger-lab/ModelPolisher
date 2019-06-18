@@ -10,16 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import javax.swing.tree.TreeNode;
@@ -302,6 +294,9 @@ public class BiGGAnnotation {
   private void annotateSpecies(Species species) {
     BiGGId biggId = polisher.extractBiGGId(species.getId());
     if (biggId == null) {
+      //try getting urilist from annotations bqbiol is
+      //pass list of uri string in method getbiggidfromurilist and get String biggId
+      //set biggId = "M_"+"biggId"
       return;
     }
     setSpeciesName(species, biggId);
@@ -309,7 +304,6 @@ public class BiGGAnnotation {
     setCVTermResources(species, biggId);
     FBCSetFormulaCharge(species, biggId);
   }
-
 
   /**
    * @param species
