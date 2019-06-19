@@ -288,6 +288,7 @@ public class BiGGAnnotation {
   private void annotateSpecies(Species species) {
     String id = species.getId();
 
+    //extracting BiGGId if not present for species
     boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
     if(!isBiGGid){
       Annotation annotation = species.getAnnotation();
@@ -296,7 +297,6 @@ public class BiGGAnnotation {
         list_Uri.addAll(cvTerm.getResources());
       }
       if(!list_Uri.isEmpty()) {
-        logger.info(list_Uri.get(0));
         String temp;
         temp = getSpeciesBiGGIdFromUriList(list_Uri);
         if(temp!=null) {
@@ -494,6 +494,25 @@ public class BiGGAnnotation {
    */
   private void annotateReaction(Reaction reaction) {
     String id = reaction.getId();
+
+    //extract biggId if not present for reaction
+    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    if(!isBiGGid){
+      Annotation annotation = reaction.getAnnotation();
+      ArrayList<String> list_Uri = new ArrayList<>();
+      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
+        list_Uri.addAll(cvTerm.getResources());
+      }
+      if(!list_Uri.isEmpty()) {
+        String temp;
+        temp = getReactionBiGGIdFromUriList(list_Uri);
+        if(temp!=null) {
+          reaction.setId(temp);
+          id = temp;
+        }
+      }
+    }
+
     if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(id)) {
         reaction.setSBOTerm(631);
@@ -504,14 +523,8 @@ public class BiGGAnnotation {
     if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
       reaction.setMetaId(id);
     }
-    BiGGId biggId = polisher.extractBiGGId(id);
 
-    //TODO:
-    //if biggId is null
-    //extract String BigId R_... (run getReactionBiGGIdFromUriList)
-    //update id
-    //update biggId
-
+    BiGGId biggId = polisher.extractBiGGId(reaction.getId());
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
