@@ -11,14 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
@@ -58,6 +51,12 @@ import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
+
+import us.hebi.matlab.mat.format.Mat5;
+import us.hebi.matlab.mat.format.Mat5File;
+import us.hebi.matlab.mat.types.Array;
+import us.hebi.matlab.mat.types.MatFile.Entry;
+import us.hebi.matlab.mat.types.MatlabType;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -214,17 +213,25 @@ public class COBRAparser {
 
 
   /**
-   * @param reader
+   * @param mat5File
    * @return
    */
-  private List<MLArray> getModels(MatFileReader reader) {
-    Map<String, MLArray> content = reader.getContent();
+  //TODO: --
+  private List<Array> getModels(Mat5File mat5File) {
+    Iterable<Entry> entries = mat5File.getEntries();
+    HashMap<String, Array> content = new HashMap<String, Array>();
+    //add entries to content
+    //analogous to lookup in the library
+    for(Entry entry : entries){
+      content.put(entry.getName(), entry.getValue());
+    }
+
     Iterator<String> keyIter = content.keySet().iterator();
-    List<MLArray> models = new ArrayList<>();
+    List<Array> models = new ArrayList<>();
     while (keyIter.hasNext()) {
       String key = keyIter.next();
-      MLArray array = content.get(key);
-      if ((array.getSize() == 1) && array.isStruct()) {
+      Array array = content.get(key);
+      if ((array.getNumElements() == 1) && array.getType() == MatlabType.Structure) {
         models.add(array);
       }
     }
@@ -240,6 +247,7 @@ public class COBRAparser {
    * @param models
    * @return
    */
+  //TODO:
   private List<SBMLDocument> parseModels(List<MLArray> models) {
     List<SBMLDocument> docs = new ArrayList<>();
     for (MLArray model : models) {
@@ -290,9 +298,10 @@ public class COBRAparser {
    * @return
    * @throws IOException
    */
+  //TODO: DONE
   private List<SBMLDocument> parse(File matFile) throws IOException {
-    MatFileReader reader = new MatFileReader(matFile);
-    return parseModels(getModels(reader));
+    Mat5File mat5File = Mat5.readFromFile(matFile);
+    return parseModels(getModels(mat5File));
   }
 
 
