@@ -17,15 +17,8 @@ import java.util.logging.Logger;
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.CVTerm.Qualifier;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -293,13 +286,28 @@ public class BiGGAnnotation {
    * @param species
    */
   private void annotateSpecies(Species species) {
+    String id = species.getId();
+
+    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    if(!isBiGGid){
+      Annotation annotation = species.getAnnotation();
+      ArrayList<String> list_Uri = new ArrayList<>();
+      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
+        list_Uri.addAll(cvTerm.getResources());
+      }
+      if(!list_Uri.isEmpty()) {
+        logger.info(list_Uri.get(0));
+        String temp;
+        temp = getSpeciesBiGGIdFromUriList(list_Uri);
+        if(temp!=null) {
+          species.setId(temp);
+        }
+      }
+    }
+
     BiGGId biggId = polisher.extractBiGGId(species.getId());
     if (biggId == null) {
-      //TODO
-      //try getting urilist from annotations bqbiol is
-      //pass list of uri string in method getSpeciesbiggidfromurilist and get String biggId
-      //set biggId = "M_"+"biggId"
-      return;
+        return;
     }
     setSpeciesName(species, biggId);
     setSBOTermFromComponentType(species, biggId);
