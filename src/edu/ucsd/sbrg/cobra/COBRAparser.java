@@ -54,10 +54,8 @@ import edu.ucsd.sbrg.util.UpdateListener;
 
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
-import us.hebi.matlab.mat.types.Array;
+import us.hebi.matlab.mat.types.*;
 import us.hebi.matlab.mat.types.MatFile.Entry;
-import us.hebi.matlab.mat.types.MatlabType;
-import us.hebi.matlab.mat.types.Struct;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -81,50 +79,51 @@ public class COBRAparser {
   /**
    *
    */
+  //TODO : --
   private class MatlabFields {
 
-    MLArray description;
-    MLCell author;
-    MLCell citations;
-    MLCell comments;
-    MLCell confidenceScores;
-    MLCell ecNumbers;
-    MLCell genedate;
-    MLCell geneindex;
-    MLCell genesource;
-    MLCell genes;
-    MLCell grRules;
-    MLCell metCHEBIID;
-    MLCell metFormulas;
-    MLCell metHMDB;
-    MLCell metInchiString;
-    MLCell metKeggID;
-    MLCell metNames;
-    MLCell metPubChemID;
-    MLCell metSmile;
-    MLCell mets;
-    MLCell name;
-    MLCell notes;
-    MLCell organism;
-    MLCell rxnKeggID;
-    MLCell rxns;
-    MLCell rxnNames;
-    MLCell subSystems;
-    MLChar csense;
-    MLDouble lb;
-    MLDouble metCharge;
-    MLDouble ub;
-    MLNumericArray<?> b;
-    MLNumericArray<?> coefficients;
-    MLNumericArray<?> rev;
-    MLSparse S;
-    MLStructure struct;
+    Array description;
+    Cell author;
+    Cell citations;
+    Cell comments;
+    Cell confidenceScores;
+    Cell ecNumbers;
+    Cell genedate;
+    Cell geneindex;
+    Cell genesource;
+    Cell genes;
+    Cell grRules;
+    Cell metCHEBIID;
+    Cell metFormulas;
+    Cell metHMDB;
+    Cell metInchiString;
+    Cell metKeggID;
+    Cell metNames;
+    Cell metPubChemID;
+    Cell metSmile;
+    Cell mets;
+    Cell name;
+    Cell notes;
+    Cell organism;
+    Cell rxnKeggID;
+    Cell rxns;
+    Cell rxnNames;
+    Cell subSystems;
+    Char csense;
+    Matrix lb; //Double
+    Matrix metCharge; //Double
+    Matrix ub; //Double
+    Matrix b; //NumericArray<?>
+    Matrix coefficients; //NumericArray<?>
+    Matrix rev; //NumericArray<?>
+    Sparse S;
+    Struct struct;
 
 
     /**
      * @param struct
      */
-    MatlabFields(MLStructure struct) {
+    MatlabFields(Struct struct) {
       this.struct = struct;
       initializeFields();
     }
@@ -134,34 +133,34 @@ public class COBRAparser {
      *
      */
     void initializeFields() {
-      b = toMLNumericArray(getStructField(ModelField.b));
-      citations = toMLCell(getStructField(ModelField.citations));
-      coefficients = toMLNumericArray(getStructField(ModelField.c));
-      comments = toMLCell(getStructField(ModelField.comments));
-      confidenceScores = toMLCell(getStructField(ModelField.confidenceScores));
-      description = toMLCell(getStructField(ModelField.description));
-      csense = toMLChar(getStructField(ModelField.csense));
-      ecNumbers = toMLCell(getStructField(ModelField.ecNumbers));
-      genes = toMLCell(getStructField(ModelField.mets));
-      grRules = toMLCell(getStructField(ModelField.grRules));
-      lb = toMLDouble(getStructField(ModelField.lb));
-      mets = toMLCell(getStructField(ModelField.mets));
-      metCharge = toMLDouble(getStructField(ModelField.metCharge));
-      metCHEBIID = toMLCell(getStructField(ModelField.metCHEBIID));
-      metFormulas = toMLCell(getStructField(ModelField.metFormulas));
-      metHMDB = toMLCell(getStructField(ModelField.metHMDB));
-      metInchiString = toMLCell(getStructField(ModelField.metInchiString));
-      metKeggID = toMLCell(getStructField(ModelField.metKEGGID));
-      metNames = toMLCell(getStructField(ModelField.metNames));
-      metPubChemID = toMLCell(getStructField(ModelField.metPubChemID));
-      metSmile = toMLCell(getStructField(ModelField.metSmile));
-      rev = toMLNumericArray(getStructField(ModelField.rev));
-      rxns = toMLCell(getStructField(ModelField.rxns));
-      rxnKeggID = toMLCell(getStructField(ModelField.rxnKeggID));
-      rxnNames = toMLCell(getStructField(ModelField.rxnNames));
-      S = toMLSparse(getStructField(ModelField.S));
-      subSystems = toMLCell(getStructField(ModelField.subSystems));
-      ub = toMLDouble(getStructField(ModelField.ub));
+      b = toNumericArrayMatrix(getStructField(ModelField.b));
+      citations = toCell(getStructField(ModelField.citations),ModelField.citations.name());
+      coefficients = toNumericArrayMatrix(getStructField(ModelField.c));
+      comments = toCell(getStructField(ModelField.comments),ModelField.comments.name());
+      confidenceScores = toCell(getStructField(ModelField.confidenceScores),ModelField.confidenceScores.name());
+      description = toCell(getStructField(ModelField.description),ModelField.description.name());
+      csense = toChar(getStructField(ModelField.csense),ModelField.csense.name());
+      ecNumbers = toCell(getStructField(ModelField.ecNumbers),ModelField.ecNumbers.name());
+      genes = toCell(getStructField(ModelField.mets),ModelField.mets.name());
+      grRules = toCell(getStructField(ModelField.grRules),ModelField.grRules.name());
+      lb = toDouble(getStructField(ModelField.lb),ModelField.lb.name());
+      mets = toCell(getStructField(ModelField.mets),ModelField.mets.name());
+      metCharge = toDouble(getStructField(ModelField.metCharge),ModelField.metCharge.name());
+      metCHEBIID = toCell(getStructField(ModelField.metCHEBIID),ModelField.metCHEBIID.name());
+      metFormulas = toCell(getStructField(ModelField.metFormulas),ModelField.metFormulas.name());
+      metHMDB = toCell(getStructField(ModelField.metHMDB),ModelField.metHMDB.name());
+      metInchiString = toCell(getStructField(ModelField.metInchiString),ModelField.metInchiString.name());
+      metKeggID = toCell(getStructField(ModelField.metKEGGID),ModelField.metKEGGID.name());
+      metNames = toCell(getStructField(ModelField.metNames),ModelField.metNames.name());
+      metPubChemID = toCell(getStructField(ModelField.metPubChemID),ModelField.metPubChemID.name());
+      metSmile = toCell(getStructField(ModelField.metSmile),ModelField.metSmile.name());
+      rev = toNumericArrayMatrix(getStructField(ModelField.rev));
+      rxns = toCell(getStructField(ModelField.rxns),ModelField.rxns.name());
+      rxnKeggID = toCell(getStructField(ModelField.rxnKeggID),ModelField.rxnKeggID.name());
+      rxnNames = toCell(getStructField(ModelField.rxnNames),ModelField.rxnNames.name());
+      S = toSparse(getStructField(ModelField.S),ModelField.S.name());
+      subSystems = toCell(getStructField(ModelField.subSystems),ModelField.subSystems.name());
+      ub = toDouble(getStructField(ModelField.ub),ModelField.ub.name());
     }
 
 
@@ -169,14 +168,14 @@ public class COBRAparser {
      *
      */
     void setDescriptionFields() {
-      MLStructure descrStruct = (MLStructure) description;
-      name = toMLCell(getStructField(descrStruct, ModelField.name));
-      organism = toMLCell(getStructField(descrStruct, ModelField.organism));
-      author = toMLCell(getStructField(descrStruct, ModelField.author));
-      geneindex = toMLCell(getStructField(descrStruct, ModelField.geneindex));
-      genedate = toMLCell(getStructField(descrStruct, ModelField.genedate));
-      genesource = toMLCell(getStructField(descrStruct, ModelField.genesource));
-      notes = toMLCell(getStructField(descrStruct, ModelField.notes));
+      Struct descrStruct = (Struct) description;
+      name = toCell(getStructField(descrStruct, ModelField.name),ModelField.name.name());
+      organism = toCell(getStructField(descrStruct, ModelField.organism),ModelField.organism.name());
+      author = toCell(getStructField(descrStruct, ModelField.author),ModelField.author.name());
+      geneindex = toCell(getStructField(descrStruct, ModelField.geneindex),ModelField.geneindex.name());
+      genedate = toCell(getStructField(descrStruct, ModelField.genedate),ModelField.genedate.name());
+      genesource = toCell(getStructField(descrStruct, ModelField.genesource),ModelField.genesource.name());
+      notes = toCell(getStructField(descrStruct, ModelField.notes),ModelField.notes.name());
     }
 
 
@@ -184,8 +183,8 @@ public class COBRAparser {
      * @param field
      * @return
      */
-    MLArray getStructField(ModelField field) {
-      return struct.getField(field.name());
+    Array getStructField(ModelField field) {
+      return struct.get(field.name());
     }
 
 
@@ -194,8 +193,8 @@ public class COBRAparser {
      * @param field
      * @return
      */
-    MLArray getStructField(MLStructure struct, ModelField field) {
-      return struct.getField(field.name());
+    Array getStructField(Struct struct, ModelField field) {
+      return struct.get(field.name());
     }
   }
 
@@ -1226,13 +1225,13 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLCell toMLCell(MLArray array) {
+  private Cell toCell(Array array, String arrayName) {
     if (array != null) {
-      if (array.isCell()) {
-        return (MLCell) array;
+      if (array.getType() == MatlabType.Cell) {
+        return (Cell) array;
       }
-      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_CELL"), MLArray.typeToString(array.getType()),
-        array.getName()));
+      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_CELL"), array.getType().toString(),
+        arrayName));
     }
     return null;
   }
@@ -1242,13 +1241,13 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLChar toMLChar(MLArray array) {
+  private Char toChar(Array array, String arrayName) {
     if (array != null) {
-      if (array.isChar()) {
-        return (MLChar) array;
+      if (array.getType()==MatlabType.Character) {
+        return (Char) array;
       }
-      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_CHAR"), MLArray.typeToString(array.getType()),
-        array.getName()));
+      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_CHAR"), array.getType().toString(),
+        arrayName));
     }
     return null;
   }
@@ -1258,13 +1257,13 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLDouble toMLDouble(MLArray array) {
+  private Matrix toDouble(Array array, String arrayName) {
     if (array != null) {
-      if (array.isDouble()) {
-        return (MLDouble) array;
+      if (array.getType() == MatlabType.Double) {
+        return (Matrix) array;
       }
-      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_DOUBLE"), MLArray.typeToString(array.getType()),
-        array.getName()));
+      logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_DOUBLE"), array.getType().toString(),
+        arrayName));
     }
     return null;
   }
@@ -1274,9 +1273,9 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLNumericArray<?> toMLNumericArray(MLArray array) {
-    if (array instanceof MLNumericArray<?>) {
-      return (MLNumericArray<?>) array;
+  private Matrix toNumericArrayMatrix(Array array) {
+    if (array instanceof Matrix) {
+      return (Matrix) array;
     }
     return null;
   }
@@ -1286,12 +1285,12 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private MLSparse toMLSparse(MLArray array) {
-    if (array.isSparse()) {
-      return (MLSparse) array;
+  private Sparse toSparse(Array array, String arrayName) {
+    if (array.getType() == MatlabType.Sparse) {
+      return (Sparse) array;
     }
-    logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_S_ARRAY"), MLArray.typeToString(array.getType()),
-      array.getName()));
+    logger.warning(format(mpMessageBundle.getString("TYPE_MISMATCH_S_ARRAY"), array.getType().toString(),
+      arrayName));
     return null;
   }
 
