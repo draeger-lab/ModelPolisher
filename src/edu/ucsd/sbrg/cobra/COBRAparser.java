@@ -57,6 +57,7 @@ import us.hebi.matlab.mat.format.Mat5File;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.MatFile.Entry;
 import us.hebi.matlab.mat.types.MatlabType;
+import us.hebi.matlab.mat.types.Struct;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -217,7 +218,7 @@ public class COBRAparser {
    * @return
    */
   //TODO: --
-  private List<Array> getModels(Mat5File mat5File) {
+  private HashMap<String, Array> getModels(Mat5File mat5File) {
     Iterable<Entry> entries = mat5File.getEntries();
     HashMap<String, Array> content = new HashMap<String, Array>();
     //add entries to content
@@ -227,12 +228,12 @@ public class COBRAparser {
     }
 
     Iterator<String> keyIter = content.keySet().iterator();
-    List<Array> models = new ArrayList<>();
+    HashMap<String, Array> models = new HashMap<String, Array>();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
-      Array array = content.get(key);
+      String name = keyIter.next();
+      Array array = content.get(name);
       if ((array.getNumElements() == 1) && array.getType() == MatlabType.Structure) {
-        models.add(array);
+        models.put(name, array);
       }
     }
     if (content.keySet().size() > 1) {
@@ -247,15 +248,18 @@ public class COBRAparser {
    * @param models
    * @return
    */
-  //TODO:
-  private List<SBMLDocument> parseModels(List<MLArray> models) {
+  //TODO: --
+  private List<SBMLDocument> parseModels(HashMap<String, Array> models) {
+    Iterator<String> nameIter = models.keySet().iterator();
     List<SBMLDocument> docs = new ArrayList<>();
-    for (MLArray model : models) {
+    while (nameIter.hasNext()) {
+      String name = nameIter.next();
+      Array model = models.get(name);
       ModelBuilder builder = new ModelBuilder(3, 1);
-      builder.buildModel(SBMLtools.toSId(model.getName()), null);
+      builder.buildModel(SBMLtools.toSId(name), null);
       SBMLDocument doc = builder.getSBMLDocument();
       doc.addTreeNodeChangeListener(new UpdateListener());
-      parseModel(builder, model);
+      parseModel(builder, name, model);
       docs.add(doc);
     }
     return docs;
@@ -657,12 +661,15 @@ public class COBRAparser {
    * @param array
    * @return
    */
-  private void parseModel(ModelBuilder builder, MLArray array) {
-    MLStructure struct = (MLStructure) array;
+  //TODO: --
+  private void parseModel(ModelBuilder builder,String name, Array array) {
+    Struct struct = (Struct) array;
     // Check that the given data structure only contains allowable entries
-    MLStructure correctedStruct = new MLStructure(struct.getName(), struct.getDimensions());
-    for (MLArray field : struct.getAllFields()) {
-      checkModelField(correctedStruct, field);
+    Struct correctedStruct = Mat5.newStruct(struct.getDimensions());
+    List<String> field_names = struct.getFieldNames();
+    for (String field_name : field_names) {
+      Array field = struct.get(field_name);
+      checkModelField(correctedStruct, name, field, field_name);
     }
     Model model = parseModel(correctedStruct, builder);
     parseGPRsAndSubsystems(model);
@@ -728,9 +735,9 @@ public class COBRAparser {
    * @param correctedStruct
    * @param field
    */
-  private void checkModelField(MLStructure correctedStruct, MLArray field) {
+  //TODO: --
+  private void checkModelField(Struct correctedStruct,String structName, Array field, String fieldName) {
     boolean invalidField = false;
-    String fieldName = field.getName();
     try {
       logger.finest(format(mpMessageBundle.getString("FOUND_COMPO"), ModelField.valueOf(fieldName)));
     } catch (IllegalArgumentException exc) {
@@ -743,11 +750,11 @@ public class COBRAparser {
         for (ModelField variant : ModelField.values()) {
           String variantLC = variant.name().toLowerCase();
           if (variantLC.equals(fieldName.toLowerCase()) || variantLC.startsWith(fieldName.toLowerCase())) {
-            if (correctedStruct.getField(variant.name()) != null) {
+            if (correctedStruct.get(variant.name()) != null) {
               logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
               break;
             }
-            correctedStruct.setField(variant.name(), field);
+            correctedStruct.set(variant.name(), field);
             logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
             invalidField = false;
             break;
@@ -757,7 +764,7 @@ public class COBRAparser {
           logger.warning(format(mpMessageBundle.getString("CORRECT_VARIANT_FAILED"), fieldName));
         }
       } else {
-        correctedStruct.setField(fieldName, field);
+        correctedStruct.set(fieldName, field);
       }
     }
   }
@@ -768,7 +775,8 @@ public class COBRAparser {
    * @param correctedStruct
    * @return
    */
-  private Model parseModel(MLStructure correctedStruct, ModelBuilder builder) {
+  //TODO : --
+  private Model parseModel(Struct correctedStruct, ModelBuilder builder) {
     Model model = builder.getModel();
     buildBasicUnits(builder);
     mlField = new MatlabFields(correctedStruct);
