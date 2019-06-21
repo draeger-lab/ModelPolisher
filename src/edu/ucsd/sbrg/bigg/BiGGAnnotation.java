@@ -363,13 +363,14 @@ public class BiGGAnnotation {
       }
 
       currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,1);
-
-      if(biggId==null){
-        biggId = currentBiGGId;
-      }else {
-        //we must get same biggId from each synonym
-        if(!currentBiGGId.equals(biggId))
-          return null;
+      if(currentBiGGId!=null){
+        if(biggId==null){
+          biggId = currentBiGGId;
+        }else {
+          //we must get same biggId from each synonym
+          if(!currentBiGGId.equals(biggId))
+            return null;
+        }
       }
     }
     return biggId == null ? null : "M_"+biggId;

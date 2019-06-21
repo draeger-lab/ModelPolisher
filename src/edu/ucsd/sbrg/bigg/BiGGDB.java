@@ -645,6 +645,11 @@ public class BiGGDB {
       else{
         return null;
       }
+
+      //return null if more than one BiGG Id is obtained
+      if(rst.next()){
+        return null;
+      }
     }
     catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
