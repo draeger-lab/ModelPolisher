@@ -45,6 +45,7 @@ Each such command will build a `jar` file in `<path>/ModelPolisher/target/` fold
 Running ModelPolisher will be easiest using `fatJar`, as then no database needs to be hosted by you, though it would be rather slow. We would recommend building lightJar and hosting database using `PostgreSQL`, see details below.
 
 #How to polish models?
+
 Note: use Java 8 to run ModelPolisher.
 
 For polishing models, you essentially need to run ModelPolisher using either of the `jar` built from above instructions. It is easiest to run ModelPolisher using `fatJar`. 
