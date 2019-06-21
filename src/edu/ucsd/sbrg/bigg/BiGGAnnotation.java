@@ -299,6 +299,7 @@ public class BiGGAnnotation {
         String temp;
         temp = getSpeciesBiGGIdFromUriList(list_Uri);
         if(temp!=null) {
+          //update the id in species
           species.setId(temp);
         }
       }
@@ -320,13 +321,16 @@ public class BiGGAnnotation {
   private String getSpeciesBiGGIdFromUriList(ArrayList<String> list_Uri){
     String biggId = null;
     for(String uri : list_Uri){
-      String dataSource, synonym_id, currentBiGGId;
+      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
       synonym_id = uri.substring(uri.lastIndexOf('/')+1);
+      //crop uri to remove synonym identifier from end
       uri = uri.substring(0,uri.lastIndexOf('/'));
       dataSource = uri.substring(uri.lastIndexOf('/')+1);
 
       //updating the dataSource and synonym_id to match bigg database
       switch (dataSource){
+
+        //bigg.metabolite data_source identifier will directly give biggId
         case "bigg.metabolite":
           return "M_"+synonym_id;
 
@@ -368,7 +372,7 @@ public class BiGGAnnotation {
           return null;
       }
     }
-    return "M_"+biggId;
+    return biggId == null ? null : "M_"+biggId;
   }
 
   /**
@@ -548,13 +552,15 @@ public class BiGGAnnotation {
   private String getReactionBiGGIdFromUriList(ArrayList<String> list_Uri){
     String biggId = null;
     for(String uri : list_Uri){
-      String dataSource, synonym_id, currentBiGGId;
+      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
       synonym_id = uri.substring(uri.lastIndexOf('/')+1);
       uri = uri.substring(0,uri.lastIndexOf('/'));
       dataSource = uri.substring(uri.lastIndexOf('/')+1);
 
       //updating the dataSource and synonym_id to match bigg database
       switch (dataSource){
+
+        //bigg.metabolite data_source identifier will directly give biggId
         case "bigg.reaction":
           return "R_"+synonym_id;
 
@@ -584,7 +590,7 @@ public class BiGGAnnotation {
           return null;
       }
     }
-    return "R_"+biggId;
+    return biggId == null ? null : "R_"+biggId;
   }
 
 
