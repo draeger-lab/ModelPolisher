@@ -207,10 +207,10 @@ public class COBRAparser {
    * @param mat5File
    * @return
    */
-
+  //returns Map of arrayName, Array
   private HashMap<String, Array> getModels(Mat5File mat5File) {
     Iterable<Entry> entries = mat5File.getEntries();
-    HashMap<String, Array> content = new HashMap<String, Array>();
+    HashMap<String, Array> content = new HashMap<>();
     //add entries to content
     //analogous to lookup in the library
     for(Entry entry : entries){
@@ -238,10 +238,11 @@ public class COBRAparser {
    * @param models
    * @return
    */
-
+  //input = HashMap<arrayName,Array>
   private List<SBMLDocument> parseModels(HashMap<String, Array> models) {
     Iterator<String> nameIter = models.keySet().iterator();
     List<SBMLDocument> docs = new ArrayList<>();
+
     while (nameIter.hasNext()) {
       String name = nameIter.next();
       Array model = models.get(name);
@@ -249,6 +250,7 @@ public class COBRAparser {
       builder.buildModel(SBMLtools.toSId(name), null);
       SBMLDocument doc = builder.getSBMLDocument();
       doc.addTreeNodeChangeListener(new UpdateListener());
+      //pass builder, arrayName, array for parsing
       parseModel(builder, name, model);
       docs.add(doc);
     }
@@ -292,7 +294,7 @@ public class COBRAparser {
    * @return
    * @throws IOException
    */
-  //TODO: DONE
+  //returns List<SBMLDocument> after parsing
   private List<SBMLDocument> parse(File matFile) throws IOException {
     Mat5File mat5File = Mat5.readFromFile(matFile);
     return parseModels(getModels(mat5File));
@@ -659,7 +661,7 @@ public class COBRAparser {
    * @param array
    * @return
    */
-
+  //input = builder, arrayName, array
   private void parseModel(ModelBuilder builder,String name, Array array) {
     Struct struct = (Struct) array;
     // Check that the given data structure only contains allowable entries
@@ -737,7 +739,7 @@ public class COBRAparser {
    * @param field
    */
 
-  private void checkModelField(Struct correctedStruct,String structName, Array field, String fieldName) {
+  private void checkModelField(Struct correctedStruct, String structName, Array field, String fieldName) {
     boolean invalidField = false;
     try {
       logger.finest(format(mpMessageBundle.getString("FOUND_COMPO"), ModelField.valueOf(fieldName)));
@@ -1313,26 +1315,26 @@ public class COBRAparser {
    */
   private String toString(Array array, String parentName, int parentIndex) {
     StringBuilder sb = new StringBuilder();
-    if (array.isChar()) {
-      MLChar string = (MLChar) array;
+    if (array.getType()==MatlabType.Character) {
+      Char string = (Char) array;
       if (string.getDimensions()[0] > 1) {
-        logger.fine(format(mpMessageBundle.getString("MANY_STRINGS_IN_CELL"), string.contentToString()));
+        logger.fine(format(mpMessageBundle.getString("MANY_STRINGS_IN_CELL"), string.asCharSequence()));
       }
       for (int i = 0; i < string.getDimensions()[0]; i++) {
         if (i > 0) {
           sb.append('\n');
         }
-        sb.append(string.getString(i));
+        sb.append(string.getRow(i));
       }
     } else if (!Arrays.equals(array.getDimensions(), new int[] {0, 0})) {
-      String name = array.getName();
-      String pos = "";
-      if (name.equals("@") && (parentName != null)) {
-        name = parentName;
-        pos = "at position " + parentIndex;
-      }
+//      String name = array.getName();
+//      String pos = "";
+//      if (name.equals("@") && (parentName != null)) {
+//        name = parentName;
+//        pos = "at position " + parentIndex;
+//      }
       logger.warning(
-              format(mpMessageBundle.getString("TYPE_MISMATCH_STRING"), MLArray.typeToString(array.getType()), name, pos));
+              format(mpMessageBundle.getString("TYPE_MISMATCH_STRING"), array.getType().toString(), "parentName = %s", parentName, "parentIndex = %s", parentIndex));
     }
     return sb.toString();
   }
