@@ -32,7 +32,6 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
-import edu.ucsd.sbrg.bigg.BiGGDB;
 
 /**
  * @author Thomas Zajac
@@ -328,6 +327,9 @@ public class BiGGAnnotation {
 
       //updating the dataSource and synonym_id to match bigg database
       switch (dataSource){
+        case "bigg.metabolite":
+          return "M_"+synonym_id;
+
         case "metanetx.chemical" :
           dataSource = "mnx.chemical";
           break;
@@ -553,6 +555,9 @@ public class BiGGAnnotation {
 
       //updating the dataSource and synonym_id to match bigg database
       switch (dataSource){
+        case "bigg.reaction":
+          return "R_"+synonym_id;
+
         case "metanetx.reaction":
           dataSource = "mnx.equation";
           break;
