@@ -633,6 +633,12 @@ public class BiGGDB {
               + COLUMN_ID;
               break;
 
+      case 3: query =  SELECT + "g." + COLUMN_LOCUS_TAG + FROM + GENE + " g, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+              + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+              COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = g."
+              + COLUMN_ID;
+        break;
+
       default: return null;
     }
 

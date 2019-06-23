@@ -319,7 +319,7 @@ public class BiGGAnnotation {
   /**
    * @param list_Uri
    */
-  private String getSpeciesBiGGIdFromUriList(ArrayList<String> list_Uri){
+  private String getSpeciesBiGGIdFromUriList(List<String> list_Uri){
     String biggId = null;
     for(String uri : list_Uri){
       String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
@@ -551,7 +551,7 @@ public class BiGGAnnotation {
   /**
    * @param list_Uri
    */
-  private String getReactionBiGGIdFromUriList(ArrayList<String> list_Uri){
+  private String getReactionBiGGIdFromUriList(List<String> list_Uri){
     String biggId = null;
     for(String uri : list_Uri){
       String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
@@ -674,6 +674,25 @@ public class BiGGAnnotation {
   private void annotateGeneProduct(GeneProduct geneProduct, FBCModelPlugin fbcModelPlugin) {
     String label = null;
     String id = geneProduct.getId();
+
+    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    if(!isBiGGid){
+      Annotation annotation = geneProduct.getAnnotation();
+      ArrayList<String> list_Uri = new ArrayList<>();
+      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
+        list_Uri.addAll(cvTerm.getResources());
+      }
+      if(!list_Uri.isEmpty()) {
+        String temp;
+        temp = getGeneProductBiGGIdFromUriList(list_Uri);
+        if(temp!=null) {
+          //update the id in geneProduct
+          id = temp;
+          geneProduct.setId(temp);
+        }
+      }
+    }
+
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
       label = geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
@@ -689,6 +708,47 @@ public class BiGGAnnotation {
       geneProduct.setMetaId(id);
     }
     setGPLabelName(geneProduct, label);
+  }
+
+  private String getGeneProductBiGGIdFromUriList(List<String> list_Uri) {
+    String biggId = null;
+    for(String uri : list_Uri){
+      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
+      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
+      uri = uri.substring(0,uri.lastIndexOf('/'));
+      dataSource = uri.substring(uri.lastIndexOf('/')+1);
+
+      //updating the dataSource and synonym_id to match bigg database
+      switch (dataSource){
+        case "ncbigi":
+          synonym_id = synonym_id.substring(3);
+          break;
+
+        case "ncbigene" : break;
+
+        case "goa" : break;
+
+        case "interpro" : break;
+
+        case "asap" : break;
+
+        case "ecogene" : break;
+
+        default:
+          return null; //the dataSource must belong one of above
+      }
+
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,3);
+
+      if(biggId==null){
+        biggId = currentBiGGId;
+      }else {
+        //we must get same biggId from each synonym
+        if(!currentBiGGId.equals(biggId))
+          return null;
+      }
+    }
+    return biggId == null ? null : "G_"+biggId;
   }
 
 
