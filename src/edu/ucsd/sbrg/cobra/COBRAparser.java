@@ -175,7 +175,12 @@ public class COBRAparser {
      * @return
      */
     Array getStructField(ModelField field) {
-      return struct.get(field.name());
+      try{
+        return struct.get(field.name());
+      }catch (Exception e){
+        logger.info(e.toString());
+        return null;
+      }
     }
 
 
@@ -185,7 +190,12 @@ public class COBRAparser {
      * @return
      */
     Array getStructField(Struct struct, ModelField field) {
-      return struct.get(field.name());
+      try{
+        return struct.get(field.name());
+      }catch (Exception e){
+        logger.info(e.toString());
+        return null;
+      }
     }
   }
 
@@ -688,11 +698,20 @@ public class COBRAparser {
    */
 
   private void parseCSense(Model model) {
+    if(mlField.csense == null){
+      return;
+    }
+
     for (int i = 0; (mlField.csense != null) && (i < mlField.csense.getNumElements()); i++) {
-      char c = mlField.csense.getChar(i, 0);
-      // TODO: only 'E' (equality) is supported for now!
-      if (c != 'E' && model.getListOfSpecies().size() > i) {
-        logger.severe(format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
+      try{
+        char c = mlField.csense.getChar(i, 0);
+        // TODO: only 'E' (equality) is supported for now!
+        if (c != 'E' && model.getListOfSpecies().size() > i) {
+          logger.severe(format(mpMessageBundle.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
+        }
+      }catch (Exception e){
+        logger.info(e.toString());
+        return;
       }
     }
   }
