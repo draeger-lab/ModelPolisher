@@ -300,12 +300,13 @@ public class BiGGAnnotation {
         temp = getSpeciesBiGGIdFromUriList(list_Uri);
         if(temp!=null) {
           //update the id in species
-          species.setId(temp);
+          id = temp;
         }
       }
     }
 
-    BiGGId biggId = polisher.extractBiGGId(species.getId());
+    //This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as species.id
+    BiGGId biggId = polisher.extractBiGGId(id);
     if (biggId == null) {
         return;
     }
@@ -514,7 +515,6 @@ public class BiGGAnnotation {
         String temp;
         temp = getReactionBiGGIdFromUriList(list_Uri);
         if(temp!=null) {
-          reaction.setId(temp);
           id = temp;
         }
       }
@@ -531,7 +531,8 @@ public class BiGGAnnotation {
       reaction.setMetaId(id);
     }
 
-    BiGGId biggId = polisher.extractBiGGId(reaction.getId());
+    //This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as reaction.id
+    BiGGId biggId = polisher.extractBiGGId(id);
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
