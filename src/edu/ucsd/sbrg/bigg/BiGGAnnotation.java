@@ -675,8 +675,9 @@ public class BiGGAnnotation {
     String label = null;
     String id = geneProduct.getId();
 
+    String calculatedBiGGId = id;
     boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
-    if(!isBiGGid){
+    if(!isBiGGid || !bigg.isGenePresentInBigg(geneProduct)){
       Annotation annotation = geneProduct.getAnnotation();
       ArrayList<String> list_Uri = new ArrayList<>();
       for(CVTerm cvTerm : annotation.getListOfCVTerms()){
@@ -687,8 +688,7 @@ public class BiGGAnnotation {
         temp = getGeneProductBiGGIdFromUriList(list_Uri);
         if(temp!=null) {
           //update the id in geneProduct
-          id = temp;
-          geneProduct.setId(temp);
+          calculatedBiGGId = temp;
         }
       }
     }
@@ -703,7 +703,7 @@ public class BiGGAnnotation {
     }
     // fix not updated geneProductReference in Association
     SBMLUtils.updateGeneProductReference(geneProduct);
-    setCVTermResources(geneProduct, label);
+    setCVTermResources(geneProduct, calculatedBiGGId);
     if (geneProduct.getCVTermCount() > 0) {
       geneProduct.setMetaId(id);
     }
@@ -734,6 +734,8 @@ public class BiGGAnnotation {
 
         case "ecogene" : break;
 
+        case "uniprot" : break;
+
         default:
           return null; //the dataSource must belong one of above
       }
@@ -754,16 +756,16 @@ public class BiGGAnnotation {
 
   /**
    * @param geneProduct
-   * @param label
+   * @param id
    */
-  private void setCVTermResources(GeneProduct geneProduct, String label) {
+  private void setCVTermResources(GeneProduct geneProduct, String id) {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // label is stored without "G_" prefix in BiGG
-    if (label.startsWith("G_")) {
-      label = label.substring(2);
+    if (id.startsWith("G_")) {
+      id = id.substring(2);
     }
-    for (String resource : bigg.getGeneIds(label)) {
+    for (String resource : bigg.getGeneIds(id)) {
       // get Collection part from uri without url prefix - all uris should
       // begin with http://identifiers.org, else this may fail
       String collection = Registry.getDataCollectionPartFromURI(resource);

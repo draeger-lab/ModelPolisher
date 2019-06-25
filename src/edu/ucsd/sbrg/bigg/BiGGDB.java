@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.Utils;
@@ -642,7 +643,6 @@ public class BiGGDB {
       default: return null;
     }
 
-
     try {
       ResultSet rst = connector.query(query, data_source_biggId, synonym);
       if(rst.next()){
@@ -662,5 +662,26 @@ public class BiGGDB {
     }
 
     return biggId;
+  }
+
+  /**
+   * @param geneProduct
+   * @return boolean
+   */
+  public boolean isGenePresentInBigg(GeneProduct geneProduct){
+    String id = geneProduct.getId();
+    if(id.startsWith("G_")){
+      id=id.substring(2);
+    }
+
+    String query = SELECT + COLUMN_LOCUS_TAG + FROM + GENE + WHERE + COLUMN_LOCUS_TAG + " = '%s'";
+    try {
+      ResultSet rst = connector.query(query,id);
+      return rst.next();
+    }
+    catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return false;
   }
 }
