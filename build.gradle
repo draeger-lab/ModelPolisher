@@ -1,16 +1,20 @@
 apply plugin: "java"
+
 defaultTasks "clean", "fatJar"
 // Java versions for compilation and output
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 archivesBaseName = "ModelPolisher"
+
 version = "1.7"
+
 sourceSets {
     main.java.srcDirs = ["src"]
     main.resources.srcDirs = ["resources"]
     main.resources.excludes = ["**/bigg.zip"]
     test.java.srcDirs = ["test"]
 }
+
 repositories {
     mavenCentral()
     maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
@@ -20,6 +24,7 @@ repositories {
         dirs "lib/de/zbit/SysBio/1390"
     }
 }
+
 dependencies {
     compile "org.sbml.jsbml:jsbml:1.4"
     compile "de.zbit:SysBio:1390"
@@ -31,6 +36,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
 }
+
 // config for all jar tasks
 tasks.withType(Jar) {
     dependsOn test
@@ -48,6 +54,7 @@ tasks.withType(Jar) {
         )
     }
 }
+
 //download bigg.sqlite if not present
 task setupDB {
     gradle.taskGraph.whenReady { graph ->
@@ -62,6 +69,7 @@ task setupDB {
         } 
     }
 }
+
 // with dependencies
 task fatJar(type: Jar) {
     baseName = project.name + "-fat"
@@ -73,6 +81,7 @@ task fatJar(type: Jar) {
     processResources.dependsOn setupDB
     with jar
 }
+
 //with dependencies, without bigg.sqlite
 task lightJar(type: Jar) {
     exclude("**/bigg.sqlite")
@@ -84,18 +93,21 @@ task lightJar(type: Jar) {
     }
     with jar
 }
+
 // without dependencies and bigg.sqlite
 task bareJar(type: Jar) {
     exclude("**/bigg.sqlite")
     baseName = project.name + "-slim-noDB"
     with jar
 }
+
 // without dependencies, bigg.sqlite included
 // not included in release
 task slimJar(type: Jar) {
     baseName = project.name + "-slim"
     with jar
 }
+
 // zip lib folder for release
 task zipLibs(type: Zip) {
     from "lib"
@@ -104,6 +116,7 @@ task zipLibs(type: Zip) {
     archiveName = "lib.zip"
     destinationDir = file("target/")
 }
+
 // zip script files for release
 task zipScripts(type: Zip) {
     from "scripts"
@@ -112,6 +125,7 @@ task zipScripts(type: Zip) {
     archiveName = "scripts.zip"
     destinationDir = file("target/")
 }
+
 // create all three jars for release
 task release() {
     dependsOn fatJar
@@ -125,11 +139,13 @@ task release() {
     lightJar.mustRunAfter slimJar
     fatJar.mustRunAfter lightJar
 }
+
 // clean up target directory
 clean.doFirst {
     file(".gradle").deleteDir()
     file("target").deleteDir()
 }
+
 // bump jar version in travis.yml
 if (project.file(".travis.yml").exists()) {
     task bumpVersionTravis() {
@@ -137,6 +153,7 @@ if (project.file(".travis.yml").exists()) {
     }
     processResources.dependsOn bumpVersionTravis
 }
+
 // bump jar version in ModelPolisher.sh
 if (project.file("./scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
@@ -144,6 +161,7 @@ if (project.file("./scripts/ModelPolisher.sh").exists()) {
     }
     processResources.dependsOn bumpVersionMP
 }
+
 def replaceVersion(path) {
     ArrayList<String> content = new ArrayList<>()
     File travisFile = new File(path)
