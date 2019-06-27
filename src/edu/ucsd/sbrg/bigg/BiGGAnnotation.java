@@ -363,7 +363,7 @@ public class BiGGAnnotation {
           return null; //the dataSource must belong one of above
       }
 
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,1);
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_SPECIES);
       if(currentBiGGId!=null){
         if(biggId==null){
           biggId = currentBiGGId;
@@ -582,7 +582,7 @@ public class BiGGAnnotation {
           return null; //the dataSource must belong one of above
       }
 
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,2);
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_REACTION);
 
       if(biggId==null){
         biggId = currentBiGGId;
@@ -740,7 +740,7 @@ public class BiGGAnnotation {
           return null; //the dataSource must belong one of above
       }
 
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,3);
+      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_GENE_PRODUCT);
 
       if(biggId==null){
         biggId = currentBiGGId;

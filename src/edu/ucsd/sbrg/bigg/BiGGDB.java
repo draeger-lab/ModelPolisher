@@ -41,6 +41,11 @@ public class BiGGDB {
   private static final String SELECT = "SELECT ";
   private static final String FROM = " FROM ";
   private static final String WHERE = " WHERE ";
+
+  public static final String TYPE_SPECIES = "SPECIES";
+  public static final String TYPE_REACTION = "REACTION";
+  public static final String TYPE_GENE_PRODUCT = "GENE_PRODUCT";
+
   /**
    * A {@link Logger} for this class.
    */
@@ -617,27 +622,30 @@ public class BiGGDB {
    * @param data_source_biggId
    * @return String
    */
-  public String getBiggIdFromSynonym(String data_source_biggId, String synonym, int type){
+  public String getBiggIdFromSynonym(String data_source_biggId, String synonym, String type){
     String biggId = new String();
     String query;
-    //works for component(species)(type = 1), reaction(type = 2)
+
     switch (type){
-      case 1: query = SELECT + "c." + COLUMN_BIGG_ID + FROM + COMPONENT + " c, " + DATA_SOURCE + " d, " + SYNONYM + " s"
-              + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
-              COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = c."
-              + COLUMN_ID;
-              break;
+      case TYPE_SPECIES:
+        query = SELECT + "c." + COLUMN_BIGG_ID + FROM + COMPONENT + " c, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = c."
+                + COLUMN_ID;
+        break;
 
-      case 2: query = SELECT + "r." + COLUMN_BIGG_ID + FROM + REACTION + " r, " + DATA_SOURCE + " d, " + SYNONYM + " s"
-              + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
-              COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = r."
-              + COLUMN_ID;
-              break;
+      case TYPE_REACTION:
+        query = SELECT + "r." + COLUMN_BIGG_ID + FROM + REACTION + " r, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = r."
+                + COLUMN_ID;
+        break;
 
-      case 3: query =  SELECT + "g." + COLUMN_LOCUS_TAG + FROM + GENE + " g, " + DATA_SOURCE + " d, " + SYNONYM + " s"
-              + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
-              COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = g."
-              + COLUMN_ID;
+      case TYPE_GENE_PRODUCT:
+        query = SELECT + "g." + COLUMN_LOCUS_TAG + FROM + GENE + " g, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = g."
+                + COLUMN_ID;
         break;
 
       default: return null;
