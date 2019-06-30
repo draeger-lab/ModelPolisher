@@ -175,12 +175,7 @@ public class COBRAparser {
      * @return
      */
     Array getStructField(ModelField field) {
-      try{
-        return struct.get(field.name());
-      }catch (Exception e){
-        logger.info(e.toString());
-        return null;
-      }
+      return COBRAparser.getStructField(this.struct, field.name());
     }
 
 
@@ -190,12 +185,7 @@ public class COBRAparser {
      * @return
      */
     Array getStructField(Struct struct, ModelField field) {
-      try{
-        return struct.get(field.name());
-      }catch (Exception e){
-        logger.info(e.toString());
-        return null;
-      }
+      return COBRAparser.getStructField(struct, field.name());
     }
   }
 
@@ -678,7 +668,7 @@ public class COBRAparser {
     Struct correctedStruct = Mat5.newStruct(struct.getDimensions());
     List<String> field_names = struct.getFieldNames();
     for (String field_name : field_names) {
-      Array field = struct.get(field_name);
+      Array field = getStructField(struct,field_name);
       checkModelField(correctedStruct, name, field, field_name);
     }
     Model model = parseModel(correctedStruct, builder);
@@ -772,21 +762,15 @@ public class COBRAparser {
         for (ModelField variant : ModelField.values()) {
           String variantLC = variant.name().toLowerCase();
           if (variantLC.equals(fieldName.toLowerCase()) || variantLC.startsWith(fieldName.toLowerCase())) {
-            try{
-              if (correctedStruct.get(variant.name()) != null) {
-                logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
-                break;
-              }
-            }
-            //IllegalArgumentException if correctedStruct.get(variant.name()) is null
-            catch (Exception e){
-              logger.info(e.toString() + "for Struct:"+ structName + ", variantName:" + variant.name());
-
-              correctedStruct.set(variant.name(), field);
-              logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
-              invalidField = false;
+            if(getStructField(correctedStruct,variant.name())!=null){
+              logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
               break;
             }
+
+            correctedStruct.set(variant.name(), field);
+            logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
+            invalidField = false;
+            break;
           }
         }
         if (invalidField) {
@@ -1363,5 +1347,14 @@ public class COBRAparser {
               format(mpMessageBundle.getString("TYPE_MISMATCH_STRING"), array.getType().toString(), "parentName = %s", parentName, "parentIndex = %s", parentIndex));
     }
     return sb.toString();
+  }
+
+  private static Array getStructField(Struct struct, String fieldName){
+    try{
+      return struct.get(fieldName);
+    }catch (Exception e){
+      logger.info(format(mpMessageBundle.getString("STRUCT_FIELD_NOT_PRESENT"), fieldName, e.toString()));
+      return null;
+    }
   }
 }
