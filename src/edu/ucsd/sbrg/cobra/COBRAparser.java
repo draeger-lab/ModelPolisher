@@ -1349,6 +1349,11 @@ public class COBRAparser {
     return sb.toString();
   }
 
+  /**
+   * @param struct
+   * @param fieldName
+   * @return Array
+   */
   private static Array getStructField(Struct struct, String fieldName){
     try{
       return struct.get(fieldName);
