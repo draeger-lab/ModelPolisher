@@ -26,6 +26,9 @@ repositories {
 }
 
 dependencies {
+    compile 'javax.xml.bind:jaxb-api:2.3.0'
+    compile 'javax.activation:activation:1.1'
+    compile 'org.glassfish.jaxb:jaxb-runtime:2.3.0'
     compile "org.sbml.jsbml:jsbml:1.4"
     compile "de.zbit:SysBio:1390"
     compile "org.xerial:sqlite-jdbc:3.21.0"
