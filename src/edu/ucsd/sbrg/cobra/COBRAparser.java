@@ -772,14 +772,21 @@ public class COBRAparser {
         for (ModelField variant : ModelField.values()) {
           String variantLC = variant.name().toLowerCase();
           if (variantLC.equals(fieldName.toLowerCase()) || variantLC.startsWith(fieldName.toLowerCase())) {
-            if (correctedStruct.get(variant.name()) != null) {
-              logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
+            try{
+              if (correctedStruct.get(variant.name()) != null) {
+                logger.warning(format(mpMessageBundle.getString("FIELD_ALREADY_PRESENT"), variant.name(), fieldName));
+                break;
+              }
+            }
+            //IllegalArgumentException if correctedStruct.get(variant.name()) is null
+            catch (Exception e){
+              logger.info(e.toString() + "for Struct:"+ structName + ", variantName:" + variant.name());
+
+              correctedStruct.set(variant.name(), field);
+              logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
+              invalidField = false;
               break;
             }
-            correctedStruct.set(variant.name(), field);
-            logger.warning(format(mpMessageBundle.getString("CHANGED_TO_VARIANT"), fieldName, variant.name()));
-            invalidField = false;
-            break;
           }
         }
         if (invalidField) {
