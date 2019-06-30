@@ -19,6 +19,7 @@ repositories {
     mavenCentral()
     maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
     maven { url "http://jsbml.sourceforge.net/m2repo/" }
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots"}
     // local dependencies
     flatDir {
         dirs "lib/de/zbit/SysBio/1390"
@@ -34,7 +35,7 @@ dependencies {
     compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"
-    compile "com.diffplug.matsim:matfilerw:3.0.1"
+    compile 'us.hebi.matlab.mat:mfl-core:0.5.3-SNAPSHOT'
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
