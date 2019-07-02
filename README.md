@@ -16,10 +16,6 @@ Moreover, it fixes some apparent errors in the models.
 
 ModelPolisher is primarily a command-line based tool. You can run it locally using your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). A list of all available command-line options is printed when starting ModelPolisher with the option `-?`, i.e., by typing `java -jar ModelPolisher-VERSION.jar -?`, where `VERSION` needs to be replaced with the current release version of the program. If you run into trouble with larger files, especially `_java.lang.OutOfMemoryError: GC overhead limit exceeded_`, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
 
-# Caveat
-
-COBRAparser currently does not work with Java 9 due to an incompatibility in its dependency. Please use Java 8.
-
 # How to cite ModelPolisher?
 
 The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
@@ -45,8 +41,6 @@ Each such command will build a `jar` file in `<path>/ModelPolisher/target/` fold
 Running ModelPolisher will be easiest using `fatJar`, as then no database needs to be hosted by you, though it would be rather slow. We would recommend building lightJar and hosting database using `PostgreSQL`, see details below.
 
 # How to polish models?
-
-Note: use Java 8 to run ModelPolisher.
 
 For polishing models, you essentially need to run ModelPolisher using either of the `jar` built from above instructions. It is easiest to run ModelPolisher using `fatJar`. 
 
