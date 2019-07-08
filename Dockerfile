@@ -30,5 +30,6 @@ apt install sudo
 RUN sudo -H -u postgres bash -c 'service postgresql restart' &&\
 sudo -H -u postgres bash -c 'createuser -s zaking' &&\
 sudo -H -u postgres bash -c 'createdb bigg' &&\
+sudo -H -u postgres bash -c "psql -c \"ALTER USER postgres WITH PASSWORD 'postgres'\"" &&\
 sudo -H -u postgres bash -c 'pg_restore -c -d bigg /ModelPolisher/database.dump'; exit 0 &&\
 rm /ModelPolisher/database.dump
