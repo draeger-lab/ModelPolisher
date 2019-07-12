@@ -27,11 +27,14 @@ version: '3'
 services:
   biggdb:
     container_name: modelpolisher_biggdb
-    build: ./bigg_docker
+    build: ./docker/bigg_docker
     ports:
       - "1310:5432"
   adb:
     container_name: modelpolisher_adb
-    build: ./adb_docker
+    build: ./docker/adb_docker
     ports:
-      - "5703:5432"
+      - "7003:5432"
+  java:
+    container_name: modelpolisher_java
+    build: ./docker/java_docker
