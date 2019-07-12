@@ -38,3 +38,5 @@ services:
   java:
     container_name: modelpolisher_java
     build: ./docker/java_docker
+    stdin_open: true
+    tty: true
