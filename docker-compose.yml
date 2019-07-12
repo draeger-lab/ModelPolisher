@@ -7,4 +7,4 @@ services:
   adb:
     build: ./adb_docker
     ports:
-      - "5454:5432"
+      - "0703:5432"

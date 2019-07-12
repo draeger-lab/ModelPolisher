@@ -9,4 +9,4 @@ rm -rf /var/lib/apt/lists/*
 
 COPY ./scripts/restore_adb.sh /docker-entrypoint-initdb.d/restore_adb.sh
 
-EXPOSE 5454:5432
+EXPOSE 0703:5432
