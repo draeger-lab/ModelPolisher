@@ -1,0 +1,10 @@
+version: '3'
+services:
+  biggdb:
+    build: ./bigg_docker
+    ports:
+      - "1310:5432"
+  adb:
+    build: ./adb_docker
+    ports:
+      - "5454:5432"
