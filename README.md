@@ -28,7 +28,7 @@ NOTE: You may run ModelPolisher, without building, using Docker. See [here](#usi
 
 ModelPolisher uses `gradle` to build. Make sure you have `gradle` installed in your system before following the procedure below.
 
-First clone this github project and go to directory `.../ModelPolisher/`. Then, ModelPolisher can be built using Gradle, choosing one of four relevant tasks:
+First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle, choosing one of four relevant tasks:
 * `fatJar`: (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
 * `lightJar`: with dependencies, without SQLite DB
 * `slimJar`: without dependencies, but with SQLite DB included
@@ -38,7 +38,7 @@ For example to build fatJar, you can use the command:
 ```
 gradle fatJar
 ```
-Each such command will build a `jar` file in `.../ModelPolisher/target/` folder. Providing no task will automatically build a `fatJar`.
+Each such command will build a `jar` file in `<path>/ModelPolisher/target/` folder. Providing no task will automatically build a `fatJar`.
 
 Running ModelPolisher will be easiest using `fatJar`, as then no database needs to be hosted by you, though it would be rather slow. We would recommend building lightJar and hosting database using `PostgreSQL`, see details below.
 
