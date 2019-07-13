@@ -91,7 +91,7 @@ java -jar ".../ModelPolisher/target/ModelPolisher-noDB-1.7.jar" --input=<input> 
 ```
 Make changes in the postgres credentials as required.
 
-Note that, one <u>may pass directories as `input` and `output`</u>. In that case each file from `input` will be polished and saved with same name in the `output`.
+Note that, one may pass directories as `input` and `output`. In that case each file from `input` will be polished and saved with same name in the `output`.
 
 # Licenses
 
