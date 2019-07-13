@@ -62,7 +62,15 @@ Note: This command will mount volume `<path_directory_having_models>` to `/model
 
 To bring down the containers, you can run `docker-compose stop`. This will only stop the containers but won't delete them. Otherwise, you can use `docker-compose down -v` to stop and remove all containers and related volumes.
 
-Note: `docker-compose down -v` will cause all databases to be restored again on running `docker-compose up`, as restored databases exist in containers not in images.
+Note: `docker-compose down -v` will cause all databases to be restored again on running `docker-compose up`, as restored databases exist in containers not in images. 
+
+Using `docker` might cause system space to be filled up, and `docker-compose up` may fail due to insufficient space. Use the following commands if there is need to empty space used by ModelPolisher_docker:
+```
+docker stop modelpolisher_biggdb modelpolisher_adb modelpolisher_java
+docker rm modelpolisher_biggdb modelpolisher_adb modelpolisher_java
+docker rmi modelpolisher_java:latest modelpolisher_adb:latest modelpolisher_biggdb:latest postgres:11.4 openjdk:11-slim
+docker volume prune
+```
 
 ## Without Docker
 For polishing models, you essentially need to run ModelPolisher using either of the `jar` built from above instructions. It is easiest to run ModelPolisher using `fatJar`. 
