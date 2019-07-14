@@ -1,7 +1,7 @@
 /*
  * 
  */
-package main.java.edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg;
 
 import static java.text.MessageFormat.format;
 
@@ -52,7 +52,7 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
-import main.java.edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
+import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import main.java.edu.ucsd.sbrg.cobra.COBRAparser;
 import main.java.edu.ucsd.sbrg.json.JSONparser;
 import main.java.edu.ucsd.sbrg.util.UpdateListener;

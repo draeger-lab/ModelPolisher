@@ -1,12 +1,13 @@
-package main.java.edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg;
 
-import static main.java.edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
+import edu.ucsd.sbrg.bigg.SQLConnector;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteOpenMode;
 

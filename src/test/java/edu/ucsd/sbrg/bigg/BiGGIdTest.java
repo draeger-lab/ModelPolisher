@@ -11,6 +11,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import main.java.edu.ucsd.sbrg.bigg.BiGGId;
+
 /**
  * @author Thomas Zajac
  */
@@ -38,7 +40,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#hashCode()}.
+   * Test method for {@link BiGGId#hashCode()}.
    */
   @Test
   public final void testHashCode() {
@@ -49,7 +51,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#equals(java.lang.Object)}.
+   * {@link BiGGId#equals(java.lang.Object)}.
    * Tests equality of both Constructors and the equals Method
    */
   @Test
@@ -69,7 +71,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#isSetAbbreviation()}.
+   * Test method for {@link BiGGId#isSetAbbreviation()}.
    */
   @Test
   public final void testIsSetAbbreviation() {
@@ -80,7 +82,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#isSetCompartmentCode()}.
+   * Test method for {@link BiGGId#isSetCompartmentCode()}.
    */
   @Test
   public final void testIsSetCompartmentCode() {
@@ -91,7 +93,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#isSetPrefix()}.
+   * Test method for {@link BiGGId#isSetPrefix()}.
    */
   @Test
   public final void testIsSetPrefix() {
@@ -103,7 +105,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#isSetTissueCode()}.
+   * Test method for {@link BiGGId#isSetTissueCode()}.
    */
   @Test
   public final void testIsSetTissueCode() {
@@ -115,7 +117,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#setCheckAbbreviation(java.lang.String)}.
+   * {@link BiGGId#setCheckAbbreviation(java.lang.String)}.
    */
   @Test
   public final void testSetAbbreviation() {
@@ -128,7 +130,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#setCheckCompartmentCode(java.lang.String)}
+   * {@link BiGGId#setCheckCompartmentCode(java.lang.String)}
    * .
    */
   @Test
@@ -140,7 +142,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#setParsedPrefix(java.lang.String)}.
+   * {@link BiGGId#setParsedPrefix(java.lang.String)}.
    */
   @Test
   public final void testSetParsedPrefix() {
@@ -171,7 +173,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#setConstructorPrefix(java.lang.String)}.
+   * {@link BiGGId#setConstructorPrefix(java.lang.String)}.
    */
   @Test
   public final void testSetConstructorPrefix() {
@@ -205,7 +207,7 @@ public class BiGGIdTest {
 
   /**
    * Test method for
-   * {@link edu.ucsd.sbrg.bigg.BiGGId#setCheckTissueCode(java.lang.String)}.
+   * {@link BiGGId#setCheckTissueCode(java.lang.String)}.
    */
   @Test
   public final void testSetCheckTissueCode() {
@@ -215,7 +217,7 @@ public class BiGGIdTest {
 
 
   /**
-   * Test method for {@link edu.ucsd.sbrg.bigg.BiGGId#toBiGGId()}.
+   * Test method for {@link BiGGId#toBiGGId()}.
    */
   @Test
   public final void testToBiGGId() {

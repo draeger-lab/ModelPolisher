@@ -5,4 +5,4 @@
 /**
  * @author Andreas Dr&auml;ger
  */
-package main.java.edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg;

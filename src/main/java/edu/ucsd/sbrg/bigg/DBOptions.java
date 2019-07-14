@@ -1,7 +1,7 @@
 /**
  * 
  */
-package main.java.edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg;
 
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;

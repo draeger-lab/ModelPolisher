@@ -1,7 +1,7 @@
 /**
  * 
  */
-package main.java.edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg;
 
 import java.io.File;
 

@@ -1,27 +1,5 @@
 # ------------------------------------------------
 # docker-compose for ModelPolisher
-# 
-# requirements:
-#     java (openjdk11)
-#     gradle
-#     docker
-#     docker-compose
-#
-# To build ModelPolisher use
-#    git clone https://github.com/draeger-lab/ModelPolisher.git
-#    cd ModelPolisher
-#    docker-compose up --detach
-#    gradle lightJar
-#
-# To polish an SBML model use
-#    java -jar ./target/ModelPolisher-noDB-1.7.jar --input="./examples/bigg/e_coli_core.xml" --output="./examples/bigg/e_coli_core_polished.xml" --annotate-with-bigg=true --host=0.0.0.0 --port=1310 --user=postgres --passwd=postgres --dbname=bigg
-#
-# To polish a Matlab model use
-#    java -jar ./target/ModelPolisher-noDB-1.7.jar --input="./examples/bigg/e_coli_core.mat" --output="./examples/bigg/e_coli_core_mat_polished.xml" --annotate-with-bigg=true --host=0.0.0.0 --port=1310 --user=postgres --passwd=postgres --dbname=bigg
-#
-# To polish a JSON model use
-#    java -jar ./target/ModelPolisher-noDB-1.7.jar --input="./examples/bigg/e_coli_core.json" --output="./examples/bigg/e_coli_core_json_polished.xml" --annotate-with-bigg=true --host=0.0.0.0 --port=1310 --user=postgres --passwd=postgres --dbname=bigg
-#
 # ------------------------------------------------
 version: '3'
 services:
