@@ -13,7 +13,7 @@ echo "Started conversion of local PostgreSQL BiGGDB to SQLite..." \
 && echo "Finished cleanup for migration to SQLite." \
 && sqlite3 "" ".read schema.sql" ".read converted.sql" ".save bigg.sqlite" \
 && echo "Finished creating SQLite DB." \
-&& mv bigg.sqlite ../resources/edu/ucsd/sbrg/bigg \
+&& mv bigg.sqlite ../src/main/resources/edu/ucsd/sbrg/bigg \
 && echo "Removing temporary files..." \
 && rm bigg.sql converted.sql bigg_schema.sql schema.sql \
 && printf "Finished.\nYou can now create the indices using createIndices.py."

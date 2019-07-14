@@ -7,7 +7,7 @@ from sys import argv
 
 
 def main():
-    connection = sqlite3.connect("../resources/edu/ucsd/sbrg/bigg/bigg.sqlite")
+    connection = sqlite3.connect("../src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite")
     cursor = connection.cursor()
     queries = ["CREATE INDEX IF NOT EXISTS synonym_idx on synonym(ome_id)",
                "CREATE INDEX IF NOT EXISTS mcc_idx on model_compartmentalized_component(compartmentalized_component_id)",
