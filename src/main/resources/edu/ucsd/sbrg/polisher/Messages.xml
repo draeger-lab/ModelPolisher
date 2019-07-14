@@ -137,7 +137,6 @@
     <entry key="SPECIES_REFERENCE_INVALID">Invalid reference to a species ''{0}'' that doesn''t exist in the model.</entry>
     <entry key="SPECIES_UNDEFINED">Species ''{0}'' in reaction ''{1}'' is not defined!</entry>
     <entry key="SQLITE_CONNECTED">Connected to the local SQLite version of BiGGDB.</entry>
-    <entry key="STRUCT_FIELD_NOT_PRESENT">Struct field {0} not found. Exception: {1}</entry>
     <entry key="SUBSYS_LINK_ERROR">Reaction at index ''{0}'' is null. Could not create subsystem link.</entry>
     <entry key="TAGS_FINE_INFO">No replacement needed, continuing</entry>
     <entry key="TISS_CODE_INVALID">Invalid tissue code: ''{0}''</entry>
