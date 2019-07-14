@@ -47,18 +47,25 @@ Running ModelPolisher will be easiest using `fatJar`, as then no database needs 
 ## <a name="using-docker"></a>Using Docker
 ModelPolisher can be run in docker containers. This allows user to skip the build process, and database setup required to run ModelPolisher. Please install `docker` and `docker-compose`, if not installed already.
 
-Run the following commands:
+Clone ModelPolisher and change directory to ModelPolisher/:
 ```
+git clone https://github.com/draeger-lab/ModelPolisher/
 cd <path>/ModelPolisher
+```
+Now, bring up docker containers required for ModelPolisher(NOTE: You must be in `ModelPolisher/` directory):
+```
 docker-compose up
 ```
+
 We recommend using docker-compose in non-detached mode when building containers for first time. If you have previously built ModelPolisher  containers use `docker-compose up --detach`.
 
-On running these commands, databases will be restored in respective containers. After databases are successfully set up, use the following command to run ModelPolisher:
+On running these commands, databases will be restored in respective containers. After databases are successfully set up, use the following command to run ModelPolisher(in `ModelPolisher/` directory):
 ```
 docker-compose run  -v <path_directory_having_models>:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/<model_name> --output=/models/output/<output_name> --annotate-with-bigg=true --host=biggdb --port=5432 --user=postgres --passwd=postgres --dbname=bigg
 ```
 Note: This command will mount volume `<path_directory_having_models>` to `/models/` in container. Thus, outputs will be produced in directory `<path_directory_having_models>/output`.
+
+Example: `docker-compose run  -v ./example_models/bigg:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/e_coli_core.xml --output=/models/output/ --annotate-with-bigg=true --host=biggdb --port=5432 --user=postgres --passwd=postgres --dbname=bigg`
 
 To bring down the containers, you can run `docker-compose stop`. This will only stop the containers but won't delete them. Otherwise, you can use `docker-compose down -v` to stop and remove all containers and related volumes.
 
