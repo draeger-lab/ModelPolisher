@@ -65,7 +65,7 @@ docker-compose run  -v <path_directory_having_models>:/models/ java java -jar /M
 ```
 Note: This command will mount volume `<path_directory_having_models>` to `/models/` in container. Thus, outputs will be produced in directory `<path_directory_having_models>/output`.
 
-Example: `docker-compose run  -v ./example_models/bigg:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/e_coli_core.xml --output=/models/output/ --annotate-with-bigg=true --host=biggdb --port=5432 --user=postgres --passwd=postgres --dbname=bigg`
+Example: ```docker-compose run  -v ./example_models/bigg:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/e_coli_core.xml --output=/models/output/ --annotate-with-bigg=true --host=biggdb --port=5432 --user=postgres --passwd=postgres --dbname=bigg```
 
 To bring down the containers, you can run `docker-compose stop`. This will only stop the containers but won't delete them. Otherwise, you can use `docker-compose down -v` to stop and remove all containers and related volumes.
 
