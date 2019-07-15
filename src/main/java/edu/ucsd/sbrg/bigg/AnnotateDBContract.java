@@ -4,7 +4,8 @@ public final class AnnotateDBContract {
     static abstract class Constants {
             // Tables
             static final String MAPPING_VIEW = "mapping_view";
-            // Columns
+            static final String ADB_COLLECTION = "adb_collection";
+            // Column
             static final String COLUMN_ID = "id";
             static final String COLUMN_SOURCE_NAMESPACE = "source_namespace";
             static final String COLUMN_SOURCE_MIRIAM = "source_miriam";
@@ -16,5 +17,7 @@ public final class AnnotateDBContract {
             static final String COLUMN_EVIDENCE_SOURCE = "evidence_source";
             static final String COLUMN_EVIDENCE_VERSION = "evidence_version";
             static final String COLUMN_EVIDENCE = "evidence";
+            static final String COLUMN_NAMESPACE = "namespace";
+            static final String COLUMN_URLPATTERN = "urlpattern";
     }
 }

@@ -1,8 +1,13 @@
 package edu.ucsd.sbrg.bigg;
 
+import de.zbit.util.Utils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.TreeSet;
 
 import static edu.ucsd.sbrg.bigg.AnnotateDBContract.Constants.*;
+import static edu.ucsd.sbrg.bigg.BiGGAnnotation.logger;
 
 /**
  * @author Kaustubh Trivedi
@@ -16,6 +21,34 @@ public class AnnotateDB {
     public static final String BIGG_METABOLITE = "bigg.metabolite";
     public static final String BIGG_REACTION = "bigg.reaction";
 
+    private edu.ucsd.sbrg.bigg.SQLConnector connector;
+
+    /**
+     * Initialize a SQL connection
+     *
+     * @param connector
+     * @throws SQLException
+     */
+    AnnotateDB(SQLConnector connector) throws SQLException {
+        this.connector = connector;
+        if (!connector.isConnected()) {
+            connector.connect();
+        }
+    }
+
+    /**
+     *
+     */
+    void closeConnection() {
+        if (connector.isConnected()) {
+            try {
+                connector.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public TreeSet<String>  getAnnotations(String type, String biggId){
         TreeSet<String> annotations = new TreeSet<>();
 
@@ -23,9 +56,21 @@ public class AnnotateDB {
             return annotations;
         }
 
-        String query = SELECT + COLUMN_TARGET_NAMESPACE + ", " + COLUMN_TARGET_TERM + FROM + MAPPING_VIEW + WHERE +
-                COLUMN_SOURCE_NAMESPACE + " = " + type + " AND " + COLUMN_SOURCE_TERM + " = " + biggId;
+        String query = SELECT + "m." + COLUMN_TARGET_TERM + ", ac." + COLUMN_URLPATTERN + FROM + MAPPING_VIEW + " m, " + ADB_COLLECTION + " ac,"+ WHERE +
+                "m." + COLUMN_SOURCE_NAMESPACE + " = %s AND " + "m." + COLUMN_SOURCE_TERM + " = %s" + " AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
+        try {
+            ResultSet rst = connector.query(query,type,biggId);
+            while (rst.next()){
+                String uri = rst.getString(COLUMN_URLPATTERN);
+                String id = rst.getString(COLUMN_TARGET_TERM);
+                uri = uri.replace("{$id}",id);
+                annotations.add(uri);
+            }
+        }
+        catch (SQLException exc) {
+            logger.warning(Utils.getMessage(exc));
+        }
 
-
+        return annotations;
     }
 }
