@@ -1,4 +1,4 @@
-package main.java.edu.ucsd.sbrg.eco;
+package edu.ucsd.sbrg.eco;
 
 import org.biojava.nbio.ontology.Term;
 

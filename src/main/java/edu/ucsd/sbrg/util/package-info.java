@@ -4,4 +4,4 @@
 /**
  * @author Andreas Dr&auml;ger
  */
-package main.java.edu.ucsd.sbrg.util;
+package edu.ucsd.sbrg.util;

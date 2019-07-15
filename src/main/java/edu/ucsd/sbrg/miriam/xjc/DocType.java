@@ -5,7 +5,7 @@
 // Any modifications to this file will be lost upon recompilation of the source schema.
 // Generated on: 2018.04.27 at 01:32:33 PM CEST
 //
-package main.java.edu.ucsd.sbrg.miriam.xjc;
+package edu.ucsd.sbrg.miriam.xjc;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlType;

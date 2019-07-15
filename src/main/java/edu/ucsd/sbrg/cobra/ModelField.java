@@ -1,7 +1,7 @@
 /**
  * 
  */
-package main.java.edu.ucsd.sbrg.cobra;
+package edu.ucsd.sbrg.cobra;
 
 /**
  * For more information about COBRA model fields, see the following

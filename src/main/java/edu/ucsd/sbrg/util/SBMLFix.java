@@ -1,9 +1,9 @@
 /**
  * 
  */
-package main.java.edu.ucsd.sbrg.util;
+package edu.ucsd.sbrg.util;
 
-import static main.java.edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.bigg.ModelPolisher;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -31,8 +32,8 @@ import de.zbit.io.ZIPUtils;
 import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
-import main.java.edu.ucsd.sbrg.bigg.ModelPolisher;
-import main.java.edu.ucsd.sbrg.bigg.SBMLPolisher;
+import edu.ucsd.sbrg.bigg.ModelPolisher;
+import edu.ucsd.sbrg.bigg.SBMLPolisher;
 
 /**
  * This is a stand-alone bug-fix program. It recursively traverses a directory

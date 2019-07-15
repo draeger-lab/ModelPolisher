@@ -1,9 +1,9 @@
 /**
  *
  */
-package main.java.edu.ucsd.sbrg.cobra;
+package edu.ucsd.sbrg.cobra;
 
-import static main.java.edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -38,10 +38,10 @@ import org.sbml.jsbml.util.ModelBuilder;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
-import main.java.edu.ucsd.sbrg.bigg.BiGGId;
-import main.java.edu.ucsd.sbrg.miriam.Registry;
-import main.java.edu.ucsd.sbrg.util.SBMLUtils;
-import main.java.edu.ucsd.sbrg.util.UpdateListener;
+import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;

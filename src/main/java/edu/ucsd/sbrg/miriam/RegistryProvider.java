@@ -1,8 +1,8 @@
-package main.java.edu.ucsd.sbrg.miriam;
+package edu.ucsd.sbrg.miriam;
 
 import javax.xml.bind.JAXBException;
 
-import main.java.edu.ucsd.sbrg.miriam.xjc.Miriam;
+import edu.ucsd.sbrg.miriam.xjc.Miriam;
 
 public class RegistryProvider {
 

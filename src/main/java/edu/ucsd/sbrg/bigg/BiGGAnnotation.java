@@ -30,8 +30,8 @@ import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import main.java.edu.ucsd.sbrg.miriam.Registry;
-import main.java.edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
  * @author Thomas Zajac

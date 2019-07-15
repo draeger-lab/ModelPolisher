@@ -1,6 +1,6 @@
-package main.java.edu.ucsd.sbrg.json;
+package edu.ucsd.sbrg.json;
 
-import static main.java.edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -41,9 +41,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zbit.util.Utils;
-import main.java.edu.ucsd.sbrg.bigg.BiGGId;
-import main.java.edu.ucsd.sbrg.util.SBMLUtils;
-import main.java.edu.ucsd.sbrg.util.UpdateListener;
+import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
  * @author Thomas Jakob Zajac

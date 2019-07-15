@@ -6,4 +6,4 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://www.biomodels.net/MIRIAM/", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package main.java.edu.ucsd.sbrg.miriam.xjc;
+package edu.ucsd.sbrg.miriam.xjc;

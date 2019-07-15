@@ -1,4 +1,4 @@
-package main.java.edu.ucsd.sbrg.miriam;
+package edu.ucsd.sbrg.miriam;
 
 import java.net.URL;
 
@@ -6,7 +6,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import main.java.edu.ucsd.sbrg.miriam.xjc.Miriam;
+import edu.ucsd.sbrg.miriam.xjc.Miriam;
 
 public class RegistryParser {
 

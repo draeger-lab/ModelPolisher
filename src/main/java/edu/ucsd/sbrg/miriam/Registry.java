@@ -1,4 +1,4 @@
-package main.java.edu.ucsd.sbrg.miriam;
+package edu.ucsd.sbrg.miriam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,9 +7,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import main.java.edu.ucsd.sbrg.miriam.xjc.Miriam;
-import main.java.edu.ucsd.sbrg.miriam.xjc.Uri;
-import main.java.edu.ucsd.sbrg.miriam.xjc.Uris;
+import edu.ucsd.sbrg.miriam.xjc.Miriam;
+import edu.ucsd.sbrg.miriam.xjc.Uri;
+import edu.ucsd.sbrg.miriam.xjc.Uris;
 
 public class Registry {
 

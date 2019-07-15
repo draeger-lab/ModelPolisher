@@ -53,9 +53,9 @@ import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
-import main.java.edu.ucsd.sbrg.cobra.COBRAparser;
-import main.java.edu.ucsd.sbrg.json.JSONparser;
-import main.java.edu.ucsd.sbrg.util.UpdateListener;
+import edu.ucsd.sbrg.cobra.COBRAparser;
+import edu.ucsd.sbrg.json.JSONparser;
+import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
  * @author Andreas Dr&auml;ger

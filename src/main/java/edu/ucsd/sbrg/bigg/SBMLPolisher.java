@@ -50,8 +50,8 @@ import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
-import main.java.edu.ucsd.sbrg.util.SBMLFix;
-import main.java.edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.SBMLFix;
+import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
  * @author Andreas Dr&auml;ger

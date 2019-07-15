@@ -1,4 +1,4 @@
-package main.java.edu.ucsd.sbrg.eco;
+package edu.ucsd.sbrg.eco;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,9 @@
 /**
  * 
  */
-package main.java.edu.ucsd.sbrg.util;
+package edu.ucsd.sbrg.util;
 
-import static main.java.edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 
 import java.io.StringReader;
 import java.text.MessageFormat;

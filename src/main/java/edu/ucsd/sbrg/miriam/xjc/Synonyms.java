@@ -6,7 +6,7 @@
 //
 
 
-package main.java.edu.ucsd.sbrg.miriam.xjc;
+package edu.ucsd.sbrg.miriam.xjc;
 
 import java.util.ArrayList;
 import java.util.List;

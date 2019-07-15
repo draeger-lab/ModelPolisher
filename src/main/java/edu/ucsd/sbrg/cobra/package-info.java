@@ -4,4 +4,4 @@
 /**
  * @author Andreas Dr&auml;ger
  */
-package main.java.edu.ucsd.sbrg.cobra;
+package edu.ucsd.sbrg.cobra;
