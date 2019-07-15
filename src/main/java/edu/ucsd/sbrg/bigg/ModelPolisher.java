@@ -79,6 +79,10 @@ public class ModelPolisher extends Launcher {
      */
     Boolean annotateWithBiGG = null;
     /**
+     * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
+     */
+    Boolean addADBAnnotaions = null;
+    /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
     Boolean checkMassBalance = null;
@@ -134,6 +138,10 @@ public class ModelPolisher extends Launcher {
    *
    */
   private static BiGGDB bigg = null;
+  /**
+   *
+   */
+  private static AnnotateDB adb = null;
   /**
    * Localization support.
    */
@@ -210,6 +218,9 @@ public class ModelPolisher extends Launcher {
     if (bigg != null) {
       bigg.closeConnection();
     }
+    if (adb != null) {
+      adb.closeConnection();
+    }
   }
 
 
@@ -278,6 +289,7 @@ public class ModelPolisher extends Launcher {
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
     }
     parameters.annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
+    parameters.addADBAnnotaions = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
     parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
     parameters.noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
     parameters.compression =
@@ -395,19 +407,21 @@ public class ModelPolisher extends Launcher {
     if (!parameters.annotateWithBiGG || bigg != null) {
       return;
     }
-    String dbName = args.getProperty(DBOptions.DBNAME);
-    String host = args.getProperty(DBOptions.HOST);
-    String passwd = args.getProperty(DBOptions.PASSWD);
-    String port = args.getProperty(DBOptions.PORT);
-    String user = args.getProperty(DBOptions.USER);
-    boolean runPSQL = iStrNotNullOrEmpty(dbName);
-    runPSQL &= iStrNotNullOrEmpty(host);
-    runPSQL &= iStrNotNullOrEmpty(port);
-    runPSQL &= iStrNotNullOrEmpty(user);
-    if (runPSQL) {
+
+    String bigg_dbName = args.getProperty(BiGGDBOptions.BiGG_DBNAME);
+    String bigg_host = args.getProperty(BiGGDBOptions.BiGG_HOST);
+    String bigg_passwd = args.getProperty(BiGGDBOptions.BiGG_PASSWD);
+    String bigg_port = args.getProperty(BiGGDBOptions.BiGG_PORT);
+    String bigg_user = args.getProperty(BiGGDBOptions.BiGG_USER);
+
+    boolean runPSQL_bigg = iStrNotNullOrEmpty(bigg_dbName);
+    runPSQL_bigg &= iStrNotNullOrEmpty(bigg_host);
+    runPSQL_bigg &= iStrNotNullOrEmpty(bigg_port);
+    runPSQL_bigg &= iStrNotNullOrEmpty(bigg_user);
+    if (runPSQL_bigg) {
       try {
         // Connect to PostgreSQL database and launch application:
-        bigg = new BiGGDB(new PostgreSQLConnector(host, new Integer(port), user, passwd != null ? passwd : "", dbName));
+        bigg = new BiGGDB(new PostgreSQLConnector(bigg_host, new Integer(bigg_port), bigg_user, bigg_passwd != null ? bigg_passwd : "", bigg_dbName));
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
         System.exit(1);
@@ -418,6 +432,29 @@ public class ModelPolisher extends Launcher {
       } catch (SQLException | ClassNotFoundException exc) {
         exc.printStackTrace();
         System.exit(1);
+      }
+    }
+
+
+    if(!parameters.addADBAnnotaions || adb!=null){
+      String adb_dbName = args.getProperty(ADBOptions.ADB_DBNAME);
+      String adb_host = args.getProperty(ADBOptions.ADB_HOST);
+      String adb_passwd = args.getProperty(ADBOptions.ADB_PASSWD);
+      String adb_port = args.getProperty(ADBOptions.ADB_PORT);
+      String adb_user = args.getProperty(ADBOptions.ADB_USER);
+
+      boolean runPSQL_adb = iStrNotNullOrEmpty(adb_dbName);
+      runPSQL_adb &= iStrNotNullOrEmpty(adb_host);
+      runPSQL_adb &= iStrNotNullOrEmpty(adb_port);
+      runPSQL_adb &= iStrNotNullOrEmpty(adb_user);
+      if (runPSQL_adb) {
+        try {
+          // Connect to PostgreSQL database and launch application:
+          adb = new AnnotateDB(new PostgreSQLConnector(adb_host, new Integer(adb_port), adb_user, adb_passwd != null ? adb_passwd : "", adb_dbName));
+        } catch (SQLException | ClassNotFoundException exc) {
+          exc.printStackTrace();
+          System.exit(1);
+        }
       }
     }
   }
@@ -539,7 +576,7 @@ public class ModelPolisher extends Launcher {
     doc = polisher.polish(doc);
     // Annotation
     if (parameters.annotateWithBiGG) {
-      BiGGAnnotation annotation = new BiGGAnnotation(bigg, polisher);
+      BiGGAnnotation annotation = new BiGGAnnotation(bigg, adb, polisher);
       if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
         annotation.setDocumentNotesFile(null);
         annotation.setModelNotesFile(null);
@@ -623,7 +660,8 @@ public class ModelPolisher extends Launcher {
   public List<Class<? extends KeyProvider>> getCmdLineOptions() {
     List<Class<? extends KeyProvider>> options = new LinkedList<>();
     options.add(LogOptions.class);
-    options.add(DBOptions.class);
+    options.add(BiGGDBOptions.class);
+    options.add(ADBOptions.class);
     options.add(ModelPolisherOptions.class);
     options.add(IOOptions.class);
     return options;
@@ -647,7 +685,8 @@ public class ModelPolisher extends Launcher {
   @Override
   public List<Class<? extends KeyProvider>> getInteractiveOptions() {
     List<Class<? extends KeyProvider>> options = new LinkedList<>();
-    options.add(DBOptions.class);
+    options.add(BiGGDBOptions.class);
+    options.add(ADBOptions.class);
     options.add(ModelPolisherOptions.class);
     return options;
   }

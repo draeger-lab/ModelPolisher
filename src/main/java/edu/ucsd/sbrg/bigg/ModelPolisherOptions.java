@@ -84,6 +84,13 @@ public interface ModelPolisherOptions extends KeyProvider {
   new Option<Boolean>("ANNOTATE_WITH_BIGG", Boolean.class,
       mpMessageBundle.getString("ANNOTATE_WITH_BIGG_DESC"), Boolean.FALSE);
   /**
+   * If set to true, annotations will be added to species and reactions from AnnotateDB also.
+   */
+  @SuppressWarnings("unchecked")
+  public static final Option<Boolean> ADD_ADB_ANNOTATIONS =
+          new Option<Boolean>("ADD_ADB_ANNOTATIONS", Boolean.class,
+                  mpMessageBundle.getString("ADD_ADB_ANNOTATIONS_DESC"), Boolean.FALSE);
+  /**
    * If set to true, no web content will be inserted in the SBML container nor
    * into the model within the SBML file.
    */
