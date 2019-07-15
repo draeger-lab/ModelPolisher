@@ -1,4 +1,4 @@
-FROM postgres:11.4
+FROM postgres:9.6.2
 MAINTAINER ktrivedi@cs.iitr.ac.in
 
 RUN apt-get update &&\

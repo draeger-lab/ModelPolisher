@@ -2,4 +2,4 @@
 
 psql -c 'DROP DATABASE IF EXISTS bigg'
 psql -c 'CREATE DATABASE bigg'
-bash -c 'pg_restore -O -d bigg /bigg_database_dump/bigg_database.dump' || true
+bash -c 'pg_restore -O -d bigg /bigg_database_dump/bigg_database.dump'
