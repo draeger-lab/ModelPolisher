@@ -423,19 +423,32 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setCVTermResources(Species species, BiGGId biggId) {
+    //Set of annotations calculated from BiGGDB and AnnotateDB
+    Set<String> annotations_set = new HashSet<>();
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
+
+    //using BiGG Database
     if (bigg.isMetabolite(biggId.getAbbreviation())) {
-      cvTerm.addResource(polisher.createURI("bigg.metabolite", biggId));
+      annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
     }
     try {
       TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
       // convert to set to remove possible duplicates; TreeSet respects order
       for (String resource : linkOut) {
-        cvTerm.addResource(resource);
+        annotations_set.add(resource);
       }
     } catch (SQLException exc) {
       logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
+
+    //using AnnotateDB
+
+
+    //adding annotations to cvTerm
+    for(String annotation : annotations_set){
+      cvTerm.addResource(annotation);
+    }
+
     if (cvTerm.getResourceCount() > 0) {
       species.addCVTerm(cvTerm);
     }
