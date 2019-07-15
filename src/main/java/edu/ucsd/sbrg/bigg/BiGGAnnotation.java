@@ -40,9 +40,13 @@ import edu.ucsd.sbrg.util.SBMLUtils;
 public class BiGGAnnotation {
 
   /**
-   * BiGGBD instance, contains methods to run specific queries against the actual db
+   * BiGGBD instance, contains methods to run specific queries against the BiGG db
    */
   private BiGGDB bigg;
+  /**
+   * AnnotateDB instance, contains methods to run specific queries against the AnnotateDB
+   */
+  private AnnotateDB adb;
   /**
    * SBMLPolisher instance, containing methods and booleans used by BiGGAnnotation
    */
@@ -74,8 +78,9 @@ public class BiGGAnnotation {
    * @param bigg
    * @param polisher
    */
-  public BiGGAnnotation(BiGGDB bigg, SBMLPolisher polisher) {
+  public BiGGAnnotation(BiGGDB bigg, AnnotateDB adb, SBMLPolisher polisher) {
     this.bigg = bigg;
+    this.adb = adb;
     this.polisher = polisher;
   }
 
@@ -434,15 +439,16 @@ public class BiGGAnnotation {
     try {
       TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
       // convert to set to remove possible duplicates; TreeSet respects order
-      for (String resource : linkOut) {
-        annotations_set.add(resource);
-      }
+      annotations_set.addAll(linkOut);
     } catch (SQLException exc) {
       logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
 
     //using AnnotateDB
-
+    if(adb!=null) {
+      TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.getIdString());
+      annotations_set.addAll(adb_annotations);
+    }
 
     //adding annotations to cvTerm
     for(String annotation : annotations_set){
@@ -647,17 +653,30 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setCVTermResources(Reaction reaction, BiGGId biggId) {
+    //Set of annotations calculated from BiGGDB and AnnotateDB
+    Set<String> annotations_set = new HashSet<>();
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
+
+    //using BiGG Database
     if (bigg.isReaction(reaction.getId())) {
-      cvTerm.addResource(polisher.createURI("bigg.reaction", biggId));
+      annotations_set.add(polisher.createURI("bigg.reaction", biggId));
     }
     try {
       TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, true);
-      for (String resource : linkOut) {
-        cvTerm.addResource(resource);
-      }
+      annotations_set.addAll(linkOut);
     } catch (SQLException exc) {
       logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    }
+
+    //using AnnotateDB
+    if(adb!=null) {
+      TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.getIdString());
+      annotations_set.addAll(adb_annotations);
+    }
+
+    //adding annotations to cvTerm
+    for(String annotation : annotations_set){
+      cvTerm.addResource(annotation);
     }
     if (cvTerm.getResourceCount() > 0) {
       reaction.addCVTerm(cvTerm);
