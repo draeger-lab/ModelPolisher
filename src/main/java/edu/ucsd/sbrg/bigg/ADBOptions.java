@@ -30,6 +30,6 @@ public interface ADBOptions extends KeyProvider {
     /**
      *
      */
-    public static final Option<String>  ADB_DBNAME = new Option<String>("ADB_NAME", String.class, "The name of the database to use.");
+    public static final Option<String>  ADB_DBNAME = new Option<String>("ADB_DBNAME", String.class, "The name of the database to use.");
 
 }
