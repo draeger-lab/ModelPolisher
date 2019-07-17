@@ -26,7 +26,7 @@ The article ["BiGG Models: A platform for integrating, standardizing and sharing
 
 NOTE: You may run ModelPolisher, without building, using Docker. See [here](#using-docker).
 
-ModelPolisher uses `gradle` to build. Make sure you have `gradle` installed in your system before following the procedure below.
+ModelPolisher uses `gradle` to build. Make sure you have `gradle (version > 5.0)` installed in your system before following the procedure below.
 
 First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle, choosing one of four relevant tasks:
 * `fatJar`: (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
