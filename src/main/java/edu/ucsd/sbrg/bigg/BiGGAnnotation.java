@@ -76,6 +76,7 @@ public class BiGGAnnotation {
 
   /**
    * @param bigg
+   * @param adb
    * @param polisher
    */
   public BiGGAnnotation(BiGGDB bigg, AnnotateDB adb, SBMLPolisher polisher) {
