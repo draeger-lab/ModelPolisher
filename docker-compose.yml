@@ -1,0 +1,20 @@
+# ------------------------------------------------
+# docker-compose for ModelPolisher
+# ------------------------------------------------
+version: '3'
+services:
+  biggdb:
+    container_name: modelpolisher_biggdb
+    build: ./docker/bigg_docker
+    ports:
+      - 1310:5432
+  adb:
+    container_name: modelpolisher_adb
+    build: ./docker/adb_docker
+    ports:
+      - 1013:5432
+  java:
+    container_name: modelpolisher_java
+    build: ./docker/java_docker
+    stdin_open: true
+    tty: true

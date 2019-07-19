@@ -9,10 +9,10 @@ archivesBaseName = "ModelPolisher"
 version = "1.7"
 
 sourceSets {
-    main.java.srcDirs = ["src"]
-    main.resources.srcDirs = ["resources"]
+    main.java.srcDirs = ["src/main/java"]
+    main.resources.srcDirs = ["src/main/resources"]
     main.resources.excludes = ["**/bigg.zip"]
-    test.java.srcDirs = ["test"]
+    test.java.srcDirs = ["src/test/java"]
 }
 
 repositories {
@@ -35,7 +35,7 @@ dependencies {
     compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"
-    compile 'us.hebi.matlab.mat:mfl-core:0.5.3-SNAPSHOT'
+    compile 'us.hebi.matlab.mat:mfl-core:0.5.3'
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
@@ -62,7 +62,7 @@ tasks.withType(Jar) {
 //download bigg.sqlite if not present
 task setupDB {
     gradle.taskGraph.whenReady { graph ->
-        if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()
+        if (!project.file("src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()
                 && (graph.hasTask(slimJar)|| graph.hasTask(fatJar))) {
             doFirst {
                 exec {
