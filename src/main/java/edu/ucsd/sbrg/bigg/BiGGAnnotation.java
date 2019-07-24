@@ -433,8 +433,10 @@ public class BiGGAnnotation {
     Set<String> annotations_set = new HashSet<>();
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
 
+    boolean isBiGGMetabolite = bigg.isMetabolite(biggId.getAbbreviation());
+
     //using BiGG Database
-    if (bigg.isMetabolite(biggId.getAbbreviation())) {
+    if (isBiGGMetabolite) {
       annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
     }
     try {
@@ -446,7 +448,7 @@ public class BiGGAnnotation {
     }
 
     //using AnnotateDB
-    if(adb!=null) {
+    if(adb!=null && isBiGGMetabolite) {
       TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.getIdString());
       annotations_set.addAll(adb_annotations);
     }
@@ -658,8 +660,10 @@ public class BiGGAnnotation {
     Set<String> annotations_set = new HashSet<>();
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
 
+    boolean isBiGGReaction = bigg.isReaction(reaction.getId());
+
     //using BiGG Database
-    if (bigg.isReaction(reaction.getId())) {
+    if (isBiGGReaction) {
       annotations_set.add(polisher.createURI("bigg.reaction", biggId));
     }
     try {
@@ -670,7 +674,7 @@ public class BiGGAnnotation {
     }
 
     //using AnnotateDB
-    if(adb!=null) {
+    if(adb!=null && isBiGGReaction) {
       TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.getIdString());
       annotations_set.addAll(adb_annotations);
     }
