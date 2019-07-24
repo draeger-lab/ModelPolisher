@@ -434,18 +434,18 @@ public class BiGGAnnotation {
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
 
     boolean isBiGGMetabolite = bigg.isMetabolite(biggId.getAbbreviation());
-//
-//    //using BiGG Database
-//    if (isBiGGMetabolite) {
-//      annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
-//    }
-//    try {
-//      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
-//      // convert to set to remove possible duplicates; TreeSet respects order
-//      annotations_set.addAll(linkOut);
-//    } catch (SQLException exc) {
-//      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-//    }
+
+    //using BiGG Database
+    if (isBiGGMetabolite) {
+      annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
+    }
+    try {
+      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
+      // convert to set to remove possible duplicates; TreeSet respects order
+      annotations_set.addAll(linkOut);
+    } catch (SQLException exc) {
+      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    }
 
     //using AnnotateDB
     if(adb!=null && isBiGGMetabolite) {
@@ -661,17 +661,17 @@ public class BiGGAnnotation {
     CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
 
     boolean isBiGGReaction = bigg.isReaction(reaction.getId());
-//
-//    //using BiGG Database
-//    if (isBiGGReaction) {
-//      annotations_set.add(polisher.createURI("bigg.reaction", biggId));
-//    }
-//    try {
-//      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, true);
-//      annotations_set.addAll(linkOut);
-//    } catch (SQLException exc) {
-//      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-//    }
+
+    //using BiGG Database
+    if (isBiGGReaction) {
+      annotations_set.add(polisher.createURI("bigg.reaction", biggId));
+    }
+    try {
+      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, true);
+      annotations_set.addAll(linkOut);
+    } catch (SQLException exc) {
+      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    }
 
     //using AnnotateDB
     if(adb!=null && isBiGGReaction) {
