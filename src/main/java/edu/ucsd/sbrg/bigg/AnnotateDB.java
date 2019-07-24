@@ -56,18 +56,23 @@ public class AnnotateDB {
             return annotations;
         }
 
-        String query = SELECT + "m." + COLUMN_TARGET_TERM + ", ac." + COLUMN_URLPATTERN + FROM + MAPPING_VIEW + " m, " + ADB_COLLECTION + " ac,"+ WHERE +
-                "m." + COLUMN_SOURCE_NAMESPACE + " = %s AND " + "m." + COLUMN_SOURCE_TERM + " = %s" + " AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
+        if(type.equals(BIGG_METABOLITE) && biggId.substring(0,2).equals("M_")) biggId = biggId.substring(2);
+        if(type.equals(BIGG_METABOLITE) && biggId.substring(0,2).equals("R_")) biggId = biggId.substring(2);
+        if(biggId.substring(biggId.length()-2,biggId.length()-1).equals("_")) biggId = biggId.substring(0,biggId.length()-2);
+
+        String query = SELECT + "m." + COLUMN_TARGET_TERM + ", ac." + COLUMN_URLPATTERN + FROM + MAPPING_VIEW + " m, " + ADB_COLLECTION + " ac" + WHERE +
+                "m." + COLUMN_SOURCE_NAMESPACE + " = '" + type + "' AND " + "m." + COLUMN_SOURCE_TERM + " = '" + biggId + "' AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
+
+
         try {
-            ResultSet rst = connector.query(query,type,biggId);
-            while (rst.next()){
+            ResultSet rst = connector.query(query);
+            while (rst.next()) {
                 String uri = rst.getString(COLUMN_URLPATTERN);
                 String id = rst.getString(COLUMN_TARGET_TERM);
-                uri = uri.replace("{$id}",id);
+                uri = uri.replace("{$id}", id);
                 annotations.add(uri);
             }
-        }
-        catch (SQLException exc) {
+        } catch (SQLException exc) {
             logger.warning(Utils.getMessage(exc));
         }
 

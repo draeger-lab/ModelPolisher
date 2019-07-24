@@ -436,7 +436,7 @@ public class ModelPolisher extends Launcher {
     }
 
 
-    if(!parameters.addADBAnnotaions || adb!=null){
+    if(!parameters.addADBAnnotaions || adb==null){
       String adb_dbName = args.getProperty(ADBOptions.ADB_DBNAME);
       String adb_host = args.getProperty(ADBOptions.ADB_HOST);
       String adb_passwd = args.getProperty(ADBOptions.ADB_PASSWD);
@@ -444,13 +444,15 @@ public class ModelPolisher extends Launcher {
       String adb_user = args.getProperty(ADBOptions.ADB_USER);
 
       boolean runPSQL_adb = iStrNotNullOrEmpty(adb_dbName);
+
       runPSQL_adb &= iStrNotNullOrEmpty(adb_host);
       runPSQL_adb &= iStrNotNullOrEmpty(adb_port);
       runPSQL_adb &= iStrNotNullOrEmpty(adb_user);
       if (runPSQL_adb) {
         try {
           // Connect to PostgreSQL database and launch application:
-          adb = new AnnotateDB(new PostgreSQLConnector(adb_host, new Integer(adb_port), adb_user, adb_passwd != null ? adb_passwd : "", adb_dbName));
+          PostgreSQLConnector psqlConnect = new PostgreSQLConnector(adb_host, new Integer(adb_port), adb_user, adb_passwd != null ? adb_passwd : "", adb_dbName);
+          adb = new AnnotateDB(psqlConnect);
         } catch (SQLException | ClassNotFoundException exc) {
           exc.printStackTrace();
           System.exit(1);
