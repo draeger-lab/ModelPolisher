@@ -12,7 +12,7 @@ public interface ADBOptions extends KeyProvider {
      *
      */
     @SuppressWarnings("unchecked")
-    public static final Option<String> ADB_HOST   = new Option<String>("ADB_HOST", String.class, "Host name", "localhost");
+    public static final Option<String> ADB_HOST   = new Option<String>("ADB_HOST", String.class, "Host name", "adb");
     /**
      *
      */
@@ -22,14 +22,14 @@ public interface ADBOptions extends KeyProvider {
      *
      */
     @SuppressWarnings("unchecked")
-    public static final Option<String>  ADB_USER   = new Option<String>("ADB_USER", String.class, "User name", System.getProperty("user.name"));
+    public static final Option<String>  ADB_USER   = new Option<String>("ADB_USER", String.class, "User name", "postgres");
     /**
      *
      */
-    public static final Option<String>  ADB_PASSWD = new Option<String>("ADB_PASSWD", String.class, "Password");
+    public static final Option<String>  ADB_PASSWD = new Option<String>("ADB_PASSWD", String.class, "postgres");
     /**
      *
      */
-    public static final Option<String>  ADB_DBNAME = new Option<String>("ADB_DBNAME", String.class, "The name of the database to use.");
+    public static final Option<String>  ADB_DBNAME = new Option<String>("ADB_DBNAME", String.class, "The name of the database to use.","adb");
 
 }

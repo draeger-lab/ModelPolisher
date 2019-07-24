@@ -15,7 +15,7 @@ public interface BiGGDBOptions extends KeyProvider {
    * 
    */
   @SuppressWarnings("unchecked")
-  public static final Option<String> BiGG_HOST = new Option<String>("BiGG_HOST", String.class, "Host name", "localhost");
+  public static final Option<String> BiGG_HOST = new Option<String>("BiGG_HOST", String.class, "Host name", "biggdb");
   /**
    *
    */
@@ -25,14 +25,14 @@ public interface BiGGDBOptions extends KeyProvider {
    *
    */
   @SuppressWarnings("unchecked")
-  public static final Option<String> BiGG_USER = new Option<String>("BiGG_USER", String.class, "User name", System.getProperty("user.name"));
+  public static final Option<String> BiGG_USER = new Option<String>("BiGG_USER", String.class, "User name", "postgres");
   /**
    *
    */
-  public static final Option<String> BiGG_PASSWD = new Option<String>("BiGG_PASSWD", String.class, "Password");
+  public static final Option<String> BiGG_PASSWD = new Option<String>("BiGG_PASSWD", String.class, "Password","postgres");
   /**
    *
    */
-  public static final Option<String> BiGG_DBNAME = new Option<String>("BiGG_DBNAME", String.class, "The name of the database to use.");
+  public static final Option<String> BiGG_DBNAME = new Option<String>("BiGG_DBNAME", String.class, "The name of the database to use.","bigg");
 
 }
