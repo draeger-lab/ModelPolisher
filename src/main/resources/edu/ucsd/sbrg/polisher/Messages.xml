@@ -12,6 +12,7 @@
     <entry key="ADDED_URI_COBRA">Added resource URI ''{0}'' to provided CVTerm</entry>
     <entry key="ALL_DOCS_PARSE_ERROR">Could not parse any model from input file ''{0}'' , aborting.</entry>
     <entry key="ANNOTATE_WITH_BIGG_DESC">If set to true, the model will be annotated with data from BiGG Models database. If set to false, the resulting model will not receive annotation or correction from BiGG Models database</entry>
+    <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also</entry>
     <entry key="ANNOTATION_MISSING">There is no annotation for this model</entry>
     <entry key="ARCHIVE">Packing archive file {0}</entry>
     <entry key="ATOMS_MISSING">There are missing atoms in reaction ''{0}''. Values lower than zero indicate missing atoms on the substrate side, whereas positive values indicate missing atoms on the product side: {1}</entry>

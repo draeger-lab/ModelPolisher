@@ -43,7 +43,10 @@ public class BiGGId {
    * 
    */
   private String tissueCode;
-
+  /**
+   *
+   */
+  private String id;
 
   /**
    * 
@@ -58,6 +61,7 @@ public class BiGGId {
    */
   public BiGGId(String id) {
     this();
+    this.id = id;
     parseBiGGId(id);
   }
 
@@ -118,6 +122,13 @@ public class BiGGId {
       return other.tissueCode == null;
     } else
       return tissueCode.equals(other.tissueCode);
+  }
+
+  /**
+   * @return the abbreviation
+   */
+  public String getIdString() {
+    return id;
   }
 
 
