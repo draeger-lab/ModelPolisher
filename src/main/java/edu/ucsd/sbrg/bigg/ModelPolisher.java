@@ -6,15 +6,7 @@ package edu.ucsd.sbrg.bigg;
 import static java.text.MessageFormat.format;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -33,11 +25,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLError;
-import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLReader;
-import org.sbml.jsbml.TidySBMLWriter;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
 
@@ -56,6 +44,8 @@ import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
 import edu.ucsd.sbrg.json.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
+import org.sbml.jsbml.xml.XMLNode;
+import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -592,6 +582,36 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
+
+    //producing glossary
+    SBMLRDFAnnotationParser rdfParser = new SBMLRDFAnnotationParser();
+    StringBuilder glossary = new StringBuilder();
+    XMLNode node = rdfParser.writeAnnotation(doc.getModel(),null).getChild(1);
+    for(Compartment c : doc.getModel().getListOfCompartments()){
+      XMLNode tempNode = rdfParser.writeAnnotation(c,null).getChild(1);
+      node.addChild(tempNode);
+    }
+    for(Species s : doc.getModel().getListOfSpecies()){
+      XMLNode tempNode = rdfParser.writeAnnotation(s,null).getChild(1);
+      node.addChild(tempNode);
+    }
+    for(Reaction r: doc.getModel().getListOfReactions()){
+      XMLNode tempNode = rdfParser.writeAnnotation(r,null).getChild(1);
+      node.addChild(tempNode);
+    }
+    glossary.append(node.toXMLString());
+
+    //writing glossary to file
+    try {
+      File file = new File(output.getAbsolutePath().substring(0,output.getAbsolutePath().length()-4)+".rdf");
+      FileWriter fileWriter = new FileWriter(file);
+      fileWriter.write(glossary.toString());
+      fileWriter.flush();
+      fileWriter.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
