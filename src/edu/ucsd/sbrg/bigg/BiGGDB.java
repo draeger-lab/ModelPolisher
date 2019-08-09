@@ -14,50 +14,7 @@
  */
 package edu.ucsd.sbrg.bigg;
 
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_BIGG_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_CHARGE;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPARTMENT_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_COMPONENT_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DATA_SOURCE_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DATE_TIME;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_DESCRIPTION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_FIRST_CREATED;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_FORMULA;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_GENE_REACTION_RULE;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_GENOME_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_MODEL_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_NAME;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_OME_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_ORGANISM;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_PSEUDOREACTION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_PUBLICATION_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REACTION_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REFERENCE_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_REFERENCE_TYPE;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_SUBSYSTEM;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_TAXON_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COLUMN_TYPE;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPARTMENT;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.COMPONENT;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.DATABASE_VERSION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.DATA_SOURCE;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.GENOME;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.GENOME_REGION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MCC;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MODEL;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.MODEL_REACTION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.OLD_BIGG_ID;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.PUBLICATION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.PUBLICATION_MODEL;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REACTION;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REFSEQ_NAME;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.REFSEQ_PATTERN;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.SYNONYM;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.URL;
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.URL_PREFIX;
+import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.*;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
@@ -71,6 +28,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.Utils;
@@ -83,6 +41,11 @@ public class BiGGDB {
   private static final String SELECT = "SELECT ";
   private static final String FROM = " FROM ";
   private static final String WHERE = " WHERE ";
+
+  public static final String TYPE_SPECIES = "SPECIES";
+  public static final String TYPE_REACTION = "REACTION";
+  public static final String TYPE_GENE_PRODUCT = "GENE_PRODUCT";
+
   /**
    * A {@link Logger} for this class.
    */
@@ -651,5 +614,82 @@ public class BiGGDB {
     String query = SELECT + COLUMN_PSEUDOREACTION + FROM + REACTION + WHERE + COLUMN_BIGG_ID + " = '%s'";
     String result = getString(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
     return (result != null) && result.equals("t");
+  }
+
+  /**
+   * @param synonym
+   * @param type
+   * @param data_source_biggId
+   * @return String
+   */
+  public String getBiggIdFromSynonym(String data_source_biggId, String synonym, String type){
+    String biggId = new String();
+    String query;
+
+    switch (type){
+      case TYPE_SPECIES:
+        query = SELECT + "c." + COLUMN_BIGG_ID + FROM + COMPONENT + " c, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = c."
+                + COLUMN_ID;
+        break;
+
+      case TYPE_REACTION:
+        query = SELECT + "r." + COLUMN_BIGG_ID + FROM + REACTION + " r, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = r."
+                + COLUMN_ID;
+        break;
+
+      case TYPE_GENE_PRODUCT:
+        query = SELECT + "g." + COLUMN_LOCUS_TAG + FROM + GENE + " g, " + DATA_SOURCE + " d, " + SYNONYM + " s"
+                + WHERE + "d." + COLUMN_BIGG_ID + " = '%s' AND d." + COLUMN_ID + " = s." +
+                COLUMN_DATA_SOURCE_ID + " AND s." + COLUMN_SYNONYM + " = '%s' AND s." + COLUMN_OME_ID + " = g."
+                + COLUMN_ID;
+        break;
+
+      default: return null;
+    }
+
+    try {
+      ResultSet rst = connector.query(query, data_source_biggId, synonym);
+      if(rst.next()){
+        biggId = rst.getString(1);
+      }
+      else{
+        return null;
+      }
+
+      //return null if more than one BiGG Id is obtained
+      if(rst.next()){
+        return null;
+      }
+    }
+    catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+
+    return biggId;
+  }
+
+  /**
+   * @param geneProduct
+   * @return boolean
+   */
+  public boolean isGenePresentInBigg(GeneProduct geneProduct){
+    String id = geneProduct.getId();
+    if(id.startsWith("G_")){
+      id=id.substring(2);
+    }
+
+    String query = SELECT + COLUMN_LOCUS_TAG + FROM + GENE + WHERE + COLUMN_LOCUS_TAG + " = '%s'";
+    try {
+      ResultSet rst = connector.query(query,id);
+      return rst.next();
+    }
+    catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return false;
   }
 }

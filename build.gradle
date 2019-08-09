@@ -19,6 +19,7 @@ repositories {
     mavenCentral()
     maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
     maven { url "http://jsbml.sourceforge.net/m2repo/" }
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots"}
     // local dependencies
     flatDir {
         dirs "lib/de/zbit/SysBio/1390"
@@ -26,12 +27,15 @@ repositories {
 }
 
 dependencies {
+    compile 'javax.xml.bind:jaxb-api:2.3.1'
+    compile 'javax.activation:activation:1.1'
+    compile 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
     compile "org.sbml.jsbml:jsbml:1.4"
     compile "de.zbit:SysBio:1390"
     compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"
-    compile "com.diffplug.matsim:matfilerw:3.0.1"
+    compile 'us.hebi.matlab.mat:mfl-core:0.5.3-SNAPSHOT'
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
@@ -55,6 +59,21 @@ tasks.withType(Jar) {
     }
 }
 
+//download bigg.sqlite if not present
+task setupDB {
+    gradle.taskGraph.whenReady { graph ->
+        if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()
+                && (graph.hasTask(slimJar)|| graph.hasTask(fatJar))) {
+            doFirst {
+                exec {
+                    println "Setup DB"
+                    commandLine './scripts/configureSQLiteDB.sh'
+                }
+            }
+        }
+    }
+}
+
 // with dependencies
 task fatJar(type: Jar) {
     baseName = project.name + "-fat"
@@ -63,6 +82,7 @@ task fatJar(type: Jar) {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+    processResources.dependsOn setupDB
     with jar
 }
 
@@ -91,7 +111,6 @@ task slimJar(type: Jar) {
     baseName = project.name + "-slim"
     with jar
 }
-
 
 // zip lib folder for release
 task zipLibs(type: Zip) {
@@ -131,16 +150,6 @@ clean.doFirst {
     file("target").deleteDir()
 }
 
-// run db setup script, if bigg.sqlite is missing
-if (!project.file("resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()) {
-    task setupDB(type: Exec) {
-        commandLine("sh", "scripts/configureSQLiteDB.sh")
-        println "Setup DB"
-    }
-    // run before resources are being processed
-    processResources.dependsOn setupDB
-}
-
 // bump jar version in travis.yml
 if (project.file(".travis.yml").exists()) {
     task bumpVersionTravis() {
@@ -161,7 +170,6 @@ def replaceVersion(path) {
     ArrayList<String> content = new ArrayList<>()
     File travisFile = new File(path)
     String MPVersion = /ModelPolisher.*\d{1,2}(.\d{1,2}){1,2}.jar/
-
     travisFile.eachLine {
         line ->
             content.add(line.replaceAll(MPVersion, "ModelPolisher-fat-" +
