@@ -38,10 +38,7 @@ dependencies {
     compile 'us.hebi.matlab.mat:mfl-core:0.5.3'
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
-
-    // https://mvnrepository.com/artifact/net.sf.jtidy/jtidy
     compile group: 'net.sf.jtidy', name: 'jtidy', version: 'r938'
-
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
 }
 
