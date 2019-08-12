@@ -163,6 +163,13 @@ public interface ModelPolisherOptions extends KeyProvider {
   new Option<Boolean>("OMIT_GENERIC_TERMS", Boolean.class,
       mpMessageBundle.getString("OMIT_GENERIC_TERMS_DESC"), Boolean.FALSE);
   /**
+   * Produce output as a single COMBINE Archive.
+   */
+  @SuppressWarnings("unchecked")
+  public static final Option<Boolean> OUTPUT_COMBINE =
+          new Option<Boolean>("OUTPUT_COMBINE", Boolean.class,
+                  mpMessageBundle.getString("OUTPUT_COMBINE"), Boolean.FALSE);
+  /**
    * If true, the created SBML file will be validated through the online
    * validator service at {@link "http://sbml.org"}. This option is only used
    * if the output is GZIP compressed.

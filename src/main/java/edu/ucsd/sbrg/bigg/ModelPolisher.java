@@ -75,6 +75,10 @@ public class ModelPolisher extends Launcher {
      */
     Boolean annotateWithBiGG = null;
     /**
+     * @see ModelPolisherOptions#OUTPUT_COMBINE
+     */
+    Boolean outputCOMBINE = null;
+    /**
      * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
      */
     Boolean addADAAnnotations = null;
@@ -285,6 +289,7 @@ public class ModelPolisher extends Launcher {
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
     }
     parameters.annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
+    parameters.outputCOMBINE = args.getBooleanProperty(ModelPolisherOptions.OUTPUT_COMBINE);
     parameters.addADAAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
     parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
     parameters.noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
@@ -600,33 +605,43 @@ public class ModelPolisher extends Launcher {
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
 
-    //produce COMBINE archive and delete existing files
-    try{
-      CombineArchive ca = new CombineArchive(new File(output.getAbsolutePath()
-              .substring(0,output.getAbsolutePath().lastIndexOf('.'))+".zip"));
+    //produce COMBINE archive and delete output model and glossary
+    if(parameters.outputCOMBINE) {
+      try {
+        String combineArcLocation = output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + ".zip";
+        CombineArchive ca = new CombineArchive(new File(combineArcLocation));
 
-      File outputXML = new File(output.getAbsolutePath());
-      File outputRDF = new File(glossaryLocation);
+        File outputXML = new File(output.getAbsolutePath());
+        File outputRDF = new File(glossaryLocation);
 
-      ArchiveEntry SBMLOutput = ca.addEntry(
-              outputXML,
-              "model.xml",
-              new URI("http://identifiers.org/combine.specifications/sbml"),
-              true);
+        ArchiveEntry SBMLOutput = ca.addEntry(
+                outputXML,
+                "model.xml",
+                new URI("http://identifiers.org/combine.specifications/sbml"),
+                true);
 
-      ArchiveEntry RDFOutput = ca.addEntry(
-              outputRDF,
-              "glossary.rdf",
-              new URI(""),
-              true);
+        ArchiveEntry RDFOutput = ca.addEntry(
+                outputRDF,
+                "glossary.rdf",
+                new URI(""),
+                true);
 
-      ca.pack ();
-      ca.close ();
+        logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), combineArcLocation));
 
-      outputRDF.delete();
-      outputXML.delete();
-    }catch (Exception e){
-      logger.warning("Exception to produce COMBINE Archive: "+e.toString());
+        ca.pack();
+        ca.close();
+
+        boolean rdfDeleted = outputRDF.delete();
+        boolean outputXMLDeleted = outputXML.delete();
+        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
+                outputXML.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')),
+                outputXMLDeleted));
+        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
+                outputRDF.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')),
+                rdfDeleted));
+      } catch (Exception e) {
+        logger.warning("Exception to produce COMBINE Archive: " + e.toString());
+      }
     }
 
     if (parameters.compression != Compression.NONE) {
