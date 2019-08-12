@@ -8,23 +8,24 @@ import static java.text.MessageFormat.format;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import de.unirostock.sems.cbarchive.ArchiveEntry;
+import de.unirostock.sems.cbarchive.CombineArchive;
+import de.unirostock.sems.cbarchive.meta.OmexMetaDataObject;
+import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
+import de.unirostock.sems.cbarchive.meta.omex.VCard;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
@@ -598,6 +599,36 @@ public class ModelPolisher extends Launcher {
     //writing polished model
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+
+    //produce COMBINE archive and delete existing files
+    try{
+      CombineArchive ca = new CombineArchive(new File(output.getAbsolutePath()
+              .substring(0,output.getAbsolutePath().lastIndexOf('.'))+".zip"));
+
+      File outputXML = new File(output.getAbsolutePath());
+      File outputRDF = new File(glossaryLocation);
+
+      ArchiveEntry SBMLOutput = ca.addEntry(
+              outputXML,
+              "model.xml",
+              new URI("http://identifiers.org/combine.specifications/sbml"),
+              true);
+
+      ArchiveEntry RDFOutput = ca.addEntry(
+              outputRDF,
+              "glossary.rdf",
+              new URI(""),
+              true);
+
+      ca.pack ();
+      ca.close ();
+
+      outputRDF.delete();
+      outputXML.delete();
+    }catch (Exception e){
+      logger.warning("Exception to produce COMBINE Archive: "+e.toString());
+    }
+
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
@@ -676,7 +707,7 @@ public class ModelPolisher extends Launcher {
     Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
     InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(rdfString.toString().getBytes("UTF-8")), "UTF-8");
 
-    tidy.parse(in ,out );
+    tidy.parse(in, out);
   }
 
 
