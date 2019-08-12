@@ -24,7 +24,9 @@ The article ["BiGG Models: A platform for integrating, standardizing and sharing
 
 # How to build?
 
-ModelPolisher uses `gradle` to build. Make sure you have `gradle` installed in your system before following the procedure below.
+NOTE: You may run ModelPolisher, without building, using Docker. See [here](#using-docker).
+
+ModelPolisher uses `gradle` to build. Make sure you have `gradle (version >= 5.0)` installed in your system before following the procedure below.
 
 First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle, choosing one of four relevant tasks:
 * `fatJar`: (default, if running Gradle without a specified task): builds ModelPolisher with dependencies and SQLite version of BiGG packaged
@@ -42,26 +44,72 @@ Running ModelPolisher will be easiest using `fatJar`, as then no database needs 
 
 # How to polish models?
 
+## <a name="using-docker"></a>Using Docker
+ModelPolisher can be run in docker containers. This allows user to skip the build process, and database setup required to run ModelPolisher. Please install `docker` and `docker-compose`, if not installed already.
+
+Clone ModelPolisher and change directory to ModelPolisher/:
+```
+git clone https://github.com/draeger-lab/ModelPolisher/
+cd <path>/ModelPolisher
+```
+Now, bring up docker containers required for ModelPolisher(NOTE: You must be in `ModelPolisher/` directory):
+```
+docker-compose up
+```
+
+We recommend using docker-compose in non-detached mode when building containers for first time. If you have previously built ModelPolisher  containers use `docker-compose up --detach`.
+
+On running these commands, databases will be restored in respective containers. After databases are successfully set up, use the following command to run ModelPolisher(in `ModelPolisher/` directory):
+```
+docker-compose run -v <path_directory_having_models>:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/<model_name> --output=/models/output/<output_name> --annotate-with-bigg=true --add-adb-annotations=true
+```
+Note: You must pass *absolute path for host directory*. This command will mount volume `<path_directory_having_models>` to `/models/` in container. Thus, outputs will be produced in directory `<path_directory_having_models>/output`.
+
+User may use `-u <username_or_uid>` with `docker-compose run` in above command to generate output with correct ownership. Preferably use uid (obtained by `id -u <username>`) due to some existing bugs in docker.
+
+To bring down the containers, you can run `docker-compose stop`. This will only stop the containers but won't delete them. Otherwise, you can use `docker-compose down -v` to stop and remove all containers and related volumes.
+
+Note: `docker-compose down -v` will cause all databases to be restored again on running `docker-compose up`, as restored databases exist in containers not in images. 
+
+Using `docker` might cause system space to be filled up, and `docker-compose up` may fail due to insufficient space. Use the following commands if there is need to empty space used by ModelPolisher_docker:
+```
+docker stop modelpolisher_biggdb modelpolisher_adb modelpolisher_java
+docker rm modelpolisher_biggdb modelpolisher_adb modelpolisher_java
+docker rmi modelpolisher_java:latest modelpolisher_adb:latest modelpolisher_biggdb:latest postgres:11.4 openjdk:11-slim
+docker volume prune
+```
+
+## Without Docker
 For polishing models, you essentially need to run ModelPolisher using either of the `jar` built from above instructions. It is easiest to run ModelPolisher using `fatJar`. 
 
 #### Using `fatJar`
 Run the following command:
 ```concept
-java -jar "<path>/ModelPolisher/target/ModelPolisher-fat-1.7.jar" --input=<input> --output=<output> --annotate-with-bigg=true
+java -jar "<.../ModelPolisher/target/ModelPolisher-fat-1.7.jar" --input=<input> --output=<output> --annotate-with-bigg=true
 ```
+
+Note: You cannot add annotations from [AnnotateDB](https://github.com/matthiaskoenig/annotatedb) if you use fatJar.
 #### Using `lightJar`
-For using `lightJar`, you need to host the BiGG Database on `PostgreSQL` on your local system. So, after installing `PostgreSQL` in your system download the database dump from [here](https://www.dropbox.com/sh/yayfmcrsrtrcypw/AACDoew92pCYlSJa8vCs5rSMa?dl=0).
+For using `lightJar`, you need to host the [BiGG](https://github.com/SBRG/bigg_models) Database & [AnnotateDB](https://github.com/matthiaskoenig/annotatedb) on `PostgreSQL` on your local system.
 
-Create a new empty database in `PostgreSQL` and restore `database.dump`.
-
-Now, run the following command:
+Now, you can run the following command:
 ```concept
-java -jar "<path>/ModelPolisher/target/ModelPolisher-noDB-1.7.jar" --input=<input> --output=<output> --annotate-with-bigg=true --host=127.0.0.1 --port=5432 --dbname=<postgres_dbname> --user=<postgres_username> --passwd=<user_password>
+java -jar "<path>/ModelPolisher/target/ModelPolisher-noDB-1.7.jar" --input=<input> --output=<output> --annotate-with-bigg=true --bigg-host=<host> --bigg-port=<port> --bigg-dbname=<postgres_dbname> --bigg-user=<postgres_username> --bigg-passwd=<user_password> --add-adb-annotations=true --adb-host=<host> --adb-port=<port> --adb-dbname=<postgres_dbname> --adb-user=<postgres_username> --adb-passwd=<user_password>
 ```
 Make changes in the postgres credentials as required.
 
 Note that, one may pass directories as `input` and `output`. In that case each file from `input` will be polished and saved with same name in the `output`.
 
+## Note for Developers
+We understand that a developer would need to build ModelPolisher multiple times and making required changes in `java` Dockerfile will be a tedious task.
+We recommend the following practice for developers:
+1. Set up required databases by running `docker-compose up`.
+2. After making required changes in codebase build `jar` by `gradle lightJar`.
+3. Run the newly build jar using:
+```
+java -jar ./target/ModelPolisher-noDB-1.7.jar --input=<input> --output=<output> --annotate-with-bigg=true --bigg-host=0.0.0.0 --bigg-port=1310 --add-adb-annotations=true --adb-host=0.0.0.0 --adb-port=1013
+```
+Note: All above commands must be run in `<path>/ModelPolisher/` directory and you must have installed Java `version >= 8` and Gradle `version >= 5.0`.
 # Licenses
 
 ModelPolisher is distributed under the MIT License (see LICENSE).
