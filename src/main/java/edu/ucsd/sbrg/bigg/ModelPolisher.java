@@ -51,7 +51,6 @@ import edu.ucsd.sbrg.util.UpdateListener;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
 import org.w3c.tidy.Tidy;
-import sun.security.util.IOUtils;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -77,7 +76,7 @@ public class ModelPolisher extends Launcher {
     /**
      * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
      */
-    Boolean addADBAnnotaions = null;
+    Boolean addADAAnnotations = null;
     /**
      * @see ModelPolisherOptions#CHECK_MASS_BALANCE
      */
@@ -285,7 +284,7 @@ public class ModelPolisher extends Launcher {
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
     }
     parameters.annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
-    parameters.addADBAnnotaions = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
+    parameters.addADAAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
     parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
     parameters.noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
     parameters.compression =
@@ -432,7 +431,7 @@ public class ModelPolisher extends Launcher {
     }
 
 
-    if(!parameters.addADBAnnotaions || adb==null){
+    if(!parameters.addADAAnnotations || adb==null){
       String adb_dbName = args.getProperty(ADBOptions.ADB_DBNAME);
       String adb_host = args.getProperty(ADBOptions.ADB_HOST);
       String adb_passwd = args.getProperty(ADBOptions.ADB_PASSWD);
@@ -596,6 +595,7 @@ public class ModelPolisher extends Launcher {
     logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
     writeTidyRDF(new File(glossaryLocation), glossary);
 
+    //writing polished model
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
