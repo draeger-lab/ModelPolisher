@@ -6,15 +6,7 @@ package edu.ucsd.sbrg.bigg;
 import static java.text.MessageFormat.format;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -33,11 +25,11 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLError;
-import org.sbml.jsbml.SBMLErrorLog;
-import org.sbml.jsbml.SBMLReader;
-import org.sbml.jsbml.TidySBMLWriter;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
 
@@ -56,6 +48,10 @@ import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.cobra.COBRAparser;
 import edu.ucsd.sbrg.json.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
+import org.sbml.jsbml.xml.XMLNode;
+import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
+import org.w3c.tidy.Tidy;
+import sun.security.util.IOUtils;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -561,7 +557,7 @@ public class ModelPolisher extends Launcher {
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
     if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
-      org.sbml.jsbml.util.SBMLtools.setLevelAndVersion(doc, 3, 1);
+      SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
     // Polishing
     SBMLPolisher polisher = new SBMLPolisher();
@@ -592,6 +588,14 @@ public class ModelPolisher extends Launcher {
       }
       doc = annotation.annotate(doc);
     }
+
+    //producing & writing glossary
+    String glossary = getGlossary(doc);
+
+    String glossaryLocation = output.getAbsolutePath().substring(0,output.getAbsolutePath().lastIndexOf('.'))+"_glossary.rdf";
+    logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
+    writeTidyRDF(new File(glossaryLocation), glossary);
+
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     if (parameters.compression != Compression.NONE) {
@@ -612,6 +616,67 @@ public class ModelPolisher extends Launcher {
         validate(archive);
       }
     }
+  }
+
+  /**
+   * @param doc
+   */
+  private String getGlossary(SBMLDocument doc) throws XMLStreamException {
+    SBMLRDFAnnotationParser rdfParser = new SBMLRDFAnnotationParser();
+    XMLNode node = rdfParser.writeAnnotation(doc.getModel(),null).getChild(1);
+    for(Species s : doc.getModel().getListOfSpecies()){
+      XMLNode tempNode = rdfParser.writeAnnotation(s,null);
+      if(tempNode!=null && tempNode.getChildCount()!=0)
+        node.addChild(tempNode.getChild(1));
+    }
+    for(Reaction r: doc.getModel().getListOfReactions()){
+      XMLNode tempNode = rdfParser.writeAnnotation(r, null);
+      if(tempNode!=null && tempNode.getChildCount()!=0)
+        node.addChild(tempNode.getChild(1));
+    }
+    for(Compartment c : doc.getModel().getListOfCompartments()){
+      XMLNode tempNode = rdfParser.writeAnnotation(c, null);
+      if(tempNode!=null && tempNode.getChildCount()!=0)
+        node.addChild(tempNode.getChild(1));
+    }
+    if (doc.getModel().isSetPlugin(FBCConstants.shortLabel)) {
+      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) doc.getModel().getPlugin(FBCConstants.shortLabel);
+      for (GeneProduct gP : fbcModelPlugin.getListOfGeneProducts()) {
+        XMLNode tempNode = rdfParser.writeAnnotation(gP, null);
+        if(tempNode!=null && tempNode.getChildCount()!=0)
+          node.addChild(tempNode.getChild(1));
+      }
+    }
+    return node.toXMLString();
+  }
+
+  /**
+   * @param outputFile, rdfString
+   */
+  private void writeTidyRDF(File outputFile, String rdfString) throws FileNotFoundException, UnsupportedEncodingException {
+    Tidy tidy = new Tidy();  // obtain a new Tidy instance
+
+    tidy.setDropEmptyParas(false);
+    tidy.setHideComments(false);
+    tidy.setIndentContent(true);
+    tidy.setInputEncoding("UTF-8");
+    tidy.setOutputEncoding("UTF-8");
+    tidy.setQuiet(true);
+    tidy.setSmartIndent(true);
+    tidy.setTrimEmptyElements(true);
+    tidy.setWraplen(0);
+    tidy.setWrapAttVals(false);
+    tidy.setWrapScriptlets(true);
+    tidy.setLiteralAttribs(true);
+    tidy.setXmlOut(true);
+    tidy.setXmlSpace(true);
+    tidy.setXmlTags(true);
+    tidy.setSpaces(2);
+
+    Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+    InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(rdfString.toString().getBytes("UTF-8")), "UTF-8");
+
+    tidy.parse(in ,out );
   }
 
 

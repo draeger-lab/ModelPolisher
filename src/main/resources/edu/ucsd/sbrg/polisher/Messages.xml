@@ -157,7 +157,7 @@
     <entry key="VAL_ERR_COUNT"><![CDATA["There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}."]]></entry>
     <entry key="VAL_ERROR">No SBML validation possible, process terminated with errors.</entry>
     <entry key="VERSION_NR_MISSING">There is no version number provided for this model</entry>
-    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write a whole directory to file {0}.</entry>
+    <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
     <entry key="WRITE_FILE_INFO">Writing output file {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Cannot write to file {0}.</entry>
     <entry key="WROTE_CORRECT_HTML">Wrote corrected file to ''{0}''</entry>
