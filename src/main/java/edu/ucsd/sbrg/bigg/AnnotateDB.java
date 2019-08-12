@@ -21,6 +21,11 @@ public class AnnotateDB {
     public static final String BIGG_METABOLITE = "bigg.metabolite";
     public static final String BIGG_REACTION = "bigg.reaction";
 
+    //prefixes
+    static final String METABOLITE_PREFIX = "M_";
+    static final String REACTION_PREFIX = "R_";
+    static final String GENE_PREFIX = "G_";
+
     private edu.ucsd.sbrg.bigg.SQLConnector connector;
 
     /**
@@ -62,10 +67,15 @@ public class AnnotateDB {
             return annotations;
         }
 
-        if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals("M_")) biggId = biggId.substring(2);
-        if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals("R_")) biggId = biggId.substring(2);
-        if (biggId.substring(biggId.length() - 2, biggId.length() - 1).equals("_"))
+        if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals(METABOLITE_PREFIX)){
+            biggId = biggId.substring(2);
+        }
+        else if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals(REACTION_PREFIX)){
+            biggId = biggId.substring(2);
+        }
+        if (biggId.substring(biggId.length() - 2, biggId.length() - 1).equals("_")){
             biggId = biggId.substring(0, biggId.length() - 2);
+        }
 
         String query = SELECT + "m." + COLUMN_TARGET_TERM + ", ac." + COLUMN_URLPATTERN + FROM + MAPPING_VIEW + " m, " + ADB_COLLECTION + " ac" + WHERE +
                 "m." + COLUMN_SOURCE_NAMESPACE + " = '" + type + "' AND " + "m." + COLUMN_SOURCE_TERM + " = '" + biggId + "' AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
