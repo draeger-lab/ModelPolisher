@@ -84,7 +84,7 @@ task zipLibs(type: Zip) {
 
 // zip script files for release
 task zipScripts(type: Zip) {
-    from "scripts"
+    from "src/scripts"
     into "scripts"
     include "**/**"
     archiveName = "scripts.zip"
@@ -113,9 +113,9 @@ if (project.file(".travis.yml").exists()) {
 }
 
 // bump jar version in ModelPolisher.sh
-if (project.file("./scripts/ModelPolisher.sh").exists()) {
+if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
-        replaceVersion("./scripts/ModelPolisher.sh")
+        replaceVersion("./src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
 }

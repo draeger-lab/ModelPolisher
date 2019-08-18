@@ -7,7 +7,7 @@
 /target/
 /src/main/resources/edu/ucsd/sbrg/bigg/bigg.zip
 /src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite
-/scripts/ModelPolisherTemplate.*
+/src/scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log
 /.DS_Store
