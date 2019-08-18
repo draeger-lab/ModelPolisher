@@ -1,6 +1,6 @@
 apply plugin: "java"
 
-defaultTasks "clean", "fatJar"
+defaultTasks "clean", "lightJar"
 // Java versions for compilation and output
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
@@ -61,33 +61,6 @@ tasks.withType(Jar) {
     }
 }
 
-//download bigg.sqlite if not present
-task setupDB {
-    gradle.taskGraph.whenReady { graph ->
-        if (!project.file("src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite").exists()
-                && (graph.hasTask(slimJar)|| graph.hasTask(fatJar))) {
-            doFirst {
-                exec {
-                    println "Setup DB"
-                    commandLine './scripts/configureSQLiteDB.sh'
-                }
-            }
-        }
-    }
-}
-
-// with dependencies
-task fatJar(type: Jar) {
-    baseName = project.name + "-fat"
-    from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    processResources.dependsOn setupDB
-    with jar
-}
-
 //with dependencies, without bigg.sqlite
 task lightJar(type: Jar) {
     exclude("**/bigg.sqlite")
@@ -97,20 +70,6 @@ task lightJar(type: Jar) {
             it.isDirectory() ? it : zipTree(it)
         }
     }
-    with jar
-}
-
-// without dependencies and bigg.sqlite
-task bareJar(type: Jar) {
-    exclude("**/bigg.sqlite")
-    baseName = project.name + "-slim-noDB"
-    with jar
-}
-
-// without dependencies, bigg.sqlite included
-// not included in release
-task slimJar(type: Jar) {
-    baseName = project.name + "-slim"
     with jar
 }
 
@@ -132,18 +91,11 @@ task zipScripts(type: Zip) {
     destinationDir = file("target/")
 }
 
-// create all three jars for release
+// create lightJar for release
 task release() {
-    dependsOn fatJar
-    dependsOn bareJar
     dependsOn lightJar
     dependsOn tasks["zipLibs"]
     dependsOn tasks["zipScripts"]
-    // necessary, as order is not defined by dependsOn
-    bareJar.mustRunAfter classes
-    // slimJar.mustRunAfter bareJar
-    lightJar.mustRunAfter slimJar
-    fatJar.mustRunAfter lightJar
 }
 
 // clean up target directory
