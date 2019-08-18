@@ -669,31 +669,39 @@ public class ModelPolisher extends Launcher {
    */
   private String getGlossary(SBMLDocument doc) throws XMLStreamException {
     SBMLRDFAnnotationParser rdfParser = new SBMLRDFAnnotationParser();
-    XMLNode node = rdfParser.writeAnnotation(doc.getModel(),null).getChild(1);
-    for(Species s : doc.getModel().getListOfSpecies()){
-      XMLNode tempNode = rdfParser.writeAnnotation(s,null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
+    if(rdfParser.writeAnnotation(doc.getModel(),null)!=null && rdfParser.writeAnnotation(doc.getModel(),null).getChild(1)!=null) {
+        XMLNode node = rdfParser.writeAnnotation(doc.getModel(), null).getChild(1);
+        for (Species s : doc.getModel().getListOfSpecies()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(s, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        for (Reaction r : doc.getModel().getListOfReactions()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(r, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        for (Compartment c : doc.getModel().getListOfCompartments()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(c, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        if (doc.getModel().isSetPlugin(FBCConstants.shortLabel)) {
+            FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) doc.getModel().getPlugin(FBCConstants.shortLabel);
+            for (GeneProduct gP : fbcModelPlugin.getListOfGeneProducts()) {
+                XMLNode tempNode = rdfParser.writeAnnotation(gP, null);
+                if (tempNode != null && tempNode.getChildCount() != 0) {
+                    node.addChild(tempNode.getChild(1));
+                }
+            }
+        }
+        return node.toXMLString();
+    }else{
+        return "";
     }
-    for(Reaction r: doc.getModel().getListOfReactions()){
-      XMLNode tempNode = rdfParser.writeAnnotation(r, null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
-    }
-    for(Compartment c : doc.getModel().getListOfCompartments()){
-      XMLNode tempNode = rdfParser.writeAnnotation(c, null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
-    }
-    if (doc.getModel().isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) doc.getModel().getPlugin(FBCConstants.shortLabel);
-      for (GeneProduct gP : fbcModelPlugin.getListOfGeneProducts()) {
-        XMLNode tempNode = rdfParser.writeAnnotation(gP, null);
-        if(tempNode!=null && tempNode.getChildCount()!=0)
-          node.addChild(tempNode.getChild(1));
-      }
-    }
-    return node.toXMLString();
   }
 
   /**
