@@ -70,7 +70,7 @@ public class PostgreSQLConnector extends SQLConnector {
       + getDatabaseName();
     connection = DriverManager.getConnection(url, properties);
     connection.setCatalog(properties.getProperty(Keys.databaseName.toString()));
-    logger.info(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(), getPort(), getDatabaseName()));
+    logger.finest(format(mpMessageBundle.getString("PSQL_CONNECTED"), getHost(), getPort(), getDatabaseName()));
     return connection;
   }
 

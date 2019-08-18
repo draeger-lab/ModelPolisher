@@ -39,7 +39,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
     compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
     compile group: 'net.sf.jtidy', name: 'jtidy', version: 'r938'
-    compile files('./lib/CombineArchive-1.4.0-jar-with-dependencies.jar')
+    compile "de.uni-rostock.sbi:CombineArchive:1.4.0"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
 }
 
@@ -64,7 +64,7 @@ tasks.withType(Jar) {
 //with dependencies, without bigg.sqlite
 task lightJar(type: Jar) {
     exclude("**/bigg.sqlite")
-    baseName = project.name + "-noDB"
+    baseName = project.name
     from {
         configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)

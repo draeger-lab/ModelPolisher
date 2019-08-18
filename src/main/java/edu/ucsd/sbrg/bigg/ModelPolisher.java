@@ -609,6 +609,7 @@ public class ModelPolisher extends Launcher {
     if(parameters.outputCOMBINE) {
       try {
         String combineArcLocation = output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + ".zip";
+        
         CombineArchive ca = new CombineArchive(new File(combineArcLocation));
 
         File outputXML = new File(output.getAbsolutePath());
