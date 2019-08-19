@@ -630,7 +630,7 @@ public class ModelPolisher extends Launcher {
         ArchiveEntry RDFOutput = ca.addEntry(
                 outputRDF,
                 "glossary.rdf",
-                new URI(""),
+                new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
                 true);
 
         logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), combineArcLocation));
