@@ -37,7 +37,7 @@ dependencies {
     compile "org.biojava:biojava-ontology:5.0.0"
     compile 'us.hebi.matlab.mat:mfl-core:0.5.3'
     compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.9"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.9.9.2"
     compile group: 'net.sf.jtidy', name: 'jtidy', version: 'r938'
     compile "de.uni-rostock.sbi:CombineArchive:1.4.0"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
