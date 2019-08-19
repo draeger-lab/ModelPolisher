@@ -50,7 +50,7 @@ We recommend users to run ModelPolisher [using `docker`](#using-docker), though 
 
 NOTE: ModelPolisher provides various command line options which can be seen using:
 ```
-java -jar <path>/ModelPolisher/target/ModelPolisher-noDB-1.7.jar -? 
+java -jar <path>/ModelPolisher/target/ModelPolisher-1.7.jar -? 
 ```
 
 In the example commands below few options are taken by default. See list of mostly used options [here](https://github.com/draeger-lab/ModelPolisher/wiki/Mostly-Used-Command-Line-Options).
@@ -72,7 +72,7 @@ We recommend using docker-compose in non-detached mode when building containers 
 
 On running these commands, databases will be restored in respective containers. After databases are successfully set up, use the following command (in `ModelPolisher/` directory) to run ModelPolisher:
 ```
-docker-compose run -v <path_directory_having_models>:/models/ java java -jar /ModelPolisher-noDB-1.7.jar --input=/models/<model_name> --output=/models/output/<output_name> --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true 
+docker-compose run -v <path_directory_having_models>:/models/ java java -jar /ModelPolisher-1.7.jar --input=/models/<model_name> --output=/models/output/<output_name> --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true 
 ```
 
 Note: You must pass *absolute path for host directory*. This command will mount volume `<path_directory_having_models>` to `/models/` in container. Thus, outputs will be produced in directory `<path_directory_having_models>/output`.
@@ -98,7 +98,7 @@ User needs to host the [BiGG](https://github.com/SBRG/bigg_models) Database & [A
 
 Now, you can run the following command in general:
 ```
-java -jar "<path>/ModelPolisher/target/ModelPolisher-noDB-1.7.jar" --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=<host> --bigg-port=<port> --bigg-dbname=<postgres_dbname> --bigg-user=<postgres_username> --bigg-passwd=<user_password> --add-adb-annotations=true --adb-host=<host> --adb-port=<port> --adb-dbname=<postgres_dbname> --adb-user=<postgres_username> --adb-passwd=<user_password>
+java -jar "<path>/ModelPolisher/target/ModelPolisher-1.7.jar" --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=<host> --bigg-port=<port> --bigg-dbname=<postgres_dbname> --bigg-user=<postgres_username> --bigg-passwd=<user_password> --add-adb-annotations=true --adb-host=<host> --adb-port=<port> --adb-dbname=<postgres_dbname> --adb-user=<postgres_username> --adb-passwd=<user_password>
 ```
 
 We understand problems in setting-up database backend and that a developer would need to build ModelPolisher multiple times and making required changes in `java` Dockerfile will be a tedious task.
@@ -107,7 +107,7 @@ We recommend the following practice for developers:
 2. After making required changes in codebase build `jar` by `gradle lightJar`.
 3. Run the newly build jar using:
 ```
-java -jar ./target/ModelPolisher-noDB-1.7.jar --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=0.0.0.0 --bigg-port=1310 --add-adb-annotations=true --adb-host=0.0.0.0 --adb-port=1013
+java -jar ./target/ModelPolisher-1.7.jar --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=0.0.0.0 --bigg-port=1310 --add-adb-annotations=true --adb-host=0.0.0.0 --adb-port=1013
 ```
 Note: All above commands must be run in `<path>/ModelPolisher/` directory and you must have installed Java `version >= 8` and Gradle `version >= 5.0`.
 # <a name="licenses"></a>Licenses
