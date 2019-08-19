@@ -1,7 +1,5 @@
 package edu.ucsd.sbrg.bigg;
 
-import static org.junit.Assert.assertTrue;
-
 import de.unirostock.sems.cbarchive.ArchiveEntry;
 import de.unirostock.sems.cbarchive.CombineArchive;
 import de.unirostock.sems.cbarchive.CombineArchiveException;
@@ -16,34 +14,30 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Kaustubh Trivedi
  */
 public class CombineArchiveTest {
 
-    final static String modelLocation = "../../../../../resources/edu/ucsd/sbrg/bigg/e_coli_core.xml";
-    final static String glossaryLocation = "../../../../../resources/edu/ucsd/sbrg/bigg/e_coli_core_glossary.rdf";
-    final static String archiveLocation = "../../../../../resources/edu/ucsd/sbrg/bigg/e_coli_core.zip";
-
     @BeforeClass
     public static void produceCombine() throws JDOMException, CombineArchiveException, ParseException, IOException, URISyntaxException, TransformerException {
-        File caFile = new File(archiveLocation);
-        if(caFile.exists()){
-            caFile.delete();
-        }
+        File modelFile = new File(CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile());
+        File glossaryFile = new File(CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/glossary.rdf").getFile());
 
-        CombineArchive ca = new CombineArchive(caFile);
+        CombineArchive ca = new CombineArchive(new File(modelFile.getAbsolutePath().substring(0, modelFile.getAbsolutePath().lastIndexOf('.')) + ".zip"));
 
         ArchiveEntry SBMLOutput = ca.addEntry(
-                new File(modelLocation),
+                modelFile,
                 "model.xml",
                 new URI("http://identifiers.org/combine.specifications/sbml"),
                 true);
 
         ArchiveEntry RDFOutput = ca.addEntry(
-                new File(glossaryLocation),
+                glossaryFile,
                 "glossary.rdf",
-                new URI(""),
+                new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
                 true);
 
         ca.pack();
@@ -52,20 +46,24 @@ public class CombineArchiveTest {
 
     @Test
     public void testArchiveComponents() throws JDOMException, CombineArchiveException, ParseException, IOException {
-        File caFile = new File(archiveLocation);
+        String modelLocation = CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile();
+        File caFile = new File(modelLocation.substring(0, modelLocation.lastIndexOf('.')) + ".zip");
         assertTrue(caFile.exists());
 
-        CombineArchive ca = new CombineArchive(caFile);
+        CombineArchive ca = new CombineArchive(caFile, true);
         boolean hasModel = false;
         boolean hasGlossary = false;
 
-        for(ArchiveEntry archiveEntry : ca.getEntries()){
-            hasModel = (archiveEntry.getFileName().equals("model.xml"));
-            hasGlossary = (archiveEntry.getFileName().equals("glossary.rdf"));
+        for (ArchiveEntry archiveEntry : ca.getEntries()) {
+            if (!hasModel) {
+                hasModel = archiveEntry.getFileName().equals("model.xml");
+            }
+            if (!hasGlossary) {
+                hasGlossary = archiveEntry.getFileName().equals("glossary.rdf");
+            }
         }
 
         assertTrue(hasModel);
         assertTrue(hasGlossary);
     }
-
 }

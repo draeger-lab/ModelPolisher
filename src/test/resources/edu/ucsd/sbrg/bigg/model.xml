@@ -1,8 +1,15 @@
 <?xml version='1.0' encoding='utf-8' standalone='no'?>
-<!-- Created by ModelPolisher version 1.7 on 2019-08-19 at 01:58:30 IST with JSBML version 1.4. -->
+<!-- Created by ModelPolisher version 1.7 on 2019-08-19 at 17:30:35 IST with JSBML version 1.4. -->
 <sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" fbc:required="false" groups:required="false" level="3" sboTerm="SBO:0000624" version="1" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="http://www.sbml.org/sbml/level3/version1/groups/version1">
   <notes>
     <body xmlns="http://www.w3.org/1999/xhtml" style="font-size: 14px; height: 100%; width: 100%; color: #444444; font-family:Helvetica, sans-serif; margin-top: 0px; margin-left: 0px;">
+      <div style="height: 60px; background-color: #09F;">
+        <div style="margin-left: auto; margin-right: auto; width: 970px;">
+          <h1 style="           font-family: Lato, Helvetica Neue, Helvetica, Arial, sans-serif;           font-weight: 700;           color:#EFF8FF;           text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);            text-decoration-color: -moz-use-text-color;           margin-bottom: 40px;           margin-top: 0px;">
+            <div class="dc:title">e_coli_core - Escherichia coli str. K-12 substr. MG1655</div>
+          </h1>
+        </div>
+      </div>
       <div style="height: 60px; background-color: #09F;">
         <div style="margin-left: auto; margin-right: auto; width: 970px;">
           <h1 style="           font-family: Lato, Helvetica Neue, Helvetica, Arial, sans-serif;           font-weight: 700;           color:#EFF8FF;           text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);            text-decoration-color: -moz-use-text-color;           margin-bottom: 40px;           margin-top: 0px;">
@@ -37,6 +44,37 @@
       <a href="http://identifiers.org/bigg.model/e_coli_core" title="Access to this model via BiGG Models knowledge-base." target="_blank">e_coli_core</a>.</div>
       <h2>Terms of use</h2>
       <div class="dc:rightsHolder">Copyright © 2017 The Regents of the University of California.</div>
+      <div class="dc:license">
+        <p>Redistribution and use of any part of this model from BiGG Models knowledge-base, with or without modification, are permitted provided that the following conditions are met: 
+        <ol>
+          <li>Redistributions of this SBML file must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+          <li>Redistributions in a different form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+        </ol>This model is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</p>
+        <p>For specific licensing terms about this particular model and regulations of commercial use, see 
+        <a href="http://identifiers.org/bigg.model/e_coli_core" title="Access to this model via BiGG Models knowledge-base." target="_blank">this model in BiGG Models knowledge-base</a>.</p>
+      </div>
+      <h2>References</h2>When using content from BiGG Models knowledge-base in your research works, please cite 
+      <dl>
+        <dt>King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and&#160;Lewis NE. (2015). 
+        <dd>BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. 
+        <i>Nucl Acids Res</i>. 
+        <a href="https://dx.doi.org/10.1093/nar/gkv1049" target="_blank" title="Access the publication about BiGG Models knowledge-base">doi:10.1093/nar/gkv1049</a></dd></dt>
+      </dl>
+      <h2>Description</h2>
+      <div class="dc:description">
+        <p>This is a metabolism model of Escherichia coli str. K-12 substr. MG1655 in 
+        <a href="http://sbml.org" target="_blank" title="Access the definition of the SBML file format.">SBML</a>&#160;format.</p>
+      </div>
+      <div class="dc:provenance">The content of this model has been carefully created in a manual research effort. This file has been exported from the software 
+      <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with the 
+      <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based 
+      <a href="http://github.com/SBRG/ModelPolisher/" target="_blank" title="Access ModelPolisher on Github">ModelPolisher</a>&#160;application.</div>
+      <div class="dc:publisher">This file has been produced by the 
+      <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;using 
+      <a href="http://bigg.ucsd.edu" title="Access BiGG Models knowledge-base." target="_blank">BiGG Models knowledge-base</a>&#160;version of 24-Feb-2018, where it is currently hosted and identified by: 
+      <a href="http://identifiers.org/bigg.model/e_coli_core" title="Access to this model via BiGG Models knowledge-base." target="_blank">e_coli_core</a>.</div>
+      <h2>Terms of use</h2>
+      <div class="dc:rightsHolder">Copyright © 2019 The Regents of the University of California.</div>
       <div class="dc:license">
         <p>Redistribution and use of any part of this model from BiGG Models knowledge-base, with or without modification, are permitted provided that the following conditions are met: 
         <ol>
@@ -3196,6 +3234,120 @@
         </groups:listOfMembers>
       </groups:group>
       <groups:group groups:id="g20" groups:kind="partonomy" groups:name="Inorganic Ion Transport and Metabolism" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_NH4t" />
+          <groups:member groups:idRef="R_PIt2r" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g21" groups:kind="partonomy" groups:name="Pyruvate Metabolism" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ACALD" />
+          <groups:member groups:idRef="R_ACKr" />
+          <groups:member groups:idRef="R_ALCD2x" />
+          <groups:member groups:idRef="R_LDH_D" />
+          <groups:member groups:idRef="R_PFL" />
+          <groups:member groups:idRef="R_PTAr" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g22" groups:kind="partonomy" groups:name="Transport, Extracellular" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ACALDt" />
+          <groups:member groups:idRef="R_ACt2r" />
+          <groups:member groups:idRef="R_AKGt2r" />
+          <groups:member groups:idRef="R_CO2t" />
+          <groups:member groups:idRef="R_D_LACt2" />
+          <groups:member groups:idRef="R_ETOHt2r" />
+          <groups:member groups:idRef="R_FORt2" />
+          <groups:member groups:idRef="R_FORt" />
+          <groups:member groups:idRef="R_FRUpts2" />
+          <groups:member groups:idRef="R_FUMt2_2" />
+          <groups:member groups:idRef="R_GLCpts" />
+          <groups:member groups:idRef="R_GLNabc" />
+          <groups:member groups:idRef="R_GLUt2r" />
+          <groups:member groups:idRef="R_H2Ot" />
+          <groups:member groups:idRef="R_MALt2_2" />
+          <groups:member groups:idRef="R_O2t" />
+          <groups:member groups:idRef="R_PYRt2" />
+          <groups:member groups:idRef="R_SUCCt2_2" />
+          <groups:member groups:idRef="R_SUCCt3" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g23" groups:kind="partonomy" groups:name="Citric Acid Cycle" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ACONTa" />
+          <groups:member groups:idRef="R_ACONTb" />
+          <groups:member groups:idRef="R_AKGDH" />
+          <groups:member groups:idRef="R_CS" />
+          <groups:member groups:idRef="R_FUM" />
+          <groups:member groups:idRef="R_ICDHyr" />
+          <groups:member groups:idRef="R_MDH" />
+          <groups:member groups:idRef="R_SUCOAS" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g24" groups:kind="partonomy" groups:name="Oxidative Phosphorylation" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ADK1" />
+          <groups:member groups:idRef="R_ATPS4r" />
+          <groups:member groups:idRef="R_CYTBD" />
+          <groups:member groups:idRef="R_FRD7" />
+          <groups:member groups:idRef="R_NADH16" />
+          <groups:member groups:idRef="R_NADTRHD" />
+          <groups:member groups:idRef="R_SUCDi" />
+          <groups:member groups:idRef="R_THD2" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g25" groups:kind="partonomy" groups:name="Biomass and maintenance functions" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ATPM" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g26" groups:kind="partonomy" groups:name="Glycolysis/Gluconeogenesis" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ENO" />
+          <groups:member groups:idRef="R_FBA" />
+          <groups:member groups:idRef="R_FBP" />
+          <groups:member groups:idRef="R_GAPD" />
+          <groups:member groups:idRef="R_PDH" />
+          <groups:member groups:idRef="R_PFK" />
+          <groups:member groups:idRef="R_PGI" />
+          <groups:member groups:idRef="R_PGK" />
+          <groups:member groups:idRef="R_PGM" />
+          <groups:member groups:idRef="R_PPS" />
+          <groups:member groups:idRef="R_PYK" />
+          <groups:member groups:idRef="R_TPI" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g27" groups:kind="partonomy" groups:name="Pentose Phosphate Pathway" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_G6PDH2r" />
+          <groups:member groups:idRef="R_GND" />
+          <groups:member groups:idRef="R_PGL" />
+          <groups:member groups:idRef="R_RPE" />
+          <groups:member groups:idRef="R_RPI" />
+          <groups:member groups:idRef="R_TALA" />
+          <groups:member groups:idRef="R_TKT1" />
+          <groups:member groups:idRef="R_TKT2" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g28" groups:kind="partonomy" groups:name="Glutamate Metabolism" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_GLNS" />
+          <groups:member groups:idRef="R_GLUDy" />
+          <groups:member groups:idRef="R_GLUN" />
+          <groups:member groups:idRef="R_GLUSy" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g29" groups:kind="partonomy" groups:name="Anaplerotic reactions" sboTerm="SBO:0000633">
+        <groups:listOfMembers>
+          <groups:member groups:idRef="R_ICL" />
+          <groups:member groups:idRef="R_MALS" />
+          <groups:member groups:idRef="R_ME1" />
+          <groups:member groups:idRef="R_ME2" />
+          <groups:member groups:idRef="R_PPC" />
+          <groups:member groups:idRef="R_PPCK" />
+        </groups:listOfMembers>
+      </groups:group>
+      <groups:group groups:id="g30" groups:kind="partonomy" groups:name="Inorganic Ion Transport and Metabolism" sboTerm="SBO:0000633">
         <groups:listOfMembers>
           <groups:member groups:idRef="R_NH4t" />
           <groups:member groups:idRef="R_PIt2r" />
@@ -7159,6 +7311,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b0351" />
             <fbc:geneProductRef fbc:geneProduct="G_b1241" />
             <fbc:geneProductRef fbc:geneProduct="G_b0351" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0351" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7187,6 +7340,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
           </fbc:or>
@@ -7226,6 +7380,8 @@
             <fbc:geneProductRef fbc:geneProduct="G_b1849" />
             <fbc:geneProductRef fbc:geneProduct="G_b2296" />
             <fbc:geneProductRef fbc:geneProduct="G_b1849" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2296" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1849" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7262,6 +7418,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b0118" />
             <fbc:geneProductRef fbc:geneProduct="G_b1276" />
             <fbc:geneProductRef fbc:geneProduct="G_b0118" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0118" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7295,6 +7452,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b0118" />
             <fbc:geneProductRef fbc:geneProduct="G_b1276" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0118" />
             <fbc:geneProductRef fbc:geneProduct="G_b0118" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -7353,6 +7511,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b0474" />
             <fbc:geneProductRef fbc:geneProduct="G_b0474" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0474" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7398,6 +7557,11 @@
               <fbc:geneProductRef fbc:geneProduct="G_b0116" />
               <fbc:geneProductRef fbc:geneProduct="G_b0727" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b0726" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0116" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0727" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7431,6 +7595,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b2587" />
             <fbc:geneProductRef fbc:geneProduct="G_b2587" />
             <fbc:geneProductRef fbc:geneProduct="G_b2587" />
           </fbc:or>
@@ -7469,6 +7634,8 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b1478" />
             <fbc:geneProductRef fbc:geneProduct="G_b0356" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1241" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1478" />
             <fbc:geneProductRef fbc:geneProduct="G_b1241" />
             <fbc:geneProductRef fbc:geneProduct="G_b1478" />
             <fbc:geneProductRef fbc:geneProduct="G_b1241" />
@@ -7667,6 +7834,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
+            <fbc:geneProductRef fbc:geneProduct="G_s0001" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7701,6 +7869,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b0720" />
             <fbc:geneProductRef fbc:geneProduct="G_b0720" />
             <fbc:geneProductRef fbc:geneProduct="G_b0720" />
           </fbc:or>
@@ -7760,6 +7929,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2975" />
             <fbc:geneProductRef fbc:geneProduct="G_b3603" />
             <fbc:geneProductRef fbc:geneProduct="G_b2975" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2975" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -7793,6 +7963,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b2779" />
             <fbc:geneProductRef fbc:geneProduct="G_b2779" />
             <fbc:geneProductRef fbc:geneProduct="G_b2779" />
           </fbc:or>
@@ -8173,6 +8344,8 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2925" />
             <fbc:geneProductRef fbc:geneProduct="G_b1773" />
             <fbc:geneProductRef fbc:geneProduct="G_b2925" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1773" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2925" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8206,6 +8379,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b3925" />
             <fbc:geneProductRef fbc:geneProduct="G_b4232" />
             <fbc:geneProductRef fbc:geneProduct="G_b3925" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3925" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8234,6 +8408,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b0904" />
             <fbc:geneProductRef fbc:geneProduct="G_b2492" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0904" />
             <fbc:geneProductRef fbc:geneProduct="G_b0904" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -8269,6 +8444,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b0904" />
             <fbc:geneProductRef fbc:geneProduct="G_b2492" />
             <fbc:geneProductRef fbc:geneProduct="G_b0904" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0904" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8297,6 +8473,12 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b4153" />
+              <fbc:geneProductRef fbc:geneProduct="G_b4151" />
+              <fbc:geneProductRef fbc:geneProduct="G_b4152" />
+              <fbc:geneProductRef fbc:geneProduct="G_b4154" />
+            </fbc:and>
             <fbc:and sboTerm="SBO:0000173">
               <fbc:geneProductRef fbc:geneProduct="G_b4153" />
               <fbc:geneProductRef fbc:geneProduct="G_b4151" />
@@ -8349,6 +8531,13 @@
               <fbc:geneProductRef fbc:geneProduct="G_b1819" />
               <fbc:geneProductRef fbc:geneProduct="G_b2416" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b2415" />
+              <fbc:geneProductRef fbc:geneProduct="G_b1818" />
+              <fbc:geneProductRef fbc:geneProduct="G_b1817" />
+              <fbc:geneProductRef fbc:geneProduct="G_b1819" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2416" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8387,6 +8576,8 @@
             <fbc:geneProductRef fbc:geneProduct="G_b1611" />
             <fbc:geneProductRef fbc:geneProduct="G_b4122" />
             <fbc:geneProductRef fbc:geneProduct="G_b1611" />
+            <fbc:geneProductRef fbc:geneProduct="G_b4122" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1611" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8417,6 +8608,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
           </fbc:or>
@@ -8455,6 +8647,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b1852" />
             <fbc:geneProductRef fbc:geneProduct="G_b1852" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1852" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8490,6 +8683,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b1779" />
             <fbc:geneProductRef fbc:geneProduct="G_b1779" />
             <fbc:geneProductRef fbc:geneProduct="G_b1779" />
           </fbc:or>
@@ -8553,6 +8747,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b3870" />
             <fbc:geneProductRef fbc:geneProduct="G_b1297" />
             <fbc:geneProductRef fbc:geneProduct="G_b3870" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3870" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8602,6 +8797,11 @@
               <fbc:geneProductRef fbc:geneProduct="G_b0811" />
               <fbc:geneProductRef fbc:geneProduct="G_b0809" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b0810" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0811" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0809" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8640,6 +8840,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b1761" />
             <fbc:geneProductRef fbc:geneProduct="G_b1761" />
             <fbc:geneProductRef fbc:geneProduct="G_b1761" />
           </fbc:or>
@@ -8691,6 +8892,8 @@
             <fbc:geneProductRef fbc:geneProduct="G_b1524" />
             <fbc:geneProductRef fbc:geneProduct="G_b0485" />
             <fbc:geneProductRef fbc:geneProduct="G_b1524" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0485" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1524" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8732,6 +8935,10 @@
               <fbc:geneProductRef fbc:geneProduct="G_b3212" />
               <fbc:geneProductRef fbc:geneProduct="G_b3213" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b3212" />
+              <fbc:geneProductRef fbc:geneProduct="G_b3213" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8760,6 +8967,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b4077" />
             <fbc:geneProductRef fbc:geneProduct="G_b4077" />
             <fbc:geneProductRef fbc:geneProduct="G_b4077" />
           </fbc:or>
@@ -8798,6 +9006,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b2029" />
             <fbc:geneProductRef fbc:geneProduct="G_b2029" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2029" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8834,6 +9043,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b0875" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_b0875" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0875" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8864,6 +9074,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b1136" />
             <fbc:geneProductRef fbc:geneProduct="G_b1136" />
             <fbc:geneProductRef fbc:geneProduct="G_b1136" />
           </fbc:or>
@@ -8901,6 +9112,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b4015" />
             <fbc:geneProductRef fbc:geneProduct="G_b4015" />
+            <fbc:geneProductRef fbc:geneProduct="G_b4015" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -8935,6 +9147,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b2133" />
             <fbc:geneProductRef fbc:geneProduct="G_b1380" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2133" />
             <fbc:geneProductRef fbc:geneProduct="G_b2133" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -8973,6 +9186,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b4014" />
             <fbc:geneProductRef fbc:geneProduct="G_b2976" />
             <fbc:geneProductRef fbc:geneProduct="G_b4014" />
+            <fbc:geneProductRef fbc:geneProduct="G_b4014" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9006,6 +9220,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
           </fbc:or>
@@ -9042,6 +9257,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3236" />
             <fbc:geneProductRef fbc:geneProduct="G_b3236" />
             <fbc:geneProductRef fbc:geneProduct="G_b3236" />
           </fbc:or>
@@ -9081,6 +9297,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b1479" />
             <fbc:geneProductRef fbc:geneProduct="G_b1479" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1479" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9117,6 +9334,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b2463" />
             <fbc:geneProductRef fbc:geneProduct="G_b2463" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2463" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9145,6 +9363,21 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b2287" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2285" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2283" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2281" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2279" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2277" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2276" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2278" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2280" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2282" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2284" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2286" />
+              <fbc:geneProductRef fbc:geneProduct="G_b2288" />
+            </fbc:and>
             <fbc:and sboTerm="SBO:0000173">
               <fbc:geneProductRef fbc:geneProduct="G_b2287" />
               <fbc:geneProductRef fbc:geneProduct="G_b2285" />
@@ -9218,6 +9451,7 @@
               <fbc:geneProductRef fbc:geneProduct="G_b1603" />
             </fbc:and>
             <fbc:geneProductRef fbc:geneProduct="G_b3962" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3962" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9254,6 +9488,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_b0451" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
+            <fbc:geneProductRef fbc:geneProduct="G_s0001" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9279,6 +9514,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
             <fbc:geneProductRef fbc:geneProduct="G_s0001" />
           </fbc:or>
@@ -9326,6 +9562,11 @@
               <fbc:geneProductRef fbc:geneProduct="G_b0114" />
               <fbc:geneProductRef fbc:geneProduct="G_b0116" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b0115" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0114" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0116" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9361,6 +9602,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b3916" />
             <fbc:geneProductRef fbc:geneProduct="G_b1723" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3916" />
             <fbc:geneProductRef fbc:geneProduct="G_b3916" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -9423,6 +9665,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b4025" />
             <fbc:geneProductRef fbc:geneProduct="G_b4025" />
+            <fbc:geneProductRef fbc:geneProduct="G_b4025" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9454,6 +9697,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b2926" />
             <fbc:geneProductRef fbc:geneProduct="G_b2926" />
             <fbc:geneProductRef fbc:geneProduct="G_b2926" />
           </fbc:or>
@@ -9489,6 +9733,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b0767" />
             <fbc:geneProductRef fbc:geneProduct="G_b0767" />
             <fbc:geneProductRef fbc:geneProduct="G_b0767" />
           </fbc:or>
@@ -9532,6 +9777,8 @@
             <fbc:geneProductRef fbc:geneProduct="G_b0755" />
             <fbc:geneProductRef fbc:geneProduct="G_b4395" />
             <fbc:geneProductRef fbc:geneProduct="G_b0755" />
+            <fbc:geneProductRef fbc:geneProduct="G_b4395" />
+            <fbc:geneProductRef fbc:geneProduct="G_b0755" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9563,6 +9810,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b2987" />
             <fbc:geneProductRef fbc:geneProduct="G_b3493" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2987" />
             <fbc:geneProductRef fbc:geneProduct="G_b2987" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -9596,6 +9844,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3956" />
             <fbc:geneProductRef fbc:geneProduct="G_b3956" />
             <fbc:geneProductRef fbc:geneProduct="G_b3956" />
           </fbc:or>
@@ -9635,6 +9884,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b3403" />
             <fbc:geneProductRef fbc:geneProduct="G_b3403" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3403" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9669,6 +9919,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b1702" />
             <fbc:geneProductRef fbc:geneProduct="G_b1702" />
             <fbc:geneProductRef fbc:geneProduct="G_b1702" />
           </fbc:or>
@@ -9710,6 +9961,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2297" />
             <fbc:geneProductRef fbc:geneProduct="G_b2458" />
             <fbc:geneProductRef fbc:geneProduct="G_b2297" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2297" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9745,6 +9997,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b1854" />
             <fbc:geneProductRef fbc:geneProduct="G_b1676" />
+            <fbc:geneProductRef fbc:geneProduct="G_b1854" />
             <fbc:geneProductRef fbc:geneProduct="G_b1854" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -9805,6 +10058,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b3386" />
             <fbc:geneProductRef fbc:geneProduct="G_b4301" />
             <fbc:geneProductRef fbc:geneProduct="G_b3386" />
+            <fbc:geneProductRef fbc:geneProduct="G_b3386" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9832,6 +10086,7 @@
           <fbc:or sboTerm="SBO:0000174">
             <fbc:geneProductRef fbc:geneProduct="G_b2914" />
             <fbc:geneProductRef fbc:geneProduct="G_b4090" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2914" />
             <fbc:geneProductRef fbc:geneProduct="G_b2914" />
           </fbc:or>
         </fbc:geneProductAssociation>
@@ -9862,6 +10117,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
             <fbc:geneProductRef fbc:geneProduct="G_b3528" />
           </fbc:or>
@@ -9928,6 +10184,12 @@
               <fbc:geneProductRef fbc:geneProduct="G_b0722" />
               <fbc:geneProductRef fbc:geneProduct="G_b0724" />
             </fbc:and>
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b0723" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0721" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0722" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0724" />
+            </fbc:and>
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -9961,6 +10223,10 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b0728" />
+              <fbc:geneProductRef fbc:geneProduct="G_b0729" />
+            </fbc:and>
             <fbc:and sboTerm="SBO:0000173">
               <fbc:geneProductRef fbc:geneProduct="G_b0728" />
               <fbc:geneProductRef fbc:geneProduct="G_b0729" />
@@ -10007,6 +10273,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2464" />
             <fbc:geneProductRef fbc:geneProduct="G_b0008" />
             <fbc:geneProductRef fbc:geneProduct="G_b2464" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2464" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -10034,6 +10301,10 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:and sboTerm="SBO:0000173">
+              <fbc:geneProductRef fbc:geneProduct="G_b1602" />
+              <fbc:geneProductRef fbc:geneProduct="G_b1603" />
+            </fbc:and>
             <fbc:and sboTerm="SBO:0000173">
               <fbc:geneProductRef fbc:geneProduct="G_b1602" />
               <fbc:geneProductRef fbc:geneProduct="G_b1603" />
@@ -10074,6 +10345,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2935" />
             <fbc:geneProductRef fbc:geneProduct="G_b2465" />
             <fbc:geneProductRef fbc:geneProduct="G_b2935" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2935" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -10110,6 +10382,7 @@
             <fbc:geneProductRef fbc:geneProduct="G_b2935" />
             <fbc:geneProductRef fbc:geneProduct="G_b2465" />
             <fbc:geneProductRef fbc:geneProduct="G_b2935" />
+            <fbc:geneProductRef fbc:geneProduct="G_b2935" />
           </fbc:or>
         </fbc:geneProductAssociation>
         <listOfReactants>
@@ -10143,6 +10416,7 @@
         </annotation>
         <fbc:geneProductAssociation xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
           <fbc:or sboTerm="SBO:0000174">
+            <fbc:geneProductRef fbc:geneProduct="G_b3919" />
             <fbc:geneProductRef fbc:geneProduct="G_b3919" />
             <fbc:geneProductRef fbc:geneProduct="G_b3919" />
           </fbc:or>
