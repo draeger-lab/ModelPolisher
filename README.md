@@ -70,6 +70,10 @@ docker-compose up
 
 We recommend using docker-compose in non-detached mode when building containers for first time. If you have previously built ModelPolisher  containers use `docker-compose up --detach`.
 
+NOTE: Once database backend is set-up by `docker-compose`, the databases are also available at following ports for `localhost`:
+- AnnotateDB: `1013`
+- BiGGDB: `1310`
+
 On running these commands, databases will be restored in respective containers. After databases are successfully set up, use the following command (in `ModelPolisher/` directory) to run ModelPolisher:
 ```
 docker-compose run -v <path_directory_having_models>:/models/ java java -jar /ModelPolisher-1.7.jar --input=/models/<model_name> --output=/models/output/<output_name> --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true 
