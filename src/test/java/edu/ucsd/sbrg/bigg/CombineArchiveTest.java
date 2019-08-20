@@ -4,6 +4,7 @@ import de.unirostock.sems.cbarchive.ArchiveEntry;
 import de.unirostock.sems.cbarchive.CombineArchive;
 import de.unirostock.sems.cbarchive.CombineArchiveException;
 import org.jdom2.JDOMException;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,6 +38,7 @@ public class CombineArchiveTest {
         ArchiveEntry RDFOutput = ca.addEntry(
                 glossaryFile,
                 "glossary.rdf",
+                //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
                 new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
                 true);
 
@@ -65,5 +67,14 @@ public class CombineArchiveTest {
 
         assertTrue(hasModel);
         assertTrue(hasGlossary);
+    }
+
+    @AfterClass
+    public static void cleanUp(){
+        String modelLocation = CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile();
+        File caFile = new File(modelLocation.substring(0, modelLocation.lastIndexOf('.')) + ".zip");
+        if(caFile.exists()) {
+            caFile.delete();
+        }
     }
 }

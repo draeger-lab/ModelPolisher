@@ -630,6 +630,7 @@ public class ModelPolisher extends Launcher {
         ArchiveEntry RDFOutput = ca.addEntry(
                 outputRDF,
                 "glossary.rdf",
+                //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
                 new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
                 true);
 
