@@ -15,12 +15,10 @@ before_install:
 install:
 - printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-1.7.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - gradle lightJar && mv target/ModelPolisher-1.7.jar docker/java_docker && cp -r bigg_models_data/models docker/java_docker
-before_script:
 - docker-compose up --build -d
+- docker ps -a
 script:
-- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
+- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true --adb-port=1013 --bigg-port=1310
 after_script:
 - ls -lish bigg_models_data/out
 - docker-compose down
