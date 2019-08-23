@@ -16,7 +16,7 @@ before_install:
 - mkdir bigg_models_data/models/out
 install:
 # use current build artifact instead of published version
-- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher.jar /\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
+- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - gradle lightJar && mv target/*.jar docker/java_docker/ModelPolisher.jar && cp -r bigg_models_data/models docker/java_docker
 - docker-compose up --build -d
 - docker ps -a
@@ -27,11 +27,11 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- docker-compose run -v /bigg_models_data/models:/models java java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run -v /bigg_models_data/models:/models java java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run -v /bigg_models_data/models:/models java java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
+- docker-compose run java java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
+- docker-compose run java java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
+- docker-compose run java java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
 after_script:
-- ls -lish bigg_models_data/models/out
+- docker-compose run java ls -lish /models/out
 - docker-compose down
 git:
   depth: 1
