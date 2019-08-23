@@ -25,7 +25,7 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true --adb-port=1013 --bigg-port=1310
+- docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
 after_script:
 - ls -lish bigg_models_data/out
 - docker-compose down
