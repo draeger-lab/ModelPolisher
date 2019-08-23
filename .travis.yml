@@ -13,13 +13,17 @@ notifications:
 before_install:
 - git clone https://github.com/SBRG/bigg_models_data
 install:
+# use current build artifact instead of published version
 - printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-1.7.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - gradle lightJar && mv target/ModelPolisher-1.7.jar docker/java_docker && cp -r bigg_models_data/models docker/java_docker
 - docker-compose up --build -d
 - docker ps -a
 before_script:
-- pg_isready -h 0.0.0.0 -p 1310
-- pg_isready -h 0.0.0.0 -p 1013
+# wait for both databases to accept connections
+- echo "Waiting for databases"
+- while ! pg_isready -h 0.0.0.0 -p 1310 > /dev/null; do sleep 1; done
+- while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
+- echo "Databases are up"
 script:
 - docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true --adb-port=1013 --bigg-port=1310
 after_script:
@@ -27,3 +31,4 @@ after_script:
 - docker-compose down
 git:
   depth: 1
+
