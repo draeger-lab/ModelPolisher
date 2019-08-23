@@ -27,11 +27,11 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- docker-compose run java java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run java java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
-- docker-compose run java java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
+- docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out > results.log"
+- docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
+- docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
 after_script:
-- docker-compose run java ls -lish /models/out
+- ls -lish results.log
 - docker-compose down
 git:
   depth: 1
