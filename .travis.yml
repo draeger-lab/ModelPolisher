@@ -17,6 +17,9 @@ install:
 - gradle lightJar && mv target/ModelPolisher-1.7.jar docker/java_docker && cp -r bigg_models_data/models docker/java_docker
 - docker-compose up --build -d
 - docker ps -a
+before_script:
+- pg_isready -h 0.0.0.0 -p 1310
+- pg_isready -h 0.0.0.0 -p 1013
 script:
 - docker-compose run java java -jar /ModelPolisher-1.7.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true --adb-port=1013 --bigg-port=1310
 after_script:
