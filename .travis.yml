@@ -11,10 +11,9 @@ notifications:
   email: false
 
 before_install:
-- sudo systemctl stop postgresql
 - git clone https://github.com/SBRG/bigg_models_data
 install:
-- printf "FROM openjdk:11-slim\nMAINTAINER ktrivedi@cs.iitr.ac.in\n\nCOPY ModelPolisher-1.7.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile && cat docker/java_docker/Dockerfile
+- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-1.7.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - gradle lightJar && mv target/ModelPolisher-1.7.jar docker/java_docker && cp -r bigg_models_data/models docker/java_docker
 before_script:
 - docker-compose up --build -d
