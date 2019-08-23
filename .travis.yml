@@ -31,8 +31,7 @@ script:
 - docker-compose run java java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
 - docker-compose run java java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true
 after_script:
-- ls -lish bigg_models_data/out
+- ls -lish bigg_models_data/models/out
 - docker-compose down
 git:
   depth: 1
-
