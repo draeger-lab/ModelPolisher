@@ -50,6 +50,7 @@
     <entry key="CREATE_MISSING_GPR">Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.</entry>
     <entry key="DELETE_FILE">Deleting file: {0}, successful: {1}</entry>
     <entry key="DIRECTORY_CREATED">Creating directory {0}.</entry>
+    <entry key="DIRECTORY_CREATION_FAILED">Could not create directory {0}.</entry>
     <entry key="DISPLAY_CONF_SCORE">Reaction {1} has confidence score {0,number,##}.</entry>
     <entry key="DOC_NOTES_DESC">This XHTML file defines alternative document notes and makes them exchangeable.</entry>
     <entry key="DOC_TITLE_PATTERN_DESC">This option allows you to define the title of the SBML document's description and hence the head line when the file is displayed in a web browser.</entry>

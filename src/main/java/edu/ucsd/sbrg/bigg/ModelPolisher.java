@@ -354,6 +354,7 @@ public class ModelPolisher extends Launcher {
     if (fileType.equals(FileType.UNKNOWN)) {
       return;
     }
+
     if (output.isDirectory()) {
       String fName = input.getName();
       if (!fileType.equals(FileType.SBML_FILE)) {
@@ -361,8 +362,26 @@ public class ModelPolisher extends Launcher {
       }
       output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
     }
-    getDB(args);
-    readAndPolish(input, output);
+
+    //directory containing output file
+    //use worthy is output is a file (not directory)
+    boolean directoryContainingFileExist = output.isDirectory() || output.getParentFile().exists();
+
+    //following method will run only if output file is a file (not directory)
+    //testing if output is a file and the directory containing the file does not exist
+    //if not present create directory to avoid java.io.FileNotFoundException while writing output polished model and the glossary file
+    if(!directoryContainingFileExist){
+      directoryContainingFileExist = output.getParentFile().mkdir();
+      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
+    }
+
+    if(directoryContainingFileExist){
+      getDB(args);
+      readAndPolish(input, output);
+    }else{
+      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
+      exit();
+    }
   }
 
   /**
