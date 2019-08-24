@@ -8,23 +8,24 @@ import static java.text.MessageFormat.format;
 import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import de.unirostock.sems.cbarchive.ArchiveEntry;
+import de.unirostock.sems.cbarchive.CombineArchive;
+import de.unirostock.sems.cbarchive.meta.OmexMetaDataObject;
+import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
+import de.unirostock.sems.cbarchive.meta.omex.VCard;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
@@ -73,6 +74,10 @@ public class ModelPolisher extends Launcher {
      * @see ModelPolisherOptions#ANNOTATE_WITH_BIGG
      */
     Boolean annotateWithBiGG = null;
+    /**
+     * @see ModelPolisherOptions#OUTPUT_COMBINE
+     */
+    Boolean outputCOMBINE = null;
     /**
      * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
      */
@@ -284,6 +289,7 @@ public class ModelPolisher extends Launcher {
       fObj = fObjectives.substring(1, fObjectives.length() - 1).split(":");
     }
     parameters.annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
+    parameters.outputCOMBINE = args.getBooleanProperty(ModelPolisherOptions.OUTPUT_COMBINE);
     parameters.addADAAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
     parameters.checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
     parameters.noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
@@ -348,6 +354,7 @@ public class ModelPolisher extends Launcher {
     if (fileType.equals(FileType.UNKNOWN)) {
       return;
     }
+
     if (output.isDirectory()) {
       String fName = input.getName();
       if (!fileType.equals(FileType.SBML_FILE)) {
@@ -355,8 +362,26 @@ public class ModelPolisher extends Launcher {
       }
       output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
     }
-    getDB(args);
-    readAndPolish(input, output);
+
+    //directory containing output file
+    //use worthy is output is a file (not directory)
+    boolean directoryContainingFileExist = output.isDirectory() || output.getParentFile().exists();
+
+    //following method will run only if output file is a file (not directory)
+    //testing if output is a file and the directory containing the file does not exist
+    //if not present create directory to avoid java.io.FileNotFoundException while writing output polished model and the glossary file
+    if(!directoryContainingFileExist){
+      directoryContainingFileExist = output.getParentFile().mkdir();
+      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
+    }
+
+    if(directoryContainingFileExist){
+      getDB(args);
+      readAndPolish(input, output);
+    }else{
+      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
+      exit();
+    }
   }
 
   /**
@@ -598,6 +623,54 @@ public class ModelPolisher extends Launcher {
     //writing polished model
     logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+
+    //produce COMBINE archive and delete output model and glossary
+    if(parameters.outputCOMBINE) {
+      try {
+        String combineArcLocation = output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + ".zip";
+
+        File caFile = new File(combineArcLocation);
+
+        if(caFile.exists()){
+            caFile.delete();
+        }
+
+        CombineArchive ca = new CombineArchive(caFile);
+
+        File outputXML = new File(output.getAbsolutePath());
+        File outputRDF = new File(glossaryLocation);
+
+        ArchiveEntry SBMLOutput = ca.addEntry(
+                outputXML,
+                "model.xml",
+                new URI("http://identifiers.org/combine.specifications/sbml"),
+                true);
+
+        ArchiveEntry RDFOutput = ca.addEntry(
+                outputRDF,
+                "glossary.rdf",
+                //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
+                new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
+                true);
+
+        logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), combineArcLocation));
+
+        ca.pack();
+        ca.close();
+
+        boolean rdfDeleted = outputRDF.delete();
+        boolean outputXMLDeleted = outputXML.delete();
+        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
+                outputXML.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')),
+                outputXMLDeleted));
+        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
+                outputRDF.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')),
+                rdfDeleted));
+      } catch (Exception e) {
+        logger.warning("Exception to produce COMBINE Archive: " + e.toString());
+      }
+    }
+
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
@@ -623,31 +696,39 @@ public class ModelPolisher extends Launcher {
    */
   private String getGlossary(SBMLDocument doc) throws XMLStreamException {
     SBMLRDFAnnotationParser rdfParser = new SBMLRDFAnnotationParser();
-    XMLNode node = rdfParser.writeAnnotation(doc.getModel(),null).getChild(1);
-    for(Species s : doc.getModel().getListOfSpecies()){
-      XMLNode tempNode = rdfParser.writeAnnotation(s,null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
+    if(rdfParser.writeAnnotation(doc.getModel(),null)!=null && rdfParser.writeAnnotation(doc.getModel(),null).getChild(1)!=null) {
+        XMLNode node = rdfParser.writeAnnotation(doc.getModel(), null).getChild(1);
+        for (Species s : doc.getModel().getListOfSpecies()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(s, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        for (Reaction r : doc.getModel().getListOfReactions()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(r, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        for (Compartment c : doc.getModel().getListOfCompartments()) {
+            XMLNode tempNode = rdfParser.writeAnnotation(c, null);
+            if (tempNode != null && tempNode.getChildCount() != 0) {
+                node.addChild(tempNode.getChild(1));
+            }
+        }
+        if (doc.getModel().isSetPlugin(FBCConstants.shortLabel)) {
+            FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) doc.getModel().getPlugin(FBCConstants.shortLabel);
+            for (GeneProduct gP : fbcModelPlugin.getListOfGeneProducts()) {
+                XMLNode tempNode = rdfParser.writeAnnotation(gP, null);
+                if (tempNode != null && tempNode.getChildCount() != 0) {
+                    node.addChild(tempNode.getChild(1));
+                }
+            }
+        }
+        return node.toXMLString();
+    }else{
+        return "";
     }
-    for(Reaction r: doc.getModel().getListOfReactions()){
-      XMLNode tempNode = rdfParser.writeAnnotation(r, null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
-    }
-    for(Compartment c : doc.getModel().getListOfCompartments()){
-      XMLNode tempNode = rdfParser.writeAnnotation(c, null);
-      if(tempNode!=null && tempNode.getChildCount()!=0)
-        node.addChild(tempNode.getChild(1));
-    }
-    if (doc.getModel().isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) doc.getModel().getPlugin(FBCConstants.shortLabel);
-      for (GeneProduct gP : fbcModelPlugin.getListOfGeneProducts()) {
-        XMLNode tempNode = rdfParser.writeAnnotation(gP, null);
-        if(tempNode!=null && tempNode.getChildCount()!=0)
-          node.addChild(tempNode.getChild(1));
-      }
-    }
-    return node.toXMLString();
   }
 
   /**
@@ -676,7 +757,7 @@ public class ModelPolisher extends Launcher {
     Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
     InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(rdfString.toString().getBytes("UTF-8")), "UTF-8");
 
-    tidy.parse(in ,out );
+    tidy.parse(in, out);
   }
 
 

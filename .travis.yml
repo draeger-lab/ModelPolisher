@@ -1,21 +1,37 @@
+dist: bionic
 language: java
 sudo: required
 jdk:
-- oraclejdk8
+- openjdk11
+services:
+- docker
 notifications:
   slack:
     secure: CfOon5xVIVFiUQYeE9kC7GUOwPr+igeWSemL0NcpcEmzxC/4CkFC5ediR3znosufNxsexSXuC3mzy+UTzIstpcsxVWXdYwvlsrZjw0KVYEKpMcWl6MiWj0UUrggZDoV2xjKvcd4gxDgG/criOfJGxJEEjjWw0r+ZNRSDUHdNR7u13v0M4Sw6UOgdkyWP9mumiPWeH4ShF6Q5aRdLnPzeHLZQ/pKg4RgvlW08Km1Hb7W+UW/mXSSrvfeZUP8L4UF4znI+iekvI/1fslt5uc9lLaFlMqreZj6IzFrJLYG9EF29HcO7g/g7SkyldYLAlma36DxwdzfxSLgdqI0V3uTFlxic9QoElLAWlGZ6Q7lw8rxy61yMWdFoGEbrg3VPWqd72v7BQ4SyOuXMNSgoPKQvnkuAHAf4MDlb5wZutXKoO069ruMQ7zDrOcPe3fhreJM7Jz9VupvmWiwpE0q5067FtEeUYTo0LdifjjLAnar9NypvAnQhMJv9KxvWq3+Qs0lSf5NY3+dpoIJsUN5zIrAqj01mDER8J6MIMMU0zR+68sqD1T9wQgYexNqczLmbrPQNCwF/nz/vulIBiow2AM+mXG5XIHwcySbW9X2xSyXGxBeWTb3vvfczrnnmGY931i52ElIz2GN9xrg5sfSz91AAZRHeiUtmdIqXE4hZlkREqa4=
   email: false
+
 before_install:
 - git clone https://github.com/SBRG/bigg_models_data
-- cd scripts && ./configureSQLiteDB.sh && cd ..
-- mkdir out
+# workaround, until this is fixed
+- mkdir bigg_models_data/models/out
 install:
-- travis_retry ./gradlew fatJar
+# use current build artifact instead of published version
+- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
+- gradle lightJar && mv target/*.jar docker/java_docker/ModelPolisher.jar && cp -r bigg_models_data/models docker/java_docker
+- docker-compose up --build -d
+- docker ps -a
+before_script:
+# wait for both databases to accept connections
+- echo "Waiting for databases"
+- while ! pg_isready -h 0.0.0.0 -p 1310 > /dev/null; do sleep 1; done
+- while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
+- echo "Databases are up"
 script:
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/RECON1.xml --output=out/RECON1.xml --annotate-with-bigg=true --log-level=SEVERE
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/ecoli_core_model.xml --output=out/ecoli_core_model.xml --annotate-with-bigg=true --log-level=SEVERE
-- travis_wait java -jar target/ModelPolisher-fat-1.7.jar --input=bigg_models_data/models/yeast_7.00.xml --output=out/yeast_7.00.xml --annotate-with-bigg=true --log-level=SEVERE
-- ls -lish out
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out > results.log"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
+after_script:
+- ls -lish results.log
+- docker-compose down
 git:
-  depth: 10
+  depth: 1

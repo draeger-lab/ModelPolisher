@@ -67,13 +67,13 @@ public class AnnotateDB {
             return annotations;
         }
 
-        if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals(METABOLITE_PREFIX)){
+        if (type.equals(BIGG_METABOLITE) && biggId.startsWith(METABOLITE_PREFIX)){
             biggId = biggId.substring(2);
         }
-        else if (type.equals(BIGG_METABOLITE) && biggId.substring(0, 2).equals(REACTION_PREFIX)){
+        else if (type.equals(BIGG_METABOLITE) && biggId.startsWith(REACTION_PREFIX)){
             biggId = biggId.substring(2);
         }
-        if (biggId.substring(biggId.length() - 2, biggId.length() - 1).equals("_")){
+        if (biggId.endsWith("_")){
             biggId = biggId.substring(0, biggId.length() - 2);
         }
 
