@@ -244,7 +244,7 @@ public class ModelPolisher extends Launcher {
       processFile(input, output, args);
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), output.getAbsolutePath()));
+        throw new IOException(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
       }
       File[] files = input.listFiles();
       if (files == null) {

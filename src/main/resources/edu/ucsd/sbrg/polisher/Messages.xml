@@ -164,6 +164,7 @@
     <entry key="VAL_ERROR">No SBML validation possible, process terminated with errors.</entry>
     <entry key="VERSION_NR_MISSING">There is no version number provided for this model</entry>
     <entry key="WRITE_COMBINE_ARCHIVE">Writing COMBINE Archive {0}</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}.</entry>
     <entry key="WRITE_FILE_INFO">Writing output file {0}</entry>
     <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Cannot write to file {0}.</entry>
