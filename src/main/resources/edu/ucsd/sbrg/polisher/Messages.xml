@@ -48,8 +48,9 @@
     <entry key="CREATE_GPR_FAILED">Could not create GPR for reaction with index ''{0}''.</entry>
     <entry key="CREATE_MISSING_COMP">Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.</entry>
     <entry key="CREATE_MISSING_GPR">Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.</entry>
+    <entry key="CREATING_DIRECTORY">Creating directory {0}.</entry>
     <entry key="DELETE_FILE">Deleting file: {0}, successful: {1}</entry>
-    <entry key="DIRECTORY_CREATED">Creating directory {0}.</entry>
+    <entry key="DIRECTORY_CREATED">Created directory {0}.</entry>
     <entry key="DIRECTORY_CREATION_FAILED">Could not create directory {0}.</entry>
     <entry key="DISPLAY_CONF_SCORE">Reaction {1} has confidence score {0,number,##}.</entry>
     <entry key="DOC_NOTES_DESC">This XHTML file defines alternative document notes and makes them exchangeable.</entry>
@@ -111,6 +112,7 @@
     <entry key="OMIT_GENERIC_TERMS_DESC">Set this option to true if generic top-level annotations, such as 'process' should not be applied. Not using those terms will reduce the size of the resulting output file.</entry>
     <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">Output SBML file</entry>
+    <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
     <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because of {1}</entry>
     <entry key="PARSE_ID_FAILED">Failed to correctly parse id ''{0}''. {1}</entry>
     <entry key="PATTERN_MISMATCH">Identifier ''{0}'' did not match the pattern ''{1}''</entry>
