@@ -141,6 +141,7 @@
     <entry key="SPECIES_REFERENCE_INVALID">Ungültige Referanz auf Spezies ''{0}'', diese existiert im Model nicht.</entry>
     <entry key="SPECIES_UNDEFINED">Spezies ''{0}'' in Reaktion ''{1}'' ist nicht definiert!</entry>
     <entry key="SQLITE_CONNECTED">Verbunden mit der lokalen SQLite Version von BiGGDB.</entry>
+    <entry key="STRUCT_FIELD_NOT_PRESENT">Struct field {0} not present</entry>
     <entry key="SUBSYS_LINK_ERROR">Reaktion an Index ''{0}'' ist null. Konnte Subsystem Linnk nicht herstellen.</entry>
     <entry key="TAGS_FINE_INFO">Es muss nichts ersetzt werden, weiter zum nächsten Schritt</entry>
     <entry key="TISS_CODE_INVALID">Ungültiger tissue code: ''{0}''</entry>
