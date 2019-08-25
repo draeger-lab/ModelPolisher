@@ -29,14 +29,12 @@ public class CombineArchiveTest {
 
         CombineArchive ca = new CombineArchive(new File(modelFile.getAbsolutePath().substring(0, modelFile.getAbsolutePath().lastIndexOf('.')) + ".zip"));
 
-        ArchiveEntry SBMLOutput = ca.addEntry(
-                modelFile,
+        ca.addEntry(modelFile,
                 "model.xml",
                 new URI("http://identifiers.org/combine.specifications/sbml"),
                 true);
 
-        ArchiveEntry RDFOutput = ca.addEntry(
-                glossaryFile,
+        ca.addEntry(glossaryFile,
                 "glossary.rdf",
                 //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
                 new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),

@@ -659,14 +659,12 @@ public class ModelPolisher extends Launcher {
         File outputXML = new File(output.getAbsolutePath());
         File outputRDF = new File(glossaryLocation);
 
-        ArchiveEntry SBMLOutput = ca.addEntry(
-                outputXML,
+        ca.addEntry(outputXML,
                 "model.xml",
                 new URI("http://identifiers.org/combine.specifications/sbml"),
                 true);
 
-        ArchiveEntry RDFOutput = ca.addEntry(
-                outputRDF,
+        ca.addEntry(outputRDF,
                 "glossary.rdf",
                 //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
                 new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
