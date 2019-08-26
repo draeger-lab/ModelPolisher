@@ -48,6 +48,7 @@
     <entry key="CREATE_GPR_FAILED">Konnte GPR für Reaktion mit Index ''{0}'' nicht erstellen.</entry>
     <entry key="CREATE_MISSING_COMP">Erstelle Kompartiment ''{0}'' weil es von {2} ''{1}'' referenziert wird, aber noch nicht im Model existiert.</entry>
     <entry key="CREATE_MISSING_GPR">Erstelle fehlendes Genprodukt mit Id ''{0}'' weil die Reaktion ''{1}'' diese Id in ihrer Gen-Produkt Assoziation verwendet.</entry>
+    <entry key="CREATING_DIRECTORY">Erstelle Verzeichnis {0}.</entry>
     <entry key="DELETE_FILE">Lösche Datei: {0}, erfolgreich: {1}</entry>
     <entry key="DIRECTORY_CREATED">Erstelle Verzeichnis {0}.</entry>
     <entry key="DIRECTORY_CREATION_FAILED">Konte Verzeichnis {0} nicht erstellen.</entry>
@@ -111,6 +112,7 @@
     <entry key="OMIT_GENERIC_TERMS_DESC">Wenn wahr, werden generische Top Level annotationen wie "Prozess" angewendet. Ist diese Option ausgeschaltet, wird die Ausgabedatei kleiner.</entry>
     <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">SBML-Ausgabedatei</entry>
+    <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
     <entry key="PARSE_GPR_ERROR">Konnte ''{0}'' wegen {1} nicht parsen</entry>
     <entry key="PARSE_ID_FAILED">Konnte Id ''{0}'' nicht korrekt parsen. {1}</entry>
     <entry key="PATTERN_MISMATCH">Id ''{0}'' passt nicht zum Pattern ''{1}''</entry>
@@ -162,6 +164,7 @@
     <entry key="VAL_ERROR">Keine SBML Validierung möglich. Prozess mit Fehlern beendet.</entry>
     <entry key="VERSION_NR_MISSING">Die Versionsnummer für das Model fehlt</entry>
     <entry key="WRITE_COMBINE_ARCHIVE">Schreibe COMBINE Archiv {0}</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}.</entry>
     <entry key="WRITE_FILE_INFO">Schreibe Datei {0}</entry>
     <entry key="WRITE_RDF_FILE_INFO">Schreibe RDF glossary Datei {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Kann Datei {0} nicht schreiben.</entry>
