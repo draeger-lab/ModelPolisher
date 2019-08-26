@@ -19,7 +19,7 @@ install:
 - printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-2.0.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - cp -r bigg_models_data/models docker/java_docker
 - gradle devel
-- docker-compose up --build -d
+- docker-compose up -d
 - docker ps -a
 before_script:
 # wait for both databases to accept connections
