@@ -73,6 +73,16 @@ task lightJar(type: Jar) {
     with jar
 }
 
+//build docker container
+task devel(type: Exec){
+    commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
+            "export COMPOSE_FILE=docker-compose.devel.yml && " +
+            "docker-compose pull && " +
+            "docker-compose build && " +
+            "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
+    dependsOn lightJar
+}
+
 // zip lib folder for release
 task zipLibs(type: Zip) {
     from "lib"
@@ -107,6 +117,8 @@ clean.doFirst {
 // bump jar version in ModelPolisher.sh
 if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
+        replaceVersion("docker/java_docker/Dockerfile")
+        replaceVersion(".travis.yml")
         replaceVersion("./src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
