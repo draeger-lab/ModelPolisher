@@ -3,7 +3,7 @@
 
 <img align="right" src="doc/img/ModelPolisherIcon256.png" width="64"/>
 
-*Authors:* [Andreas Dräger](https://github.com/draeger/), [Thomas J. Zajac](https://github.com/mephenor/), [Matthias König](https://github.com/matthiaskoenig)
+*Authors:* [Andreas Dräger](https://github.com/draeger/), [Thomas J. Zajac](https://github.com/mephenor/), [Matthias König](https://github.com/matthiaskoenig), [Kaustubh Trivedi](https://github.com/codekaust)
 
 [![Build Status](https://travis-ci.org/draeger-lab/ModelPolisher.svg?branch=master?style=plastic)](https://travis-ci.org/draeger-lab/ModelPolisher)
 [![Stable version](https://img.shields.io/badge/Stable_version-2.0-brightgreen.svg?style=plastic)](https://github.com/draeger-lab/ModelPolisher/releases/)
