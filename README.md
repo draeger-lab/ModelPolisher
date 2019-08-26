@@ -102,7 +102,22 @@ User needs to host the [BiGG](https://github.com/SBRG/bigg_models) Database & [A
 
 Now, you can run the following command in general:
 ```
-java -jar "<path>/ModelPolisher/target/ModelPolisher-2.0.jar" --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=<host> --bigg-port=<port> --bigg-dbname=<postgres_dbname> --bigg-user=<postgres_username> --bigg-passwd=<user_password> --add-adb-annotations=true --adb-host=<host> --adb-port=<port> --adb-dbname=<postgres_dbname> --adb-user=<postgres_username> --adb-passwd=<user_password>
+java -jar "<path>/ModelPolisher/target/ModelPolisher-2.0.jar" \
+  --input=<input> \
+  --output=<output> \
+  --output-combine=true \
+  --annotate-with-bigg=true \
+  --bigg-host=<host> \
+  --bigg-port=<port> \
+  --bigg-dbname=<postgres_dbname> \
+  --bigg-user=<postgres_username> \
+  --bigg-passwd=<user_password> \
+  --add-adb-annotations=true \
+  --adb-host=<host> \
+  --adb-port=<port> \
+  --adb-dbname=<postgres_dbname> \
+  --adb-user=<postgres_username> \
+  --adb-passwd=<user_password>
 ```
 
 We understand problems in setting-up database backend and that a developer would need to build ModelPolisher multiple times and making required changes in `java` Dockerfile will be a tedious task.
