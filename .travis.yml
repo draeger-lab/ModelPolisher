@@ -15,7 +15,7 @@ before_install:
 install:
 # use current build artifact instead of published version
 - export COMPOSE_FILE=docker-compose.devel.yml
-- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-2.0.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
+- printf "FROM openjdk:11-slim\n\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - cp -r bigg_models_data/models docker/java_docker
 - gradle devel
 - docker-compose up --build -d
