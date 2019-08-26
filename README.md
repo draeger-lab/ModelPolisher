@@ -41,7 +41,8 @@ ModelPolisher uses `gradle` to build. Make sure you have `gradle (version >= 5.0
 
 First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle. Gradle runs task `lightJar` by default which produces `jar` file, with dependencies, for ModelPolisher in `<path>/ModelPolisher/target/` directory. So, in order to build ModelPolisher run any of following command under `ModelPolisher/` directory:
 
-`gradle lightJar` or `gradle`
+`gradle lightJar` or `gradle`  
+Additionally `gradle devel` is provided to easily run a non-release version with [Docker](#non-release).
 
 NOTE: `lightJar` requires `postgresql` database(s) to be set-up to run ModelPolisher.
 
@@ -94,6 +95,13 @@ docker rm modelpolisher_biggdb modelpolisher_adb modelpolisher_java
 docker rmi modelpolisher_java:latest modelpolisher_adb:latest modelpolisher_biggdb:latest postgres:11.4 openjdk:11-slim
 docker volume prune
 ```
+
+#### <a name="non-release">Using a non-release jar with Docker</a>
+
+Building using `gradle devel` builds a container with the local ModelPolisher jar.  
+This container can be used analogously to the release version, though either `-f docker-compose.devel.yml` needs to be 
+passed to each invocation of `docker-compose` or the `COMPOSE_FILE` environment variable  needs to be set so it points 
+to `docker-compose.devel.yml`, e.g. using `export COMPOSE_FILE=docker-compose.devel.yml` for sh or bash. 
 
 ## <a name="using-jar"></a>Using ModelPolisher jar
 For polishing models, you essentially need to run ModelPolisher using `jar` produced from [build instructions](#build-instructions).
