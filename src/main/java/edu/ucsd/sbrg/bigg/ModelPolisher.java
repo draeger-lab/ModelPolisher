@@ -235,14 +235,16 @@ public class ModelPolisher extends Launcher {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
     initParameters(args);
-    // We test if path denotes a file or directory by checking if it contains at least one period in its name. If so, we
-    // assume it is a file.
-    checkCreateOutDir(input, output);
+
+    //Create output directory is output is a directory or create output file's directory if output is a file
+    checkCreateOutDir(output);
+
     if (input.isFile()) {
+      //NOTE: input is a single file, but output can be a file or a directory
       processFile(input, output, args);
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), output.getAbsolutePath()));
+        throw new IOException(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
       }
       File[] files = input.listFiles();
       if (files == null) {
@@ -327,23 +329,56 @@ public class ModelPolisher extends Launcher {
     return null;
   }
 
+  /**
+   * @param file
+   */
+  public boolean isDirectory(File file){
+    /*
+      file = d1/d2/d3 is taken as a file by method file.isDirectory()
+      Check if file is directory by checking presence or '.' in output.getName()
+     */
+
+    return !file.getName().contains(".");
+  }
 
   /**
-   * @param input
    * @param output
    */
-  private void checkCreateOutDir(File input, File output) {
-    if (!output.exists() && (output.getName().lastIndexOf('.') < 0)
-      && (!input.isFile() || !input.getName().equals(output.getName()))) {
-      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
-      output.mkdir();
+  private void checkCreateOutDir(File output) {
+    logger.info(format(mpMessageBundle.getString("OUTPUT_FILE_DESC"), isDirectory(output) ? "directory" : "file"));
+
+    /*
+    output = d1/d2/d3 is taken as a file by method output.isDirectory()
+    Check if output is directory by checking presence or '.' in output.getName() -> use method ModelPolisher.isDirectory(File file)
+     */
+
+    if(isDirectory(output) && !output.exists()){
+      logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
+      if(output.mkdirs()){
+        logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
+      }else {
+        logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
+        exit();
+      }
+    }
+    //output is a file
+    else {
+      //check if directory of file exist and create if required
+      if(!output.getParentFile().exists()){
+        logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
+        if(output.getParentFile().mkdirs()){
+          logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
+        }else {
+          logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
+          exit();
+        }
+      }
     }
   }
 
-
   /**
-   * @param input
-   * @param output
+   * @param input: input file
+   * @param output: output file or directory
    * @param args
    * @throws XMLStreamException
    * @throws IOException
@@ -363,25 +398,9 @@ public class ModelPolisher extends Launcher {
       output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
     }
 
-    //directory containing output file
-    //use worthy is output is a file (not directory)
-    boolean directoryContainingFileExist = output.isDirectory() || output.getParentFile().exists();
 
-    //following method will run only if output file is a file (not directory)
-    //testing if output is a file and the directory containing the file does not exist
-    //if not present create directory to avoid java.io.FileNotFoundException while writing output polished model and the glossary file
-    if(!directoryContainingFileExist){
-      directoryContainingFileExist = output.getParentFile().mkdir();
-      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
-    }
-
-    if(directoryContainingFileExist){
-      getDB(args);
-      readAndPolish(input, output);
-    }else{
-      logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
-      exit();
-    }
+    getDB(args);
+    readAndPolish(input, output);
   }
 
   /**
@@ -640,14 +659,12 @@ public class ModelPolisher extends Launcher {
         File outputXML = new File(output.getAbsolutePath());
         File outputRDF = new File(glossaryLocation);
 
-        ArchiveEntry SBMLOutput = ca.addEntry(
-                outputXML,
+        ca.addEntry(outputXML,
                 "model.xml",
                 new URI("http://identifiers.org/combine.specifications/sbml"),
                 true);
 
-        ArchiveEntry RDFOutput = ca.addEntry(
-                outputRDF,
+        ca.addEntry(outputRDF,
                 "glossary.rdf",
                 //generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
                 new URI("http://purl.org/NET/mediatypes/application/rdf+xml"),
