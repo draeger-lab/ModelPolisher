@@ -6,7 +6,7 @@ sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
 archivesBaseName = "ModelPolisher"
 
-version = "1.7"
+version = "2.0"
 
 sourceSets {
     main.java.srcDirs = ["src/main/java"]
@@ -104,14 +104,6 @@ clean.doFirst {
     file("target").deleteDir()
 }
 
-// bump jar version in travis.yml
-if (project.file(".travis.yml").exists()) {
-    task bumpVersionTravis() {
-        replaceVersion(".travis.yml")
-    }
-    processResources.dependsOn bumpVersionTravis
-}
-
 // bump jar version in ModelPolisher.sh
 if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
@@ -126,7 +118,7 @@ def replaceVersion(path) {
     String MPVersion = /ModelPolisher.*\d{1,2}(.\d{1,2}){1,2}.jar/
     travisFile.eachLine {
         line ->
-            content.add(line.replaceAll(MPVersion, "ModelPolisher-fat-" +
+            content.add(line.replaceAll(MPVersion, "ModelPolisher-" +
                     "${version}.jar"))
     }
     BufferedWriter writer = new BufferedWriter(new FileWriter(travisFile))

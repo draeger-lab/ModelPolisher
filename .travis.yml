@@ -12,8 +12,6 @@ notifications:
 
 before_install:
 - git clone https://github.com/SBRG/bigg_models_data
-# workaround, until this is fixed
-- mkdir bigg_models_data/models/out
 install:
 # use current build artifact instead of published version
 - printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
@@ -27,11 +25,10 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out > results.log"
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out >> results.log"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
 after_script:
-- ls -lish results.log
 - docker-compose down
 git:
   depth: 1
