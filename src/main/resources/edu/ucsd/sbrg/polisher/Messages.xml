@@ -2,6 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <entry key="ABREV_INVALID">Invalid abbreviation: ''{0}'</entry>
+    <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also. NOTE: Effective only if 'annotate-with-bigg' is true.</entry>
     <entry key="ADD_KIND_TO_GROUP">Adding missing kind attribute to group {0}.</entry>
     <entry key="ADD_PREFIX_GI">Adding missing GI: prefix.</entry>
     <entry key="ADD_PREFIX_GO">Adding missing GO: prefix.</entry>
@@ -12,7 +13,6 @@
     <entry key="ADDED_URI_COBRA">Added resource URI ''{0}'' to provided CVTerm</entry>
     <entry key="ALL_DOCS_PARSE_ERROR">Could not parse any model from input file ''{0}'' , aborting.</entry>
     <entry key="ANNOTATE_WITH_BIGG_DESC">If set to true, the model will be annotated with data from BiGG Models database. If set to false, the resulting model will not receive annotation or correction from BiGG Models database</entry>
-    <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also</entry>
     <entry key="ANNOTATION_MISSING">There is no annotation for this model</entry>
     <entry key="ARCHIVE">Packing archive file {0}</entry>
     <entry key="ATOMS_MISSING">There are missing atoms in reaction ''{0}''. Values lower than zero indicate missing atoms on the substrate side, whereas positive values indicate missing atoms on the product side: {1}</entry>
@@ -48,7 +48,10 @@
     <entry key="CREATE_GPR_FAILED">Could not create GPR for reaction with index ''{0}''.</entry>
     <entry key="CREATE_MISSING_COMP">Creating compartment ''{0}'' because it is referenced by {2} ''{1}'' but does not yet exist in the model.</entry>
     <entry key="CREATE_MISSING_GPR">Creating missing gene product with id ''{0}'' because reaction ''{1}'' uses this id in its gene-product association.</entry>
-    <entry key="DIRECTORY_CREATED">Creating directory {0}.</entry>
+    <entry key="CREATING_DIRECTORY">Creating directory {0}.</entry>
+    <entry key="DELETE_FILE">Deleting file: {0}, successful: {1}</entry>
+    <entry key="DIRECTORY_CREATED">Created directory {0}.</entry>
+    <entry key="DIRECTORY_CREATION_FAILED">Could not create directory {0}.</entry>
     <entry key="DISPLAY_CONF_SCORE">Reaction {1} has confidence score {0,number,##}.</entry>
     <entry key="DOC_NOTES_DESC">This XHTML file defines alternative document notes and makes them exchangeable.</entry>
     <entry key="DOC_TITLE_PATTERN_DESC">This option allows you to define the title of the SBML document's description and hence the head line when the file is displayed in a web browser.</entry>
@@ -107,7 +110,9 @@
     <entry key="OBJ_NOT_DEFINED">No active objective defined in model {0}.</entry>
     <entry key="OBJ_SOLUTION">The problem could be successfully solved by declaring ''{0}'' the active objective.</entry>
     <entry key="OMIT_GENERIC_TERMS_DESC">Set this option to true if generic top-level annotations, such as 'process' should not be applied. Not using those terms will reduce the size of the resulting output file.</entry>
+    <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">Output SBML file</entry>
+    <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
     <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because of {1}</entry>
     <entry key="PARSE_ID_FAILED">Failed to correctly parse id ''{0}''. {1}</entry>
     <entry key="PATTERN_MISMATCH">Identifier ''{0}'' did not match the pattern ''{1}''</entry>
@@ -138,6 +143,7 @@
     <entry key="SPECIES_REFERENCE_INVALID">Invalid reference to a species ''{0}'' that doesn''t exist in the model.</entry>
     <entry key="SPECIES_UNDEFINED">Species ''{0}'' in reaction ''{1}'' is not defined!</entry>
     <entry key="SQLITE_CONNECTED">Connected to the local SQLite version of BiGGDB.</entry>
+    <entry key="STRUCT_FIELD_NOT_PRESENT">Struct field {0} not present</entry>
     <entry key="SUBSYS_LINK_ERROR">Reaction at index ''{0}'' is null. Could not create subsystem link.</entry>
     <entry key="TAGS_FINE_INFO">No replacement needed, continuing</entry>
     <entry key="TISS_CODE_INVALID">Invalid tissue code: ''{0}''</entry>
@@ -157,8 +163,10 @@
     <entry key="VAL_ERR_COUNT"><![CDATA["There {0,choice,0#are no errors|1#is one error|1<are {0,number,integer} errors} in file {1}."]]></entry>
     <entry key="VAL_ERROR">No SBML validation possible, process terminated with errors.</entry>
     <entry key="VERSION_NR_MISSING">There is no version number provided for this model</entry>
-    <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
+    <entry key="WRITE_COMBINE_ARCHIVE">Writing COMBINE Archive {0}</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}.</entry>
     <entry key="WRITE_FILE_INFO">Writing output file {0}</entry>
+    <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Cannot write to file {0}.</entry>
     <entry key="WROTE_CORRECT_HTML">Wrote corrected file to ''{0}''</entry>
 </properties>

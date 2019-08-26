@@ -2,6 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <entry key="ABREV_INVALID">Ungültige Abkürzung: ''{0}''</entry>
+    <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also. NOTE: Effective only if 'annotate-with-bigg' is true.</entry>
     <entry key="ADD_KIND_TO_GROUP">Adding missing kind attribute to group {0}.</entry>
     <entry key="ADD_PREFIX_GI">Füge fehlendes GI: Präfix hinzu.</entry>
     <entry key="ADD_PREFIX_GO">Füge fehlendes GO: Präfix hinzu.</entry>
@@ -47,7 +48,10 @@
     <entry key="CREATE_GPR_FAILED">Konnte GPR für Reaktion mit Index ''{0}'' nicht erstellen.</entry>
     <entry key="CREATE_MISSING_COMP">Erstelle Kompartiment ''{0}'' weil es von {2} ''{1}'' referenziert wird, aber noch nicht im Model existiert.</entry>
     <entry key="CREATE_MISSING_GPR">Erstelle fehlendes Genprodukt mit Id ''{0}'' weil die Reaktion ''{1}'' diese Id in ihrer Gen-Produkt Assoziation verwendet.</entry>
-    <entry key="DIRECTORY_CREATED">Erstelle Verzeichniss {0}.</entry>
+    <entry key="CREATING_DIRECTORY">Erstelle Verzeichnis {0}.</entry>
+    <entry key="DELETE_FILE">Lösche Datei: {0}, erfolgreich: {1}</entry>
+    <entry key="DIRECTORY_CREATED">Erstelle Verzeichnis {0}.</entry>
+    <entry key="DIRECTORY_CREATION_FAILED">Konte Verzeichnis {0} nicht erstellen.</entry>
     <entry key="DISPLAY_CONF_SCORE">Reaction {1} hat den Konfidenzwert {0,number,##}.</entry>
     <entry key="DOC_NOTES_DESC">Diese XTHL Datei definiert alternative Notizen für das Dokument und macht sie austauschbar.</entry>
     <entry key="DOC_TITLE_PATTERN_DESC">Diese Option erlaubt die Titel Zeile des SBML Dokuments zu ändern und somit den Titel, der für das Dokument in eienm Browser angezeigt wird.</entry>
@@ -106,7 +110,9 @@
     <entry key="OBJ_NOT_DEFINED">Keine aktive Zielfunktion definiert für Model {0}.</entry>
     <entry key="OBJ_SOLUTION">Das Problem könnte erfolgreich gelöst werden, indem man ''{0}'' als die aktive Zielfunktion deklariert.</entry>
     <entry key="OMIT_GENERIC_TERMS_DESC">Wenn wahr, werden generische Top Level annotationen wie "Prozess" angewendet. Ist diese Option ausgeschaltet, wird die Ausgabedatei kleiner.</entry>
+    <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">SBML-Ausgabedatei</entry>
+    <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
     <entry key="PARSE_GPR_ERROR">Konnte ''{0}'' wegen {1} nicht parsen</entry>
     <entry key="PARSE_ID_FAILED">Konnte Id ''{0}'' nicht korrekt parsen. {1}</entry>
     <entry key="PATTERN_MISMATCH">Id ''{0}'' passt nicht zum Pattern ''{1}''</entry>
@@ -137,6 +143,7 @@
     <entry key="SPECIES_REFERENCE_INVALID">Ungültige Referanz auf Spezies ''{0}'', diese existiert im Model nicht.</entry>
     <entry key="SPECIES_UNDEFINED">Spezies ''{0}'' in Reaktion ''{1}'' ist nicht definiert!</entry>
     <entry key="SQLITE_CONNECTED">Verbunden mit der lokalen SQLite Version von BiGGDB.</entry>
+    <entry key="STRUCT_FIELD_NOT_PRESENT">Struct field {0} not present</entry>
     <entry key="SUBSYS_LINK_ERROR">Reaktion an Index ''{0}'' ist null. Konnte Subsystem Linnk nicht herstellen.</entry>
     <entry key="TAGS_FINE_INFO">Es muss nichts ersetzt werden, weiter zum nächsten Schritt</entry>
     <entry key="TISS_CODE_INVALID">Ungültiger tissue code: ''{0}''</entry>
@@ -156,8 +163,10 @@
     <entry key="VAL_ERR_COUNT"><![CDATA["Es {0,choice,0#sind keine Fehler|1#ist ein Fehler|1<sind {0,number,integer} Fehler} in der Datei {1}."]]></entry>
     <entry key="VAL_ERROR">Keine SBML Validierung möglich. Prozess mit Fehlern beendet.</entry>
     <entry key="VERSION_NR_MISSING">Die Versionsnummer für das Model fehlt</entry>
-    <entry key="WRITE_DIR_TO_FILE_ERROR">Kann nicht ein ganzes Verzeichnis in eine Datei schreiben {0}.,</entry>
+    <entry key="WRITE_COMBINE_ARCHIVE">Schreibe COMBINE Archiv {0}</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Die Eingabedaten aus dem Verzeichnis {0} können nicht in die Ausgabedatei {1} geschrieben werden.</entry>
     <entry key="WRITE_FILE_INFO">Schreibe Datei {0}</entry>
+    <entry key="WRITE_RDF_FILE_INFO">Schreibe RDF glossary Datei {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Kann Datei {0} nicht schreiben.</entry>
     <entry key="WROTE_CORRECT_HTML">Korrigierte Datei nach ''{0}'' geschrieben</entry>
 </properties>
