@@ -1,6 +1,8 @@
 dist: bionic
 language: java
 sudo: required
+env:
+- COMPOSE_FILE=docker-compose.devel.yml 
 jdk:
 - openjdk11
 services:
@@ -14,7 +16,6 @@ before_install:
 - git clone https://github.com/SBRG/bigg_models_data
 install:
 # use current build artifact instead of published version
-- export COMPOSE_FILE=docker-compose.devel.yml
 - printf "FROM openjdk:11-slim\n\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - cp -r bigg_models_data/models docker/java_docker
 - gradle devel
