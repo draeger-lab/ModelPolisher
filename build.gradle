@@ -2,8 +2,8 @@ apply plugin: "java"
 
 defaultTasks "clean", "lightJar"
 // Java versions for compilation and output
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
+sourceCompatibility = "1.11"
+targetCompatibility = "1.11"
 archivesBaseName = "ModelPolisher"
 
 version = "2.0"

@@ -244,7 +244,9 @@ public class ModelPolisher extends Launcher {
       processFile(input, output, args);
     } else {
       if (!output.isDirectory()) {
-        throw new IOException(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
+          // input == dir && output != dir -> should only happen if already inside a directory and trying to recurse, which is not supported
+          logger.warning(format(mpMessageBundle.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
+          return;
       }
       File[] files = input.listFiles();
       if (files == null) {
