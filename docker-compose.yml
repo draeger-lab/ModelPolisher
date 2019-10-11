@@ -15,7 +15,7 @@ services:
     ports:
       - 1013:5432
   java:
-    image: mephenor/modelpolisher:2.0
+    image: mephenor/modelpolisher:2.0.1
     depends_on:
       - biggdb
       - adb
