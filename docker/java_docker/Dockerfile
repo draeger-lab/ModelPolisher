@@ -1,9 +1,5 @@
 FROM openjdk:11-slim
 MAINTAINER ktrivedi@cs.iitr.ac.in
 
-RUN apt-get update &&\
-apt-get install -y wget &&\
-wget https://modelpolisher.s3.ap-south-1.amazonaws.com/ModelPolisher-2.0.jar &&\
-rm -rf /var/lib/apt/lists/*
-
+COPY ModelPolisher-2.0.1.jar /
 CMD "/bin/sh"

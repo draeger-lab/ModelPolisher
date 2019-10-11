@@ -164,7 +164,7 @@
     <entry key="VAL_ERROR">Keine SBML Validierung möglich. Prozess mit Fehlern beendet.</entry>
     <entry key="VERSION_NR_MISSING">Die Versionsnummer für das Model fehlt</entry>
     <entry key="WRITE_COMBINE_ARCHIVE">Schreibe COMBINE Archiv {0}</entry>
-    <entry key="WRITE_DIR_TO_FILE_ERROR">Die Eingabedaten aus dem Verzeichnis {0} können nicht in die Ausgabedatei {1} geschrieben werden.</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Die Eingabedaten aus dem Verzeichnis {0} können nicht in die Ausgabedatei {1} geschrieben werden. Überspringe das Verzeichnis.</entry>
     <entry key="WRITE_FILE_INFO">Schreibe Datei {0}</entry>
     <entry key="WRITE_RDF_FILE_INFO">Schreibe RDF glossary Datei {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Kann Datei {0} nicht schreiben.</entry>

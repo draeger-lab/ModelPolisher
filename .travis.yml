@@ -1,6 +1,8 @@
 dist: bionic
 language: java
 sudo: required
+env:
+- COMPOSE_FILE=docker-compose.devel.yml 
 jdk:
 - openjdk11
 services:
@@ -14,9 +16,10 @@ before_install:
 - git clone https://github.com/SBRG/bigg_models_data
 install:
 # use current build artifact instead of published version
-- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
-- gradle lightJar && mv target/*.jar docker/java_docker/ModelPolisher.jar && cp -r bigg_models_data/models docker/java_docker
-- docker-compose up --build -d
+- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-2.0.1.jar /\nCOPY models /models\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
+- cp -r bigg_models_data/models docker/java_docker
+- gradle devel
+- docker-compose up -d
 - docker ps -a
 before_script:
 # wait for both databases to accept connections
@@ -25,9 +28,9 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
-- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher-2.0.1.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher-2.0.1.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run java sh -c "java -jar /ModelPolisher-2.0.1.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
 after_script:
 - docker-compose down
 git:

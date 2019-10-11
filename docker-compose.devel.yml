@@ -1,6 +1,6 @@
 # ------------------------------------------------
-# docker-compose for ModelPolisher release version
-# update docker hub images for new releases and change image accordingly
+# docker-compose for ModelPolisher development
+# run gradle devel first and then docker-compose -f docker-compose.devel.yml run ... or export COMPOSE_FILE and run normally 
 # ------------------------------------------------
 version: '3'
 services:
@@ -15,10 +15,10 @@ services:
     ports:
       - 1013:5432
   java:
-    image: mephenor/modelpolisher:2.0
+    build: ./docker/java_docker
+    container_name: modelpolisher_java    
     depends_on:
       - biggdb
       - adb
-    container_name: modelpolisher_java
     stdin_open: true
     tty: true
