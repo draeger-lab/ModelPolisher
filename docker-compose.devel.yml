@@ -1,5 +1,6 @@
 # ------------------------------------------------
-# docker-compose for ModelPolisher
+# docker-compose for ModelPolisher development
+# run gradle devel first and then docker-compose -f docker-compose.devel.yml run ... or export COMPOSE_FILE and run normally 
 # ------------------------------------------------
 version: '3'
 services:

@@ -6,7 +6,7 @@ sourceCompatibility = "1.11"
 targetCompatibility = "1.11"
 archivesBaseName = "ModelPolisher"
 
-version = "2.0"
+version = "2.0.1"
 
 sourceSets {
     main.java.srcDirs = ["src/main/java"]
@@ -36,8 +36,8 @@ dependencies {
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"
     compile 'us.hebi.matlab.mat:mfl-core:0.5.3'
-    compile "com.fasterxml.jackson.core:jackson-core:2.9.9"
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.9.2"
+    compile "com.fasterxml.jackson.core:jackson-core:2.9.10"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.9.10"
     compile "net.sf.jtidy:jtidy:r938"
     compile "de.uni-rostock.sbi:CombineArchive:1.4.0"
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"

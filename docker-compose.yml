@@ -1,5 +1,6 @@
 # ------------------------------------------------
-# docker-compose for ModelPolisher
+# docker-compose for ModelPolisher release version
+# update docker hub images for new releases and change image accordingly
 # ------------------------------------------------
 version: '3'
 services:
