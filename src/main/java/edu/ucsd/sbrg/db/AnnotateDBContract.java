@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db;
 
 public final class AnnotateDBContract {
     static abstract class Constants {

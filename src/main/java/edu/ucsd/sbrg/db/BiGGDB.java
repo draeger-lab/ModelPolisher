@@ -12,10 +12,10 @@
  * <http://www.gnu.org/licenses/lgpl-3.0-standalone.html>.
  * ---------------------------------------------------------------------
  */
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db;
 
-import static edu.ucsd.sbrg.bigg.BiGGDBContract.Constants.*;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.*;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import edu.ucsd.sbrg.bigg.BiGGAnnotation;
+import edu.ucsd.sbrg.bigg.BiGGId;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.util.Pair;
 
@@ -53,7 +55,7 @@ public class BiGGDB {
     /**
      * The connection to the database.
      */
-    private edu.ucsd.sbrg.bigg.SQLConnector connector;
+    private SQLConnector connector;
 
 
     /**
@@ -78,7 +80,7 @@ public class BiGGDB {
     /**
      *
      */
-    void closeConnection() {
+    public void closeConnection() {
         if (connector.isConnected()) {
             try {
                 connector.close();
@@ -141,7 +143,7 @@ public class BiGGDB {
      * @param compartmentId
      * @return
      */
-    String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
+    public String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
         String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
                 + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
                 + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."
@@ -158,7 +160,7 @@ public class BiGGDB {
      * @param modelId
      * @return
      */
-    String getChemicalFormula(String biggId, String modelId) {
+    public String getChemicalFormula(String biggId, String modelId) {
         String query =
                 "SELECT DISTINCT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
                         + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID
@@ -172,7 +174,7 @@ public class BiGGDB {
      * @param biggId
      * @return
      */
-    String getCompartmentName(BiGGId biggId) {
+    public String getCompartmentName(BiGGId biggId) {
         return getString(SELECT + COLUMN_NAME + FROM + COMPARTMENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
                 biggId.getAbbreviation());
     }
@@ -183,7 +185,7 @@ public class BiGGDB {
      * @return
      * @throws SQLException
      */
-    String getComponentName(BiGGId biggId) throws SQLException {
+    public String getComponentName(BiGGId biggId) throws SQLException {
         // unused
         return getString(SELECT + COLUMN_NAME + FROM + COMPONENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
                 biggId.getAbbreviation());
@@ -194,7 +196,7 @@ public class BiGGDB {
      * @param biggId
      * @return
      */
-    String getComponentType(BiGGId biggId) {
+    public String getComponentType(BiGGId biggId) {
         return getString(SELECT + COLUMN_TYPE + FROM + COMPONENT + WHERE + COLUMN_BIGG_ID + " = '%s'",
                 biggId.getAbbreviation());
     }
@@ -261,7 +263,7 @@ public class BiGGDB {
      * @param label
      * @return
      */
-    String getGeneName(String label) {
+    public String getGeneName(String label) {
         String query = "SELECT s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, " + GENOME_REGION
                 + " gr\n" + "WHERE d." + COLUMN_ID + " = s." + COLUMN_DATA_SOURCE_ID + " AND\n s." + COLUMN_OME_ID + " = gr."
                 + COLUMN_ID + " AND\n gr." + COLUMN_BIGG_ID + " = '%s' AND\n d." + COLUMN_BIGG_ID + " LIKE " + REFSEQ_NAME;
@@ -334,7 +336,7 @@ public class BiGGDB {
      * @param biggId
      * @return
      */
-    String getOrganism(String biggId) {
+    public String getOrganism(String biggId) {
         return getString("SELECT g." + COLUMN_ORGANISM + FROM + GENOME + " g, " + MODEL + " m WHERE m." + COLUMN_GENOME_ID
                 + " = g." + COLUMN_ID + " AND m." + COLUMN_BIGG_ID + " = '%s'", biggId);
     }
@@ -600,7 +602,7 @@ public class BiGGDB {
      * @param compartmentId
      * @return
      */
-    Integer getChargeByCompartment(String componentId, String compartmentId) {
+    public Integer getChargeByCompartment(String componentId, String compartmentId) {
         String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
                 + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = '%s' AND c." + COLUMN_ID
                 + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = '%s' AND co." + COLUMN_ID + " = cc."

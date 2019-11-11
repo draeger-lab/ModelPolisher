@@ -101,12 +101,12 @@ public class SBMLPolisher {
   /**
    * Switch to decide if generic and obvious terms should be used.
    */
-  protected boolean omitGenericTerms;
+  public boolean omitGenericTerms;
   /**
    * Switch to decide if also references to data sources can be included into
    * {@link CVTerm}s whose URLs are not (yet) part of the MIRIAM registry.
    */
-  protected boolean includeAnyURI;
+  public boolean includeAnyURI;
   /**
    *
    */
@@ -157,7 +157,7 @@ public class SBMLPolisher {
    *      "https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">Structure
    *      of BiGG ids</a>
    */
-  protected BiGGId extractBiGGId(String id) {
+  public BiGGId extractBiGGId(String id) {
     if (id.matches(".*_copy\\d*")) {
       return new BiGGId(id.substring(0, id.lastIndexOf('_')));
     }
@@ -967,7 +967,7 @@ public class SBMLPolisher {
    * @param name
    * @return
    */
-  protected String polishName(String name) {
+  public String polishName(String name) {
     String newName = name;
     if (name.startsWith("?_")) {
       newName = name.substring(2);
