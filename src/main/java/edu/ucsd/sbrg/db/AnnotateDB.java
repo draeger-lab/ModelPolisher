@@ -40,7 +40,7 @@ public class AnnotateDB {
    * @param connector
    * @throws SQLException
    */
-  AnnotateDB(SQLConnector connector) throws SQLException {
+  AnnotateDB(SQLConnector connector) {
     this.connector = connector;
   }
 

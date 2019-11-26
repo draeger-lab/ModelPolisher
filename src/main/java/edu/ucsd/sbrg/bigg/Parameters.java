@@ -88,6 +88,11 @@ class Parameters {
   }
 
 
+  private Parameters() {
+    super();
+  }
+
+
   /**
    * 
    */
@@ -99,13 +104,22 @@ class Parameters {
   }
 
 
+  static Parameters get() {
+    if (parameters != null) {
+      return parameters;
+    } else {
+      // this should not happen, abort
+      throw new IllegalStateException("Parameters not initialized");
+    }
+  }
+
+
   /**
    * @param args:
    *        Arguments from commandline
    */
   private void initParameters(SBProperties args) {
-    String documentTitlePattern = null;
-    System.out.println(args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG));
+    String documentTitlePattern = "[biggId] - [organism]";
     if (args.containsKey(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN)) {
       documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
     }
@@ -128,8 +142,7 @@ class Parameters {
     addADBAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
     checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
     noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
-    compression =
-      ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
+    compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
     documentNotesFile = parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
     this.documentTitlePattern = documentTitlePattern;
     fluxCoefficients = coefficients;

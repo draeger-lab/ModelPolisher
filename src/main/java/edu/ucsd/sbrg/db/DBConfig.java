@@ -36,7 +36,7 @@ public class DBConfig {
       try {
         adb = new AnnotateDB(
           new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd != null ? passwd : "", name));
-      } catch (SQLException | ClassNotFoundException exc) {
+      } catch (ClassNotFoundException exc) {
         exc.printStackTrace();
         System.exit(1);
       }

@@ -69,10 +69,6 @@ public class BiGGAnnotation {
    */
   private AnnotateDB adb;
   /**
-   * SBMLPolisher instance, containing methods and booleans used by BiGGAnnotation
-   */
-  private SBMLPolisher polisher;
-  /**
    * A {@link Logger} for this class.
    */
   static final transient Logger logger = Logger.getLogger(BiGGAnnotation.class.getName());
@@ -97,12 +93,10 @@ public class BiGGAnnotation {
   /**
    * @param bigg
    * @param adb
-   * @param polisher
    */
-  public BiGGAnnotation(BiGGDB bigg, AnnotateDB adb, SBMLPolisher polisher) {
+  public BiGGAnnotation(BiGGDB bigg, AnnotateDB adb) {
     this.bigg = bigg;
     this.adb = adb;
-    this.polisher = polisher;
   }
 
 
@@ -136,15 +130,10 @@ public class BiGGAnnotation {
     String organism = bigg.getOrganism(model.getId());
     Integer taxonId = bigg.getTaxonId(model.getId());
     if (taxonId != null) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, polisher.createURI("taxonomy", taxonId)));
+      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, SBMLPolisher.createURI("taxonomy", taxonId)));
     }
-    // Note: date is probably not accurate.
-    // Date date = bigg.getModelCreationDate(model.getId());
-    // if (date != null) {
-    // History history = model.createHistory();
-    // history.setCreatedDate(date);
-    // }
-    String name = polisher.getDocumentTitlePattern();
+    Parameters parameters = Parameters.get();
+    String name = parameters.documentTitlePattern;
     name = name.replace("[biggId]", model.getId());
     name = name.replace("[organism]", organism);
     replacements.put("${title}", name);
@@ -157,7 +146,7 @@ public class BiGGAnnotation {
       model.setName(organism);
     }
     if (bigg.isModel(model.getId())) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, polisher.createURI("bigg.model", model.getId())));
+      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, SBMLPolisher.createURI("bigg.model", model.getId())));
     }
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
@@ -262,7 +251,7 @@ public class BiGGAnnotation {
       String[] resources = new String[numPublications];
       int i = 0;
       for (Pair<String, String> publication : publications) {
-        resources[i++] = polisher.createURI(publication.getKey(), publication.getValue());
+        resources[i++] = SBMLPolisher.createURI(publication.getKey(), publication.getValue());
       }
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
     }
@@ -285,7 +274,7 @@ public class BiGGAnnotation {
   private void annotateCompartment(Compartment compartment) {
     BiGGId biggId = new BiGGId(compartment.getId());
     if (bigg.isCompartment(biggId.getAbbreviation())) {
-      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, polisher.createURI("bigg.compartment", biggId)));
+      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, SBMLPolisher.createURI("bigg.compartment", biggId)));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
         String name = bigg.getCompartmentName(biggId);
@@ -331,7 +320,7 @@ public class BiGGAnnotation {
     }
     // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
     // species.id
-    BiGGId biggId = polisher.extractBiGGId(id);
+    BiGGId biggId = SBMLPolisher.extractBiGGId(id);
     if (biggId == null) {
       return;
     }
@@ -398,7 +387,7 @@ public class BiGGAnnotation {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
       try {
-        species.setName(polisher.polishName(bigg.getComponentName(biggId)));
+        species.setName(SBMLPolisher.polishName(bigg.getComponentName(biggId)));
       } catch (SQLException exc) {
         logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
       }
@@ -423,7 +412,8 @@ public class BiGGAnnotation {
       species.setSBOTerm(SBO.getProtein());
       break;
     default:
-      if (polisher.omitGenericTerms) {
+      Parameters parameters = Parameters.get();
+      if (parameters.omitGenericTerms) {
         species.setSBOTerm(SBO.getMaterialEntity());
       }
       break;
@@ -442,17 +432,18 @@ public class BiGGAnnotation {
     boolean isBiGGMetabolite = bigg.isMetabolite(biggId.getAbbreviation());
     // using BiGG Database
     if (isBiGGMetabolite) {
-      annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
+      annotations_set.add(SBMLPolisher.createURI("bigg.metabolite", biggId));
     }
+    Parameters parameters = Parameters.get();
     try {
-      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
+      TreeSet<String> linkOut = bigg.getResources(biggId, parameters.includeAnyURI, false);
       // convert to set to remove possible duplicates; TreeSet respects order
       annotations_set.addAll(linkOut);
     } catch (SQLException exc) {
       logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
     // using AnnotateDB
-    if (adb != null && isBiGGMetabolite) {
+    if (parameters.addADBAnnotations && adb != null && isBiGGMetabolite) {
       TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.getIdString());
       annotations_set.addAll(adb_annotations);
     }
@@ -542,10 +533,11 @@ public class BiGGAnnotation {
         }
       }
     }
+    Parameters parameters = Parameters.get();
     if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(id)) {
         reaction.setSBOTerm(631);
-      } else if (!polisher.omitGenericTerms) {
+      } else if (!parameters.omitGenericTerms) {
         reaction.setSBOTerm(375); // generic process
       }
     }
@@ -554,17 +546,17 @@ public class BiGGAnnotation {
     }
     // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
     // reaction.id
-    BiGGId biggId = polisher.extractBiGGId(id);
+    BiGGId biggId = SBMLPolisher.extractBiGGId(id);
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
     String name = bigg.getReactionName(id);
     if ((name != null) && !name.equals(reaction.getName())) {
-      reaction.setName(polisher.polishName(name));
+      reaction.setName(SBMLPolisher.polishName(name));
     }
     List<String> geneReactionRules = bigg.getGeneReactionRule(id, reaction.getModel().getId());
     for (String geneRactionRule : geneReactionRules) {
-      SBMLUtils.parseGPR(reaction, geneRactionRule, polisher.omitGenericTerms);
+      SBMLUtils.parseGPR(reaction, geneRactionRule, parameters.omitGenericTerms);
     }
     parseSubsystems(reaction, biggId);
     setCVTermResources(reaction, biggId);
@@ -655,16 +647,17 @@ public class BiGGAnnotation {
     boolean isBiGGReaction = bigg.isReaction(reaction.getId());
     // using BiGG Database
     if (isBiGGReaction) {
-      annotations_set.add(polisher.createURI("bigg.reaction", biggId));
+      annotations_set.add(SBMLPolisher.createURI("bigg.reaction", biggId));
     }
+    Parameters parameters = Parameters.get();
     try {
-      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, true);
+      TreeSet<String> linkOut = bigg.getResources(biggId, parameters.includeAnyURI, true);
       annotations_set.addAll(linkOut);
     } catch (SQLException exc) {
       logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
     // using AnnotateDB
-    if (adb != null && isBiGGReaction) {
+    if (parameters.addADBAnnotations && adb != null && isBiGGReaction) {
       TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.getIdString());
       annotations_set.addAll(adb_annotations);
     }

@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import com.sun.istack.NotNull;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -73,7 +74,7 @@ import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
-import edu.ucsd.sbrg.json.JSONparser;
+import edu.ucsd.sbrg.parsers.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
@@ -113,6 +114,16 @@ public class ModelPolisher extends Launcher {
    * Generated serial version identifier.
    */
   private static final long serialVersionUID = 7745344693995142413L;
+
+  /**
+   * Possible FileTypes of input file
+   */
+  private enum FileType {
+    SBML_FILE,
+    MAT_FILE,
+    JSON_FILE,
+    UNKNOWN
+  }
 
   /**
    * @param args
@@ -157,39 +168,43 @@ public class ModelPolisher extends Launcher {
   @Override
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
-    // Gives users the choice to pass an alternative model notes XHTML file to
-    // the program.
+    // Gives users the choice to pass an alternative model notes XHTML file to the program.
     try {
       batchProcess(new File(args.getProperty(IOOptions.INPUT)), new File(args.getProperty(IOOptions.OUTPUT)), args);
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
     }
-    if (bigg != null) {
-      bigg.closeConnection();
-    }
-    if (adb != null) {
-      adb.closeConnection();
+    // make sure DB connections are closed in case of exception
+    finally {
+      if (bigg != null) {
+        bigg.closeConnection();
+      }
+      if (adb != null) {
+        adb.closeConnection();
+      }
     }
   }
 
 
   /**
-   * @param input
-   * @param output
+   * @param input:
+   *        Path to input file/directory to process
+   * @param output:
+   *        Path to output file/directory
    * @throws IOException
+   *         if input file is not found, or no file is present in input directory
    * @throws XMLStreamException
+   *         propagated from {@link #processFile(File, File, SBProperties)}
    */
-  private void batchProcess(File input, File output, SBProperties args) throws IOException, XMLStreamException {
-    if (input == null || !input.exists()) {
+  private void batchProcess(@NotNull File input, @NotNull File output, @NotNull SBProperties args)
+    throws IOException, XMLStreamException {
+    if (!input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
     parameters = Parameters.init(args);
-    // Create output directory is output is a directory or create output file's directory if output is a file
+    // Create output directory if output is a directory or create output file's directory if output is a file
     checkCreateOutDir(output);
-    if (input.isFile()) {
-      // NOTE: input is a single file, but output can be a file or a directory
-      processFile(input, output, args);
-    } else {
+    if (!input.isFile()) {
       if (!output.isDirectory()) {
         // input == dir && output != dir -> should only happen if already inside a directory and trying to recurse,
         // which is not supported
@@ -198,20 +213,70 @@ public class ModelPolisher extends Launcher {
         return;
       }
       File[] files = input.listFiles();
-      if (files == null) {
-        logger.severe(mpMessageBundle.getString("NO_FILES_ERROR"));
-        return;
+      if (files == null || files.length < 1) {
+        throw new IOException(mpMessageBundle.getString("NO_FILES_ERROR"));
       }
       for (File file : files) {
-        File target;
-        fileType = getFileType(file);
-        if (!fileType.equals(FileType.SBML_FILE)) {
-          target = new File(
-            Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName()) + ".xml");
-        } else {
-          target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
-        }
+        File target = getOutputFileName(file, output);
         batchProcess(file, target, args);
+      }
+    } else {
+      // NOTE: input is a single file, but output can be a file or a directory, i.e. for multimodel files (MAT format)
+      processFile(input, output, args);
+    }
+  }
+
+
+  /**
+   * @param file:
+   *        File to get name for in input directory
+   * @param output:
+   *        Path to output directory
+   * @return File in output directory with correct file ending for SBML
+   */
+  private File getOutputFileName(File file, File output) {
+    fileType = getFileType(file);
+    if (!fileType.equals(FileType.SBML_FILE)) {
+      return new File(
+        Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName()) + ".xml");
+    } else {
+      return new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+    }
+  }
+
+
+  /**
+   * @param output:
+   *        File denoting output location
+   */
+  private void checkCreateOutDir(File output) {
+    logger.info(format(mpMessageBundle.getString("OUTPUT_FILE_DESC"), isDirectory(output) ? "directory" : "file"));
+    /*
+     * ModelPolisher.isDirectory() checks if output location contains ., if so it is assumed to be a file,
+     * else it is assumed to be a directory
+     */
+    // output is directory
+    if (isDirectory(output) && !output.exists()) {
+      logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
+      if (output.mkdirs()) {
+        logger.fine(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
+      } else {
+        logger.severe(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
+        exit();
+      }
+    }
+    // output is a file
+    else {
+      // check if directory of outfile exist and create if required
+      if (!output.getParentFile().exists()) {
+        logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
+        if (output.getParentFile().mkdirs()) {
+          logger.fine(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
+        } else {
+          logger.severe(
+            format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
+          exit();
+        }
       }
     }
   }
@@ -230,83 +295,39 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param output
-   */
-  private void checkCreateOutDir(File output) {
-    logger.info(format(mpMessageBundle.getString("OUTPUT_FILE_DESC"), isDirectory(output) ? "directory" : "file"));
-    /*
-     * output = d1/d2/d3 is taken as a file by method output.isDirectory()
-     * Check if output is directory by checking presence or '.' in output.getName() -> use method
-     * ModelPolisher.isDirectory(File file)
-     */
-    if (isDirectory(output) && !output.exists()) {
-      logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
-      if (output.mkdirs()) {
-        logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
-      } else {
-        logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
-        exit();
-      }
-    }
-    // output is a file
-    else {
-      // check if directory of file exist and create if required
-      if (!output.getParentFile().exists()) {
-        logger.info(format(mpMessageBundle.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
-        if (output.getParentFile().mkdirs()) {
-          logger.info(format(mpMessageBundle.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
-        } else {
-          logger.info(
-            format(mpMessageBundle.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
-          exit();
-        }
-      }
-    }
-  }
-
-
-  /**
    * @param input:
    *        input file
    * @param output:
    *        output file or directory
-   * @param args
+   * @param args:
+   *        SBProperties, i.e. commandline arguments
    * @throws XMLStreamException
+   *         propagated from {@link #readAndPolish(File, File)}
    * @throws IOException
+   *         propagated from {@link #readAndPolish(File, File)}
    */
   private void processFile(File input, File output, SBProperties args) throws XMLStreamException, IOException {
     // get fileType array and check if any value is true
     fileType = getFileType(input);
     if (fileType.equals(FileType.UNKNOWN)) {
+      // TODO: move into resources for internationalization
+      logger.warning(format("Encountered file of unknown type in input : \"{0}\", skipping.", input.getPath()));
       return;
     }
     if (output.isDirectory()) {
-      String fName = input.getName();
-      if (!fileType.equals(FileType.SBML_FILE)) {
-        fName = FileTools.removeFileExtension(fName) + ".xml";
-      }
-      output = new File(Utils.ensureSlash(output.getAbsolutePath()) + fName);
+      output = getOutputFileName(input, output);
     }
     bigg = DBConfig.getBiGG(args, parameters.annotateWithBiGG);
     adb = DBConfig.getADB(args, parameters.addADBAnnotations);
     readAndPolish(input, output);
   }
 
-  /**
-   * Possible FileTypes of input file
-   */
-  private enum FileType {
-    SBML_FILE,
-    MAT_FILE,
-    JSON_FILE,
-    UNKNOWN
-  }
 
   /**
    * Get file type from input file
    *
    * @param input
-   *        File used in {@link #batchProcess}
+   *        File used in {@link #batchProcess(File, File, SBProperties)}
    * @return FileType of given file, only SBML, MatLab and JSON files are supported
    */
   private FileType getFileType(File input) {
@@ -323,10 +344,14 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param input
-   * @param output
+   * @param input:
+   *        Input file in either SBML, MAT or JSON format
+   * @param output:
+   *        Output file in SBML format
    * @throws XMLStreamException
+   *         propagated from {@link #polish(SBMLDocument, File)}
    * @throws IOException
+   *         propagated from {@link #polish(SBMLDocument, File)}
    */
   private void readAndPolish(File input, File output) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
@@ -419,76 +444,20 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    */
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
-    if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
-      SBMLtools.setLevelAndVersion(doc, 3, 1);
-    }
+    checkLevelAndVersion(doc);
     // Polishing
-    SBMLPolisher polisher = new SBMLPolisher();
-    polisher.setCheckMassBalance(parameters.checkMassBalance);
-    polisher.setOmitGenericTerms(parameters.omitGenericTerms);
-    if (parameters.includeAnyURI != null) {
-      polisher.setIncludeAnyURI(parameters.includeAnyURI);
-    }
-    if (parameters.documentTitlePattern != null) {
-      polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
-    }
-    polisher.setFluxCoefficients(parameters.fluxCoefficients);
-    polisher.setFluxObjectives(parameters.fluxObjectives);
+    SBMLPolisher polisher = setPolisherParameters();
     doc = polisher.polish(doc);
     // Annotation
     if (parameters.annotateWithBiGG) {
-      BiGGAnnotation annotation = new BiGGAnnotation(bigg, adb, polisher);
-      if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
-        annotation.setDocumentNotesFile(null);
-        annotation.setModelNotesFile(null);
-      } else {
-        if (parameters.documentNotesFile != null) {
-          annotation.setDocumentNotesFile(parameters.documentNotesFile);
-        }
-        if (parameters.modelNotesFile != null) {
-          annotation.setModelNotesFile(parameters.modelNotesFile);
-        }
-      }
+      BiGGAnnotation annotation = setAnnotationParameters(polisher);
       doc = annotation.annotate(doc);
     }
     // producing & writing glossary
-    String glossary = getGlossary(doc);
-    String glossaryLocation =
-      output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + "_glossary.rdf";
-    logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
-    writeTidyRDF(new File(glossaryLocation), glossary);
-    // writing polished model
-    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+    writeGlossary(doc, output);
     // produce COMBINE archive and delete output model and glossary
     if (parameters.outputCOMBINE) {
-      try {
-        String combineArcLocation =
-          output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + ".zip";
-        File caFile = new File(combineArcLocation);
-        if (caFile.exists()) {
-          caFile.delete();
-        }
-        CombineArchive ca = new CombineArchive(caFile);
-        File outputXML = new File(output.getAbsolutePath());
-        File outputRDF = new File(glossaryLocation);
-        ca.addEntry(outputXML, "model.xml", new URI("http://identifiers.org/combine.specifications/sbml"), true);
-        ca.addEntry(outputRDF, "glossary.rdf",
-          // generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
-          new URI("http://purl.org/NET/mediatypes/application/rdf+xml"), true);
-        logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), combineArcLocation));
-        ca.pack();
-        ca.close();
-        boolean rdfDeleted = outputRDF.delete();
-        boolean outputXMLDeleted = outputXML.delete();
-        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
-          outputXML.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')), outputXMLDeleted));
-        logger.info(format(mpMessageBundle.getString("DELETE_FILE"),
-          outputRDF.getAbsolutePath().substring(outputXML.getAbsolutePath().lastIndexOf('/')), rdfDeleted));
-      } catch (Exception e) {
-        logger.warning("Exception to produce COMBINE Archive: " + e.toString());
-      }
+      writeCombineArchive(output);
     }
     if (parameters.compression != Compression.NONE) {
       String fileExtension = parameters.compression.getFileExtension();
@@ -512,7 +481,125 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param doc
+   * Make sure SBML Level and Version are 3.1, so that needed plugins work
+   * 
+   * @param doc:
+   *        SBMLDocument
+   */
+  private void checkLevelAndVersion(SBMLDocument doc) {
+    if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+      logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
+      SBMLtools.setLevelAndVersion(doc, 3, 1);
+    }
+  }
+
+
+  /**
+   * @return SBMLPolisher object with all relevant paramters set
+   */
+  private SBMLPolisher setPolisherParameters() {
+    SBMLPolisher polisher = new SBMLPolisher();
+    polisher.setCheckMassBalance(parameters.checkMassBalance);
+    polisher.setOmitGenericTerms(parameters.omitGenericTerms);
+    if (parameters.includeAnyURI != null) {
+      polisher.setIncludeAnyURI(parameters.includeAnyURI);
+    }
+    if (parameters.documentTitlePattern != null) {
+      polisher.setDocumentTitlePattern(parameters.documentTitlePattern);
+    }
+    polisher.setFluxCoefficients(parameters.fluxCoefficients);
+    polisher.setFluxObjectives(parameters.fluxObjectives);
+    return polisher;
+  }
+
+
+  /**
+   * @param polisher:
+   *        SBMLPolisher Object to extract relevant options from
+   * @return BiGGAnnotation object used for annotation with BiGG
+   */
+  private BiGGAnnotation setAnnotationParameters(SBMLPolisher polisher) {
+    BiGGAnnotation annotation = new BiGGAnnotation(bigg, adb);
+    if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
+      annotation.setDocumentNotesFile(null);
+      annotation.setModelNotesFile(null);
+    } else {
+      if (parameters.documentNotesFile != null) {
+        annotation.setDocumentNotesFile(parameters.documentNotesFile);
+      }
+      if (parameters.modelNotesFile != null) {
+        annotation.setModelNotesFile(parameters.modelNotesFile);
+      }
+    }
+    return annotation;
+  }
+
+
+  /**
+   * @param doc:
+   *        SBMLDocument to write glossary for
+   * @param output:
+   *        File SBMLDocument is written to
+   * @throws XMLStreamException:
+   *         propagated from {@link #getGlossary(SBMLDocument)} and #TidySBMLWriter.write
+   * @throws IOException:
+   *         propagated from {@link #writeTidyRDF(File, String)}
+   */
+  private void writeGlossary(SBMLDocument doc, File output) throws XMLStreamException, IOException {
+    String glossary = getGlossary(doc);
+    String glossaryLocation =
+      output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + "_glossary.rdf";
+    logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
+    writeTidyRDF(new File(glossaryLocation), glossary);
+    // writing polished model
+    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
+  }
+
+
+  /**
+   * @param output:
+   *        Output SBML file, location is used to get archive files
+   */
+  private void writeCombineArchive(File output) {
+    try {
+      String baseLocation = output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.'));
+      String glossaryLocation = baseLocation + "_glossary.rdf";
+      String combineArcLocation = baseLocation + ".zip";
+      // check if archive file exists and delete
+      File caFile = new File(combineArcLocation);
+      if (caFile.exists()) {
+        if (!caFile.delete()) {
+          logger.severe(format("Failed to delete archive file \"{0}\"", caFile.getPath()));
+        }
+      }
+      // build and pack archive
+      CombineArchive ca = new CombineArchive(caFile);
+      File outputXML = new File(output.getAbsolutePath());
+      File outputRDF = new File(glossaryLocation);
+      ca.addEntry(outputXML, "model.xml", new URI("http://identifiers.org/combine.specifications/sbml"), true);
+      ca.addEntry(outputRDF, "glossary.rdf",
+        // generated from https://sems.uni-rostock.de/trac/combine-ext/wiki/CombineFormatizer
+        new URI("http://purl.org/NET/mediatypes/application/rdf+xml"), true);
+      logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), combineArcLocation));
+      ca.pack();
+      ca.close();
+      // clean up original of packed files
+      boolean rdfDeleted = outputRDF.delete();
+      boolean outputXMLDeleted = outputXML.delete();
+      logger.info(format(mpMessageBundle.getString("DELETE_FILE"), outputXML.getParent(), outputXMLDeleted));
+      logger.info(format(mpMessageBundle.getString("DELETE_FILE"), outputRDF.getParent(), rdfDeleted));
+    } catch (Exception e) {
+      logger.warning("Exception while producing COMBINE Archive:");
+      e.printStackTrace();
+    }
+  }
+
+
+  /**
+   * @param doc:
+   *        SBMLDocument to produce glossary for
+   * @return Glossary as XMLString or empty string, if either model is null or has no children
    */
   private String getGlossary(SBMLDocument doc) throws XMLStreamException {
     SBMLRDFAnnotationParser rdfParser = new SBMLRDFAnnotationParser();
@@ -557,8 +644,7 @@ public class ModelPolisher extends Launcher {
    * @param outputFile,
    *        rdfString
    */
-  private void writeTidyRDF(File outputFile, String rdfString)
-    throws FileNotFoundException, UnsupportedEncodingException {
+  private void writeTidyRDF(File outputFile, String rdfString) throws FileNotFoundException {
     Tidy tidy = new Tidy(); // obtain a new Tidy instance
     tidy.setDropEmptyParas(false);
     tidy.setHideComments(false);
@@ -608,8 +694,6 @@ public class ModelPolisher extends Launcher {
 
 
   /*
-   * if(iStream == null){
-   * }
    * (non-Javadoc)
    * @see de.zbit.Launcher#getCitation(boolean)
    */
