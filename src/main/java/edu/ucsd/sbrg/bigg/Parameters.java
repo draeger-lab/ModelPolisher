@@ -84,12 +84,8 @@ class Parameters {
    * 
    */
   private Parameters(SBProperties args) {
-    initParameters(args);
-  }
-
-
-  private Parameters() {
     super();
+    initParameters(args);
   }
 
 

@@ -107,13 +107,13 @@ public interface ModelPolisherOptions extends KeyProvider {
    * 
    */
   @SuppressWarnings("unchecked")
-  Option<Double[]> FLUX_COEFFICIENTS = new Option<>("FLUX_COEFFICIENTS", (Class<Double[]>) (new Double[0]).getClass(),
+  Option<Double[]> FLUX_COEFFICIENTS = new Option<>("FLUX_COEFFICIENTS", Double[].class,
     mpMessageBundle.getString("FLUX_COEFF_DESC"), new Double[0]);
   /**
    * 
    */
   @SuppressWarnings("unchecked")
-  Option<String[]> FLUX_OBJECTIVES = new Option<>("FLUX_OBJECTIVES", (Class<String[]>) (new String[0]).getClass(),
+  Option<String[]> FLUX_OBJECTIVES = new Option<>("FLUX_OBJECTIVES", String[].class,
     mpMessageBundle.getString("FLUX_OBJ_DESC"), new String[0]);
   /**
    * Decides whether or not the output file should directly be compressed and if

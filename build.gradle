@@ -119,6 +119,7 @@ if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
         replaceVersion("docker/java_docker/Dockerfile")
         replaceVersion(".travis.yml")
+        replaceVersion("README.md")
         replaceVersion("./src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
@@ -127,11 +128,10 @@ if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
 def replaceVersion(path) {
     ArrayList<String> content = new ArrayList<>()
     File travisFile = new File(path)
-    String MPVersion = /ModelPolisher.*\d{1,2}(.\d{1,2}){1,2}.jar/
+    String MPVersion = /ModelPolisher-(.*?)\d{1,2}(.\d{1,2}){1,2}.jar/
     travisFile.eachLine {
         line ->
-            content.add(line.replaceAll(MPVersion, "ModelPolisher-" +
-                    "${version}.jar"))
+            content.add(line.replaceAll(MPVersion, "ModelPolisher-" + "${version}.jar"))
     }
     BufferedWriter writer = new BufferedWriter(new FileWriter(travisFile))
     content.each {
