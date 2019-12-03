@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db;
 
 final class BiGGDBContract {
 

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db;
 
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
@@ -14,7 +14,7 @@ import org.sbml.jsbml.util.StringTools;
 /**
  * Created by mephenor on 05.05.17.
  */
-public class PostgreSQLConnector extends SQLConnector {
+class PostgreSQLConnector extends SQLConnector {
 
   private enum Keys {
     /**

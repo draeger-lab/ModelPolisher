@@ -12,7 +12,7 @@
  * <http://www.gnu.org/licenses/lgpl-3.0-standalone.html>.
  * ---------------------------------------------------------------------
  */
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db;
 
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 
