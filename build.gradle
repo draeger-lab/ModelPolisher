@@ -48,9 +48,21 @@ test {
     }
 }
 
+// get latest version of MIRIAM registry
+task downloadMIRIAM(){
+    doFirst{
+        String registry = new URL("https://registry.api.identifiers.org/resolutionApi/getResolverDataset").getText()
+        File registryFile = new File("src/main/resources/edu/ucsd/sbrg/miriam/IdentifiersOrg-Registry.json")
+        BufferedWriter writer = new BufferedWriter(new FileWriter(registryFile))
+        writer.write(registry)
+        writer.close()
+    }
+}
+
 // config for all jar tasks
 tasks.withType(Jar) {
     dependsOn test
+    dependsOn downloadMIRIAM
     destinationDir = file("$rootDir/target")
     manifest {
         attributes(
@@ -79,12 +91,11 @@ task lightJar(type: Jar) {
 
 //build docker container
 task devel(type: Exec){
-    commandLine "echo", ""+project.version
-    commandLine "sh", "-c", "cp target/ModelPolisher-" + version + ".jar docker/java_docker && " +
+    commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
             "export COMPOSE_FILE=docker-compose.devel.yml && " +
             "docker-compose pull && " +
             "docker-compose build && " +
-            "rm docker/java_docker/ModelPolisher-" + version + ".jar"
+            "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
     dependsOn lightJar
 }
 
