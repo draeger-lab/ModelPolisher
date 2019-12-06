@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.ucsd.sbrg.cobra;
+package edu.ucsd.sbrg.parsers;
 
 /**
  * For more information about COBRA model fields, see the following

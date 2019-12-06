@@ -68,7 +68,7 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
-import edu.ucsd.sbrg.cobra.COBRAparser;
+import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.db.ADBOptions;
 import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
