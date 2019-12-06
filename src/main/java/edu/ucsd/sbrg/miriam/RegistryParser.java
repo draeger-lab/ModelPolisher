@@ -1,17 +1,30 @@
 package edu.ucsd.sbrg.miriam;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.ucsd.sbrg.miriam.xjc.Miriam;
+import edu.ucsd.sbrg.miriam.models.Miriam;
+import edu.ucsd.sbrg.miriam.models.Namespace;
+import edu.ucsd.sbrg.miriam.models.Root;
 
 public class RegistryParser {
 
+  private static final Logger logger = Logger.getLogger(RegistryParser.class.getName());
   private static RegistryParser parser;
   private static URL registryLocation;
+
+  private RegistryParser() {
+    super();
+    registryLocation = RegistryParser.class.getResource("IdentifiersOrg-Registry.json");
+  }
 
 
   public static RegistryParser getInstance() {
@@ -22,17 +35,14 @@ public class RegistryParser {
   }
 
 
-  Miriam parse() throws JAXBException {
-    // stax/sax parser might be more efficient, as we only need a subset of the data
-    // we parse the whole tree for now
-    JAXBContext ctx = JAXBContext.newInstance(Miriam.class);
-    Unmarshaller unmarshaller = ctx.createUnmarshaller();
-    return (Miriam) unmarshaller.unmarshal(registryLocation);
-  }
-
-
-  private RegistryParser() {
-    super();
-    registryLocation = RegistryParser.class.getResource("IdentifiersOrg-Registry.xml");
+  Miriam parse() throws URISyntaxException, IOException {
+    logger.fine("Parsing MIRIAM registry");
+    File json = Paths.get(registryLocation.toURI()).toFile();
+    ObjectMapper mapper = new ObjectMapper();
+    Root root = mapper.readValue(json, Root.class);
+    List<Namespace> namespaces = root.getPayload().get("namespaces");
+    HashMap<String, Namespace> prefixIndexedNamespaces = new HashMap<>();
+    namespaces.forEach(x -> prefixIndexedNamespaces.put(x.getPrefix(), x));
+    return Miriam.initFrom(prefixIndexedNamespaces);
   }
 }

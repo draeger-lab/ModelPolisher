@@ -1,15 +1,13 @@
 package edu.ucsd.sbrg.miriam;
 
+import edu.ucsd.sbrg.miriam.models.Miriam;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import edu.ucsd.sbrg.miriam.xjc.Miriam;
-import edu.ucsd.sbrg.miriam.xjc.Uri;
-import edu.ucsd.sbrg.miriam.xjc.Uris;
 
 public class Registry {
 

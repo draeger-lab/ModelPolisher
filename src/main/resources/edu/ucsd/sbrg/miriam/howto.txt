@@ -1,1 +1,0 @@
-Run "LANG=en_US.UTF-8 xjc -d ../../../../../src -p edu.ucsd.sbrg.miriam.xjc MiriamXML.xsd" to generate all classes according to the miriam schema.
