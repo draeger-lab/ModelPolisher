@@ -1,15 +1,9 @@
-/**
- * 
- */
 package edu.ucsd.sbrg.bigg;
 
-import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
-import static java.text.MessageFormat.format;
-
-import java.util.StringTokenizer;
+import java.util.Optional;
 import java.util.logging.Logger;
-
-import de.zbit.util.Utils;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class stores the information from BiGG identifiers and provides methods
@@ -28,25 +22,58 @@ public class BiGGId {
    */
   private static final transient Logger logger = Logger.getLogger(BiGGId.class.getName());
   /**
-   * 
-   */
-  private String abbreviation;
-  /**
-   * 
-   */
-  private String compartmentCode;
-  /**
-   * 
+   * First part of BiGG ID, either R, M or G
    */
   private String prefix;
   /**
-   * 
+   * Second part of BiGG ID, matches [a-zA-Z0-9][a-zA-Z0-9_]+[a-zA-Z0-9]
+   */
+  private String abbreviation;
+  /**
+   * Third part of BiGG ID, matches [a-z][a-z0-9]? and exists for compartmentalized metabolites
+   */
+  private String compartmentCode;
+  /**
+   * Fourth part of BiGG ID, matches [A-Z][A-Z0-9]
    */
   private String tissueCode;
   /**
    *
    */
   private String id;
+
+  /**
+   *
+   */
+  enum IDPattern {
+
+    ATPM("[Aa][Tt][Pp][Mm]"),
+    BIOMASS("([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
+    COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
+    PSEUDO("([Ee][Xx]_)|([Ds][Mm]_)|([Ss][Kk]_)"),
+    UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)" + "(?:_(?<compartment>[a-z][a-z0-9]?))?"
+      + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
+
+    /**
+     *
+     */
+    private final Pattern pattern;
+
+    /**
+     * @param pattern
+     */
+    IDPattern(String pattern) {
+      this.pattern = Pattern.compile(pattern);
+    }
+
+
+    /**
+     * @return
+     */
+    Pattern get() {
+      return pattern;
+    }
+  }
 
   /**
    * 
@@ -74,10 +101,70 @@ public class BiGGId {
    */
   public BiGGId(String prefix, String abbreviation, String compartmentCode, String tissueCode) {
     this();
-    setConstructorPrefix(prefix);
-    setCheckAbbreviation(abbreviation);
-    setCheckCompartmentCode(compartmentCode);
-    setCheckTissueCode(tissueCode);
+    String id = toBiGGId(prefix, abbreviation, compartmentCode, tissueCode);
+    this.id = id;
+    parseBiGGId(id);
+  }
+
+
+  /**
+   * @param id
+   *        the identifier to be parsed into a bigg_id.
+   */
+  private void parseBiGGId(String id) {
+    String originalId = id;
+    id = id.replaceAll("-", "__").replaceAll("\\(", "_LPAREN_").replaceAll("\\)", "_RPAREN_")
+           .replaceAll("\\[", "_LBRACKET").replaceAll("\\]", "_RBRACKET");
+    Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
+    if (matcher.matches()) {
+      handleNormalId(id, matcher);
+    } else {
+      handleSpecialCases(id);
+    }
+  }
+
+
+  /**
+   * @param id
+   */
+  private void handleNormalId(String id, Matcher matcher) {
+    String prefix = matcher.group("prefix");
+    setPrefix(prefix);
+    String abbreviation = matcher.group("abbreviation");
+    setAbbreviation(abbreviation);
+    String compartment = matcher.group("compartment");
+    setCompartmentCode(compartment);
+    String tissueCode = matcher.group("tissueCode");
+    setTissueCode(tissueCode);
+  }
+
+
+  /**
+   * @param id
+   */
+  private void handleSpecialCases(String id) {
+    Matcher pseudoreactionMatcher = IDPattern.PSEUDO.get().matcher(id);
+    Matcher biomassMatcher = IDPattern.BIOMASS.get().matcher(id);
+    Matcher atpmMatcher = IDPattern.ATPM.get().matcher(id);
+    Matcher compartmentMatcher = IDPattern.COMPARTMENT.get().matcher(id);
+    if (pseudoreactionMatcher.find()) {
+      String prefix = id.substring(0, 2);
+      setPrefix(prefix.toUpperCase());
+      String abbreviation = id.substring(3);
+      setAbbreviation(abbreviation);
+    } else if (biomassMatcher.matches()) {
+      String prefix = biomassMatcher.group(1);
+      setPrefix(prefix);
+      String abbreviation = biomassMatcher.group(2);
+      setAbbreviation(abbreviation);
+    } else if (atpmMatcher.matches()) {
+      setAbbreviation("ATPM");
+    } else if (compartmentMatcher.matches()) {
+      setAbbreviation(id);
+    } else {
+      logger.warning(String.format("Cannot convert to BiGGId, setting as abbreviation: %s", id));
+      setAbbreviation(id);
+    }
   }
 
 
@@ -124,6 +211,7 @@ public class BiGGId {
       return tissueCode.equals(other.tissueCode);
   }
 
+
   /**
    * @return the abbreviation
    */
@@ -141,10 +229,41 @@ public class BiGGId {
 
 
   /**
+   * <ul>
+   * <li>Only contain upper and lower case letters, numbers, and underscores
+   * <li>/[0-9a-zA-Z][a-zA-Z0-9_]+/, only ASCII and don't start with numbers
+   * <li>When converting old BIGG IDs to BIGG2 IDs, replace a dash with two
+   * underscores. For example, ala-L becomes ala__L.
+   * <li>Reactions should be all upper case. Metabolites should be primarily
+   * lower case, but upper case letters are allowed (ala__L is preferred to
+   * ALA__L).
+   * </ul>
+   *
+   * @param abbreviation
+   *        the abbreviation to set
+   */
+  public void setAbbreviation(String abbreviation) {
+    this.abbreviation = abbreviation;
+  }
+
+
+  /**
    * @return the compartmentCode
    */
   public String getCompartmentCode() {
     return isSetCompartmentCode() ? compartmentCode : "";
+  }
+
+
+  /**
+   * One or two characters in length, and contain only lower case letters and
+   * numbers, and must begin with a lower case letter. /[a-z][a-z0-9]?/
+   *
+   * @param compartmentCode
+   *        the compartmentCode to set
+   */
+  public void setCompartmentCode(String compartmentCode) {
+    this.compartmentCode = compartmentCode;
   }
 
 
@@ -157,10 +276,40 @@ public class BiGGId {
 
 
   /**
+   * <ul>
+   * <li>R: reaction
+   * <li>M: metabolite /[RM]/
+   * <li>NOTE: Do we want to have the id entity use R and M, and just remove
+   * them when constructing the model, or have them just as
+   * [abbreviation]_[compartment code] and add the prefix when they are put
+   * into SBML models? Also SBML id's use capital letters (/[RM]/).
+   * </ul>
+   *
+   * @param prefix
+   *        the prefix to set
+   */
+  public void setPrefix(String prefix) {
+    this.prefix = prefix;
+  }
+
+
+  /**
    * @return the tissueCode
    */
   public String getTissueCode() {
     return isSetTissueCode() ? tissueCode : "";
+  }
+
+
+  /**
+   * One or two characters in length, and contain only upper case letters and
+   * numbers, and must begin with an upper case letter. /[A-Z][A-Z0-9]?/
+   *
+   * @param tissueCode
+   *        the tissueCode to set
+   */
+  public void setTissueCode(String tissueCode) {
+    this.tissueCode = tissueCode;
   }
 
 
@@ -213,234 +362,6 @@ public class BiGGId {
 
 
   /**
-   * @param id
-   *        the identifier to be parsed into a bigg_id.
-   */
-  private void parseBiGGId(String id) {
-    String biggId = id;
-    id = setParsedPrefix(id);
-    id = id.replace("__", "-");
-    if (id.matches(".*-[a-z][a-z0-9]?")) {
-      id = id.substring(0, id.lastIndexOf('-')) + '-' + biggId.substring(biggId.lastIndexOf('_'));
-    }
-    StringTokenizer st = new StringTokenizer(id, "_");
-    while (st.hasMoreElements()) {
-      String elem = st.nextElement().toString();
-      if (!isSetAbbreviation()) {
-        setAbbreviation(elem.replace("-", "__"));
-        continue;
-      }
-      if (!isSetCompartmentCode()) {
-        setCheckCompartmentCode(biggId, elem);
-        continue;
-      }
-      if (!isSetTissueCode()) {
-        try {
-          setTissueCode(elem);
-        } catch (IllegalArgumentException exc) {
-          // This is not a problem, we have the chance to fix it right
-          // away.
-          logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId, Utils.getMessage(exc)));
-          if (isSetCompartmentCode()) {
-            setAbbreviation(getAbbreviation() + '_' + getCompartmentCode());
-          }
-          setCheckCompartmentCode(biggId, elem);
-        }
-        continue;
-      }
-      if (elem.length() > 0) {
-        throw new IllegalArgumentException(format(mpMessageBundle.getString("ID_COMPONENT_UNKNOWN"), elem));
-      }
-    }
-  }
-
-
-  /**
-   * @param CompartmentCode
-   */
-  public void setCheckCompartmentCode(String CompartmentCode) {
-    try {
-      setCompartmentCode(CompartmentCode);
-    } catch (IllegalArgumentException exc) {
-      logger.finer(format(mpMessageBundle.getString("SET_COMPART_CODE_FAILED"), Utils.getMessage(exc)));
-    }
-  }
-
-
-  /**
-   * @param biggId
-   * @param elem
-   * @return
-   */
-  public void setCheckCompartmentCode(String biggId, String elem) {
-    try {
-      setCompartmentCode(elem);
-    } catch (IllegalArgumentException exc) {
-      // this is not a warning because we try to fix the problem right away.
-      logger.finer(format(mpMessageBundle.getString("PARSE_ID_FAILED"), biggId, Utils.getMessage(exc)));
-      if (isSetCompartmentCode()) {
-        unsetCompartmentCode();
-      }
-      if (elem.endsWith("-")) {
-        elem = elem.substring(0, elem.length() - 1) + '_';
-      }
-      setCheckAbbreviation(getAbbreviation() + "_" + elem.replace("-", "__"));
-    }
-  }
-
-
-  /**
-   * @param abbreviation
-   */
-  public void setCheckAbbreviation(String abbreviation) {
-    try {
-      setAbbreviation(abbreviation);
-    } catch (IllegalArgumentException exc) {
-      logger.fine(format(mpMessageBundle.getString("SET_ABREV_FAILED"), Utils.getMessage(exc)));
-    }
-  }
-
-
-  /**
-   * <ul>
-   * <li>Only contain upper and lower case letters, numbers, and underscores
-   * <li>/[0-9a-zA-Z][a-zA-Z0-9_]+/, only ASCII and don't start with numbers
-   * <li>When converting old BIGG IDs to BIGG2 IDs, replace a dash with two
-   * underscores. For example, ala-L becomes ala__L.
-   * <li>Reactions should be all upper case. Metabolites should be primarily
-   * lower case, but upper case letters are allowed (ala__L is preferred to
-   * ALA__L).
-   * </ul>
-   * 
-   * @param abbreviation
-   *        the abbreviation to set
-   */
-  public void setAbbreviation(String abbreviation) {
-    if (abbreviation.matches("[\\w&&[^_]][\\w]*")) {
-      this.abbreviation = abbreviation;
-    } else {
-      throw new IllegalArgumentException(format(mpMessageBundle.getString("ABREV_INVALID"), abbreviation));
-    }
-  }
-
-
-  /**
-   * One or two characters in length, and contain only lower case letters and
-   * numbers, and must begin with a lower case letter. /[a-z][a-z0-9]?/
-   * 
-   * @param compartmentCode
-   *        the compartmentCode to set
-   */
-  public void setCompartmentCode(String compartmentCode) {
-    if (compartmentCode.matches("[a-z][a-z0-9]?")) {
-      this.compartmentCode = compartmentCode;
-    } else {
-      throw new IllegalArgumentException(format(mpMessageBundle.getString("COMPART_CODE_INVALID"), compartmentCode));
-    }
-  }
-
-
-  /**
-   * @param id
-   * @return
-   */
-  public String setParsedPrefix(String id) {
-    String prefix = "";
-    if (id.startsWith("R_")) {
-      if (id.matches("R_[Ee][Xx]_.*") || id.matches("R_[Dd][Mm]_.*")) {
-        prefix = id.substring(0, 4);
-        id = id.substring(5);
-      } else if (id.matches("R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]_.*")) {
-        prefix = id.substring(0, 9);
-        id = id.substring(10);
-      } else {
-        prefix = "R";
-        id = id.substring(2);
-      }
-    } else if (id.startsWith("M_") || id.startsWith("G_")) {
-      prefix = id.substring(0, 1);
-      id = id.substring(2);
-    } else {
-      logger.fine(format(mpMessageBundle.getString("ID_PREFIX_UNKNOWN"), id));
-    }
-    try {
-      setPrefix(prefix);
-    } catch (IllegalArgumentException exc) {
-      logger.fine(format(mpMessageBundle.getString("SET_PREFIX_FAILED"), id));
-    }
-    return id;
-  }
-
-
-  /**
-   * @param prefix
-   * @return
-   */
-  public void setConstructorPrefix(String prefix) {
-    if (prefix.matches("[RMG]|R_[Ee][Xx]|R_[Dd][Mm]|R_[Bb][Ii][Oo][Mm][Aa][Ss][Ss]")) {
-      try {
-        setPrefix(prefix);
-      } catch (IllegalArgumentException exc) {
-        logger.fine(format(mpMessageBundle.getString("SET_PREFIX_FAILED"), prefix));
-      }
-    } else {
-      logger.fine(format(mpMessageBundle.getString("PREFIX_UNKNOWN"), prefix));
-    }
-  }
-
-
-  /**
-   * <ul>
-   * <li>R: reaction
-   * <li>M: metabolite /[RM]/
-   * <li>NOTE: Do we want to have the id entity use R and M, and just remove
-   * them when constructing the model, or have them just as
-   * [abbreviation]_[compartment code] and add the prefix when they are put
-   * into SBML models? Also SBML id's use capital letters (/[RM]/).
-   * </ul>
-   * 
-   * @param prefix
-   *        the prefix to set
-   */
-  public void setPrefix(String prefix) {
-    if (prefix.matches("[RrMmGg](_.*)?")) {
-      // TODO refine the pattern.
-      this.prefix = prefix;
-    } else {
-      throw new IllegalArgumentException(format("Invalid prefix: ''{0}''", prefix));
-    }
-  }
-
-
-  /**
-   * 
-   */
-  public void setCheckTissueCode(String tissueCode) {
-    try {
-      setTissueCode(tissueCode);
-    } catch (IllegalArgumentException exc) {
-      logger.finer(format(mpMessageBundle.getString("SET_TISS_CODE_FAILED"), Utils.getMessage(exc)));
-    }
-  }
-
-
-  /**
-   * One or two characters in length, and contain only upper case letters and
-   * numbers, and must begin with an upper case letter. /[A-Z][A-Z0-9]?/
-   * 
-   * @param tissueCode
-   *        the tissueCode to set
-   */
-  public void setTissueCode(String tissueCode) {
-    if (tissueCode.matches("[A-Z][A-Z0-9]?")) {
-      this.tissueCode = tissueCode;
-    } else {
-      throw new IllegalArgumentException(format(mpMessageBundle.getString("TISS_CODE_INVALID"), tissueCode));
-    }
-  }
-
-
-  /**
    * Generates an actual BiGG id for this object.
    * 
    * @return
@@ -467,6 +388,38 @@ public class BiGGId {
         sb.append('_');
       }
       sb.append(getTissueCode());
+    }
+    return sb.toString();
+  }
+
+
+  /**
+   * Generates an actual BiGG id for this object.
+   *
+   * @return
+   */
+  public String toBiGGId(String prefix, String abbreviation, String compartmentCode, String tissueCode) {
+    StringBuilder sb = new StringBuilder();
+    if (!Optional.ofNullable(prefix).orElse("").isEmpty()) {
+      sb.append(prefix);
+    }
+    if (!Optional.ofNullable(abbreviation).orElse("").isEmpty()) {
+      if (sb.length() > 0) {
+        sb.append('_');
+      }
+      sb.append(abbreviation);
+    }
+    if (!Optional.ofNullable(compartmentCode).orElse("").isEmpty()) {
+      if (sb.length() > 0) {
+        sb.append('_');
+      }
+      sb.append(compartmentCode);
+    }
+    if (!Optional.ofNullable(tissueCode).orElse("").isEmpty()) {
+      if (sb.length() > 0) {
+        sb.append('_');
+      }
+      sb.append(tissueCode);
     }
     return sb.toString();
   }

@@ -11,7 +11,6 @@ version = "2.0.1"
 sourceSets {
     main.java.srcDirs = ["src/main/java"]
     main.resources.srcDirs = ["src/main/resources"]
-    main.resources.excludes = ["**/bigg.zip"]
     test.java.srcDirs = ["src/test/java"]
 }
 
@@ -43,15 +42,21 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
 }
 
+test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
 // config for all jar tasks
 tasks.withType(Jar) {
     dependsOn test
     destinationDir = file("$rootDir/target")
     manifest {
         attributes(
-                "Version": version,
+                "Version": project.version,
                 "Implementation-Title": "ModelPolisher",
-                "Implementation-Version": version,
+                "Implementation-Version": project.version,
                 "Specification-Vendor": "University of California, San Diego",
                 "Specification-Title": "ModelPolisher",
                 "Implementation-Vendor-Id": "edu.ucsd.sbrg",
@@ -63,7 +68,6 @@ tasks.withType(Jar) {
 
 //with dependencies, without bigg.sqlite
 task lightJar(type: Jar) {
-    exclude("**/bigg.sqlite")
     baseName = project.name
     from {
         configurations.compile.collect {
@@ -75,11 +79,12 @@ task lightJar(type: Jar) {
 
 //build docker container
 task devel(type: Exec){
-    commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
+    commandLine "echo", ""+project.version
+    commandLine "sh", "-c", "cp target/ModelPolisher-" + version + ".jar docker/java_docker && " +
             "export COMPOSE_FILE=docker-compose.devel.yml && " +
             "docker-compose pull && " +
             "docker-compose build && " +
-            "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
+            "rm docker/java_docker/ModelPolisher-" + version + ".jar"
     dependsOn lightJar
 }
 
