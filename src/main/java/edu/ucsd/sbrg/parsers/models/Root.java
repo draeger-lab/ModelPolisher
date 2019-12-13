@@ -2,8 +2,10 @@ package edu.ucsd.sbrg.parsers.models;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Root {
 
   @JsonProperty(required = true)
@@ -18,8 +20,8 @@ public class Root {
   @JsonProperty(required = true)
   private List<Gene> genes;
   private Compartments compartments;
-  private Notes notes;
-  private Annotation annotation;
+  private Object notes;
+  private Object annotation;
 
   public Root() {
     version = 1;
@@ -106,22 +108,22 @@ public class Root {
   }
 
 
-  public Notes getNotes() {
+  public Object getNotes() {
     return notes;
   }
 
 
-  public void setNotes(Notes notes) {
+  public void setNotes(Object notes) {
     this.notes = notes;
   }
 
 
-  public Annotation getAnnotation() {
+  public Object getAnnotation() {
     return annotation;
   }
 
 
-  public void setAnnotation(Annotation annotation) {
+  public void setAnnotation(Object annotation) {
     this.annotation = annotation;
   }
 }

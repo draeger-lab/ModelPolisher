@@ -1,8 +1,11 @@
 package edu.ucsd.sbrg.parsers.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Reaction {
+
   @JsonProperty(required = true)
   private String id;
   @JsonProperty(required = true)
@@ -18,90 +21,116 @@ public class Reaction {
   @JsonProperty(value = "objective_coefficient")
   private double objectiveCoefficient;
   private String subsystem;
-  private Notes notes;
-  private Annotation annotation;
+  private Object notes;
+  private Object annotation;
 
   public Reaction() {
+    // Init default
     objectiveCoefficient = 0;
+    // Set defaults for some required properties, as @JsonProperty(required = true) does not seem to work
+    name = "";
+    geneReactionRule = "";
+    lowerBound = 0;
+    upperBound = 0;
   }
+
 
   public String getId() {
     return id;
   }
 
+
   public void setId(String id) {
     this.id = id;
   }
+
 
   public String getName() {
     return name;
   }
 
+
   public void setName(String name) {
     this.name = name;
   }
+
 
   public Metabolites getMetabolites() {
     return metabolites;
   }
 
+
   public void setMetabolites(Metabolites metabolites) {
     this.metabolites = metabolites;
   }
+
 
   public String getGeneReactionRule() {
     return geneReactionRule;
   }
 
+
   public void setGeneReactionRule(String geneReactionRule) {
     this.geneReactionRule = geneReactionRule;
   }
+
 
   public double getLowerBound() {
     return lowerBound;
   }
 
+
   public void setLowerBound(double lowerBound) {
     this.lowerBound = lowerBound;
   }
+
 
   public double getUpperBound() {
     return upperBound;
   }
 
+
   public void setUpperBound(double upperBound) {
     this.upperBound = upperBound;
   }
+
 
   public double getObjectiveCoefficient() {
     return objectiveCoefficient;
   }
 
+
   public void setObjectiveCoefficient(double objectiveCoefficient) {
     this.objectiveCoefficient = objectiveCoefficient;
   }
+
 
   public String getSubsystem() {
     return subsystem;
   }
 
+
   public void setSubsystem(String subsystem) {
     this.subsystem = subsystem;
   }
 
-  public Notes getNotes() {
+
+  public Object getNotes() {
     return notes;
   }
 
-  public void setNotes(Notes notes) {
+
+  public void setNotes(Object notes) {
     this.notes = notes;
   }
 
-  public Annotation getAnnotation() {
+
+  public Object getAnnotation() {
     return annotation;
   }
 
-  public void setAnnotation(Annotation annotation) {
+
+  public void setAnnotation(Object annotation) {
     this.annotation = annotation;
   }
 }

@@ -1,15 +1,23 @@
 package edu.ucsd.sbrg.parsers.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Gene {
 
   @JsonProperty(required = true)
   private String id;
   @JsonProperty(required = true)
   private String name;
-  private Notes notes;
-  private Annotation annotation;
+  private Object notes;
+  private Object annotation;
+
+  Gene() {
+    // Set defaults for some required properties, as @JsonProperty(required = true) does not seem to work
+    name = "";
+  }
+
 
   public String getId() {
     return id;
@@ -31,22 +39,22 @@ public class Gene {
   }
 
 
-  public Notes getNotes() {
+  public Object getNotes() {
     return notes;
   }
 
 
-  public void setNotes(Notes notes) {
+  public void setNotes(Object notes) {
     this.notes = notes;
   }
 
 
-  public Annotation getAnnotation() {
+  public Object getAnnotation() {
     return annotation;
   }
 
 
-  public void setAnnotation(Annotation annotation) {
+  public void setAnnotation(Object annotation) {
     this.annotation = annotation;
   }
 }

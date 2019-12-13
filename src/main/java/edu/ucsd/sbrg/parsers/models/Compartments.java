@@ -7,8 +7,10 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Compartments {
 
   private static final Logger logger = Logger.getLogger(Compartments.class.getName());
