@@ -61,7 +61,7 @@ public class Metabolite {
     if (validCompartmentCode.matcher(compartment).find()) {
       this.compartment = compartment;
     } else {
-      logger.info(String.format(
+      logger.finest(String.format(
         "Compartment code '%s' in metabolite '%s' did not match pattern [a-z]{1,2}, trying to extract from id after parsing",
         compartment, id));
     }

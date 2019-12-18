@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.sbml.jsbml.Compartment;
@@ -47,17 +48,15 @@ import edu.ucsd.sbrg.util.UpdateListener;
  */
 public class JSONparser {
 
-  private static final String GENE_PRODUCT_PREFIX = "G";
-  private static final String REACTION_PREFIX = "R";
-  private static final String METABOLITE_PREFIX = "M";
   /**
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(JSONparser.class.getName());
   /**
-   * Regex pattern for biomass prefix exclusion
+   * Pseudoreaction pattern to check when adding reaction prefix
    */
-  private static Pattern PATTERN_BIOMASS_CASE_INSENSITIVE = Pattern.compile("(.*)([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(.*)");
+  private static Pattern PSEUDOREACTION =
+    Pattern.compile("([Ee][Xx]_.*)|([Dd][Mm]_.*)|([Ss][Kk]_.*)|([Aa][Tt][Pp][Mm])|([Bb][Ii][Oo][Mm][Aa][Ss][Ss]_.*)");
 
   /**
    * 
@@ -160,7 +159,13 @@ public class JSONparser {
     logger.info(format(mpMessageBundle.getString("NUM_COMPART"), compSize));
     Model model = builder.getModel();
     for (Map.Entry<String, String> compartment : compartments.entrySet()) {
-      Compartment comp = model.createCompartment(compartment.getKey());
+      String compartmentCode = compartment.getKey();
+      if (!Pattern.compile("[a-z][a-z0-9]?").matcher(compartmentCode).matches()) {
+        logger.info(String.format("Invalid compartment code '%s', skipping.", compartmentCode));
+        continue;
+      }
+      Compartment comp = model.createCompartment();
+      comp.setId(compartmentCode);
       comp.setName(compartment.getValue());
     }
   }
@@ -177,11 +182,10 @@ public class JSONparser {
     for (Metabolite metabolite : metabolites) {
       String id = metabolite.getId();
       if (!id.isEmpty()) {
-        // Add prefix for BiGGId
         if (!id.startsWith("M_")) {
           id = "M_" + id;
         }
-        if (builder.getModel().getSpecies(id) != null) {
+        if (model.getSpecies(id) != null) {
           logger.warning(String.format("Skipping duplicate species with id: '%s'", id));
         } else {
           parseMetabolite(model, metabolite, id);
@@ -196,10 +200,8 @@ public class JSONparser {
    * @param metabolite
    */
   private void parseMetabolite(Model model, Metabolite metabolite, String id) {
+    id = fixCompartmentCode(id);
     BiGGId biggId = new BiGGId(id);
-    if (!biggId.isSetPrefix() && !PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(biggId.toBiGGId()).find()) {
-      biggId.setPrefix(METABOLITE_PREFIX);
-    }
     Species species = model.createSpecies(biggId.toBiGGId());
     String name = metabolite.getName();
     if (name.isEmpty()) {
@@ -213,12 +215,12 @@ public class JSONparser {
       try {
         specPlug.setChemicalFormula(formula);
       } catch (IllegalArgumentException exc) {
-        logger.severe(String.format("Invalid formula for metabolite '%s' : %s", id, formula));
+        logger.warning(String.format("Invalid formula for metabolite '%s' : %s", id, formula));
       }
     }
     specPlug.setCharge(charge);
     String compartment = metabolite.getCompartment();
-    if (compartment.isEmpty() && biggId.isSetCompartmentCode()){
+    if (compartment.isEmpty() && biggId.isSetCompartmentCode()) {
       compartment = biggId.getCompartmentCode();
     }
     species.setCompartment(compartment);
@@ -230,6 +232,25 @@ public class JSONparser {
     if (species.isSetAnnotation()) {
       species.setMetaId(species.getId());
     }
+  }
+
+
+  /**
+   * @param id
+   * @return
+   */
+  private String fixCompartmentCode(String id) {
+    // Workaround for models with wrong compartment code format [cc] instead of _cc
+    Pattern rescueCompartment = Pattern.compile(".*\\[(?<code>[a-z][a-z0-9]?)\\]");
+    Matcher rescueMatcher = rescueCompartment.matcher(id);
+    if (rescueMatcher.matches()) {
+      String compartmentCode = rescueMatcher.group("code");
+      id = id.replaceAll("\\[[a-z][a-z0-9]?\\]", "_" + compartmentCode + "_");
+      if (id.endsWith("_")) {
+        id = id.substring(0, id.length() - 1);
+      }
+    }
+    return id;
   }
 
 
@@ -265,9 +286,6 @@ public class JSONparser {
    */
   private void parseGene(Model model, Gene gene, String id) {
     BiGGId biggId = new BiGGId(id);
-    if (!biggId.isSetPrefix()) {
-      biggId.setPrefix(GENE_PRODUCT_PREFIX);
-    }
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     GeneProduct gp = modelPlug.createGeneProduct(biggId.toBiGGId());
     gp.setLabel(id);
@@ -294,8 +312,10 @@ public class JSONparser {
       String id = reaction.getId();
       if (!id.isEmpty()) {
         // Add prefix for BiGGId
-        if (!id.startsWith("R_")) {
-          id = "R_" + id;
+        if (!PSEUDOREACTION.matcher(id).matches()) {
+          if (!id.startsWith("R_")) {
+            id = "R_" + id;
+          }
         }
         if (builder.getModel().getReaction(id) != null) {
           logger.warning(String.format("Skipping duplicate reaction with id: '%s'", id));
@@ -314,9 +334,6 @@ public class JSONparser {
   private void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
     Model model = builder.getModel();
     BiGGId biggId = new BiGGId(id);
-    if (!biggId.isSetPrefix()) {
-      biggId.setPrefix(REACTION_PREFIX);
-    }
     org.sbml.jsbml.Reaction r = model.createReaction(biggId.toBiGGId());
     String name = reaction.getName();
     if (name.isEmpty()) {
@@ -371,10 +388,8 @@ public class JSONparser {
       if (!id.startsWith("M_")) {
         id = "M_" + id;
       }
+      id = fixCompartmentCode(id);
       BiGGId metId = new BiGGId(id);
-      if (!PATTERN_BIOMASS_CASE_INSENSITIVE.matcher(metId.toBiGGId()).find()) {
-        metId.setPrefix(METABOLITE_PREFIX);
-      }
       double value = metabolite.getValue();
       if (value != 0d) {
         Species species = model.getSpecies(metId.toBiGGId());

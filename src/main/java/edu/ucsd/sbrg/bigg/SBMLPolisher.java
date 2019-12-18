@@ -651,6 +651,7 @@ public class SBMLPolisher {
     if (!r.isSetSBOTerm()) {
       // The reaction has not been recognized as demand or exchange reaction
       if (r.getReactantCount() == 0) {
+        //fixme: Messages are wrong
         if (r.isReversible()) {
           // TODO: sink reaction
         } else {

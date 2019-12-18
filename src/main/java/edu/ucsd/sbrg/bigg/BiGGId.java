@@ -88,7 +88,6 @@ public class BiGGId {
    */
   public BiGGId(String id) {
     this();
-    this.id = id;
     parseBiGGId(id);
   }
 
@@ -102,7 +101,6 @@ public class BiGGId {
   public BiGGId(String prefix, String abbreviation, String compartmentCode, String tissueCode) {
     this();
     String id = toBiGGId(prefix, abbreviation, compartmentCode, tissueCode);
-    this.id = id;
     parseBiGGId(id);
   }
 
@@ -112,9 +110,8 @@ public class BiGGId {
    *        the identifier to be parsed into a bigg_id.
    */
   private void parseBiGGId(String id) {
-    String originalId = id;
-    id = id.replaceAll("-", "__").replaceAll("\\(", "_LPAREN_").replaceAll("\\)", "_RPAREN_")
-           .replaceAll("\\[", "_LBRACKET").replaceAll("\\]", "_RBRACKET");
+    id = id.replaceAll("-", "__").replaceAll("\\/", "_DASH_").replaceAll("\\.", "_DOT_").replaceAll("\\(", "_LPAREN_")
+           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
     Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
     if (matcher.matches()) {
       handleNormalId(id, matcher);
