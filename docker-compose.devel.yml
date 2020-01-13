@@ -5,7 +5,7 @@
 version: '3'
 services:
   biggdb:
-    image: mephenor/bigg_docker:1.5
+    image: mephenor/bigg_docker:1.6
     container_name: modelpolisher_biggdb
     ports:
       - 1310:5432

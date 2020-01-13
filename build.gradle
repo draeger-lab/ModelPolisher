@@ -49,6 +49,10 @@ test {
 task downloadMIRIAM(){
     doFirst{
         String registry = new URL("https://registry.api.identifiers.org/resolutionApi/getResolverDataset").getText()
+        File parentDir = new File("src/main/resources/edu/ucsd/sbrg/miriam/");
+        if(!parentDir.exists()){
+            mkdir(parentDir)
+        }
         File registryFile = new File("src/main/resources/edu/ucsd/sbrg/miriam/IdentifiersOrg-Registry.json")
         BufferedWriter writer = new BufferedWriter(new FileWriter(registryFile))
         writer.write(registry)
