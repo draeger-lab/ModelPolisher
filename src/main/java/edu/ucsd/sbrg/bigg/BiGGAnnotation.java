@@ -320,10 +320,7 @@ public class BiGGAnnotation {
     }
     // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
     // species.id
-    BiGGId biggId = SBMLPolisher.extractBiGGId(id);
-    if (biggId == null) {
-      return;
-    }
+    BiGGId biggId = BiGGId.createMetaboliteId(SBMLPolisher.rstripCopy(id));
     setSpeciesName(species, biggId);
     setSBOTermFromComponentType(species, biggId);
     setCVTermResources(species, biggId);
@@ -546,7 +543,7 @@ public class BiGGAnnotation {
     }
     // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
     // reaction.id
-    BiGGId biggId = SBMLPolisher.extractBiGGId(id);
+    BiGGId biggId = BiGGId.createReactionId(SBMLPolisher.rstripCopy(id));
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }

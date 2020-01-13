@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.sbml.jsbml.Compartment;
@@ -52,11 +51,6 @@ public class JSONparser {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(JSONparser.class.getName());
-  /**
-   * Pseudoreaction pattern to check when adding reaction prefix
-   */
-  private static Pattern PSEUDOREACTION =
-    Pattern.compile("([Ee][Xx]_.*)|([Dd][Mm]_.*)|([Ss][Kk]_.*)|([Aa][Tt][Pp][Mm])|([Bb][Ii][Oo][Mm][Aa][Ss][Ss]_.*)");
 
   /**
    * 
@@ -182,13 +176,11 @@ public class JSONparser {
     for (Metabolite metabolite : metabolites) {
       String id = metabolite.getId();
       if (!id.isEmpty()) {
-        if (!id.startsWith("M_")) {
-          id = "M_" + id;
-        }
-        if (model.getSpecies(id) != null) {
+        BiGGId metId = BiGGId.createMetaboliteId(id);
+        if (model.getSpecies(metId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate species with id: '%s'", id));
         } else {
-          parseMetabolite(model, metabolite, id);
+          parseMetabolite(model, metabolite, metId);
         }
       }
     }
@@ -199,13 +191,11 @@ public class JSONparser {
    * @param model
    * @param metabolite
    */
-  private void parseMetabolite(Model model, Metabolite metabolite, String id) {
-    id = fixCompartmentCode(id);
-    BiGGId biggId = new BiGGId(id);
+  private void parseMetabolite(Model model, Metabolite metabolite, BiGGId biggId) {
     Species species = model.createSpecies(biggId.toBiGGId());
     String name = metabolite.getName();
     if (name.isEmpty()) {
-      name = id;
+      name = biggId.toBiGGId();
     }
     species.setName(name);
     String formula = Optional.ofNullable(metabolite.getFormula()).orElse("");
@@ -215,7 +205,7 @@ public class JSONparser {
       try {
         specPlug.setChemicalFormula(formula);
       } catch (IllegalArgumentException exc) {
-        logger.warning(String.format("Invalid formula for metabolite '%s' : %s", id, formula));
+        logger.warning(String.format("Invalid formula for metabolite '%s' : %s", biggId.toBiGGId(), formula));
       }
     }
     specPlug.setCharge(charge);
@@ -236,25 +226,6 @@ public class JSONparser {
 
 
   /**
-   * @param id
-   * @return
-   */
-  private String fixCompartmentCode(String id) {
-    // Workaround for models with wrong compartment code format [cc] instead of _cc
-    Pattern rescueCompartment = Pattern.compile(".*\\[(?<code>[a-z][a-z0-9]?)\\]");
-    Matcher rescueMatcher = rescueCompartment.matcher(id);
-    if (rescueMatcher.matches()) {
-      String compartmentCode = rescueMatcher.group("code");
-      id = id.replaceAll("\\[[a-z][a-z0-9]?\\]", "_" + compartmentCode + "_");
-      if (id.endsWith("_")) {
-        id = id.substring(0, id.length() - 1);
-      }
-    }
-    return id;
-  }
-
-
-  /**
    * @param builder
    * @param genes
    */
@@ -265,15 +236,12 @@ public class JSONparser {
     for (Gene gene : genes) {
       String id = gene.getId();
       if (!id.isEmpty()) {
-        // Add prefix for BiGGId
-        if (!id.startsWith("G_")) {
-          id = "G_" + id;
-        }
+        BiGGId geneId = BiGGId.createGeneId(id);
         FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        if (modelPlug.getGeneProduct(id) != null) {
+        if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate gene with id: '%s'", id));
         } else {
-          parseGene(model, gene, id);
+          parseGene(model, gene, geneId.toBiGGId());
         }
       }
     }
@@ -285,9 +253,8 @@ public class JSONparser {
    * @param gene
    */
   private void parseGene(Model model, Gene gene, String id) {
-    BiGGId biggId = new BiGGId(id);
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-    GeneProduct gp = modelPlug.createGeneProduct(biggId.toBiGGId());
+    GeneProduct gp = modelPlug.createGeneProduct(id);
     gp.setLabel(id);
     String name = gene.getName();
     if (name.isEmpty()) {
@@ -312,15 +279,11 @@ public class JSONparser {
       String id = reaction.getId();
       if (!id.isEmpty()) {
         // Add prefix for BiGGId
-        if (!PSEUDOREACTION.matcher(id).matches()) {
-          if (!id.startsWith("R_")) {
-            id = "R_" + id;
-          }
-        }
-        if (builder.getModel().getReaction(id) != null) {
+        BiGGId reactionId = BiGGId.createReactionId(id);
+        if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate reaction with id: '%s'", id));
         } else {
-          parseReaction(builder, reaction, id);
+          parseReaction(builder, reaction, reactionId.toBiGGId());
         }
       }
     }
@@ -333,8 +296,7 @@ public class JSONparser {
    */
   private void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
     Model model = builder.getModel();
-    BiGGId biggId = new BiGGId(id);
-    org.sbml.jsbml.Reaction r = model.createReaction(biggId.toBiGGId());
+    org.sbml.jsbml.Reaction r = model.createReaction(id);
     String name = reaction.getName();
     if (name.isEmpty()) {
       name = id;
@@ -385,11 +347,7 @@ public class JSONparser {
     for (Map.Entry<String, Double> metabolite : metabolites.entrySet()) {
       // removed mu code, as unused not not matching schema
       String id = metabolite.getKey();
-      if (!id.startsWith("M_")) {
-        id = "M_" + id;
-      }
-      id = fixCompartmentCode(id);
-      BiGGId metId = new BiGGId(id);
+      BiGGId metId = BiGGId.createMetaboliteId(id);
       double value = metabolite.getValue();
       if (value != 0d) {
         Species species = model.getSpecies(metId.toBiGGId());

@@ -62,6 +62,7 @@ public class SBMLPolisher {
    *
    */
   public enum Patterns {
+
     ATP_MAINTENANCE(".*[Aa][Tt][Pp][Mm]"),
     BIOMASS_CASE_INSENSITIVE(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*"),
     BIOMASS_CASE_SENSITIVE(".*BIOMASS.*"),
@@ -73,11 +74,8 @@ public class SBMLPolisher {
 
     private Pattern pattern;
 
-
     Patterns(String regex) {
-      if (pattern == null) {
-        pattern = Pattern.compile(regex);
-      }
+      pattern = Pattern.compile(regex);
     }
 
 
@@ -120,48 +118,11 @@ public class SBMLPolisher {
    */
   private String[] fluxObjectives;
 
-
   /**
    *
    */
   public SBMLPolisher() {
     omitGenericTerms = false;
-  }
-
-
-  /**
-   * @param catalog
-   * @param id
-   * @return
-   */
-  public static String createURI(String catalog, BiGGId id) {
-    return createURI(catalog, id.getAbbreviation());
-  }
-
-
-  /**
-   * @param catalog
-   * @param id
-   * @return
-   */
-  public static String createURI(String catalog, Object id) {
-    return "http://identifiers.org/" + catalog + "/" + id.toString();
-  }
-
-
-  /**
-   * @param id
-   *        species identifier
-   * @return
-   * @see <a href=
-   *      "https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">Structure
-   *      of BiGG ids</a>
-   */
-  public static BiGGId extractBiGGId(String id) {
-    if (id.matches(".*_copy\\d*")) {
-      return new BiGGId(id.substring(0, id.lastIndexOf('_')));
-    }
-    return new BiGGId(id);
   }
 
 
@@ -223,14 +184,6 @@ public class SBMLPolisher {
     }
     progress = new ProgressBar(count);
     progress.DisplayBar(); // "Processing model " + model.getId());
-    // Do not do this because this messes up the HTML display of the file.
-    // for (int i = 0; i < model.getUnitDefinitionCount(); i++) {
-    // UnitDefinition ud = model.setBasicUnitDefinition(i);
-    // //ud.appendNotes(HTMLFormula.toHTML(ud));
-    // }
-    /*
-     * Model
-     */
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
     }
@@ -367,6 +320,26 @@ public class SBMLPolisher {
 
 
   /**
+   * @param catalog
+   * @param id
+   * @return
+   */
+  public static String createURI(String catalog, BiGGId id) {
+    return createURI(catalog, id.getAbbreviation());
+  }
+
+
+  /**
+   * @param catalog
+   * @param id
+   * @return
+   */
+  public static String createURI(String catalog, Object id) {
+    return "https://identifiers.org/" + catalog + "/" + id.toString();
+  }
+
+
+  /**
    * @param model
    */
   public void polishListOfCompartments(Model model) {
@@ -418,43 +391,11 @@ public class SBMLPolisher {
    * @param model
    */
   public void polishListOfSpecies(Model model) {
-    // Species, but do not create an overview table for all in the model:
-    // String header[] = null;
-    // String data[][] = null;
-    // SortedMap<String, SortedMap<String, Species>> speciesList = new
-    // TreeMap<String, SortedMap<String, Species>>();
-    // if (model.getSpeciesCount() > 0) {
-    // header = new String[3];
-    // data = new String[model.getSpeciesCount()][header.length];
-    // header[0] = "BiGG id";
-    // header[1] = "Name";
-    // header[2] = "Compartment";
-    // }
     for (int i = 0; i < model.getSpeciesCount(); i++) {
       Species species = model.getSpecies(i);
       progress.DisplayBar(); // "Processing species " + species.getId());
       polish(species);
-      // if (!speciesList.containsKey(species.getName())) {
-      // speciesList.put(species.getName(), new TreeMap<String, Species>());
-      // }
-      // speciesList.get(species.getName()).put(species.getCompartment(),
-      // species);
     }
-    // int row = 0;
-    // for (Map.Entry<String, SortedMap<String, Species>> entry :
-    // speciesList.entrySet()) {
-    // String htmlName = EscapeChars.forHTML(entry.getKey());
-    // for (Map.Entry<String, Species> inner : entry.getValue().entrySet()) {
-    // data[row][0] = EscapeChars.forHTML(inner.getValue().getId());
-    // data[row][1] = htmlName;
-    // data[row][2] =
-    // EscapeChars.forHTML(model.getCompartment(inner.getKey()).getName());
-    // row++;
-    // }
-    // }
-    // Map<String, String> attributes = new HashMap<String, String>();
-    // // TODO: add attributes!
-    // attributes.put("width", "900px");
   }
 
 
@@ -463,6 +404,9 @@ public class SBMLPolisher {
    */
   public void polish(Species species) {
     String id = species.getId();
+    if (id.isEmpty()) {
+      return;
+    }
     if (species.getId().endsWith("_boundary")) {
       logger.warning(format(mpMessageBundle.getString("SPECIES_ID_INVALID"), id));
       id = id.substring(0, id.length() - 9);
@@ -473,7 +417,7 @@ public class SBMLPolisher {
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
-    BiGGId biggId = extractBiGGId(id);
+    BiGGId biggId = BiGGId.createMetaboliteId(rstripCopy(id));
     /*
      * Set mandatory attributes to default values
      * TODO: make those maybe user settings.
@@ -484,21 +428,32 @@ public class SBMLPolisher {
     if (!species.isSetConstant()) {
       species.setConstant(false);
     }
-    if (biggId != null) {
-      if (biggId.isSetAbbreviation()) {
-        species.setName(polishName(species.getName()));
-      }
-      if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
-        species.setMetaId(species.getId());
-      }
-      if (biggId.isSetCompartmentCode() && species.isSetCompartment()
-        && !biggId.getCompartmentCode().equals(species.getCompartment())) {
-        logger.warning(format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"), species.getId(),
-          species.getCompartment(), biggId.getCompartmentCode()));
-        species.setCompartment(biggId.getCompartmentCode());
-      }
+    if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
+      species.setMetaId(species.getId());
+    }
+    if (biggId.isSetCompartmentCode() && species.isSetCompartment()
+      && !biggId.getCompartmentCode().equals(species.getCompartment())) {
+      logger.warning(format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"), species.getId(),
+        species.getCompartment(), biggId.getCompartmentCode()));
+      species.setCompartment(biggId.getCompartmentCode());
     }
     checkCompartment(species);
+  }
+
+
+  /**
+   * @param id
+   *        species identifier
+   * @return
+   * @see <a href=
+   *      "https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">Structure
+   *      of BiGG ids</a>
+   */
+  public static String rstripCopy(String id) {
+    if (id.matches(".*_copy\\d*")) {
+      id = id.substring(0, id.lastIndexOf('_'));
+    }
+    return id;
   }
 
 
@@ -507,7 +462,7 @@ public class SBMLPolisher {
    */
   public void checkCompartment(NamedSBase nsb) {
     if ((nsb instanceof Species) && !((Species) nsb).isSetCompartment()) {
-      BiGGId biggId = extractBiGGId(nsb.getId());
+      BiGGId biggId = BiGGId.createMetaboliteId(rstripCopy(nsb.getId()));
       if (biggId.isSetCompartmentCode()) {
         ((Species) nsb).setCompartment(biggId.getCompartmentCode());
       } else {
@@ -549,39 +504,25 @@ public class SBMLPolisher {
   public boolean polish(Reaction r) {
     String id = r.getId();
     id = setSBOTermFromPattern(r, id);
-    BiGGId biggId = extractBiGGId(id);
-    if (biggId != null) {
-      // TODO: what was the intention here, if compartmentId is not used?
-      String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
-      if (r.isSetListOfReactants()) {
-        String cId = polish(r.getListOfReactants(), SBO.getReactant());
-        compartmentId = checkCId(cId, compartmentId);
-      }
-      if (r.isSetListOfProducts()) {
-        String cId = compartmentId = polish(r.getListOfProducts(), SBO.getProduct());
-        compartmentId = checkCId(cId, compartmentId);
-      }
-      // TODO: it was decided not to do this:
-      // if ((compartmentId != null) && !r.isSetCompartment()) {
-      // r.setCompartment(compartmentId);
-      // checkCompartment(r);
-      // }
-      // if (biggId.isSetCompartmentCode() && !r.isSetCompartment()) {
-      // logger.info(format("Applying compartment declaration as
-      // specified by compartment code ''{1}'' to reaction ''{0}''.", r.getId(),
-      // biggId.getCompartmentCode()));
-      // r.setCompartment(biggId.getCompartmentCode());
-      // checkCompartment(r);
-      // }
-      if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
-        r.setMetaId(id);
-      }
-      if (id.startsWith("R_")) {
-        id = id.substring(2);
-      }
-      r.setName(polishName(r.getName()));
-      SBMLUtils.setRequiredAttributes(r);
+    BiGGId biggId = BiGGId.createReactionId(rstripCopy(id));
+    // TODO: what was the intention here, if compartmentId is not used?
+    String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
+    if (r.isSetListOfReactants()) {
+      String cId = polish(r.getListOfReactants(), SBO.getReactant());
+      compartmentId = checkCId(cId, compartmentId);
     }
+    if (r.isSetListOfProducts()) {
+      String cId = compartmentId = polish(r.getListOfProducts(), SBO.getProduct());
+      compartmentId = checkCId(cId, compartmentId);
+    }
+    if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
+      r.setMetaId(id);
+    }
+    if (id.startsWith("R_")) {
+      id = id.substring(2);
+    }
+    r.setName(rstripCopy(r.getName()));
+    SBMLUtils.setRequiredAttributes(r);
     // This is a check if we are producing invalid SBML.
     if ((r.getReactantCount() == 0) && (r.getProductCount() == 0)) {
       ResourceBundle bundle = ResourceManager.getBundle("org.sbml.jsbml.resources.cfg.Messages");
@@ -595,6 +536,7 @@ public class SBMLPolisher {
   }
 
 
+  // TODO: Move this to BiGGId
   /**
    * @param r
    * @param id
@@ -651,7 +593,7 @@ public class SBMLPolisher {
     if (!r.isSetSBOTerm()) {
       // The reaction has not been recognized as demand or exchange reaction
       if (r.getReactantCount() == 0) {
-        //fixme: Messages are wrong
+        // fixme: Messages are wrong
         if (r.isReversible()) {
           // TODO: sink reaction
         } else {
@@ -951,20 +893,6 @@ public class SBMLPolisher {
 
 
   /**
-   * @param sbase
-   * @return
-   */
-  private <T extends SBase> T safeClone(T sbase) {
-    @SuppressWarnings("unchecked")
-    T sb = (T) sbase.clone();
-    if (sb.isSetMetaId()) {
-      sb.unsetMetaId();
-    }
-    return sb;
-  }
-
-
-  /**
    * @param name
    * @return
    */
@@ -987,6 +915,20 @@ public class SBMLPolisher {
       logger.fine(format(mpMessageBundle.getString("CHANGED_NAME"), name, newName));
     }
     return newName;
+  }
+
+
+  /**
+   * @param sbase
+   * @return
+   */
+  private <T extends SBase> T safeClone(T sbase) {
+    @SuppressWarnings("unchecked")
+    T sb = (T) sbase.clone();
+    if (sb.isSetMetaId()) {
+      sb.unsetMetaId();
+    }
+    return sb;
   }
 
 

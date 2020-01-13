@@ -105,14 +105,107 @@ public class BiGGId {
   }
 
 
+  public static BiGGId createMetaboliteId(String id) {
+    return createMetaboliteId(id, true);
+  }
+
+
+  public static BiGGId createMetaboliteId(String id, boolean correct) {
+    id = fixCompartmentCode(id);
+    if (correct) {
+      id = makeBiGGConform(id);
+      if (!id.startsWith("M_")) {
+        id = "M_" + id;
+      }
+    }
+    return new BiGGId(id);
+  }
+
+
+  public static BiGGId createGeneId(String id) {
+    return createGeneId(id, true);
+  }
+
+
+  public static BiGGId createGeneId(String id, boolean correct) {
+    if (correct) {
+      id = makeBiGGConform(id);
+      if (!id.startsWith("G_")) {
+        id = "G_" + id;
+      }
+    }
+    return new BiGGId(id);
+  }
+
+
+  public static BiGGId createReactionId(String id) {
+    String prefixStripped = "";
+    if (id.startsWith("R_")) {
+      prefixStripped = id.substring(2);
+    }
+    if (isPseudo(id)) {
+      return createReactionId(id, true, true);
+    } else if (!prefixStripped.isEmpty() && isPseudo(prefixStripped)) {
+      return createReactionId(prefixStripped, true, true);
+    } else {
+      return createReactionId(id, true, false);
+    }
+  }
+
+
+  private static boolean isPseudo(String reactionId) {
+    return IDPattern.ATPM.get().matcher(reactionId).matches() || IDPattern.BIOMASS.get().matcher(reactionId).matches()
+      || IDPattern.PSEUDO.get().matcher(reactionId).matches();
+  }
+
+
+  public static BiGGId createReactionId(String id, boolean correct, boolean isPseudo) {
+    if (correct) {
+      id = makeBiGGConform(id);
+      if (!isPseudo && !id.startsWith("R_")) {
+        id = "R_" + id;
+      }
+    }
+    return new BiGGId(id);
+  }
+
+
+  private static String makeBiGGConform(String id) {
+    id = id.replaceAll("-", "__").replaceAll("\\/", "_DASH_").replaceAll("\\.", "_DOT_").replaceAll("\\(", "_LPAREN_")
+           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
+    if (id.endsWith("_")) {
+      id = id.substring(0, id.length() - 1);
+    }
+    return id;
+  }
+
+
+  /**
+   * @param id
+   * @return
+   */
+  private static String fixCompartmentCode(String id) {
+    // Workaround for models with wrong compartment code format [cc] instead of _cc
+    Pattern rescueCompartment = Pattern.compile(".*\\[(?<code>[a-z][a-z0-9]?)\\]");
+    Matcher rescueMatcher = rescueCompartment.matcher(id);
+    if (rescueMatcher.matches()) {
+      String compartmentCode = rescueMatcher.group("code");
+      id = id.replaceAll("\\[[a-z][a-z0-9]?\\]", "_" + compartmentCode + "_");
+      if (id.endsWith("_")) {
+        id = id.substring(0, id.length() - 1);
+      }
+    }
+    return id;
+  }
+
+
   /**
    * @param id
    *        the identifier to be parsed into a bigg_id.
    */
   private void parseBiGGId(String id) {
-    id = id.replaceAll("-", "__").replaceAll("\\/", "_DASH_").replaceAll("\\.", "_DOT_").replaceAll("\\(", "_LPAREN_")
-           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
     Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
+    //TODO: (re)add compartment handling for reaction
     if (matcher.matches()) {
       handleNormalId(id, matcher);
     } else {
@@ -442,35 +535,4 @@ public class BiGGId {
     return builder.toString();
   }
 
-
-  /**
-   * 
-   */
-  public void unsetAbbreviation() {
-    abbreviation = null;
-  }
-
-
-  /**
-   * 
-   */
-  public void unsetCompartmentCode() {
-    compartmentCode = null;
-  }
-
-
-  /**
-   * 
-   */
-  public void unsetPrefix() {
-    prefix = null;
-  }
-
-
-  /**
-   * 
-   */
-  public void unsetTissueCode() {
-    tissueCode = null;
-  }
 }

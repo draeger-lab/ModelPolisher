@@ -119,7 +119,7 @@ public class SBMLUtils {
     return gpr;
   }
 
-
+  //TODO: update for BiGGId changes
   /**
    * @param r
    * @param geneReactionRule
@@ -230,6 +230,7 @@ public class SBMLUtils {
   }
 
 
+  //TODO: update for BiGGId changes
   /**
    * @param id
    * @return
