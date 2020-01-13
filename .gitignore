@@ -5,8 +5,7 @@
 .project
 /build/
 /target/
-/src/main/resources/edu/ucsd/sbrg/bigg/bigg.zip
-/src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite
+src/main/resources/edu/ucsd/sbrg/miriam/IdentifiersOrg-Registry.json
 /src/scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log

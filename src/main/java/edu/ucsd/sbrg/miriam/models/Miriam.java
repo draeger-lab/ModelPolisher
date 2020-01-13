@@ -24,4 +24,8 @@ public class Miriam {
     }
     return miriam;
   }
+
+  public Map<String, Namespace> getNamespaces(){
+    return namespaces;
+  }
 }

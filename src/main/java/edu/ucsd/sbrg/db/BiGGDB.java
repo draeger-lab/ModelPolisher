@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 
 import edu.ucsd.sbrg.bigg.BiGGAnnotation;
 import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.util.Pair;
 
@@ -244,7 +245,7 @@ public class BiGGDB {
           logger.warning(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"), collection));
           continue;
         }
-        if ((resource = BiGGAnnotation.checkResourceUrl(resource)) != null) {
+        if ((resource = Registry.checkResourceUrl(resource)) != null) {
           set.add(resource);
         }
       }
@@ -370,7 +371,7 @@ public class BiGGDB {
     TreeSet<String> result = new TreeSet<>();
     while (rst.next()) {
       String resource = rst.getString(1);
-      resource = BiGGAnnotation.checkResourceUrl(resource);
+      resource = Registry.checkResourceUrl(resource);
       if (resource != null) {
         result.add(resource);
       }

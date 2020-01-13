@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * <a href=
  * "https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines">
  * BiGG ID specification</a>.
- * 
+ *
  * @author Andreas Dr&auml;ger
  */
 public class BiGGId {
@@ -37,10 +37,6 @@ public class BiGGId {
    * Fourth part of BiGG ID, matches [A-Z][A-Z0-9]
    */
   private String tissueCode;
-  /**
-   *
-   */
-  private String id;
 
   /**
    *
@@ -50,9 +46,9 @@ public class BiGGId {
     ATPM("[Aa][Tt][Pp][Mm]"),
     BIOMASS("([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
     COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
-    PSEUDO("([Ee][Xx]_)|([Ds][Mm]_)|([Ss][Kk]_)"),
+    PSEUDO("([Ee][Xx]_)|([Dd][Mm]_)|([Ss][Kk]_)"),
     UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)" + "(?:_(?<compartment>[a-z][a-z0-9]?))?"
-      + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
+        + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
 
     /**
      *
@@ -76,7 +72,7 @@ public class BiGGId {
   }
 
   /**
-   * 
+   *
    */
   public BiGGId() {
     super();
@@ -116,6 +112,8 @@ public class BiGGId {
       id = makeBiGGConform(id);
       if (!id.startsWith("M_")) {
         id = "M_" + id;
+      } else if (id.startsWith("m_")) {
+        id = id.replaceAll("^m_", "M_");
       }
     }
     return new BiGGId(id);
@@ -132,6 +130,8 @@ public class BiGGId {
       id = makeBiGGConform(id);
       if (!id.startsWith("G_")) {
         id = "G_" + id;
+      } else if (id.startsWith("g_")) {
+        id = id.replaceAll("^g_", "G_");
       }
     }
     return new BiGGId(id);
@@ -140,7 +140,7 @@ public class BiGGId {
 
   public static BiGGId createReactionId(String id) {
     String prefixStripped = "";
-    if (id.startsWith("R_")) {
+    if (id.startsWith("R_") || id.startsWith("r_")) {
       prefixStripped = id.substring(2);
     }
     if (isPseudo(id)) {
@@ -155,7 +155,7 @@ public class BiGGId {
 
   private static boolean isPseudo(String reactionId) {
     return IDPattern.ATPM.get().matcher(reactionId).matches() || IDPattern.BIOMASS.get().matcher(reactionId).matches()
-      || IDPattern.PSEUDO.get().matcher(reactionId).matches();
+        || IDPattern.PSEUDO.get().matcher(reactionId).matches();
   }
 
 
@@ -164,6 +164,8 @@ public class BiGGId {
       id = makeBiGGConform(id);
       if (!isPseudo && !id.startsWith("R_")) {
         id = "R_" + id;
+      } else if (!isPseudo && id.startsWith("r_")) {
+        id = id.replaceAll("^r_", "R_");
       }
     }
     return new BiGGId(id);
@@ -172,7 +174,20 @@ public class BiGGId {
 
   private static String makeBiGGConform(String id) {
     id = id.replaceAll("-", "__").replaceAll("\\/", "_DASH_").replaceAll("\\.", "_DOT_").replaceAll("\\(", "_LPAREN_")
-           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
+        .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
+    if (id.matches(".*_copy\\d*")) {
+      id = id.substring(0, id.lastIndexOf('_'));
+    }
+    Pattern alphaNum = Pattern.compile("[a-zA-Z0-9_]");
+    StringBuilder builder = new StringBuilder(id.length());
+    for (char ch : id.toCharArray()) {
+      if (alphaNum.matcher(String.valueOf(ch)).matches()) {
+        builder.append(ch);
+      } else {
+        builder.append("_");
+      }
+    }
+    id = builder.toString();
     if (id.endsWith("_")) {
       id = id.substring(0, id.length() - 1);
     }
@@ -200,12 +215,11 @@ public class BiGGId {
 
 
   /**
-   * @param id
-   *        the identifier to be parsed into a bigg_id.
+   * @param id the identifier to be parsed into a bigg_id.
    */
   private void parseBiGGId(String id) {
     Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
-    //TODO: (re)add compartment handling for reaction
+    // TODO: (re)add compartment handling for reaction
     if (matcher.matches()) {
       handleNormalId(id, matcher);
     } else {
@@ -238,15 +252,13 @@ public class BiGGId {
     Matcher atpmMatcher = IDPattern.ATPM.get().matcher(id);
     Matcher compartmentMatcher = IDPattern.COMPARTMENT.get().matcher(id);
     if (pseudoreactionMatcher.find()) {
-      String prefix = id.substring(0, 2);
-      setPrefix(prefix.toUpperCase());
-      String abbreviation = id.substring(3);
-      setAbbreviation(abbreviation);
+      id = id.replaceAll("^[Ee][Xx]", "EX");
+      id = id.replaceAll("^[Dd][Mm]", "DM");
+      id = id.replaceAll("^[Ss]([Ii][Nn])?[Kk]", "SK");
+      setAbbreviation(id);
     } else if (biomassMatcher.matches()) {
-      String prefix = biomassMatcher.group(1);
-      setPrefix(prefix);
-      String abbreviation = biomassMatcher.group(2);
-      setAbbreviation(abbreviation);
+      id = id.replaceAll("^[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
+      setAbbreviation(id);
     } else if (atpmMatcher.matches()) {
       setAbbreviation("ATPM");
     } else if (compartmentMatcher.matches()) {
@@ -301,15 +313,6 @@ public class BiGGId {
       return tissueCode.equals(other.tissueCode);
   }
 
-
-  /**
-   * @return the abbreviation
-   */
-  public String getIdString() {
-    return id;
-  }
-
-
   /**
    * @return the abbreviation
    */
@@ -329,8 +332,7 @@ public class BiGGId {
    * ALA__L).
    * </ul>
    *
-   * @param abbreviation
-   *        the abbreviation to set
+   * @param abbreviation the abbreviation to set
    */
   public void setAbbreviation(String abbreviation) {
     this.abbreviation = abbreviation;
@@ -349,8 +351,7 @@ public class BiGGId {
    * One or two characters in length, and contain only lower case letters and
    * numbers, and must begin with a lower case letter. /[a-z][a-z0-9]?/
    *
-   * @param compartmentCode
-   *        the compartmentCode to set
+   * @param compartmentCode the compartmentCode to set
    */
   public void setCompartmentCode(String compartmentCode) {
     this.compartmentCode = compartmentCode;
@@ -375,8 +376,7 @@ public class BiGGId {
    * into SBML models? Also SBML id's use capital letters (/[RM]/).
    * </ul>
    *
-   * @param prefix
-   *        the prefix to set
+   * @param prefix the prefix to set
    */
   public void setPrefix(String prefix) {
     this.prefix = prefix;
@@ -395,8 +395,7 @@ public class BiGGId {
    * One or two characters in length, and contain only upper case letters and
    * numbers, and must begin with an upper case letter. /[A-Z][A-Z0-9]?/
    *
-   * @param tissueCode
-   *        the tissueCode to set
+   * @param tissueCode the tissueCode to set
    */
   public void setTissueCode(String tissueCode) {
     this.tissueCode = tissueCode;
@@ -453,7 +452,7 @@ public class BiGGId {
 
   /**
    * Generates an actual BiGG id for this object.
-   * 
+   *
    * @return
    */
   public String toBiGGId() {
@@ -534,5 +533,4 @@ public class BiGGId {
     builder.append("]");
     return builder.toString();
   }
-
 }

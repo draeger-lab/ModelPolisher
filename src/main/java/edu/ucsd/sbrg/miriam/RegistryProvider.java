@@ -14,7 +14,7 @@ public class RegistryProvider {
     super();
     try {
       miriam = RegistryParser.getInstance().parse();
-    } catch (IOException | URISyntaxException e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

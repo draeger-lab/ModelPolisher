@@ -21,6 +21,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.InitialAssignment;
@@ -242,8 +243,8 @@ public class SBMLPolisher {
           timeUnit.setExponent(1d);
           ud.setName("Hour");
           ud.addUnit(timeUnit);
-          timeUnit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, createURI("unit", "UO:0000032")));
-          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, createURI("unit", "UO:0000032")));
+          timeUnit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000032")));
+          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000032")));
         }
         break;
       case GRAM:
@@ -254,7 +255,7 @@ public class SBMLPolisher {
         break;
       case MOLE:
         if (unit.getScale() == -3) {
-          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, createURI("unit", "UO:0000040")));
+          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000040")));
         }
         if (!substanceExists) {
           substanceUnits.addUnit(safeClone(unit));
@@ -291,7 +292,7 @@ public class SBMLPolisher {
     if (!mmol_per_gDW_per_hr.isSetMetaId()) {
       mmol_per_gDW_per_hr.setMetaId(mmol_per_gDW_per_hr.getId());
     }
-    mmol_per_gDW_per_hr.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, createURI("pubmed", 7986045)));
+    mmol_per_gDW_per_hr.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, Registry.createURI("pubmed", 7986045)));
     return mmol_per_gDW_per_hr;
   }
 
@@ -316,26 +317,6 @@ public class SBMLPolisher {
       model.setTimeUnits(UnitDefinition.TIME);
     }
     return substanceUnits;
-  }
-
-
-  /**
-   * @param catalog
-   * @param id
-   * @return
-   */
-  public static String createURI(String catalog, BiGGId id) {
-    return createURI(catalog, id.getAbbreviation());
-  }
-
-
-  /**
-   * @param catalog
-   * @param id
-   * @return
-   */
-  public static String createURI(String catalog, Object id) {
-    return "https://identifiers.org/" + catalog + "/" + id.toString();
   }
 
 
@@ -417,7 +398,7 @@ public class SBMLPolisher {
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
-    BiGGId biggId = BiGGId.createMetaboliteId(rstripCopy(id));
+    BiGGId biggId = BiGGId.createMetaboliteId(id);
     /*
      * Set mandatory attributes to default values
      * TODO: make those maybe user settings.
@@ -442,27 +423,11 @@ public class SBMLPolisher {
 
 
   /**
-   * @param id
-   *        species identifier
-   * @return
-   * @see <a href=
-   *      "https://github.com/SBRG/BIGG2/wiki/BIGG2-ID-Proposal-and-Specification">Structure
-   *      of BiGG ids</a>
-   */
-  public static String rstripCopy(String id) {
-    if (id.matches(".*_copy\\d*")) {
-      id = id.substring(0, id.lastIndexOf('_'));
-    }
-    return id;
-  }
-
-
-  /**
    * @param nsb
    */
   public void checkCompartment(NamedSBase nsb) {
     if ((nsb instanceof Species) && !((Species) nsb).isSetCompartment()) {
-      BiGGId biggId = BiGGId.createMetaboliteId(rstripCopy(nsb.getId()));
+      BiGGId biggId = BiGGId.createMetaboliteId(nsb.getId());
       if (biggId.isSetCompartmentCode()) {
         ((Species) nsb).setCompartment(biggId.getCompartmentCode());
       } else {
@@ -504,7 +469,7 @@ public class SBMLPolisher {
   public boolean polish(Reaction r) {
     String id = r.getId();
     id = setSBOTermFromPattern(r, id);
-    BiGGId biggId = BiGGId.createReactionId(rstripCopy(id));
+    BiGGId biggId = BiGGId.createReactionId(id);
     // TODO: what was the intention here, if compartmentId is not used?
     String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
     if (r.isSetListOfReactants()) {
@@ -521,7 +486,11 @@ public class SBMLPolisher {
     if (id.startsWith("R_")) {
       id = id.substring(2);
     }
-    r.setName(rstripCopy(r.getName()));
+    String rName = r.getName();
+    if (rName.matches(".*_copy\\d*")) {
+      rName = rName.substring(0, rName.lastIndexOf('_'));
+      r.setName(rName);
+    }
     SBMLUtils.setRequiredAttributes(r);
     // This is a check if we are producing invalid SBML.
     if ((r.getReactantCount() == 0) && (r.getProductCount() == 0)) {
@@ -800,15 +769,6 @@ public class SBMLPolisher {
     String compartmentId = "";
     Model model = listOf.getModel();
     for (SpeciesReference sr : listOf) {
-      // Not sure if we need this check here because SBML validator can do it:
-      /*
-       * if (sr.isSetId() && !SyntaxChecker.isValidId(sr.getId(), sr.getLevel(),
-       * sr.getVersion())) {
-       * logger.severe(MessageFormat.
-       * format("Found a speciesReference with invalid identifier ''{0}''.",
-       * sr.getId()));
-       * }
-       */
       if (!sr.isSetSBOTerm() && !omitGenericTerms) {
         sr.setSBOTerm(defaultSBOterm);
       }

@@ -14,7 +14,7 @@ services:
     container_name: modelpolisher_adb
     ports:
       - 1013:5432
-  java:
+  polisher:
     build: ./docker/java_docker
     container_name: modelpolisher_java    
     depends_on:

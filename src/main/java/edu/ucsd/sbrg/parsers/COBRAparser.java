@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -46,7 +47,6 @@ import org.sbml.jsbml.util.ModelBuilder;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 import us.hebi.matlab.mat.format.Mat5;
@@ -487,7 +487,7 @@ public class COBRAparser {
       if ((id != null) && !id.isEmpty()) {
         id = checkId(id);
         if (validId(catalog, id)) {
-          String resource = Registry.getURI(catalog, id);
+          String resource = Registry.createURI(catalog, id);
           if (!resource.isEmpty()) {
             term.addResource(resource);
             success = true;
@@ -572,7 +572,7 @@ public class COBRAparser {
     String pattern = Registry.getPattern(catalog);
     boolean validId = false;
     if (!pattern.equals("")) {
-      validId = Registry.checkPattern(id, catalog);
+      validId = Registry.checkPattern(id, pattern);
       if (!validId) {
         logger.warning(format(mpMessageBundle.getString("PATTERN_MISMATCH"), id, pattern));
       }
@@ -792,7 +792,7 @@ public class COBRAparser {
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
       if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
-        term.addResource(Registry.getURI(catalog, kId));
+        term.addResource(Registry.createURI(catalog, kId));
       }
     }
     if (term.getResourceCount() == 0) {
@@ -844,7 +844,7 @@ public class COBRAparser {
       // ecCode = ecCode.substring(1);
       // }
       if ((ecCode != null) && !ecCode.isEmpty() && validId("ec-code", ecCode)) {
-        String resource = Registry.getURI("ec-code", ecCode);
+        String resource = Registry.createURI("ec-code", ecCode);
         if ((resource != null) && !term.getResources().contains(resource)) {
           match = term.addResource(resource);
         }
@@ -942,7 +942,7 @@ public class COBRAparser {
           if (st.countTokens() > 1) {
             logger.warning(format(mpMessageBundle.getString("SKIP_COMMENT"), resource, r, catalog));
           }
-          resource = Registry.getURI(catalog, r);
+          resource = Registry.createURI(catalog, r);
           logger.finest(format(mpMessageBundle.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }

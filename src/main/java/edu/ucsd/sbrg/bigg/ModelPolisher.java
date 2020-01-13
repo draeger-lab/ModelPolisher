@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -37,7 +36,6 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import com.sun.istack.NotNull;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -68,12 +66,12 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
-import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.db.ADBOptions;
 import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
+import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.parsers.JSONparser;
 import edu.ucsd.sbrg.util.UpdateListener;
 
@@ -196,8 +194,7 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    *         propagated from {@link #processFile(File, File, SBProperties)}
    */
-  private void batchProcess(@NotNull File input, @NotNull File output, @NotNull SBProperties args)
-    throws IOException, XMLStreamException {
+  private void batchProcess(File input, File output, SBProperties args) throws IOException, XMLStreamException {
     if (!input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }

@@ -1,5 +1,5 @@
 FROM postgres:9.6.2
-MAINTAINER ktrivedi@cs.iitr.ac.in
+MAINTAINER zajac.thomas1992@gmail.com
 
 RUN apt-get update && \
     apt-get install curl -y && \
