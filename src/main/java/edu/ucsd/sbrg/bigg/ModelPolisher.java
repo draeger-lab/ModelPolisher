@@ -353,33 +353,21 @@ public class ModelPolisher extends Launcher {
   private void readAndPolish(File input, File output) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
     logger.info(format(mpMessageBundle.getString("READ_FILE_INFO"), input.getAbsolutePath()));
-    List<SBMLDocument> docs = new ArrayList<>();
+    SBMLDocument doc;
     // reading or parsing input
     if (fileType.equals(FileType.MAT_FILE)) {
-      docs.addAll(COBRAparser.read(input, parameters.omitGenericTerms));
+      doc = COBRAparser.read(input, parameters.omitGenericTerms);
     } else if (fileType.equals(FileType.JSON_FILE)) {
-      docs.add(JSONparser.read(input));
+      doc = JSONparser.read(input);
     } else {
       checkHTMLTags(input);
-      docs.add(SBMLReader.read(input, new UpdateListener()));
+      doc = SBMLReader.read(input, new UpdateListener());
     }
-    if (docs.size() == 0) {
+    if (doc == null) {
       logger.severe(format(mpMessageBundle.getString("ALL_DOCS_PARSE_ERROR"), input.toString()));
       return;
     }
-    int count = 0;
-    for (SBMLDocument doc : docs) {
-      if (count != 0) {
-        String newPath = FileTools.removeFileExtension(output.getPath());
-        if (count > 1) {
-          newPath = newPath.substring(0, newPath.length() - 2);
-        }
-        newPath += format("_{0}.xml", count);
-        output = new File(newPath);
-      }
-      polish(doc, output);
-      count++;
-    }
+    polish(doc, output);
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
     logger.info(String.format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
   }

@@ -165,7 +165,7 @@ public enum ModelField {
    * Optional: if present, it must have same dimension as {@link #mets}.
    * Data type: cell array of strings.
    */
-  metKEGGID,
+  metKeggID,
   /**
    * Descriptive metabolite names, must have same dimension as {@link #mets}.
    * Datatype: cell array of strings. Corresponds to {@link Species#getName()}
@@ -222,6 +222,10 @@ public enum ModelField {
    */
   rules,
   /**
+   * TODO: description COG
+   */
+  rxnCOG,
+  /**
    * Cell array of strings, can any value in a range of 0 to 4. Length must be
    * equal to the number of reactions.
    */
@@ -253,6 +257,10 @@ public enum ModelField {
    * number of reactions. Data type: cell array of string. Corresponds to the
    * name of a {@link Reaction}.
    */
+  /**
+   * TODO: description KEGG Orthology
+   */
+  rxnKeggOrthology,
   rxnNames,
   /**
    * E. C. number for each reaction

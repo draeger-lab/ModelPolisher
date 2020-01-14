@@ -46,7 +46,7 @@ public class BiGGId {
     ATPM("[Aa][Tt][Pp][Mm]"),
     BIOMASS("([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
     COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
-    PSEUDO("([Ee][Xx]_)|([Dd][Mm]_)|([Ss][Kk]_)"),
+    PSEUDO("([Ee][Xx]_).*|([Dd][Mm]_).*|([Ss][Kk]_).*"),
     UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)" + "(?:_(?<compartment>[a-z][a-z0-9]?))?"
         + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
 

@@ -11,34 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.miriam.Registry;
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -47,17 +26,13 @@ import org.sbml.jsbml.util.ModelBuilder;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
-import us.hebi.matlab.mat.types.Array;
-import us.hebi.matlab.mat.types.Cell;
-import us.hebi.matlab.mat.types.Char;
+import us.hebi.matlab.mat.types.*;
 import us.hebi.matlab.mat.types.MatFile.Entry;
-import us.hebi.matlab.mat.types.MatlabType;
-import us.hebi.matlab.mat.types.Matrix;
-import us.hebi.matlab.mat.types.Struct;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -110,7 +85,7 @@ public class COBRAparser {
    * @return
    * @throws IOException
    */
-  public static List<SBMLDocument> read(File matFile, boolean omitGenericTerms) throws IOException {
+  public static SBMLDocument read(File matFile, boolean omitGenericTerms) throws IOException {
     COBRAparser parser = new COBRAparser();
     parser.setOmitGenericTerms(omitGenericTerms);
     return parser.parse(matFile);
@@ -123,9 +98,9 @@ public class COBRAparser {
    * @throws IOException
    */
   // returns List<SBMLDocument> after parsing
-  private List<SBMLDocument> parse(File matFile) throws IOException {
+  private SBMLDocument parse(File matFile) throws IOException {
     Mat5File mat5File = Mat5.readFromFile(matFile);
-    return parseModels(getModels(mat5File));
+    return parseModel(getModel(mat5File));
   }
 
 
@@ -134,51 +109,47 @@ public class COBRAparser {
    * @return
    */
   // returns Map of arrayName, Array
-  private HashMap<String, Array> getModels(Mat5File mat5File) {
-    Iterable<Entry> entries = mat5File.getEntries();
-    HashMap<String, Array> content = new HashMap<>();
-    // add entries to content
-    // analogous to lookup in the library
-    for (Entry entry : entries) {
+  private Map<String, Array> getModel(Mat5File mat5File) {
+    Map<String, Array> content = new HashMap<>();
+    for (Entry entry : mat5File.getEntries()) {
       content.put(entry.getName(), entry.getValue());
     }
-    Iterator<String> keyIter = content.keySet().iterator();
-    HashMap<String, Array> models = new HashMap<>();
-    while (keyIter.hasNext()) {
-      String name = keyIter.next();
+    Map<String, Array> nameModel = new HashMap<>(1);
+    Iterator<String> keys = content.keySet().iterator();
+    while (keys.hasNext()) {
+      // only fetch and process first model in file, assume other models present are equal to it
+      String name = keys.next();
       Array array = content.get(name);
       if ((array.getNumElements() == 1) && array.getType() == MatlabType.Structure) {
-        models.put(name, array);
+        nameModel.put(name, array);
+        break;
       }
     }
     if (content.keySet().size() > 1) {
-      logger.warning(
-        format(mpMessageBundle.getString("MORE_MODELS_COBRA_FILE"), content.keySet().size(), models.size()));
+      logger.warning(format(mpMessageBundle.getString("MORE_MODELS_COBRA_FILE"), content.keySet().size()));
     }
-    return models;
+    return nameModel;
   }
 
 
   /**
-   * @param models
+   * @param namedModel
    * @return
    */
   // input = HashMap<arrayName,Array>
-  private List<SBMLDocument> parseModels(HashMap<String, Array> models) {
-    Iterator<String> nameIter = models.keySet().iterator();
-    List<SBMLDocument> docs = new ArrayList<>();
-    while (nameIter.hasNext()) {
-      String name = nameIter.next();
-      Array model = models.get(name);
-      ModelBuilder builder = new ModelBuilder(3, 1);
-      builder.buildModel(SBMLtools.toSId(name), null);
-      SBMLDocument doc = builder.getSBMLDocument();
-      doc.addTreeNodeChangeListener(new UpdateListener());
-      // pass builder, arrayName, array for parsing
-      parseModel(builder, name, model);
-      docs.add(doc);
+  private SBMLDocument parseModel(Map<String, Array> namedModel) {
+    if (namedModel.size() != 1) {
+      return null;
     }
-    return docs;
+    Map.Entry<String, Array> entry = namedModel.entrySet().iterator().next();
+    String name = entry.getKey();
+    Array model = entry.getValue();
+    ModelBuilder builder = new ModelBuilder(3, 1);
+    builder.buildModel(SBMLtools.toSId(name), null);
+    SBMLDocument doc = builder.getSBMLDocument();
+    doc.addTreeNodeChangeListener(new UpdateListener());
+    parseModel(builder, name, model);
+    return doc;
   }
 
 
@@ -379,13 +350,8 @@ public class COBRAparser {
       }
     }
     if ((mlField.metSmile != null) && (mlField.metSmile.get(i) != null)) {
-      // For some reason, the mat files appear to store the creation date in the field smile, rather than a smiles
-      // string.
       String smile = toString(mlField.metSmile.get(i), ModelField.metSmile.name(), i + 1);
-      Date date = parseDate(smile);
-      if (date != null) {
-        species.createHistory().setCreatedDate(date);
-      } else if (!isEmptyString(smile)) {
+      if (!isEmptyString(smile)) {
         try {
           species.appendNotes("<html:p>SMILES: " + smile + "</html:p>");
         } catch (XMLStreamException exc) {
@@ -478,22 +444,24 @@ public class COBRAparser {
    * @param i
    *        the index within the cell.
    * @param term
-   * @param catalog
+   * @param collection
    */
-  private boolean addResource(Cell cell, int i, CVTerm term, String catalog) {
+  private boolean addResource(Cell cell, int i, CVTerm term, String collection) {
     boolean success = false;
     if (exists(cell, i)) {
-      String id = toMIRIAMid((Array) cell.get(i));
-      if ((id != null) && !id.isEmpty()) {
+      String id = Optional.ofNullable(toMIRIAMid((Array) cell.get(i))).orElse("");
+      if (!id.isEmpty()) {
         id = checkId(id);
-        if (validId(catalog, id)) {
-          String resource = Registry.createURI(catalog, id);
-          if (!resource.isEmpty()) {
+        String prefix = Registry.getPrefixForCollection(collection);
+        if (!prefix.isEmpty()) {
+          String resource = Registry.createURI(prefix, id);
+          resource = Registry.checkResourceUrl(resource);
+          if (resource != null) {
             term.addResource(resource);
             success = true;
             logger.finest(format(mpMessageBundle.getString("ADDED_URI_COBRA"), resource));
           } else {
-            logger.severe(format(mpMessageBundle.getString("ADD_URI_FAILED_COBRA"), catalog, id));
+            logger.severe(format(mpMessageBundle.getString("ADD_URI_FAILED_COBRA"), collection, id));
           }
         }
       }
@@ -542,6 +510,9 @@ public class COBRAparser {
    * @return: trimmed id without ';' at the end
    */
   private String checkId(String id) {
+    if (id.startsWith("InChI")){
+      return id;
+    }
     if (id.startsWith(Character.toString((char) 160)) || id.startsWith("/")) {
       id = id.substring(1);
     }
@@ -559,17 +530,17 @@ public class COBRAparser {
    * Checks if id belongs to a given collection by matching it with the
    * respective regexp
    *
-   * @param catalog:
+   * @param prefix:
    *        Miriam collection
    * @param id:
    *        id to test for membership
    * @return {@code true}, if it matches, else {@code false}
    */
-  private boolean validId(String catalog, String id) {
+  private boolean validId(String prefix, String id) {
     if (id.isEmpty()) {
       return false;
     }
-    String pattern = Registry.getPattern(catalog);
+    String pattern = Registry.getPattern(Registry.getCollectionForPrefix(prefix));
     boolean validId = false;
     if (!pattern.equals("")) {
       validId = Registry.checkPattern(id, pattern);
@@ -577,7 +548,7 @@ public class COBRAparser {
         logger.warning(format(mpMessageBundle.getString("PATTERN_MISMATCH"), id, pattern));
       }
     } else {
-      logger.severe(format(mpMessageBundle.getString("COLLECTION_UNKNOWN"), catalog));
+      logger.severe(format(mpMessageBundle.getString("COLLECTION_UNKNOWN"), prefix));
     }
     return validId;
   }
@@ -740,11 +711,14 @@ public class COBRAparser {
    * @param index
    */
   private void parseAnnotations(ModelBuilder builder, Reaction reaction, String rId, int index) {
+    if (exists(mlField.ecNumbers, index)) {
+      parseECcodes(toString(mlField.ecNumbers.get(index), ModelField.ecNumbers.name(), index + 1), reaction);
+    }
     if (exists(mlField.rxnKeggID, index)) {
       parseRxnKEGGids(toString(mlField.rxnKeggID.get(index), ModelField.rxnKeggID.name(), index + 1), reaction);
     }
-    if (exists(mlField.ecNumbers, index)) {
-      parseECcodes(toString(mlField.ecNumbers.get(index), ModelField.ecNumbers.name(), index + 1), reaction);
+    if(exists(mlField.rxnKeggOrthology, index)) {
+        parseRxnKEGGOrthology(toString(mlField.rxnKeggOrthology.get(index), ModelField.rxnKeggOrthology.name(), index + 1), reaction);
     }
     if (exists(mlField.comments, index)) {
       String comment = toString(mlField.comments.get(index), ModelField.comments.name(), index + 1);
@@ -776,6 +750,34 @@ public class COBRAparser {
     }
   }
 
+    /**
+     * @param ec
+     * @param reaction
+     */
+    private void parseECcodes(String ec, Reaction reaction) {
+        if (isEmptyString(ec)) {
+            return;
+        }
+        CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_HAS_PROPERTY);
+        StringTokenizer st = new StringTokenizer(ec, DELIM);
+        boolean match = false;
+        while (st.hasMoreElements()) {
+            String ecCode = st.nextElement().toString().trim();
+            if (!ecCode.isEmpty() && validId("ec-code", ecCode)) {
+                String resource = Registry.createURI("ec-code", ecCode);
+                if (!term.getResources().contains(resource)) {
+                    match = term.addResource(resource);
+                }
+            }
+        }
+        if (!match) {
+            logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
+        }
+        if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+            reaction.addCVTerm(term);
+        }
+    }
+
 
   /**
    * @param keggId
@@ -785,14 +787,14 @@ public class COBRAparser {
     if (isEmptyString(keggId)) {
       return;
     }
-    String catalog = "kegg.reaction";
-    String pattern = Registry.getPattern(catalog);
+    String prefix = "kegg.reaction";
+    String pattern = Registry.getPattern(Registry.getCollectionForPrefix(prefix));
     CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
       if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
-        term.addResource(Registry.createURI(catalog, kId));
+        term.addResource(Registry.createURI(prefix, kId));
       }
     }
     if (term.getResourceCount() == 0) {
@@ -804,7 +806,28 @@ public class COBRAparser {
     }
   }
 
-
+    /**
+     * @param keggId
+     * @param reaction
+     */
+    private void parseRxnKEGGOrthology(String keggId, Reaction reaction) {
+        if (isEmptyString(keggId)) {
+            return;
+        }
+        String catalog = "kegg.orthology";
+        String pattern = Registry.getPattern(Registry.getCollectionForPrefix(catalog));
+        CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
+        StringTokenizer st = new StringTokenizer(keggId, DELIM);
+        while (st.hasMoreElements()) {
+            String kId = st.nextElement().toString().trim();
+            if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
+                term.addResource(Registry.createURI(catalog, kId));
+            }
+        }
+        if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+            reaction.addCVTerm(term);
+        }
+    }
   /**
    * Searches for the first {@link CVTerm} within the given {@link SBase} that
    * has the given {@link CVTerm.Qualifier}.
@@ -824,38 +847,6 @@ public class COBRAparser {
       }
     }
     return new CVTerm(CVTerm.Type.BIOLOGICAL_QUALIFIER, qualifier);
-  }
-
-
-  /**
-   * @param ec
-   * @param reaction
-   */
-  private void parseECcodes(String ec, Reaction reaction) {
-    if (isEmptyString(ec)) {
-      return;
-    }
-    CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_HAS_PROPERTY);
-    StringTokenizer st = new StringTokenizer(ec, DELIM);
-    boolean match = false;
-    while (st.hasMoreElements()) {
-      String ecCode = st.nextElement().toString().trim();
-      // if (ecCode.startsWith("E") || ecCode.startsWith("T")) {
-      // ecCode = ecCode.substring(1);
-      // }
-      if ((ecCode != null) && !ecCode.isEmpty() && validId("ec-code", ecCode)) {
-        String resource = Registry.createURI("ec-code", ecCode);
-        if ((resource != null) && !term.getResources().contains(resource)) {
-          match = term.addResource(resource);
-        }
-      }
-    }
-    if (!match) {
-      logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
-    }
-    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-      reaction.addCVTerm(term);
-    }
   }
 
 
@@ -887,8 +878,8 @@ public class COBRAparser {
     StringTokenizer st = new StringTokenizer(citation, ",");
     while (st.hasMoreElements()) {
       String ref = st.nextElement().toString().trim();
-      if (!addResource(ref, term, "PubMed")) {
-        if (!addResource(ref, term, "DOI")) {
+      if (!addResource(ref, term, "pubmed")) {
+        if (!addResource(ref, term, "doi")) {
           if (otherCitation.length() > 0) {
             otherCitation.append(", ");
           }
@@ -921,10 +912,10 @@ public class COBRAparser {
    *
    * @param resource
    * @param term
-   * @param catalog
+   * @param prefix
    * @return {@code true} if successful, {@code false} otherwise.
    */
-  private boolean addResource(String resource, CVTerm term, String catalog) {
+  private boolean addResource(String resource, CVTerm term, String prefix) {
     StringTokenizer st = new StringTokenizer(resource, " ");
     while (st.hasMoreElements()) {
       String r = st.nextElement().toString().trim();
@@ -937,12 +928,12 @@ public class COBRAparser {
         r = r.substring(0, r.length() - 1);
       }
       r = checkId(r);
-      if (validId(catalog, r)) {
+      if (validId(prefix, r)) {
         if (!resource.isEmpty()) {
           if (st.countTokens() > 1) {
-            logger.warning(format(mpMessageBundle.getString("SKIP_COMMENT"), resource, r, catalog));
+            logger.warning(format(mpMessageBundle.getString("SKIP_COMMENT"), resource, r, prefix));
           }
-          resource = Registry.createURI(catalog, r);
+          resource = Registry.createURI(prefix, r);
           logger.finest(format(mpMessageBundle.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }
@@ -974,9 +965,8 @@ public class COBRAparser {
    * @param model
    */
   private void parseSubsystems(Model model) {
-    Map<String, Group> nameToGroup = new HashMap<>(); // this is to avoid
-    // creating the identical
-    // group multiple times.
+      // this is to avoid creating the identical group multiple times.
+    Map<String, Group> nameToGroup = new HashMap<>();
     GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
     for (int i = 0; (mlField.subSystems != null) && (i < mlField.subSystems.getNumElements()); i++) {
       String name = toString(mlField.subSystems.get(i), ModelField.subSystems.name(), i + 1);

@@ -4,8 +4,9 @@
     <entry key="ABREV_INVALID">Invalid abbreviation: ''{0}'</entry>
     <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also. NOTE: Effective only if 'annotate-with-bigg' is true.</entry>
     <entry key="ADD_KIND_TO_GROUP">Adding missing kind attribute to group {0}.</entry>
-    <entry key="ADD_PREFIX_GI">Adding missing GI: prefix.</entry>
-    <entry key="ADD_PREFIX_GO">Adding missing GO: prefix.</entry>
+    <entry key="ADD_PREFIX_CHEBI">Adding missing CHEBI: namespace.</entry>
+    <entry key="ADD_PREFIX_GI">Adding missing GI: namespace.</entry>
+    <entry key="ADD_PREFIX_GO">Adding missing GO: namespace.</entry>
     <entry key="ADD_URI_FAILED_COBRA">Could not obtain resource URI for collection ''{0}'' and id ''{1}''.</entry>
     <entry key="ADDED_FLUX_OBJ">Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.</entry>
     <entry key="ADDED_UNIT_DEF">Added basic mmol_per_gDW_per_hr unit definition to model</entry>

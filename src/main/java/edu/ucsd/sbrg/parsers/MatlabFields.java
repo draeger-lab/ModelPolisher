@@ -46,8 +46,10 @@ class MatlabFields {
   Cell name;
   Cell notes;
   Cell organism;
-  Cell rxnKeggID;
   Cell rxns;
+  Cell rxnCOG;
+  Cell rxnKeggID;
+  Cell rxnKeggOrthology;
   Cell rxnNames;
   Cell subSystems;
   Char csense;
@@ -90,13 +92,15 @@ class MatlabFields {
     metFormulas = toCell(getStructField(ModelField.metFormulas), ModelField.metFormulas.name());
     metHMDB = toCell(getStructField(ModelField.metHMDB), ModelField.metHMDB.name());
     metInchiString = toCell(getStructField(ModelField.metInchiString), ModelField.metInchiString.name());
-    metKeggID = toCell(getStructField(ModelField.metKEGGID), ModelField.metKEGGID.name());
+    metKeggID = toCell(getStructField(ModelField.metKeggID), ModelField.metKeggID.name());
     metNames = toCell(getStructField(ModelField.metNames), ModelField.metNames.name());
     metPubChemID = toCell(getStructField(ModelField.metPubChemID), ModelField.metPubChemID.name());
     metSmile = toCell(getStructField(ModelField.metSmile), ModelField.metSmile.name());
     rev = toNumericArrayMatrix(getStructField(ModelField.rev));
     rxns = toCell(getStructField(ModelField.rxns), ModelField.rxns.name());
+    rxnCOG = toCell(getStructField(ModelField.rxnCOG), ModelField.rxnCOG.name());
     rxnKeggID = toCell(getStructField(ModelField.rxnKeggID), ModelField.rxnKeggID.name());
+    rxnKeggOrthology = toCell(getStructField(ModelField.rxnKeggOrthology), ModelField.rxnKeggOrthology.name());
     rxnNames = toCell(getStructField(ModelField.rxnNames), ModelField.rxnNames.name());
     S = toSparse(getStructField(ModelField.S), ModelField.S.name());
     subSystems = toCell(getStructField(ModelField.subSystems), ModelField.subSystems.name());

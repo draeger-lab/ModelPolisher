@@ -1,7 +1,7 @@
 package edu.ucsd.sbrg.miriam;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.miriam.models.Miriam;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import static java.text.MessageFormat.format;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,8 +12,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
-import static java.text.MessageFormat.format;
+import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.miriam.models.Miriam;
 
 public class Registry {
 
@@ -49,7 +49,6 @@ public class Registry {
    * Mapping collection name to provider code
    */
   private static final Map<String, String> prefixForCollection = new HashMap<>();
-
   /*
    * Static initializer for Miriam, read registry once and convert to compact representation
    */
@@ -57,7 +56,7 @@ public class Registry {
     Miriam miriam = RegistryProvider.getInstance().getMiriam();
     // convert namespaces to CompactEntries, holding only the necessary information for ModelPolisher
     entries =
-        miriam.getNamespaces().values().parallelStream().map(CompactEntry::fromNamespace).collect(Collectors.toList());
+      miriam.getNamespaces().values().parallelStream().map(CompactEntry::fromNamespace).collect(Collectors.toList());
     // Free unneeded resources for GC
     RegistryProvider.close();
     // Create helper structures for fast access
@@ -116,21 +115,36 @@ public class Registry {
   }
 
 
+  public static String getPrefixForCollection(String collection) {
+    return prefixForCollection.getOrDefault(collection, "");
+  }
+
+
+  public static String getCollectionForPrefix(String prefix) {
+    return collectionForPrefix.getOrDefault(prefix, "");
+  }
+
+
   /**
    * Checks resource URIs and logs those not matching the specified pattern
    * Used to check URIs obtained from BiGGDB
    * A resource URI that does not match the pattern will be logged and not added
    * to the model
    *
-   * @param resource: resource URI to be added as annotation
+   * @param resource:
+   *        resource URI to be added as annotation
    * @return corrected resource URI
    */
   public static String checkResourceUrl(String resource) {
+    // TODO: clarify what to do with ncbigi entries, don't write them for now
+    if (resource.contains("ncbigi")) {
+      return null;
+    }
     /*
      * Either [namespace prefix]:[accession] or [provider code]/[namespace prefix]:[accession] second option is
      * currently not strict - older URIs with only accession are supported, if provider code is given
      */
-    Pattern identifiersURL = Pattern.compile("(?:https?://)?identifiers.org/(?:(?<provider>.*)/)?(?<id>.*)");
+    Pattern identifiersURL = Pattern.compile("(?:https?://)?identifiers.org/(?:(?<provider>.*?)/)?(?<id>.*)");
     Matcher urlMatcher = identifiersURL.matcher(resource);
     String provider = "";
     String identifier = "";
@@ -160,14 +174,15 @@ public class Registry {
     String query = identifier;
     if (provider.isEmpty()) {
       List<String> collections =
-          collectionForPattern.keySet().stream().filter(s -> Pattern.compile(s).matcher(query).matches())
-              .collect(Collectors.toList());
+        collectionForPattern.keySet().stream().filter(s -> Pattern.compile(s).matcher(query).matches())
+                            .collect(Collectors.toList());
       if (collections.size() == 1) {
         String collection = collections.get(0);
         provider = prefixForCollection.get(collection);
       }
     }
     if (!collectionForPrefix.containsKey(provider)) {
+      logger.severe(provider);
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
@@ -186,6 +201,7 @@ public class Registry {
     return resource;
   }
 
+
   /**
    * Get pattern from collection name
    *
@@ -196,9 +212,12 @@ public class Registry {
     return patternForCollection.getOrDefault(collection, "");
   }
 
+
   /**
-   * @param id:      Id part of annotation URL
-   * @param pattern: Pattern for matching collection
+   * @param id:
+   *        Id part of annotation URL
+   * @param pattern:
+   *        Pattern for matching collection
    * @return
    */
   public static Boolean checkPattern(String id, String pattern) {
@@ -212,25 +231,24 @@ public class Registry {
    * @return
    */
   private static String fixResource(String resource, String identifier) {
-    if (resource.contains("kegg")) {
-      // We can correct the kegg collection
-      resource = fixKEGGCollection(resource, identifier);
-    } else if (resource.contains("ncbigi")) {
-      // add possibly missing "gi:" prefix to identifier
-      resource = fixGI(resource, identifier);
-    } else if (resource.contains("go") && !resource.contains("goa")) {
-      resource = fixGO(resource, identifier);
+    if (resource.contains("chebi")) {
+      resource = fixChEBI(resource, identifier);
     } else if (resource.contains("ec-code")) {
       resource = fixECCode(resource, identifier);
+    } else if (resource.contains("go") && !resource.contains("goa")) {
+      resource = fixGO(resource, identifier);
+    } else if (resource.contains("kegg")) {
+      // We can correct the kegg collection
+      resource = fixKEGGCollection(resource, identifier);
+    } else if (resource.contains("reactome")) {
+      String resource_old = resource;
+      resource = fixReactome(resource, identifier);
+      logger.info(format(mpMessageBundle.getString("CHANGED_REACTOME"), resource_old, resource));
     } else if (resource.contains("rhea") && resource.contains("#")) {
       // remove last part, it's invalid either way, even though it gets resolved due to misinterpretation as non
       // existing anchor
       resource = resource.split("#")[0];
       logger.info(format(mpMessageBundle.getString("CHANGED_RHEA"), resource));
-    } else if (resource.contains("reactome")) {
-      String resource_old = resource;
-      resource = fixReactome(resource, identifier);
-      logger.info(format(mpMessageBundle.getString("CHANGED_REACTOME"), resource_old, resource));
     } else {
       resource = null;
     }
@@ -238,21 +256,14 @@ public class Registry {
   }
 
 
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixKEGGCollection(String resource, String identifier) {
-    if (identifier.startsWith("D")) {
-      logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
-      resource = replace(resource, "kegg.compound", "kegg.drug");
-    } else if (identifier.startsWith("G")) {
-      logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
-      resource = replace(resource, "kegg.compound", "kegg.glycan");
+  private static String fixChEBI(String resource, String identifier) {
+    if (Pattern.compile("\\d+").matcher(identifier).matches()) {
+      logger.info(mpMessageBundle.getString("ADD_PREFIX_CHEBI"));
+      resource = replace(resource, identifier, "CHEBI:" + identifier);
     }
     return resource;
   }
+
 
   /**
    * @param resource
@@ -262,33 +273,6 @@ public class Registry {
    */
   public static String replace(String resource, String pattern, String replacement) {
     return resource.replaceAll(pattern, replacement);
-  }
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixGI(String resource, String identifier) {
-    if (!identifier.toLowerCase().startsWith("gi:")) {
-      logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
-      return replace(resource, identifier, "GI:" + identifier);
-    }
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixGO(String resource, String identifier) {
-    if (!identifier.toLowerCase().startsWith("go:")) {
-      logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
-      return replace(resource, identifier, "GO:" + identifier);
-    }
-    return resource;
   }
 
 
@@ -312,6 +296,37 @@ public class Registry {
    * @param identifier
    * @return
    */
+  private static String fixGO(String resource, String identifier) {
+    if (!identifier.toLowerCase().startsWith("go:")) {
+      logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
+      return replace(resource, identifier, "GO:" + identifier);
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
+  private static String fixKEGGCollection(String resource, String identifier) {
+    if (identifier.startsWith("D")) {
+      logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
+      resource = replace(resource, "kegg.compound", "kegg.drug");
+    } else if (identifier.startsWith("G")) {
+      logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
+      resource = replace(resource, "kegg.compound", "kegg.glycan");
+    }
+    return resource;
+  }
+
+
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
   private static String fixReactome(String resource, String identifier) {
     if (!identifier.startsWith("R-ALL-REACT_")) {
       return null;
@@ -319,7 +334,7 @@ public class Registry {
     identifier = identifier.split("_")[1];
     resource = replace(resource, "R-ALL-REACT_", "");
     String collection = getDataCollectionPartFromURI(resource);
-    //fixme
+    // fixme
     if (checkPattern(identifier, patternForCollection.get("Reactome"))) {
       return createURI(collection, identifier);
     } else {
@@ -328,12 +343,11 @@ public class Registry {
   }
 
 
-
-
   /**
    * Get collection from identifiers.org URI
    *
-   * @param resource: identifiers.org URI
+   * @param resource:
+   *        identifiers.org URI
    * @return
    */
   public static String getDataCollectionPartFromURI(String resource) {
@@ -343,5 +357,4 @@ public class Registry {
       return resource.split("/")[2];
     }
   }
-
 }
