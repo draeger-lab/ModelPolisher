@@ -163,9 +163,9 @@ public class SBMLPolisher {
     Model model = doc.getModel();
     polish(model);
     doc.setSBOTerm(624); // flux balance framework
-    if (progress != null) {
-      progress.finished();
-    }
+    // if (progress != null) {
+     // progress.finished();
+    // }
     return doc;
   }
 
@@ -183,8 +183,8 @@ public class SBMLPolisher {
       FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
     }
-    progress = new ProgressBar(count);
-    progress.DisplayBar(); // "Processing model " + model.getId());
+    //progress = new ProgressBar(count);
+    //progress.DisplayBar(); // "Processing model " + model.getId());
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
     }
@@ -214,7 +214,7 @@ public class SBMLPolisher {
    * @param model
    */
   public void polishListOfUnitDefinitions(Model model) {
-    progress.DisplayBar(); // "Processing unit definitions");
+    // progress.DisplayBar(); // "Processing unit definitions");
     int udCount = model.getUnitDefinitionCount();
     ListOf<UnitDefinition> unitDefinitions = model.getListOfUnitDefinitions();
     UnitDefinition mmol_per_gDW_per_hr = setBasicUnitDefinition(model);
@@ -265,9 +265,9 @@ public class SBMLPolisher {
         break;
       }
     }
-    while (progress.getCallNumber() < udCount) {
-      progress.DisplayBar();
-    }
+    //while (progress.getCallNumber() < udCount) {
+    //  progress.DisplayBar();
+    //}
   }
 
 
@@ -326,7 +326,7 @@ public class SBMLPolisher {
   public void polishListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
       Compartment c = model.getCompartment(i);
-      progress.DisplayBar(); // "Processing compartment " + c.getId());
+      // progress.DisplayBar(); // "Processing compartment " + c.getId());
       polish(c);
     }
   }
@@ -374,7 +374,7 @@ public class SBMLPolisher {
   public void polishListOfSpecies(Model model) {
     for (int i = 0; i < model.getSpeciesCount(); i++) {
       Species species = model.getSpecies(i);
-      progress.DisplayBar(); // "Processing species " + species.getId());
+      // progress.DisplayBar(); // "Processing species " + species.getId());
       polish(species);
     }
   }
@@ -456,7 +456,7 @@ public class SBMLPolisher {
     for (int i = 0; i < model.getReactionCount(); i++) {
       Reaction r = model.getReaction(i);
       strict &= polish(r);
-      progress.DisplayBar(); // "Processing reaction " + r.getId());
+      // progress.DisplayBar(); // "Processing reaction " + r.getId());
     }
     return strict;
   }
@@ -694,7 +694,7 @@ public class SBMLPolisher {
   public boolean polishListOfInitialAssignments(Model model, boolean strict) {
     for (InitialAssignment ia : model.getListOfInitialAssignments()) {
       Variable variable = ia.getVariableInstance();
-      progress.DisplayBar(); // "Processing initial assignment for " + variable.getId());
+      // progress.DisplayBar(); // "Processing initial assignment for " + variable.getId());
       if (variable != null) {
         if (variable instanceof Parameter) {
           if (variable.isSetSBOTerm() && SBO.isChildOf(variable.getSBOTerm(), 625)) {
@@ -721,7 +721,7 @@ public class SBMLPolisher {
       logger.warning(format(mpMessageBundle.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
     } else {
       for (Objective objective : modelPlug.getListOfObjectives()) {
-        progress.DisplayBar(); // "Processing objective " + objective.getId());
+        // progress.DisplayBar(); // "Processing objective " + objective.getId());
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug, fluxCoefficients,
@@ -796,7 +796,7 @@ public class SBMLPolisher {
    */
   public void polishListOfGeneProducts(FBCModelPlugin fbcModelPlug) {
     for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-      progress.DisplayBar(); // "Processing gene product " +
+      // progress.DisplayBar(); // "Processing gene product " +
       // geneProduct.getId());
       polish(geneProduct);
     }
@@ -836,7 +836,7 @@ public class SBMLPolisher {
   public void polishListOfParameters(Model model) {
     for (int i = 0; i < model.getParameterCount(); i++) {
       Parameter parameter = model.getParameter(i);
-      progress.DisplayBar(); // "Processing parameter " + parameter.getId());
+      // progress.DisplayBar(); // "Processing parameter " + parameter.getId());
       polish(parameter);
     }
   }

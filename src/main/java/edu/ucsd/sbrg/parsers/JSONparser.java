@@ -6,25 +6,14 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
+import javax.xml.stream.XMLStreamException;
+
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -32,13 +21,12 @@ import org.sbml.jsbml.util.ModelBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.parsers.models.Compartments;
-import edu.ucsd.sbrg.parsers.models.Gene;
-import edu.ucsd.sbrg.parsers.models.Metabolite;
+import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.parsers.models.*;
 import edu.ucsd.sbrg.parsers.models.Reaction;
-import edu.ucsd.sbrg.parsers.models.Root;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
@@ -113,9 +101,8 @@ public class JSONparser {
     // get Model and set all informational fields
     Model model = builder.getModel();
     model.setVersion(root.getVersion());
-    String annotations = parseAnnotation(root.getAnnotation());
-    String notes = parseNotes(root.getNotes());
-    // TODO: set annotation and notes
+    parseAnnotation(model, root.getAnnotation());
+    parseNotes(model, root.getNotes());
     // Generate basic unit:
     UnitDefinition ud = builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
     ModelBuilder.buildUnit(ud, 1d, -3, Unit.Kind.MOLE, 1d);
@@ -132,15 +119,76 @@ public class JSONparser {
   }
 
 
-  private String parseAnnotation(Object annotation) {
-    // TODO: implement
-    return "";
+  private void parseAnnotation(SBase node, Object annotation) {
+    Set<String> annotations = new HashSet<>();
+    if (Optional.ofNullable(annotation).orElse("").equals("")) {
+      return;
+    }
+    if (annotation instanceof LinkedHashMap) {
+      for (Map.Entry<String, Object> entry : ((LinkedHashMap<String, Object>) annotation).entrySet()) {
+        String providerCode = entry.getKey();
+        Object ids = entry.getValue();
+        if (ids instanceof String) {
+          String resource = Registry.createURI(providerCode, ids);
+          resource = Registry.checkResourceUrl(resource);
+          if (resource != null) {
+            annotations.add(resource);
+          }
+        } else if (ids instanceof ArrayList) {
+          for (String id : ((ArrayList<String>) ids)) {
+            String resource = Registry.createURI(providerCode, id);
+            resource = Registry.checkResourceUrl(resource);
+            if (resource != null) {
+              annotations.add(resource);
+            }
+          }
+        } else {
+          logger.severe(String.format("Please report unknown id format: '%s'", ids.getClass().getName()));
+        }
+      }
+    } else {
+      logger.severe(String.format("Please report unknown annotation format: '%s'", annotation.getClass().getName()));
+    }
+    if (annotations.size() > 0) {
+      CVTerm term = new CVTerm();
+      term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
+      term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
+      annotations.forEach(term::addResource);
+      node.addCVTerm(term);
+    }
   }
 
 
-  private String parseNotes(Object notes) {
-    // TODO: implement
-    return "";
+  private void parseNotes(SBase node, Object notes) {
+    Set<String> content = new HashSet<>();
+    if (Optional.ofNullable(notes).orElse("").equals("")) {
+      return;
+    }
+    if (notes instanceof LinkedHashMap) {
+      for (Map.Entry<String, Object> entry : ((LinkedHashMap<String, Object>) notes).entrySet()) {
+        String key = entry.getKey();
+        Object value = entry.getValue();
+        if (value instanceof String) {
+          // TODO: handle this case
+        } else if (value instanceof Integer) {
+          // TODO: handle this case
+        } else if (value instanceof Boolean) {
+          // TODO: handle this case
+        } else if (value instanceof ArrayList) {
+          // TODO: handle this case
+        } else {
+          throw new IllegalArgumentException(value.getClass().getName());
+        }
+      }
+    } else if (notes instanceof String) {
+      try {
+        node.appendNotes(SBMLtools.toNotesString((String) notes));
+      } catch (XMLStreamException e) {
+        e.printStackTrace();
+      }
+    } else {
+      throw new IllegalArgumentException(notes.getClass().getName());
+    }
   }
 
 
@@ -215,10 +263,8 @@ public class JSONparser {
     }
     species.setCompartment(compartment);
     // constraint sense is specified in former parser, not specified in scheme, thus ignored for now
-    String annotation = parseAnnotation(metabolite.getAnnotation());
-    // TODO: parse annotation
-    String notes = parseNotes(metabolite.getNotes());
-    // TODO: parse notes
+    parseAnnotation(species, metabolite.getAnnotation());
+    parseNotes(species, metabolite.getNotes());
     if (species.isSetAnnotation()) {
       species.setMetaId(species.getId());
     }
@@ -261,10 +307,8 @@ public class JSONparser {
       name = id;
     }
     gp.setName(name);
-    String annotation = parseAnnotation(gene.getAnnotation());
-    // TODO: parse annotation
-    String notes = parseNotes(gene.getNotes());
-    // TODO: parse notes
+    parseAnnotation(gp, gene.getAnnotation());
+    parseNotes(gp, gene.getNotes());
   }
 
 
@@ -310,10 +354,8 @@ public class JSONparser {
     }
     createSubsystem(model, reaction, r);
     setObjectiveCoefficient(reaction, model, r);
-    String Annotation = parseAnnotation(reaction.getAnnotation());
-    // TODO: parse annotation
-    String Notes = parseNotes(reaction.getNotes());
-    // TODO: parse notes
+    parseAnnotation(r, reaction.getAnnotation());
+    parseNotes(r, reaction.getNotes());
   }
 
 
