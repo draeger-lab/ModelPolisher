@@ -172,8 +172,7 @@ public class SBMLFix {
         fbcPlug.getListOfObjectives().firstHit(new NameFilter(fbcPlug.getListOfObjectives().getActiveObjective()));
     }
     if (activeObjective != null) {
-      Objective o = activeObjective;
-      if (!o.isSetListOfFluxObjectives()) {
+      if (!activeObjective.isSetListOfFluxObjectives()) {
         logger.severe(MessageFormat.format(mpMessageBundle.getString("TRY_GUESS_MISSING_FLUX_OBJ"), modelDescriptor));
         if (listOfReactions != null) {
           if (fluxObjectives != null) {
@@ -188,7 +187,7 @@ public class SBMLFix {
                 return (obj instanceof Reaction) && id.equals(((Reaction) obj).getId());
               });
               if (r != null) {
-                createFluxObjective(modelDescriptor, r, fluxCoefficients, o, i);
+                createFluxObjective(modelDescriptor, r, fluxCoefficients, activeObjective, i);
                 // if at least one flux objective exists, the model qualifies as
                 // strict model.
                 strict = true;
@@ -208,7 +207,7 @@ public class SBMLFix {
               return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
             });
             if (rBiomass != null) {
-              createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, o, 0);
+              createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, activeObjective, 0);
               return true;
             } else {
               logger.severe(mpMessageBundle.getString("REACTION_BIOMASS_UNKNOWN_ERROR"));

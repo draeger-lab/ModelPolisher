@@ -114,7 +114,7 @@
     <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">Output SBML file</entry>
     <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
-    <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because of {1}</entry>
+    <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because {1}</entry>
     <entry key="PARSE_ID_FAILED">Failed to correctly parse id ''{0}''. {1}</entry>
     <entry key="PATTERN_MISMATCH">Identifier ''{0}'' did not match the pattern ''{1}''</entry>
     <entry key="PATTERN_MISMATCH_DROP">Collection ''{0}'' does not match expected pattern. It will not be added as resource.</entry>

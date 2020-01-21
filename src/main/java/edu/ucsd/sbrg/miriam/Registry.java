@@ -152,26 +152,23 @@ public class Registry {
       provider = Optional.ofNullable(urlMatcher.group("provider")).orElse("");
       identifier = urlMatcher.group("id");
     } else {
-      // Handle both possible cases for non identifiers.org URLs
-      if (resource.contains("/")) {
-        String url = resource.substring(0, resource.lastIndexOf("/"));
-        if (alternativeURI.containsKey(url)) {
-          String collection = alternativeURI.get(url);
-          provider = prefixForCollection.get(collection);
-          identifier = resource.substring(0, resource.lastIndexOf("/"));
-        }
-      } else if (resource.contains(":")) {
-        String url = resource.substring(0, resource.lastIndexOf(":"));
-        if (alternativeURI.containsKey(url)) {
-          String collection = alternativeURI.get(url);
-          provider = prefixForCollection.get(collection);
-          identifier = resource.substring(0, resource.lastIndexOf(":"));
-        }
+      String url = resource.substring(0, resource.lastIndexOf("/") + 1).replaceAll("http:\\/\\/", "https://")
+                           .replaceAll("www\\.", "");
+      identifier = resource.substring(resource.lastIndexOf("/") + 1);
+      if (identifier.contains(":")) {
+        identifier = resource.substring(resource.lastIndexOf(":") + 1);
+      }
+      if (alternativeURI.containsKey(url)) {
+        String collection = alternativeURI.get(url);
+        provider = prefixForCollection.get(collection);
       }
     }
-    // TODO: check if this results in false positives
-    // Get prefix by checking for uniquely matching Regex
+    identifier = identifier.stripTrailing();
+    if (provider.matches("[A-Z]+")) {
+      provider = provider.toLowerCase();
+    }
     String query = identifier;
+    // Get prefix by checking for uniquely matching Regex
     if (provider.isEmpty()) {
       List<String> collections =
         collectionForPattern.keySet().stream().filter(s -> Pattern.compile(s).matcher(query).matches())
@@ -181,8 +178,9 @@ public class Registry {
         provider = prefixForCollection.get(collection);
       }
     }
-    if (!collectionForPrefix.containsKey(provider)) {
-      logger.severe(provider);
+    if (!collectionForPrefix.containsKey(provider) && prefixForCollection.containsKey(provider)) {
+      provider = prefixForCollection.get(provider);
+    } else if (!collectionForPrefix.containsKey(provider)) {
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
@@ -237,6 +235,9 @@ public class Registry {
       resource = fixECCode(resource, identifier);
     } else if (resource.contains("go") && !resource.contains("goa")) {
       resource = fixGO(resource, identifier);
+    } else if (resource.contains("hmdb") && identifier.startsWith("/")) {
+      resource = replace(resource, identifier, identifier.substring(1));
+      logger.severe(String.format("Changed identifier '%s' to '%s'", identifier, identifier.substring(1)));
     } else if (resource.contains("kegg")) {
       // We can correct the kegg collection
       resource = fixKEGGCollection(resource, identifier);
@@ -244,6 +245,11 @@ public class Registry {
       String resource_old = resource;
       resource = fixReactome(resource, identifier);
       logger.info(format(mpMessageBundle.getString("CHANGED_REACTOME"), resource_old, resource));
+    } else if (resource.contains("refseq") && resource.contains("WP_")) {
+      resource = replace(resource, "refseq", "ncbiprotein");
+      logger.info(String.format(
+        "Ids starting with 'WP_' seem to belong to 'ncbiprotein', not 'refseq'. Changed accordingly for '%s'",
+        resource));
     } else if (resource.contains("rhea") && resource.contains("#")) {
       // remove last part, it's invalid either way, even though it gets resolved due to misinterpretation as non
       // existing anchor
@@ -328,15 +334,14 @@ public class Registry {
    * @return
    */
   private static String fixReactome(String resource, String identifier) {
-    if (!identifier.startsWith("R-ALL-REACT_")) {
-      return null;
+    if (identifier.startsWith("R-ALL-REACT_")) {
+      identifier = identifier.split("_")[1];
     }
-    identifier = identifier.split("_")[1];
-    resource = replace(resource, "R-ALL-REACT_", "");
-    String collection = getDataCollectionPartFromURI(resource);
-    // fixme
+    if (Character.isDigit(identifier.charAt(0))) {
+      identifier = "R-ALL-" + identifier;
+    }
     if (checkPattern(identifier, patternForCollection.get("Reactome"))) {
-      return createURI(collection, identifier);
+      return createURI("reactome", identifier);
     } else {
       return null;
     }

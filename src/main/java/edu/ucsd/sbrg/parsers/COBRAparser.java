@@ -284,7 +284,7 @@ public class COBRAparser {
       }
       if (mlField.notes != null) {
         try {
-          model.appendNotes(SBMLtools.toNotesString(toString(mlField.notes)));
+          model.appendNotes(SBMLtools.toNotesString("<p>" + toString(mlField.notes) + "</p>"));
         } catch (XMLStreamException exc) {
           logException(exc);
         }
@@ -454,7 +454,12 @@ public class COBRAparser {
         id = checkId(id);
         String prefix = Registry.getPrefixForCollection(collection);
         if (!prefix.isEmpty()) {
-          String resource = Registry.createURI(prefix, id);
+          String resource;
+          if (id.startsWith("http")) {
+            resource = id;
+          } else {
+            resource = Registry.createURI(prefix, id);
+          }
           resource = Registry.checkResourceUrl(resource);
           if (resource != null) {
             term.addResource(resource);
@@ -510,7 +515,7 @@ public class COBRAparser {
    * @return: trimmed id without ';' at the end
    */
   private String checkId(String id) {
-    if (id.startsWith("InChI")){
+    if (id.startsWith("InChI")) {
       return id;
     }
     if (id.startsWith(Character.toString((char) 160)) || id.startsWith("/")) {
@@ -717,8 +722,9 @@ public class COBRAparser {
     if (exists(mlField.rxnKeggID, index)) {
       parseRxnKEGGids(toString(mlField.rxnKeggID.get(index), ModelField.rxnKeggID.name(), index + 1), reaction);
     }
-    if(exists(mlField.rxnKeggOrthology, index)) {
-        parseRxnKEGGOrthology(toString(mlField.rxnKeggOrthology.get(index), ModelField.rxnKeggOrthology.name(), index + 1), reaction);
+    if (exists(mlField.rxnKeggOrthology, index)) {
+      parseRxnKEGGOrthology(
+        toString(mlField.rxnKeggOrthology.get(index), ModelField.rxnKeggOrthology.name(), index + 1), reaction);
     }
     if (exists(mlField.comments, index)) {
       String comment = toString(mlField.comments.get(index), ModelField.comments.name(), index + 1);
@@ -750,33 +756,34 @@ public class COBRAparser {
     }
   }
 
-    /**
-     * @param ec
-     * @param reaction
-     */
-    private void parseECcodes(String ec, Reaction reaction) {
-        if (isEmptyString(ec)) {
-            return;
-        }
-        CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_HAS_PROPERTY);
-        StringTokenizer st = new StringTokenizer(ec, DELIM);
-        boolean match = false;
-        while (st.hasMoreElements()) {
-            String ecCode = st.nextElement().toString().trim();
-            if (!ecCode.isEmpty() && validId("ec-code", ecCode)) {
-                String resource = Registry.createURI("ec-code", ecCode);
-                if (!term.getResources().contains(resource)) {
-                    match = term.addResource(resource);
-                }
-            }
-        }
-        if (!match) {
-            logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
-        }
-        if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-            reaction.addCVTerm(term);
-        }
+
+  /**
+   * @param ec
+   * @param reaction
+   */
+  private void parseECcodes(String ec, Reaction reaction) {
+    if (isEmptyString(ec)) {
+      return;
     }
+    CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_HAS_PROPERTY);
+    StringTokenizer st = new StringTokenizer(ec, DELIM);
+    boolean match = false;
+    while (st.hasMoreElements()) {
+      String ecCode = st.nextElement().toString().trim();
+      if (!ecCode.isEmpty() && validId("ec-code", ecCode)) {
+        String resource = Registry.createURI("ec-code", ecCode);
+        if (!term.getResources().contains(resource)) {
+          match = term.addResource(resource);
+        }
+      }
+    }
+    if (!match) {
+      logger.warning(format(mpMessageBundle.getString("EC_CODES_UNKNOWN"), ec));
+    }
+    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+      reaction.addCVTerm(term);
+    }
+  }
 
 
   /**
@@ -806,28 +813,31 @@ public class COBRAparser {
     }
   }
 
-    /**
-     * @param keggId
-     * @param reaction
-     */
-    private void parseRxnKEGGOrthology(String keggId, Reaction reaction) {
-        if (isEmptyString(keggId)) {
-            return;
-        }
-        String catalog = "kegg.orthology";
-        String pattern = Registry.getPattern(Registry.getCollectionForPrefix(catalog));
-        CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
-        StringTokenizer st = new StringTokenizer(keggId, DELIM);
-        while (st.hasMoreElements()) {
-            String kId = st.nextElement().toString().trim();
-            if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
-                term.addResource(Registry.createURI(catalog, kId));
-            }
-        }
-        if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
-            reaction.addCVTerm(term);
-        }
+
+  /**
+   * @param keggId
+   * @param reaction
+   */
+  private void parseRxnKEGGOrthology(String keggId, Reaction reaction) {
+    if (isEmptyString(keggId)) {
+      return;
     }
+    String catalog = "kegg.orthology";
+    String pattern = Registry.getPattern(Registry.getCollectionForPrefix(catalog));
+    CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
+    StringTokenizer st = new StringTokenizer(keggId, DELIM);
+    while (st.hasMoreElements()) {
+      String kId = st.nextElement().toString().trim();
+      if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
+        term.addResource(Registry.createURI(catalog, kId));
+      }
+    }
+    if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
+      reaction.addCVTerm(term);
+    }
+  }
+
+
   /**
    * Searches for the first {@link CVTerm} within the given {@link SBase} that
    * has the given {@link CVTerm.Qualifier}.
@@ -892,7 +902,7 @@ public class COBRAparser {
         if (reaction.isSetNotes()) {
           reaction.appendNotes("\n\nReference: " + otherCitation);
         } else {
-          reaction.appendNotes(SBMLtools.toNotesString("Reference: " + otherCitation.toString()));
+          reaction.appendNotes(SBMLtools.toNotesString("<p>Reference: " + otherCitation.toString() + "</p>"));
         }
       } catch (XMLStreamException exc) {
         logException(exc);
@@ -965,7 +975,7 @@ public class COBRAparser {
    * @param model
    */
   private void parseSubsystems(Model model) {
-      // this is to avoid creating the identical group multiple times.
+    // this is to avoid creating the identical group multiple times.
     Map<String, Group> nameToGroup = new HashMap<>();
     GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
     for (int i = 0; (mlField.subSystems != null) && (i < mlField.subSystems.getNumElements()); i++) {

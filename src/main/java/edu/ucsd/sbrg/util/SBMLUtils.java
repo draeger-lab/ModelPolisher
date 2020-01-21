@@ -16,19 +16,7 @@ import javax.swing.tree.TreeNode;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.And;
-import org.sbml.jsbml.ext.fbc.Association;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
-import org.sbml.jsbml.ext.fbc.ListOfObjectives;
-import org.sbml.jsbml.ext.fbc.LogicalOperator;
-import org.sbml.jsbml.ext.fbc.Objective;
-import org.sbml.jsbml.ext.fbc.Or;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
@@ -50,6 +38,25 @@ public class SBMLUtils {
    * that reaction.
    */
   public static final String SUBSYSTEM_LINK = "SUBSYSTEM_LINK";
+
+  // TODO: update for BiGGId changes
+  /**
+   * @param r
+   * @param geneReactionRule
+   */
+  public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
+    if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
+      try {
+        Association association = SBMLUtils.convertToAssociation(
+          ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
+          omitGenericTerms);
+        parseGPR(r, association, omitGenericTerms);
+      } catch (Throwable exc) {
+        logger.warning(
+          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
+      }
+    }
+  }
 
 
   /**
@@ -101,41 +108,22 @@ public class SBMLUtils {
   public static GeneProductRef createGPR(String identifier, String reactionId, Model model) {
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
-    String id = SBMLUtils.updateGeneId(identifier);
     // check if this id exists in the model
-    if (!model.containsUniqueNamedSBase(id)) {
+    identifier = updateGeneId(identifier);
+    if (!model.containsUniqueNamedSBase(identifier)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
-        logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
+        logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), identifier, reactionId));
         FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        gp = fbcPlug.createGeneProduct(id);
-        gp.setLabel(id);
+        gp = fbcPlug.createGeneProduct(identifier);
+        gp.setLabel(identifier);
       } else {
-        logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
-        gp.setId(id);
+        logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), identifier));
+        gp.setId(identifier);
       }
     }
-    gpr.setGeneProduct(id);
+    gpr.setGeneProduct(identifier);
     return gpr;
-  }
-
-  //TODO: update for BiGGId changes
-  /**
-   * @param r
-   * @param geneReactionRule
-   */
-  public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
-    if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
-      try {
-        Association association = SBMLUtils.convertToAssociation(
-          ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))), r.getId(), r.getModel(),
-          omitGenericTerms);
-        parseGPR(r, association, omitGenericTerms);
-      } catch (Throwable exc) {
-        logger.warning(
-          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
-      }
-    }
   }
 
 
@@ -228,18 +216,17 @@ public class SBMLUtils {
     }
     return new HashSet<String>();
   }
-
-
-  //TODO: update for BiGGId changes
+  
   /**
    * @param id
    * @return
    */
   public static String updateGeneId(String id) {
-    id = id.replace("-", "_");
-    // id = id.replace(".", "_AT");
     if (!id.startsWith("G_")) {
-      id = "G_" + id;
+     id = "G_" + id;
+    }
+    if (id.contains(".")) {
+      id = id.replaceAll("\\.", "_DOT_");
     }
     return id;
   }

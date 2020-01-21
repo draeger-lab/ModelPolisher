@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -120,34 +121,17 @@ public class JSONparser {
 
 
   private void parseAnnotation(SBase node, Object annotation) {
-    Set<String> annotations = new HashSet<>();
     if (Optional.ofNullable(annotation).orElse("").equals("")) {
       return;
     }
+    Set<String> annotations = new HashSet<>();
     if (annotation instanceof LinkedHashMap) {
       for (Map.Entry<String, Object> entry : ((LinkedHashMap<String, Object>) annotation).entrySet()) {
-        String providerCode = entry.getKey();
-        Object ids = entry.getValue();
-        if (ids instanceof String) {
-          String resource = Registry.createURI(providerCode, ids);
-          resource = Registry.checkResourceUrl(resource);
-          if (resource != null) {
-            annotations.add(resource);
-          }
-        } else if (ids instanceof ArrayList) {
-          for (String id : ((ArrayList<String>) ids)) {
-            String resource = Registry.createURI(providerCode, id);
-            resource = Registry.checkResourceUrl(resource);
-            if (resource != null) {
-              annotations.add(resource);
-            }
-          }
-        } else {
-          logger.severe(String.format("Please report unknown id format: '%s'", ids.getClass().getName()));
-        }
+        annotations.addAll(parseAnnotation(entry));
       }
     } else {
-      logger.severe(String.format("Please report unknown annotation format: '%s'", annotation.getClass().getName()));
+      logger.severe(String.format("Please open an issue to see annotation format '%s' implemented.",
+        annotation.getClass().getName()));
     }
     if (annotations.size() > 0) {
       CVTerm term = new CVTerm();
@@ -159,6 +143,42 @@ public class JSONparser {
   }
 
 
+  private Set<String> parseAnnotation(Map.Entry<String, Object> entry) {
+    Set<String> annotations = new HashSet<>();
+    String providerCode = entry.getKey();
+    Object ids = entry.getValue();
+    if (ids instanceof String) {
+      String resource = checkResource(providerCode, (String) ids);
+      if (resource != null) {
+        annotations.add(resource);
+      }
+    } else if (ids instanceof ArrayList) {
+      for (String id : ((ArrayList<String>) ids)) {
+        String resource = checkResource(providerCode, id);
+        if (resource != null) {
+          annotations.add(resource);
+        }
+      }
+    } else {
+      logger.severe(
+        String.format("Please open an issue to see parsing for id format '%s' implemented.", ids.getClass().getName()));
+    }
+    return annotations;
+  }
+
+
+  private String checkResource(String providerCode, String id) {
+    String resource;
+    if (id.startsWith("http")) {
+      resource = id;
+    } else {
+      resource = Registry.createURI(providerCode, id);
+    }
+    resource = Registry.checkResourceUrl(resource);
+    return resource;
+  }
+
+
   private void parseNotes(SBase node, Object notes) {
     Set<String> content = new HashSet<>();
     if (Optional.ofNullable(notes).orElse("").equals("")) {
@@ -166,29 +186,48 @@ public class JSONparser {
     }
     if (notes instanceof LinkedHashMap) {
       for (Map.Entry<String, Object> entry : ((LinkedHashMap<String, Object>) notes).entrySet()) {
-        String key = entry.getKey();
-        Object value = entry.getValue();
-        if (value instanceof String) {
-          // TODO: handle this case
-        } else if (value instanceof Integer) {
-          // TODO: handle this case
-        } else if (value instanceof Boolean) {
-          // TODO: handle this case
-        } else if (value instanceof ArrayList) {
-          // TODO: handle this case
-        } else {
-          throw new IllegalArgumentException(value.getClass().getName());
+        content.add(parseNotes(entry));
+      }
+      StringBuilder notesContent = new StringBuilder();
+      content = content.stream().filter(item -> !item.isEmpty()).collect(Collectors.toSet());
+      if (content.size() > 0) {
+        content.forEach(line -> notesContent.append("<p>").append(line).append("</p>\n"));
+      }
+      if (notesContent.length() > 0) {
+        try {
+          node.appendNotes(SBMLtools.toNotesString(notesContent.toString()));
+        } catch (XMLStreamException e) {
+          e.printStackTrace();
         }
       }
     } else if (notes instanceof String) {
       try {
-        node.appendNotes(SBMLtools.toNotesString((String) notes));
+        node.appendNotes(SBMLtools.toNotesString("<p>" + notes + "</p>"));
       } catch (XMLStreamException e) {
         e.printStackTrace();
       }
     } else {
-      throw new IllegalArgumentException(notes.getClass().getName());
+      logger.severe(
+        String.format("Please open an issue to see notes format '%s' implemented.", notes.getClass().getName()));
     }
+  }
+
+
+  private String parseNotes(Map.Entry<String, Object> entry) {
+    String note = "";
+    String key = entry.getKey();
+    Object value = entry.getValue();
+    if (value instanceof String || value instanceof Integer || value instanceof Boolean) {
+      note = key + ":" + value;
+    } else if (value instanceof ArrayList) {
+      StringJoiner items = new StringJoiner(",", "[", "]");
+      ((ArrayList) value).forEach(item -> items.add((String) item));
+      note = key + ":" + items.toString();
+    } else {
+      logger.severe(String.format("Please open an issue to see parsing for notes content format '%s' implemented.",
+        value.getClass().getName()));
+    }
+    return note;
   }
 
 

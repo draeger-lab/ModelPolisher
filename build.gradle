@@ -16,9 +16,7 @@ sourceSets {
 
 repositories {
     mavenCentral()
-    maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
-    maven { url "http://jsbml.sourceforge.net/m2repo/" }
-    maven { url "http://oss.sonatype.org/content/repositories/snapshots"}
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots"}
     // local dependencies
     flatDir {
         dirs "lib/de/zbit/SysBio/1390"
@@ -26,9 +24,8 @@ repositories {
 }
 
 dependencies {
-    compile "org.sbml.jsbml:jsbml:1.4"
+    compile "org.sbml.jsbml:jsbml:1.5-SNAPSHOT"
     compile "de.zbit:SysBio:1390"
-    compile "org.xerial:sqlite-jdbc:3.21.0"
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"
     compile 'us.hebi.matlab.mat:mfl-core:0.5.3'

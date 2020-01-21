@@ -27,7 +27,7 @@ public class BiGGIdTest {
    * Initializes BiGGId-Array for testing
    */
   @BeforeClass
-  public static final void setUp() {
+  public static void setUp() {
     for (String id : ID_STRINGS) {
       testIds.add(new BiGGId(id));
     }
@@ -161,7 +161,7 @@ public class BiGGIdTest {
 
 
   @AfterClass
-  public static final void cleanUp() {
+  public static void cleanUp() {
     testIds = null;
   }
 }
