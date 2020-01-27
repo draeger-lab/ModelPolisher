@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.sbml.jsbml:jsbml:1.5-SNAPSHOT"
+    compile "org.sbml.jsbml:jsbml:1.4"
     compile "de.zbit:SysBio:1390"
     compile "org.postgresql:postgresql:42.2.2"
     compile "org.biojava:biojava-ontology:5.0.0"

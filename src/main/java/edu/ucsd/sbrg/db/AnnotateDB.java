@@ -32,23 +32,35 @@ public class AnnotateDB {
   static final String METABOLITE_PREFIX = "M_";
   static final String REACTION_PREFIX = "R_";
   static final String GENE_PREFIX = "G_";
-  private SQLConnector connector;
+  private static SQLConnector connector;
+
+  /**
+   * Don't allow instantiation
+   */
+  private AnnotateDB() {
+  };
+
 
   /**
    * Initialize a SQL connection
-   *
-   * @param connector
-   * @throws SQLException
+   * 
+   * @param host
+   * @param port
+   * @param user
+   * @param passwd
+   * @param name
+   * @throws ClassNotFoundException
    */
-  AnnotateDB(SQLConnector connector) {
-    this.connector = connector;
+  public static void init(String host, String port, String user, String passwd, String name)
+    throws ClassNotFoundException {
+    connector = new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd != null ? passwd : "", name);
   }
 
 
   /**
    *
    */
-  void startConnection() throws SQLException {
+  public static void startConnection() throws SQLException {
     if (!connector.isConnected()) {
       connector.connect();
     }
@@ -58,7 +70,7 @@ public class AnnotateDB {
   /**
    *
    */
-  public void closeConnection() {
+  public static void closeConnection() {
     if (connector.isConnected()) {
       try {
         connector.close();
@@ -69,7 +81,20 @@ public class AnnotateDB {
   }
 
 
-  public TreeSet<String> getAnnotations(String type, String biggId) {
+  /**
+   * @return
+   */
+  public static boolean inUse() {
+    return connector != null;
+  }
+
+
+  /**
+   * @param type
+   * @param biggId
+   * @return
+   */
+  public static TreeSet<String> getAnnotations(String type, String biggId) {
     TreeSet<String> annotations = new TreeSet<>();
     if (!type.equals(BIGG_METABOLITE) && !type.equals(BIGG_REACTION)) {
       return annotations;

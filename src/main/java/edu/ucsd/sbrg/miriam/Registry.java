@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.miriam;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,6 +263,11 @@ public class Registry {
   }
 
 
+  /**
+   * @param resource
+   * @param identifier
+   * @return
+   */
   private static String fixChEBI(String resource, String identifier) {
     if (Pattern.compile("\\d+").matcher(identifier).matches()) {
       logger.info(mpMessageBundle.getString("ADD_PREFIX_CHEBI"));
@@ -345,6 +351,22 @@ public class Registry {
     } else {
       return null;
     }
+  }
+
+
+  /**
+   * @param resource
+   * @return
+   */
+  public static List<String> getPartsFromCanonicalURI(String resource) {
+    Pattern identifiersURL = Pattern.compile("(?:https?://)?identifiers.org/(?:(?<provider>.*?)/)?(?<id>.*)");
+    Matcher matcher = identifiersURL.matcher(resource);
+    List<String> parts = new ArrayList<>(2);
+    if (matcher.matches()) {
+      parts.add(matcher.group("provider"));
+      parts.add(matcher.group("id"));
+    }
+    return parts;
   }
 
 

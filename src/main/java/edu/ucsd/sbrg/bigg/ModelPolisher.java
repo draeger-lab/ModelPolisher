@@ -5,6 +5,7 @@ package edu.ucsd.sbrg.bigg;
 
 import static java.text.MessageFormat.format;
 
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -24,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,6 +73,7 @@ import edu.ucsd.sbrg.db.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
 import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.parsers.JSONparser;
+import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
@@ -84,14 +85,6 @@ public class ModelPolisher extends Launcher {
    *
    */
   private Parameters parameters;
-  /**
-   *
-   */
-  private static BiGGDB bigg = null;
-  /**
-   *
-   */
-  private static AnnotateDB adb = null;
   /**
    * Type of current input file
    */
@@ -174,11 +167,11 @@ public class ModelPolisher extends Launcher {
     }
     // make sure DB connections are closed in case of exception
     finally {
-      if (bigg != null) {
-        bigg.closeConnection();
+      if (BiGGDB.inUse()) {
+        BiGGDB.closeConnection();
       }
-      if (adb != null) {
-        adb.closeConnection();
+      if (AnnotateDB.inUse()) {
+        AnnotateDB.closeConnection();
       }
     }
   }
@@ -314,8 +307,8 @@ public class ModelPolisher extends Launcher {
     if (output.isDirectory()) {
       output = getOutputFileName(input, output);
     }
-    bigg = DBConfig.getBiGG(args, parameters.annotateWithBiGG);
-    adb = DBConfig.getADB(args, parameters.addADBAnnotations);
+    DBConfig.initBiGG(args, parameters.annotateWithBiGG);
+    DBConfig.initADB(args, parameters.addADBAnnotations);
     readAndPolish(input, output);
   }
 
@@ -368,6 +361,8 @@ public class ModelPolisher extends Launcher {
       return;
     }
     polish(doc, output);
+    // Clear map for next model
+    SBMLUtils.cleanGPRMap();
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
     logger.info(String.format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
   }
@@ -504,7 +499,7 @@ public class ModelPolisher extends Launcher {
    * @return BiGGAnnotation object used for annotation with BiGG
    */
   private BiGGAnnotation setAnnotationParameters(SBMLPolisher polisher) {
-    BiGGAnnotation annotation = new BiGGAnnotation(bigg, adb);
+    BiGGAnnotation annotation = new BiGGAnnotation();
     if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
       annotation.setDocumentNotesFile(null);
       annotation.setModelNotesFile(null);

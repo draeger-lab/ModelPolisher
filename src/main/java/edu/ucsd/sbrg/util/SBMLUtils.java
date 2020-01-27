@@ -7,20 +7,36 @@ import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 
 import java.io.StringReader;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.swing.tree.TreeNode;
 
 import org.sbml.jsbml.ASTNode;
+import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.ext.fbc.And;
+import org.sbml.jsbml.ext.fbc.Association;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
+import org.sbml.jsbml.ext.fbc.GeneProductRef;
+import org.sbml.jsbml.ext.fbc.ListOfObjectives;
+import org.sbml.jsbml.ext.fbc.LogicalOperator;
+import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.bigg.BiGGId;
 
 /**
  * A collection of helpful functions for dealing with SBML data structures.
@@ -38,8 +54,11 @@ public class SBMLUtils {
    * that reaction.
    */
   public static final String SUBSYSTEM_LINK = "SUBSYSTEM_LINK";
+  /**
+   * HashMap holding all gene product references in a model for updating
+   */
+  private static Map<String, GeneProductRef> geneProductReferences = new HashMap<>();
 
-  // TODO: update for BiGGId changes
   /**
    * @param r
    * @param geneReactionRule
@@ -109,7 +128,7 @@ public class SBMLUtils {
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
     // check if this id exists in the model
-    identifier = updateGeneId(identifier);
+    identifier = BiGGId.createGeneId(identifier).toBiGGId();
     if (!model.containsUniqueNamedSBase(identifier)) {
       GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
       if (gp == null) {
@@ -189,72 +208,39 @@ public class SBMLUtils {
 
 
   /**
-   * @param association
-   * @return
-   */
-  public static Set<String> setOfGeneLinks(Association association) {
-    Set<String> links = new HashSet<>();
-    if (association instanceof GeneProductRef) {
-      links.add(((GeneProductRef) association).getGeneProduct());
-    } else {
-      LogicalOperator operator = (LogicalOperator) association;
-      for (int i = 0; i < operator.getChildCount(); i++) {
-        links.addAll(setOfGeneLinks(operator.getAssociation(i)));
-      }
-    }
-    return links;
-  }
-
-
-  /**
-   * @param geneProductAssociation
-   * @return
-   */
-  public static Set<String> setOfGeneLinks(GeneProductAssociation geneProductAssociation) {
-    if (geneProductAssociation.isSetAssociation()) {
-      return setOfGeneLinks(geneProductAssociation.getAssociation());
-    }
-    return new HashSet<String>();
-  }
-  
-  /**
-   * @param id
-   * @return
-   */
-  public static String updateGeneId(String id) {
-    if (!id.startsWith("G_")) {
-     id = "G_" + id;
-    }
-    if (id.contains(".")) {
-      id = id.replaceAll("\\.", "_DOT_");
-    }
-    return id;
-  }
-
-
-  /**
    * Apply updated GeneID to geneProductReferenece
    * 
    * @param gp
    */
   public static void updateGeneProductReference(GeneProduct gp) {
+    if (geneProductReferences.isEmpty()) {
+      initGPRMap(gp.getModel().getListOfReactions());
+    }
     String id = gp.getId();
     if (id.startsWith("G_")) {
       id = id.split("G_")[1];
     }
-    // does findUniqueSBase work here?
-    for (Reaction r : gp.getModel().getListOfReactions()) {
+    if (geneProductReferences.containsKey(id)) {
+      GeneProductRef gpr = geneProductReferences.get(id);
+      gpr.setGeneProduct(gp.getId());
+    }
+  }
+
+
+  /**
+   * @param reactions
+   */
+  private static void initGPRMap(ListOf<Reaction> reactions) {
+    for (Reaction r : reactions) {
       for (int childIdx = 0; childIdx < r.getChildCount(); childIdx++) {
         TreeNode child = r.getChildAt(childIdx);
         if (child instanceof GeneProductAssociation) {
           Association association = ((GeneProductAssociation) child).getAssociation();
           if (association instanceof GeneProductRef) {
             GeneProductRef gpr = (GeneProductRef) association;
-            if (id.equals(gpr.getGeneProduct())) {
-              gpr.setGeneProduct(gp.getId());
-            }
+            geneProductReferences.put(gpr.getGeneProduct(), gpr);
           } else if (association instanceof LogicalOperator) {
-            processNested(association, gp, id);
+            processNested(association);
           }
         }
       }
@@ -263,23 +249,25 @@ public class SBMLUtils {
 
 
   /**
-   * @param association
-   * @param gp
-   * @param id
+   * 
    */
-  private static void processNested(Association association, GeneProduct gp, String id) {
+  public static void cleanGPRMap() {
+    geneProductReferences = new HashMap<>();
+  }
+
+
+  /**
+   * @param association
+   */
+  private static void processNested(Association association) {
     for (int idx = 0; idx < association.getChildCount(); idx++) {
       TreeNode child = association.getChildAt(idx);
       if (child instanceof LogicalOperator) {
-        processNested((Association) child, gp, id);
+        processNested((Association) child);
       } else {
         // has to GeneProductReference
         GeneProductRef gpr = (GeneProductRef) child;
-        if (id.equals(gpr.getGeneProduct())) {
-          // if should be unique
-          gpr.setGeneProduct(gp.getId());
-          break;
-        }
+        geneProductReferences.put(gpr.getGeneProduct(), gpr);
       }
     }
   }

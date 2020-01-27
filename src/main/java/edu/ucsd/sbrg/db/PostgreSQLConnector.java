@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.logging.Logger;
 
 import org.sbml.jsbml.util.StringTools;
@@ -55,7 +56,6 @@ class PostgreSQLConnector extends SQLConnector {
    *
    */
   private Properties properties;
-
 
   /**
    * @return
@@ -120,16 +120,11 @@ class PostgreSQLConnector extends SQLConnector {
   // Might not be present in other db formats, so make it PSQL specific
   @Override
   public String concat(String... strings) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("CONCAT(");
-    for (int i = 0; i < strings.length; i++) {
-      if (i > 0) {
-        sb.append(", ");
-      }
-      sb.append(strings[i]);
+    StringJoiner items = new StringJoiner(", ", "CONCAT(", ")");
+    for (String item : strings) {
+      items.add(item);
     }
-    sb.append(')');
-    return sb.toString();
+    return items.toString();
   }
 
 
