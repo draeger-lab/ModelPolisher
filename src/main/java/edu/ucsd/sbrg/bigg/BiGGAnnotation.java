@@ -664,7 +664,6 @@ public class BiGGAnnotation {
         long current = progress.getCallNumber();
         progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed);
         progress.setCallNr(current);
-        progress.getEstimateTime()
       }
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
         progress.DisplayBar("Annotating Gene Products  ");
