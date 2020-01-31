@@ -121,7 +121,7 @@ public interface ModelPolisherOptions extends KeyProvider {
    */
   @SuppressWarnings("unchecked")
   Option<Compression> COMPRESSION_TYPE =
-    new Option<>("COMPRESSION_TYPE", Compression.class, mpMessageBundle.getString("COMPR_DESC"), Compression.ZIP);
+    new Option<>("COMPRESSION_TYPE", Compression.class, mpMessageBundle.getString("COMPR_DESC"), Compression.NONE);
   /**
    * This option allows you to define the title of the SBML document's
    * description and hence the head line when the file is displayed in a web
@@ -163,7 +163,7 @@ public interface ModelPolisherOptions extends KeyProvider {
    */
   @SuppressWarnings("unchecked")
   Option<Boolean> SBML_VALIDATION =
-    new Option<>("SBML_VALIDATION", Boolean.class, mpMessageBundle.getString("SBML_VAL_DESC"), Boolean.TRUE,
+    new Option<>("SBML_VALIDATION", Boolean.class, mpMessageBundle.getString("SBML_VAL_DESC"), Boolean.FALSE,
       new ValuePairUncomparable<>(COMPRESSION_TYPE, new Range<>(Compression.class, Compression.GZIP)),
       new ValuePairUncomparable<>(COMPRESSION_TYPE, new Range<>(Compression.class, Compression.ZIP)));
 }
