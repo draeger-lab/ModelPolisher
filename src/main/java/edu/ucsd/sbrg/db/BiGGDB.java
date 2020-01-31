@@ -15,13 +15,58 @@
 package edu.ucsd.sbrg.db;
 
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.*;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_BIGG_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_CHARGE;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPARTMENT_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPONENT_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_DATA_SOURCE_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_FORMULA;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_GENE_REACTION_RULE;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_GENOME_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_LOCUS_TAG;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_MODEL_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_OME_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_ORGANISM;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_PUBLICATION_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REACTION_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REFERENCE_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REFERENCE_TYPE;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_SYNONYM;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_TAXON_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPARTMENT;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPONENT;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.DATA_SOURCE;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENE;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENOME;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENOME_REGION;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MCC;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MODEL;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MODEL_REACTION;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.OLD_BIGG_ID;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.PUBLICATION;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.PUBLICATION_MODEL;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REACTION;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REFSEQ_NAME;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REFSEQ_PATTERN;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.SYNONYM;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.URL_PREFIX;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
-import java.sql.*;
+import java.sql.Connection;
 import java.sql.Date;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import org.sbml.jsbml.util.Pair;
@@ -190,7 +235,9 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         if (!result.isEmpty()) {
-          throw new IllegalStateException("Chemical formula query returned multiple results:\n" + query);
+          logger.severe(
+            String.format("Chemical formula query returned multiple results:\nAbbreviation: %s\nModel ID: %s",
+              abbreviation, modelId));
         } else {
           result = resultSet.getString(1);
         }
@@ -228,7 +275,7 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         if (!result.isEmpty()) {
-          logger.severe("Query returned multiple results:\n" + query);
+          logger.severe(String.format("Query returned multiple results for parameter %s\nQuery:\n%s", param, query));
         }
         result = resultSet.getString(1);
       }
@@ -412,7 +459,6 @@ public class BiGGDB {
    * @param includeAnyURI
    * @param isReaction
    * @return a set of external source together with external id.
-   * @throws SQLException
    */
   public static Set<String> getResources(BiGGId biggId, boolean includeAnyURI, boolean isReaction) {
     String type = isReaction ? REACTION : COMPONENT;
@@ -469,9 +515,10 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         if (result > Integer.MIN_VALUE) {
-          logger.severe("Taxon id query returned multiple results:\n" + query);
+          logger.severe(String.format("Taxon id query returned multiple results for abbreviation: %s", abbreviation));
         } else {
-        result = resultSet.getInt(1);}
+          result = resultSet.getInt(1);
+        }
       }
       pStatement.close();
       connection.close();
@@ -575,9 +622,11 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         if (result > Integer.MIN_VALUE) {
-          logger.severe("Charge query returned multiple results:\n" + query);
+          logger.severe(String.format("Charge query returned multiple results for abbreviation: %s\nModel ID: %s",
+            abbreviation, modelId));
         } else {
-        result = resultSet.getInt(1);}
+          result = resultSet.getInt(1);
+        }
       }
       pStatement.close();
       connection.close();

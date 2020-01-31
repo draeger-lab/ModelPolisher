@@ -433,10 +433,13 @@ public class ModelPolisher extends Launcher {
       BiGGAnnotation annotation = setAnnotationParameters(polisher);
       doc = annotation.annotate(doc);
     }
-    // producing & writing glossary
-    writeGlossary(doc, output);
+    // writing polished model
+    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     // produce COMBINE archive and delete output model and glossary
     if (parameters.outputCOMBINE) {
+      // producing & writing glossary
+      writeGlossary(doc, output);
       writeCombineArchive(output);
     }
     if (parameters.compression != Compression.NONE) {
@@ -453,7 +456,10 @@ public class ModelPolisher extends Launcher {
       default:
         break;
       }
-      if ((parameters.sbmlValidation != null) && parameters.sbmlValidation) {
+      if(!output.delete()){
+        logger.warning(String.format("Failed to delete output file '%s' after compression.", output.getAbsolutePath()));
+      }
+      if (parameters.sbmlValidation) {
         validate(archive);
       }
     }
@@ -531,9 +537,6 @@ public class ModelPolisher extends Launcher {
       output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + "_glossary.rdf";
     logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
     writeTidyRDF(new File(glossaryLocation), glossary);
-    // writing polished model
-    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
   }
 
 
@@ -646,6 +649,12 @@ public class ModelPolisher extends Launcher {
     InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8)),
       StandardCharsets.UTF_8);
     tidy.parse(in, out);
+    try {
+      in.close();
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 

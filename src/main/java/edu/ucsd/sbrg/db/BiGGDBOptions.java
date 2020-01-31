@@ -20,7 +20,7 @@ public interface BiGGDBOptions extends KeyProvider {
    *
    */
   @SuppressWarnings("unchecked")
-  Option<Integer> PORT = new Option<>("BiGG_PORT", Integer.class, "Port", 5432);
+  Option<Integer> PORT = new Option<>("BiGG_PORT", Integer.class, "Port", 1310);
   /**
    *
    */
