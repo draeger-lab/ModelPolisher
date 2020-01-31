@@ -5,7 +5,7 @@ import de.zbit.util.prefs.SBProperties;
 public class DBConfig {
 
   public static void initADB(SBProperties args, boolean annotateWithADB) {
-    if (annotateWithADB) {
+    if (annotateWithADB && ! AnnotateDB.inUse()) {
       initADB(args);
     }
   }
@@ -29,18 +29,13 @@ public class DBConfig {
     run &= iStrNotNullOrEmpty(port);
     run &= iStrNotNullOrEmpty(user);
     if (run) {
-      try {
-        AnnotateDB.init(host, port, user, passwd, name);
-      } catch (ClassNotFoundException exc) {
-        exc.printStackTrace();
-        System.exit(1);
-      }
+      AnnotateDB.init(host, port, user, passwd, name);
     }
   }
 
 
   public static void initBiGG(SBProperties args, boolean annotateWithBiGG) {
-    if (annotateWithBiGG) {
+    if (annotateWithBiGG && !BiGGDB.inUse()) {
       initBiGG(args);
     }
   }
@@ -63,12 +58,7 @@ public class DBConfig {
     run &= iStrNotNullOrEmpty(port);
     run &= iStrNotNullOrEmpty(user);
     if (run) {
-      try {
-        BiGGDB.init(host, port, user, passwd, name);
-      } catch (ClassNotFoundException exc) {
-        exc.printStackTrace();
-        System.exit(1);
-      }
+      BiGGDB.init(host, port, user, passwd, name);
     }
   }
 

@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,7 +108,8 @@ public class BiGGAnnotation {
     }
     Model model = doc.getModel();
     replacements = new HashMap<>();
-    int count = model.getCompartmentCount() + model.getSpeciesCount() + model.getReactionCount();
+    // add fake count so it never reaches 100 before gene products are processed
+    int count = model.getCompartmentCount() + model.getSpeciesCount() + model.getReactionCount() + 50;
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       initialGeneProducts = fbcModelPlug.getGeneProductCount();
@@ -213,8 +213,8 @@ public class BiGGAnnotation {
    */
   private void annotate(Model model) {
     String organism = BiGGDB.getOrganism(model.getId());
-    Integer taxonId = BiGGDB.getTaxonId(model.getId());
-    if (taxonId != null) {
+    int taxonId = BiGGDB.getTaxonId(model.getId());
+    if (taxonId > Integer.MIN_VALUE) {
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId)));
     }
     processReplacements(model, organism);
@@ -257,15 +257,10 @@ public class BiGGAnnotation {
    * @param model
    */
   private void annotatePublications(Model model) {
-    progress.DisplayBar("Annotating Publications  ");
-    List<Pair<String, String>> publications = null;
-    try {
-      publications = BiGGDB.getPublications(model.getId());
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-    }
+    progress.DisplayBar("Annotating Publications (1/5)  ");
+    List<Pair<String, String>> publications = BiGGDB.getPublications(model.getId());
     int numPublications;
-    if (publications != null && (numPublications = publications.size()) > 0) {
+    if ((numPublications = publications.size()) > 0) {
       String[] resources = new String[numPublications];
       int i = 0;
       for (Pair<String, String> publication : publications) {
@@ -281,7 +276,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
-      progress.DisplayBar("Annotating Compartments  ");
+      progress.DisplayBar("Annotating Compartments (2/5)  ");
       annotateCompartment(model.getCompartment(i));
     }
   }
@@ -310,7 +305,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfSpecies(Model model) {
     for (int i = 0; i < model.getSpeciesCount(); i++) {
-      progress.DisplayBar("Annotating Species  ");
+      progress.DisplayBar("Annotating Species (3/5)  ");
       annotateSpecies(model.getSpecies(i));
     }
   }
@@ -391,11 +386,7 @@ public class BiGGAnnotation {
   private void setSpeciesName(Species species, BiGGId biggId) {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
-      try {
-        species.setName(SBMLPolisher.polishName(BiGGDB.getComponentName(biggId)));
-      } catch (SQLException exc) {
-        logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-      }
+      species.setName(SBMLPolisher.polishName(BiGGDB.getComponentName(biggId)));
     }
   }
 
@@ -440,17 +431,13 @@ public class BiGGAnnotation {
       annotations.add(Registry.createURI("bigg.metabolite", biggId));
     }
     Parameters parameters = Parameters.get();
-    try {
-      TreeSet<String> linkOut = BiGGDB.getResources(biggId, parameters.includeAnyURI, false);
-      // convert to set to remove possible duplicates; TreeSet respects order
-      annotations.addAll(linkOut);
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-    }
+    Set<String> linkOut = BiGGDB.getResources(biggId, parameters.includeAnyURI, false);
+    // convert to set to remove possible duplicates; TreeSet respects order
+    annotations.addAll(linkOut);
     // using AnnotateDB
     if (parameters.addADBAnnotations && AnnotateDB.inUse() && isBiGGMetabolite) {
       // TODO: check if this works at all
-      TreeSet<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.toBiGGId());
+      Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.toBiGGId());
       annotations.addAll(adb_annotations);
     }
     // adding annotations to cvTerm
@@ -478,16 +465,18 @@ public class BiGGAnnotation {
     boolean isBiGGModel = QueryOnce.isModel(modelId);
     boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.equals("");
     if (!fbcSpecPlug.isSetChemicalFormula()) {
-      String chemicalFormula = null;
+      String chemicalFormula = "";
       if (isBiGGModel) {
         chemicalFormula = BiGGDB.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
       } else if (compartmentNonEmpty) {
         chemicalFormula = BiGGDB.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
       }
-      try {
-        fbcSpecPlug.setChemicalFormula(chemicalFormula);
-      } catch (IllegalArgumentException exc) {
-        logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
+      if (!chemicalFormula.isEmpty()) {
+        try {
+          fbcSpecPlug.setChemicalFormula(chemicalFormula);
+        } catch (IllegalArgumentException exc) {
+          logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
+        }
       }
     }
     Integer charge = null;
@@ -497,13 +486,13 @@ public class BiGGAnnotation {
       charge = BiGGDB.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
     }
     if (species.isSetCharge()) {
-      if ((charge != null) && (charge != species.getCharge())) {
+      if (charge != null && charge != species.getCharge() && charge > Integer.MIN_VALUE ) {
         logger.warning(
           format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId()));
       }
       species.unsetCharge();
     }
-    if ((charge != null) && (charge != 0)) {
+    if (charge != null && charge != 0 && charge > Integer.MIN_VALUE) {
       // If charge is set and charge = 0 -> this can mean it is only a default!
       fbcSpecPlug.setCharge(charge);
     }
@@ -515,7 +504,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfReactions(Model model) {
     for (int i = 0; i < model.getReactionCount(); i++) {
-      progress.DisplayBar("Annotating Reactions  ");
+      progress.DisplayBar("Annotating Reactions (4/5)  ");
       annotateReaction(model.getReaction(i));
     }
   }
@@ -627,16 +616,12 @@ public class BiGGAnnotation {
       annotations.add(Registry.createURI("bigg.reaction", biggId));
     }
     Parameters parameters = Parameters.get();
-    try {
-      TreeSet<String> linkOut = BiGGDB.getResources(biggId, parameters.includeAnyURI, true);
-      annotations.addAll(linkOut);
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-    }
+    Set<String> linkOut = BiGGDB.getResources(biggId, parameters.includeAnyURI, true);
+    annotations.addAll(linkOut);
     // using AnnotateDB
     if (parameters.addADBAnnotations && AnnotateDB.inUse() && isBiGGReaction) {
       // TODO: check if this works at all
-      TreeSet<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.toBiGGId());
+      Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.toBiGGId());
       annotations.addAll(adb_annotations);
     }
     // adding annotations to cvTerm
@@ -662,11 +647,12 @@ public class BiGGAnnotation {
       int changed = fbcModelPlugin.getNumGeneProducts() - initialGeneProducts;
       if (changed > 0) {
         long current = progress.getCallNumber();
-        progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed);
+        // substract fake count
+        progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed - 50);
         progress.setCallNr(current);
       }
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
-        progress.DisplayBar("Annotating Gene Products  ");
+        progress.DisplayBar("Annotating Gene Products (5/5)  ");
         annotateGeneProduct(geneProduct);
       }
     }
@@ -737,6 +723,9 @@ public class BiGGAnnotation {
         continue;
       }
       List<String> parts = Registry.getPartsFromCanonicalURI(resource);
+      if (parts.size() < 1) {
+        continue;
+      }
       String collection = parts.get(0);
       if (collection == null) {
         continue;

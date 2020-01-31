@@ -168,10 +168,10 @@ public class ModelPolisher extends Launcher {
     // make sure DB connections are closed in case of exception
     finally {
       if (BiGGDB.inUse()) {
-        BiGGDB.closeConnection();
+        BiGGDB.close();
       }
       if (AnnotateDB.inUse()) {
-        AnnotateDB.closeConnection();
+        AnnotateDB.close();
       }
     }
   }

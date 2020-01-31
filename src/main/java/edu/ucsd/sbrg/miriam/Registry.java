@@ -137,7 +137,7 @@ public class Registry {
    * @return corrected resource URI
    */
   public static String checkResourceUrl(String resource) {
-    // TODO: clarify what to do with ncbigi entries, don't write them for now
+    // TODO: clarify what to do with ncbigi entries, don't write them for now -> direct links should still be resolvable: https://www.ncbi.nlm.nih.gov/protein/GI:
     if (resource.contains("ncbigi")) {
       return null;
     }

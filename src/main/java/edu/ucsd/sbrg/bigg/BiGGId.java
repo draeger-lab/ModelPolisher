@@ -110,6 +110,9 @@ public class BiGGId {
     id = fixCompartmentCode(id);
     if (correct) {
       id = makeBiGGConform(id);
+      if (id.startsWith("_")) {
+        id = id.substring(1);
+      }
       if (!id.startsWith("M_")) {
         id = "M_" + id;
       } else if (id.startsWith("m_")) {
@@ -128,6 +131,9 @@ public class BiGGId {
   public static BiGGId createGeneId(String id, boolean correct) {
     if (correct) {
       id = makeBiGGConform(id);
+      if (id.startsWith("_")) {
+        id = id.substring(1);
+      }
       if (!id.startsWith("G_")) {
         id = "G_" + id;
       } else if (id.startsWith("g_")) {
@@ -162,6 +168,9 @@ public class BiGGId {
   public static BiGGId createReactionId(String id, boolean correct, boolean isPseudo) {
     if (correct) {
       id = makeBiGGConform(id);
+      if (id.startsWith("_")) {
+        id = id.substring(1);
+      }
       if (!isPseudo && !id.startsWith("R_")) {
         id = "R_" + id;
       } else if (!isPseudo && id.startsWith("r_")) {
@@ -173,6 +182,9 @@ public class BiGGId {
 
 
   private static String makeBiGGConform(String id) {
+    if (Character.isDigit(id.charAt(0))) {
+      id = "_" + id;
+    }
     id = id.replaceAll("-|\\/", "__").replaceAll("(_?_SBML_DOT__?)|\\.", "_AT").replaceAll("\\(", "_LPAREN_")
            .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
     Pattern parenCompartment = Pattern.compile("_LPAREN_(?<paren>.*?)_RPAREN_");
