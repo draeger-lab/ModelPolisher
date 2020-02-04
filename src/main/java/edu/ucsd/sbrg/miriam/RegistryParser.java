@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.miriam;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ public class RegistryParser {
   private RegistryParser() {
     super();
     registryLoaction = RegistryParser.class.getResource("IdentifiersOrg-Registry.json");
-    assert registryLoaction != null;
   }
 
 
@@ -36,7 +36,9 @@ public class RegistryParser {
   Miriam parse() throws IOException {
     logger.fine("Parsing MIRIAM registry");
     ObjectMapper mapper = new ObjectMapper();
-    Root root =  mapper.readValue(registryLoaction.openStream(), Root.class);
+    InputStream is = registryLoaction.openStream();
+    assert is != null;
+    Root root =  mapper.readValue(is, Root.class);
     List<Namespace> namespaces = root.getPayload().get("namespaces");
     HashMap<String, Namespace> prefixIndexedNamespaces = new HashMap<>();
     namespaces.forEach(x -> prefixIndexedNamespaces.put(x.getPrefix(), x));
