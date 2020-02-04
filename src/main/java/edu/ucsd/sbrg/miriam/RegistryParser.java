@@ -36,6 +36,7 @@ public class RegistryParser {
   Miriam parse() throws IOException {
     logger.fine("Parsing MIRIAM registry");
     ObjectMapper mapper = new ObjectMapper();
+    assert registryLoaction != null;
     InputStream is = registryLoaction.openStream();
     assert is != null;
     Root root =  mapper.readValue(is, Root.class);
