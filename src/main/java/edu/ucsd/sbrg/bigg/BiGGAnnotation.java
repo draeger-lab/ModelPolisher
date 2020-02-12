@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
@@ -536,7 +537,7 @@ public class BiGGAnnotation {
     }
     List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneRactionRule : geneReactionRules) {
-      SBMLUtils.parseGPR(reaction, geneRactionRule, parameters.omitGenericTerms);
+      GPRParser.parseGPR(reaction, geneRactionRule, parameters.omitGenericTerms);
     }
     parseSubsystems(reaction, biggId);
     setCVTermResources(reaction, biggId);

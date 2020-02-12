@@ -8,11 +8,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Group;
@@ -389,7 +389,7 @@ public class JSONparser {
     setReactionStoichiometry(reaction, model, r);
     String geneReactionRule = reaction.getGeneReactionRule();
     if (!geneReactionRule.isEmpty()) {
-      SBMLUtils.parseGPR(r, geneReactionRule, false);
+      GPRParser.parseGPR(r, geneReactionRule, false);
     }
     createSubsystem(model, reaction, r);
     setObjectiveCoefficient(reaction, model, r);

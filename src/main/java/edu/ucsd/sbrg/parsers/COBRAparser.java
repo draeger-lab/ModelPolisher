@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -989,7 +990,7 @@ public class COBRAparser {
       if (model.getReaction(i) == null) {
         logger.severe(format(mpMessageBundle.getString("CREATE_GPR_FAILED"), i));
       } else {
-        SBMLUtils.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
+        GPRParser.parseGPR(model.getReaction(i), geneReactionRule, omitGenericTerms);
       }
     }
     if ((mlField.subSystems != null) && (mlField.subSystems.getNumElements() > 0)) {
