@@ -73,7 +73,7 @@ task downloadMIRIAM() {
         writer.write(registry)
         writer.close()
     }
-//    processResources.dependsOn downloadMIRIAM
+    processResources.dependsOn downloadMIRIAM
 }
 
 // config for all jar tasks

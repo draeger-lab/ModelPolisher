@@ -47,7 +47,7 @@ public class BiGGId {
     BIOMASS("([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
     COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
     PSEUDO("([Ee][Xx]_).*|([Dd][Mm]_).*|([Ss][Kk]_).*"),
-    UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)" + "(?:_(?<compartment>[a-z][a-z0-9]?))?"
+    UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)(?:_(?<compartment>[a-z][a-z0-9]?))?"
       + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
 
     /**
@@ -113,10 +113,10 @@ public class BiGGId {
       if (id.startsWith("_")) {
         id = id.substring(1);
       }
-      if (!id.startsWith("M_")) {
-        id = "M_" + id;
-      } else if (id.startsWith("m_")) {
+      if (id.startsWith("m_")) {
         id = id.replaceAll("^m_", "M_");
+      } else if (!id.startsWith("M_")) {
+        id = "M_" + id;
       }
     }
     return new BiGGId(id);
@@ -134,10 +134,10 @@ public class BiGGId {
       if (id.startsWith("_")) {
         id = id.substring(1);
       }
-      if (!id.startsWith("G_")) {
-        id = "G_" + id;
-      } else if (id.startsWith("g_")) {
+      if (id.startsWith("g_")) {
         id = id.replaceAll("^g_", "G_");
+      } else if (!id.startsWith("G_")) {
+        id = "G_" + id;
       }
     }
     return new BiGGId(id);
@@ -171,10 +171,10 @@ public class BiGGId {
       if (id.startsWith("_")) {
         id = id.substring(1);
       }
-      if (!isPseudo && !id.startsWith("R_")) {
-        id = "R_" + id;
-      } else if (!isPseudo && id.startsWith("r_")) {
+      if (!isPseudo && id.startsWith("r_")) {
         id = id.replaceAll("^r_", "R_");
+      } else if (!isPseudo && !id.startsWith("R_")) {
+        id = "R_" + id;
       }
     }
     return new BiGGId(id);
@@ -185,8 +185,8 @@ public class BiGGId {
     if (Character.isDigit(id.charAt(0))) {
       id = "_" + id;
     }
-    id = id.replaceAll("-|\\/", "__").replaceAll("(_?_SBML_DOT__?)|\\.", "_AT").replaceAll("\\(", "_LPAREN_")
-           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("\\]", "_RBRACKET_");
+    id = id.replaceAll("[-/]", "__").replaceAll("(_?_SBML_DOT__?)|\\.", "_AT").replaceAll("\\(", "_LPAREN_")
+           .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("]", "_RBRACKET_");
     Pattern parenCompartment = Pattern.compile("_LPAREN_(?<paren>.*?)_RPAREN_");
     Matcher parenMatcher = parenCompartment.matcher(id);
     if (parenMatcher.matches()) {
@@ -244,7 +244,7 @@ public class BiGGId {
     Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
     // TODO: add compartment handling for reaction
     if (matcher.matches()) {
-      handleNormalId(id, matcher);
+      handleNormalId(matcher);
     } else {
       handleSpecialCases(id);
     }
@@ -252,9 +252,9 @@ public class BiGGId {
 
 
   /**
-   * @param id
+   * @param matcher
    */
-  private void handleNormalId(String id, Matcher matcher) {
+  private void handleNormalId(Matcher matcher) {
     String prefix = matcher.group("prefix");
     setPrefix(prefix);
     String abbreviation = matcher.group("abbreviation");
