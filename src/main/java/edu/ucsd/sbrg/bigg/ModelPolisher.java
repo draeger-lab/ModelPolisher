@@ -426,7 +426,7 @@ public class ModelPolisher extends Launcher {
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
     checkLevelAndVersion(doc);
     // Polishing
-    SBMLPolisher polisher = setPolisherParameters();
+    SBMLPolisher polisher = initializeSBMLPolisher();
     doc = polisher.polish(doc);
     // Annotation
     if (parameters.annotateWithBiGG) {
@@ -483,7 +483,7 @@ public class ModelPolisher extends Launcher {
   /**
    * @return SBMLPolisher object with all relevant paramters set
    */
-  private SBMLPolisher setPolisherParameters() {
+  private SBMLPolisher initializeSBMLPolisher() {
     SBMLPolisher polisher = new SBMLPolisher();
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);

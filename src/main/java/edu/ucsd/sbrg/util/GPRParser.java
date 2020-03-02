@@ -38,9 +38,6 @@ public class GPRParser {
     if ((geneReactionRule != null) && (geneReactionRule.length() > 0)) {
       Association association = null;
       try {
-        if (geneReactionRule.startsWith("(")) {
-          logger.severe(geneReactionRule);
-        }
         association =
             convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))),
                 r.getId(), r.getModel(), omitGenericTerms);

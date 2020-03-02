@@ -11,7 +11,7 @@ public class CompactResource {
   private CompactResource(Resource resource) {
     id = resource.getId();
     providerCode = resource.getProviderCode();
-    urlPattern = resource.getUrlPattern().replaceAll("\\{\\$id}", "");
+    urlPattern = resource.getUrlPattern();
   }
 
 

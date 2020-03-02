@@ -1,12 +1,9 @@
-/**
- * 
- */
 package edu.ucsd.sbrg.bigg;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -15,11 +12,8 @@ import org.junit.Test;
  */
 public class IDtest {
 
-  /**
-   * @throws java.lang.Exception
-   */
-  @Before
-  public void setUp() throws Exception {
+  @BeforeAll
+  public static void setUp() {
   }
 
 

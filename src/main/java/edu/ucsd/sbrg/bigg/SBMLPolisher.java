@@ -21,28 +21,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.InitialAssignment;
-import org.sbml.jsbml.ListOf;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.NamedSBase;
-import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.Variable;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.util.ModelBuilder;
 import org.sbml.jsbml.util.ResourceManager;
 
@@ -50,8 +30,6 @@ import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
-import edu.ucsd.sbrg.db.AnnotateDB;
-import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
 import edu.ucsd.sbrg.util.SBMLUtils;
@@ -72,7 +50,6 @@ public class SBMLPolisher {
     DEFAULT_FLUX_BOUND(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*"),
     DEMAND_REACTION(".*_[Dd][Mm]_.*"),
     EXCHANGE_REACTION(".*_[Ee][Xx]_.*"),
-    SINK_OLD_STYLE(".*_[Ss][Ii][Nn][Kk]_.*"),
     SINK_REACTION(".*_[Ss]([Ii][Nn])?[Kk]_.*");
 
     private Pattern pattern;
@@ -138,12 +115,15 @@ public class SBMLPolisher {
 
 
   /**
-   * @param doc
-   * @return
+   * Entrypoint for #ModelPolisher class
+   * 
+   * @param doc:
+   *        SBMLDocument containing the model to polish
+   * @return SBMLDocument containing polished model
    */
   public SBMLDocument polish(SBMLDocument doc) {
     if (!doc.isSetModel()) {
-      logger.info(mpMessageBundle.getString("NO_MODEL_FOUND"));
+      logger.severe(mpMessageBundle.getString("NO_MODEL_FOUND"));
       return doc;
     }
     Model model = doc.getModel();
@@ -157,7 +137,10 @@ public class SBMLPolisher {
 
 
   /**
-   * @param model
+   * Main method delegating all polishing tasks
+   * 
+   * @param model:
+   *        SBML Model to polish
    */
   public void polish(Model model) {
     logger.info(format(mpMessageBundle.getString("PROCESSING_MODEL"), model.getId()));
@@ -170,7 +153,7 @@ public class SBMLPolisher {
       count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
     }
     progress = new ProgressBar(count);
-    progress.DisplayBar("Polishing Model (1/9)  "); // "Processing model " + model.getId());
+    progress.DisplayBar("Polishing Model (1/9)  ");
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
       model.setMetaId(model.getId());
     }
@@ -495,7 +478,6 @@ public class SBMLPolisher {
   }
 
 
-  // TODO: Move this to BiGGId
   /**
    * @param r
    * @param id
@@ -578,8 +560,9 @@ public class SBMLPolisher {
         // fixme: Messages are wrong
         if (r.isReversible()) {
           // TODO: sink reaction
-        } else {
-          logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
+        } else if (r.getSBOTerm() != 628) {
+          logger.info(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
+          // logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
           r.setSBOTerm(628); // demand reaction
         }
       } else if (r.getProductCount() == 0) {
@@ -606,6 +589,10 @@ public class SBMLPolisher {
   }
 
 
+  /**
+   * @param r
+   * @return
+   */
   private boolean checkBounds(Reaction r) {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     Parameter lb = rPlug.getLowerFluxBoundInstance();
@@ -779,8 +766,7 @@ public class SBMLPolisher {
    */
   public void polishListOfGeneProducts(FBCModelPlugin fbcModelPlug) {
     for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-      progress.DisplayBar("Polishing Gene Products (8/9)  "); // "Processing gene product " +
-      // geneProduct.getId();
+      progress.DisplayBar("Polishing Gene Products (8/9)  ");
       polish(geneProduct);
     }
   }
@@ -804,7 +790,6 @@ public class SBMLPolisher {
     if (!id.equals(geneProduct.getId())) {
       geneProduct.setId(id);
     }
-    // TODO: is this necessary?
     if (geneProduct.getCVTermCount() > 0) {
       geneProduct.setMetaId(id);
     }
@@ -820,7 +805,7 @@ public class SBMLPolisher {
   public void polishListOfParameters(Model model) {
     for (int i = 0; i < model.getParameterCount(); i++) {
       Parameter parameter = model.getParameter(i);
-      progress.DisplayBar("Polishing Parameters (9/9)  "); // "Processing parameter " + parameter.getId());
+      progress.DisplayBar("Polishing Parameters (9/9)  ");
       polish(parameter);
     }
   }
@@ -842,7 +827,7 @@ public class SBMLPolisher {
    * @return
    */
   public static String polishName(String name) {
-    // TODO: can this be replaced by BiGGId creation?
+    // fixme: can this be replaced by BiGGId creation?
     String newName = name;
     if (name.startsWith("?_")) {
       newName = name.substring(2);
@@ -875,14 +860,6 @@ public class SBMLPolisher {
       sb.unsetMetaId();
     }
     return sb;
-  }
-
-
-  /**
-   * @return the includeAnyURI
-   */
-  public boolean getIncludeAnyURI() {
-    return includeAnyURI;
   }
 
 

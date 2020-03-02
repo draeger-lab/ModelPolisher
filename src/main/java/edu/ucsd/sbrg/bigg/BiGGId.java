@@ -44,9 +44,9 @@ public class BiGGId {
   enum IDPattern {
 
     ATPM("[Aa][Tt][Pp][Mm]"),
-    BIOMASS("([Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
+    BIOMASS("(([Rr]_?)?[Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
     COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
-    PSEUDO("([Ee][Xx]_).*|([Dd][Mm]_).*|([Ss][Kk]_).*"),
+    PSEUDO("(([Rr]_?)?[Ee][Xx]_).*|(([Rr]_?)?[Dd][Mm]_).*|(([Rr]_?)?[Ss][Kk]_).*"),
     UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)(?:_(?<compartment>[a-z][a-z0-9]?))?"
       + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
 
@@ -166,6 +166,7 @@ public class BiGGId {
 
 
   public static BiGGId createReactionId(String id, boolean correct, boolean isPseudo) {
+    // TODO: Add compartment code handling, possibly by interpreting abbreviation as metabolite id
     if (correct) {
       id = makeBiGGConform(id);
       if (id.startsWith("_")) {
@@ -242,8 +243,12 @@ public class BiGGId {
    */
   private void parseBiGGId(String id) {
     Matcher matcher = IDPattern.UNIVERSAL.get().matcher(id);
-    // TODO: add compartment handling for reaction
-    if (matcher.matches()) {
+    // Handle PseudoReaction with wrongfully added prefix correctly
+    boolean isPseudoReaction = false;
+    if (id.startsWith("R_")) {
+      isPseudoReaction = isPseudo(id);
+    }
+    if (!isPseudoReaction && matcher.matches()) {
       handleNormalId(matcher);
     } else {
       handleSpecialCases(id);
@@ -274,13 +279,13 @@ public class BiGGId {
     Matcher biomassMatcher = IDPattern.BIOMASS.get().matcher(id);
     Matcher atpmMatcher = IDPattern.ATPM.get().matcher(id);
     Matcher compartmentMatcher = IDPattern.COMPARTMENT.get().matcher(id);
-    if (pseudoreactionMatcher.find()) {
-      id = id.replaceAll("^[Ee][Xx]", "EX");
-      id = id.replaceAll("^[Dd][Mm]", "DM");
-      id = id.replaceAll("^[Ss]([Ii][Nn])?[Kk]", "SK");
+    if (pseudoreactionMatcher.matches()) {
+      id = id.replaceAll("^([Rr]_?)?[Ee][Xx]", "EX");
+      id = id.replaceAll("^([Rr]_?)?[Dd][Mm]", "DM");
+      id = id.replaceAll("^([Rr]_?)?[Ss]([Ii][Nn])?[Kk]", "SK");
       setAbbreviation(id);
     } else if (biomassMatcher.matches()) {
-      id = id.replaceAll("^[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
+      id = id.replaceAll("^([Rr]_?)?[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
       setAbbreviation(id);
     } else if (atpmMatcher.matches()) {
       setAbbreviation("ATPM");
@@ -371,7 +376,9 @@ public class BiGGId {
    *        the abbreviation to set
    */
   public void setAbbreviation(String abbreviation) {
-    this.abbreviation = abbreviation;
+    if (null != abbreviation && !abbreviation.isEmpty()) {
+      this.abbreviation = abbreviation;
+    }
   }
 
 
@@ -391,7 +398,9 @@ public class BiGGId {
    *        the compartmentCode to set
    */
   public void setCompartmentCode(String compartmentCode) {
-    this.compartmentCode = compartmentCode;
+    if (null != compartmentCode && !compartmentCode.isEmpty()) {
+      this.compartmentCode = compartmentCode;
+    }
   }
 
 
@@ -417,7 +426,9 @@ public class BiGGId {
    *        the prefix to set
    */
   public void setPrefix(String prefix) {
-    this.prefix = prefix;
+    if (null != prefix && !prefix.isEmpty()) {
+      this.prefix = prefix;
+    }
   }
 
 
@@ -437,7 +448,9 @@ public class BiGGId {
    *        the tissueCode to set
    */
   public void setTissueCode(String tissueCode) {
-    this.tissueCode = tissueCode;
+    if (null != tissueCode && !tissueCode.isEmpty()) {
+      this.tissueCode = tissueCode;
+    }
   }
 
 

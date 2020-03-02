@@ -3,15 +3,13 @@ package edu.ucsd.sbrg.miriam;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.sbml.jsbml.util.Pair;
 
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.models.Miriam;
@@ -27,29 +25,29 @@ public class Registry {
    */
   private static final List<CompactEntry> entries;
   /**
-   * Contains mapping from resource provider URL to collection name
+   * Contains mapping from resource provider URL to collection name for URLs ending with the id
    */
-  private static final Map<String, String> alternativeURI = new HashMap<>();
+  private static final Map<String, String> ALTERNATIVE_URL_PATTERNS = new HashMap<>();
   /**
    * Contains mapping for identifiers.org URI /w & /wo provider information
    */
-  private static final Map<String, String> collectionForUri = new HashMap<>();
+  private static final Map<String, String> COLLECTION_FOR_URI = new HashMap<>();
   /**
    * Mapping for collection to its pattern
    */
-  private static final Map<String, String> collectionForPattern = new HashMap<>();
+  private static final Map<String, String> COLLECTION_FOR_PATTERN = new HashMap<>();
   /**
    * Mapping provider code to collection name
    */
-  private static final Map<String, String> collectionForPrefix = new HashMap<>();
+  private static final Map<String, String> COLLECTION_FOR_PREFIX = new HashMap<>();
   /**
    * Mapping for pattern to its respective collection
    */
-  private static final Map<String, String> patternForCollection = new HashMap<>();
+  private static final Map<String, String> PATTERN_FOR_COLLECTION = new HashMap<>();
   /**
    * Mapping collection name to provider code
    */
-  private static final Map<String, String> prefixForCollection = new HashMap<>();
+  private static final Map<String, String> PREFIX_FOR_COLLECTION = new HashMap<>();
   /*
    * Static initializer for Miriam, read registry once and convert to compact representation
    */
@@ -65,18 +63,69 @@ public class Registry {
       String collectionName = entry.getName();
       String pattern = entry.getPattern();
       String prefix = entry.getPrefix();
-      collectionForPattern.put(pattern, collectionName);
-      collectionForPrefix.put(prefix, collectionName);
-      collectionForUri.put(createProviderURI(prefix), collectionName);
-      patternForCollection.put(collectionName, pattern);
-      prefixForCollection.put(collectionName, prefix);
+      COLLECTION_FOR_PATTERN.put(pattern, collectionName);
+      COLLECTION_FOR_PREFIX.put(prefix, collectionName);
+      COLLECTION_FOR_URI.put(createProviderURI(prefix), collectionName);
+      PATTERN_FOR_COLLECTION.put(collectionName, pattern);
+      PREFIX_FOR_COLLECTION.put(collectionName, prefix);
       for (CompactResource resource : entry.getResources()) {
         String provider = resource.getProviderCode();
-        alternativeURI.put(resource.getUrlPattern(), collectionName);
-        collectionForUri.put(createProviderURI(provider), collectionName);
+        // Split pattern on {$id} and replace {$id} with actual pattern of namespace for urlPattern matching and id
+        // extraction later on
+        String urlPattern = removeIdParts(resource.getUrlPattern());
+        String[] patternParts = urlPattern.split("\\{\\$id}");
+        // Convert pattern to named capture group
+        String patternCaptureGroup = "(?<id>" + pattern.replaceAll("\\^|\\$", "") + ")";
+        // Part after {$id} is only present for some URLs
+        String first;
+        String second;
+        if (patternParts.length > 1) {
+          second = patternParts[1];
+          first = patternParts[0];
+          if (second.equals("\"")) {
+            first = first + second;
+          }
+        } else {
+          first = patternParts[0];
+          second = "";
+        }
+        first = Pattern.quote(first);
+        second = Pattern.quote(second);
+        String matcherPattern = String.format("%s%s%s", first, patternCaptureGroup, second);
+        ALTERNATIVE_URL_PATTERNS.put(matcherPattern, collectionName);
+        COLLECTION_FOR_URI.put(createProviderURI(provider), collectionName);
       }
     }
   }
+
+  /**
+   * NamespaceEmbeddedInLui does not work to correctly establish what is a part of an id in a non-identifiers URL
+   * Thus this function strips the namespace prefix for URLs where it would be duplicated
+   *
+   * @param urlPattern
+   * @return
+   */
+  private static String removeIdParts(String urlPattern) {
+    String url = urlPattern;
+    for (String prefix : Arrays.asList("affymetrix", "BAO:", "EFO:", "FB:", "ecnumber:", "homologene:", "IDO:",
+      "interaction_id:", "interpro:", "kisao:", "Locus:", "locusname:", "ncbigene:", "ndc:", "orphanet:", "RGD:",
+      "sabioreactionid", "sgd:", "SGD:", "Taxon:", "taxonomy:", "WB:", "WP:", "ZFIN:")) {
+      if (urlPattern.contains(prefix)) {
+        return urlPattern;
+      }
+    }
+    Matcher idAfterEquals = Pattern.compile("(?<=/).*=(?<remove>\"?\\w+?:)\\{\\$id}\"?").matcher(urlPattern);
+    Matcher idAfterSlash = Pattern.compile("/#?(?<remove>\\w+?:)\\{\\$id}").matcher(urlPattern);
+    if (idAfterEquals.find()) {
+      String remove = idAfterEquals.group("remove");
+      urlPattern = urlPattern.replaceAll(remove, "");
+    } else if (idAfterSlash.find()) {
+      String remove = idAfterSlash.group("remove");
+      urlPattern = urlPattern.replaceAll(remove, "");
+    }
+    return urlPattern;
+  }
+
 
   /**
    * @param providerCode
@@ -117,12 +166,12 @@ public class Registry {
 
 
   public static String getPrefixForCollection(String collection) {
-    return prefixForCollection.getOrDefault(collection, "");
+    return PREFIX_FOR_COLLECTION.getOrDefault(collection, "");
   }
 
 
   public static String getCollectionForPrefix(String prefix) {
-    return collectionForPrefix.getOrDefault(prefix, "");
+    return COLLECTION_FOR_PREFIX.getOrDefault(prefix, "");
   }
 
 
@@ -137,7 +186,8 @@ public class Registry {
    * @return corrected resource URI
    */
   public static String checkResourceUrl(String resource) {
-    // TODO: clarify what to do with ncbigi entries, don't write them for now -> direct links should still be resolvable: https://www.ncbi.nlm.nih.gov/protein/GI:
+    // TODO: clarify what to do with ncbigi entries, don't write them for now -> direct links should still be
+    // resolvable: https://www.ncbi.nlm.nih.gov/protein/GI:
     if (resource.contains("ncbigi")) {
       return null;
     }
@@ -153,41 +203,40 @@ public class Registry {
       provider = Optional.ofNullable(urlMatcher.group("provider")).orElse("");
       identifier = urlMatcher.group("id");
     } else {
-      String url = resource.substring(0, resource.lastIndexOf("/") + 1).replaceAll("http:\\/\\/", "https://")
-                           .replaceAll("www\\.", "");
-      identifier = resource.substring(resource.lastIndexOf("/") + 1);
-      if (identifier.contains(":")) {
-        identifier = resource.substring(resource.lastIndexOf(":") + 1);
-      }
-      if (alternativeURI.containsKey(url)) {
-        String collection = alternativeURI.get(url);
-        provider = prefixForCollection.get(collection);
+      Pair<String, String> parts = extractPartsFromNonCanonical(resource);
+      if (!parts.getKey().isEmpty()) {
+        provider = parts.getKey();
+        identifier = parts.getValue();
       }
     }
+    // remove trailing whitespace from id
     identifier = identifier.stripTrailing();
+    // handle case mismatch in provider code
     if (provider.matches("[A-Z]+")) {
       provider = provider.toLowerCase();
     }
     String query = identifier;
-    // Get prefix by checking for uniquely matching Regex
+    // Get provider by checking for uniquely matching Regex
     if (provider.isEmpty()) {
       List<String> collections =
-        collectionForPattern.keySet().stream().filter(s -> Pattern.compile(s).matcher(query).matches())
-                            .collect(Collectors.toList());
+        COLLECTION_FOR_PATTERN.keySet().stream().filter(s -> Pattern.compile(s).matcher(query).matches())
+                              .collect(Collectors.toList());
       if (collections.size() == 1) {
         String collection = collections.get(0);
-        provider = prefixForCollection.get(collection);
+        provider = PREFIX_FOR_COLLECTION.get(collection);
       }
     }
-    if (!collectionForPrefix.containsKey(provider) && prefixForCollection.containsKey(provider)) {
-      provider = prefixForCollection.get(provider);
-    } else if (!collectionForPrefix.containsKey(provider)) {
+    // handle cases where provider and collection name have been mixed up
+    if (!COLLECTION_FOR_PREFIX.containsKey(provider) && PREFIX_FOR_COLLECTION.containsKey(provider)) {
+      provider = PREFIX_FOR_COLLECTION.get(provider);
+    } else if (!COLLECTION_FOR_PREFIX.containsKey(provider)) {
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
       return resource;
     }
-    String collection = collectionForPrefix.get(provider);
+    String collection = COLLECTION_FOR_PREFIX.get(provider);
     String regexp = getPattern(collection);
     Boolean correct = checkPattern(identifier, regexp);
+    resource = createURI(provider, identifier);
     String report_resource = resource;
     if (!correct) {
       logger.info(format(mpMessageBundle.getString("PATTERN_MISMATCH_INFO"), identifier, regexp, collection));
@@ -202,13 +251,32 @@ public class Registry {
 
 
   /**
+   * @param resource
+   * @return
+   */
+  private static Pair<String, String> extractPartsFromNonCanonical(String resource) {
+    String identifier = "";
+    String provider = "";
+    for (Map.Entry<String, String> entry : ALTERNATIVE_URL_PATTERNS.entrySet()) {
+      Matcher matcher = Pattern.compile(entry.getKey()).matcher(resource);
+      if (matcher.matches()) {
+        identifier = matcher.group("id");
+        provider = PREFIX_FOR_COLLECTION.get(entry.getValue());
+        break;
+      }
+    }
+    return Pair.of(provider, identifier);
+  }
+
+
+  /**
    * Get pattern from collection name
    *
    * @param collection
    * @return
    */
   public static String getPattern(String collection) {
-    return patternForCollection.getOrDefault(collection, "");
+    return PATTERN_FOR_COLLECTION.getOrDefault(collection, "");
   }
 
 
@@ -346,7 +414,7 @@ public class Registry {
     if (Character.isDigit(identifier.charAt(0))) {
       identifier = "R-ALL-" + identifier;
     }
-    if (checkPattern(identifier, patternForCollection.get("Reactome"))) {
+    if (checkPattern(identifier, PATTERN_FOR_COLLECTION.get("Reactome"))) {
       return createURI("reactome", identifier);
     } else {
       return null;
