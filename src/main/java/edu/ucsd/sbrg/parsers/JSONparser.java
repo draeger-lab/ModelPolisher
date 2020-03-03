@@ -6,15 +6,34 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.util.GPRParser;
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Compartment;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -23,11 +42,14 @@ import org.sbml.jsbml.util.ModelBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zbit.sbml.util.SBMLtools;
-import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.parsers.models.*;
+import edu.ucsd.sbrg.parsers.models.Compartments;
+import edu.ucsd.sbrg.parsers.models.Gene;
+import edu.ucsd.sbrg.parsers.models.Metabolite;
 import edu.ucsd.sbrg.parsers.models.Reaction;
+import edu.ucsd.sbrg.parsers.models.Root;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
@@ -120,7 +142,11 @@ public class JSONparser {
   }
 
 
-  private void parseAnnotation(SBase node, Object annotation) {
+  /**
+   * @param node
+   * @param annotation
+   */
+  public void parseAnnotation(SBase node, Object annotation) {
     if (Optional.ofNullable(annotation).orElse("").equals("")) {
       return;
     }
@@ -143,6 +169,10 @@ public class JSONparser {
   }
 
 
+  /**
+   * @param entry
+   * @return
+   */
   private Set<String> parseAnnotation(Map.Entry<String, Object> entry) {
     Set<String> annotations = new HashSet<>();
     String providerCode = entry.getKey();
@@ -167,6 +197,11 @@ public class JSONparser {
   }
 
 
+  /**
+   * @param providerCode
+   * @param id
+   * @return
+   */
   private String checkResource(String providerCode, String id) {
     String resource;
     if (id.startsWith("http")) {
@@ -179,7 +214,11 @@ public class JSONparser {
   }
 
 
-  private void parseNotes(SBase node, Object notes) {
+  /**
+   * @param node
+   * @param notes
+   */
+  public void parseNotes(SBase node, Object notes) {
     Set<String> content = new HashSet<>();
     if (Optional.ofNullable(notes).orElse("").equals("")) {
       return;
@@ -213,6 +252,10 @@ public class JSONparser {
   }
 
 
+  /**
+   * @param entry
+   * @return
+   */
   private String parseNotes(Map.Entry<String, Object> entry) {
     String note = "";
     String key = entry.getKey();
@@ -235,7 +278,7 @@ public class JSONparser {
    * @param builder
    * @param compartments
    */
-  private void parseCompartments(ModelBuilder builder, Map<String, String> compartments) {
+  public void parseCompartments(ModelBuilder builder, Map<String, String> compartments) {
     int compSize = compartments.size();
     logger.info(format(mpMessageBundle.getString("NUM_COMPART"), compSize));
     Model model = builder.getModel();
@@ -243,6 +286,9 @@ public class JSONparser {
       String compartmentCode = BiGGId.extractCompartmentCode(compartment.getKey());
       if (compartmentCode.isEmpty()) {
         logger.info(String.format("Invalid compartment code '%s', skipping.", compartment.getKey()));
+        continue;
+      }
+      if (model.getCompartment(compartmentCode) != null) {
         continue;
       }
       Compartment comp = model.createCompartment();
@@ -278,7 +324,7 @@ public class JSONparser {
    * @param model
    * @param metabolite
    */
-  private void parseMetabolite(Model model, Metabolite metabolite, BiGGId biggId) {
+  public void parseMetabolite(Model model, Metabolite metabolite, BiGGId biggId) {
     Species species = model.createSpecies(biggId.toBiGGId());
     String name = metabolite.getName();
     if (name.isEmpty()) {
@@ -337,7 +383,7 @@ public class JSONparser {
    * @param model
    * @param gene
    */
-  private void parseGene(Model model, Gene gene, String id) {
+  public void parseGene(Model model, Gene gene, String id) {
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     GeneProduct gp = modelPlug.createGeneProduct(id);
     gp.setLabel(id);
@@ -377,7 +423,7 @@ public class JSONparser {
    * @param builder
    * @param reaction
    */
-  private void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
+  public void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
     Model model = builder.getModel();
     org.sbml.jsbml.Reaction r = model.createReaction(id);
     String name = reaction.getName();
@@ -452,20 +498,19 @@ public class JSONparser {
    * @param r
    */
   private void createSubsystem(Model model, Reaction reaction, org.sbml.jsbml.Reaction r) {
-    String name = r.getName();
     String subsystem = Optional.ofNullable(reaction.getSubsystem()).orElse("");
     if (!subsystem.isEmpty()) {
       GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-      Group group = null;
+      Group group = (Group) groupsModelPlugin.getGroup(subsystem);
       for (Group existingGroup : groupsModelPlugin.getListOfGroups()) {
-        if (name.equals(existingGroup.getName())) {
+        if (subsystem.equals(existingGroup.getName())) {
           group = existingGroup;
           break;
         }
       }
       if (group == null) {
         group = groupsModelPlugin.createGroup();
-        group.setName(name);
+        group.setName(subsystem);
         group.setKind(Group.Kind.partonomy);
       }
       SBMLUtils.createSubsystemLink(r, group.createMember());
@@ -492,39 +537,5 @@ public class JSONparser {
       fo.setCoefficient(coefficient);
       fo.setReaction(r);
     }
-  }
-
-
-  /**
-   * @param annotation
-   * @return
-   */
-  private String checkAnnotation(String annotation) {
-    if (annotation.startsWith("<")) {
-      return annotation;
-    } else {
-      return "<annotation>" + annotation + "</annotation>";
-    }
-  }
-
-
-  /**
-   * @param notes
-   * @return
-   */
-  private String checkNotes(String notes) {
-    if (notes.startsWith("<")) {
-      return notes;
-    } else {
-      return "<notes>" + notes + "</notes>";
-    }
-  }
-
-
-  /**
-   * @param exc
-   */
-  private void logException(Exception exc) {
-    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(), Utils.getMessage(exc)));
   }
 }

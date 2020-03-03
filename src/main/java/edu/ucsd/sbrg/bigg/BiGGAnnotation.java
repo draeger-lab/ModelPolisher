@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.parsers.JSONwriter;
 import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -674,7 +675,7 @@ public class BiGGAnnotation {
     if (label == null) {
       return;
     }
-    // fix not updated geneProductReference in Association
+    // fix geneProductReference in Association not updated
     SBMLUtils.updateGeneProductReference(geneProduct);
     BiGGId biGGId = BiGGId.createGeneId(id);
     setCVTermResources(geneProduct, biGGId);

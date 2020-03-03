@@ -48,7 +48,6 @@ public class SBMLUtils {
    */
   private static Map<String, GeneProductRef> geneProductReferences = new HashMap<>();
 
-
   /**
    * Apply updated GeneID to geneProductReferenece
    * 
@@ -139,6 +138,7 @@ public class SBMLUtils {
   /**
    * @param r
    */
+  @SuppressWarnings("deprecation")
   public static void setRequiredAttributes(Reaction r) {
     // TODO: make defaults user settings or take from L2V5.
     if (!r.isSetId()) {

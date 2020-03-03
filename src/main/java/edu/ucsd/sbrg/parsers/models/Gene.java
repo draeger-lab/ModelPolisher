@@ -13,7 +13,7 @@ public class Gene {
   private Object notes;
   private Object annotation;
 
-  Gene() {
+  public Gene() {
     // Set defaults for some required properties, as @JsonProperty(required = true) does not seem to work
     name = "";
   }
