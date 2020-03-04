@@ -15,59 +15,15 @@
 package edu.ucsd.sbrg.db;
 
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_BIGG_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_CHARGE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPARTMENTALIZED_COMPONENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPARTMENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_COMPONENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_DATA_SOURCE_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_FORMULA;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_GENE_REACTION_RULE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_GENOME_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_LOCUS_TAG;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_MODEL_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_OME_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_ORGANISM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_PUBLICATION_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REACTION_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REFERENCE_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_REFERENCE_TYPE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_SYNONYM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COLUMN_TAXON_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPARTMENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPARTMENTALIZED_COMPONENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.COMPONENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.DATA_SOURCE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENOME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.GENOME_REGION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MCC;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MODEL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.MODEL_REACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.OLD_BIGG_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.PUBLICATION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.PUBLICATION_MODEL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REFSEQ_NAME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.REFSEQ_PATTERN;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.SYNONYM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.URL_PREFIX;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.*;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
-import java.sql.Connection;
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.sbml.jsbml.util.Pair;
 
@@ -126,14 +82,14 @@ public class BiGGDB {
   /**
    * @return
    */
-  public static Date getBiGGVersion() {
-    Date date = null;
+  public static Optional<Date> getBiGGVersion() {
+    Optional<Date> date = Optional.empty();
     try {
       Connection connection = connector.getConnection();
       PreparedStatement pStatement = connection.prepareStatement("Select date_time FROM database_version");
       ResultSet resultSet = pStatement.executeQuery();
       if (resultSet.next()) {
-        date = resultSet.getDate(1);
+        date = Optional.of(resultSet.getDate(1));
       }
       pStatement.close();
       connection.close();
@@ -178,76 +134,74 @@ public class BiGGDB {
    * @param compartmentId
    * @return
    */
-  public static String getChemicalFormulaByCompartment(String componentId, String compartmentId) {
-    String result = "";
+  public static Optional<String> getChemicalFormulaByCompartment(String componentId, String compartmentId) {
     String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = ? AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = ? AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
-      + " AND LENGTH(mcc." + COLUMN_FORMULA + ") > 0 ORDER BY mcc." + COLUMN_FORMULA;
+      + " AND mcc.formula <> '' ORDER BY mcc." + COLUMN_FORMULA;
+    Set<String> results = runFormulaQuery(query, componentId, compartmentId);
+    if (results.size() == 1) {
+      return Optional.of(results.iterator().next());
+    } else {
+      if (results.size() > 1) {
+        logger.info(String.format("Could not retrieve unique chemical formula for component '%s' and compartment '%s'",
+          componentId, compartmentId));
+      }
+      return Optional.empty();
+    }
+  }
+
+
+  /**
+   * @param query
+   * @param componentId
+   * @param compartmentOrModelId
+   * @return
+   */
+  private static Set<String> runFormulaQuery(String query, String componentId, String compartmentOrModelId) {
+    Set<String> results = new HashSet<>();
     try {
       Connection connection = connector.getConnection();
       PreparedStatement pStatement = connection.prepareStatement(query);
       pStatement.setString(1, componentId);
-      pStatement.setString(2, compartmentId);
+      pStatement.setString(2, compartmentOrModelId);
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
-        result = resultSet.getString(1);
-        if (result != null && !result.trim().isEmpty()) {
-          break;
-        }
-      }
-      while (resultSet.next()) {
-        String tmp = resultSet.getString(1);
-        if (tmp != null && !tmp.trim().isEmpty()) {
-          logger.info(format(mpMessageBundle.getString("RST_NOT_UNIQUE"), "formula", componentId, compartmentId));
-          result = "";
-        }
+        results.add(resultSet.getString(1));
       }
       pStatement.close();
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return result;
+    return results.stream().filter(formula -> formula != null && !formula.isEmpty()).collect(Collectors.toSet());
   }
 
 
   /**
    * Get chemical formula for models that are present in BiGG
    *
-   * @param abbreviation
+   * @param componentId
    * @param modelId
    * @return
    */
-  public static String getChemicalFormula(String abbreviation, String modelId) {
-    String result = "";
+  public static Optional<String> getChemicalFormula(String componentId, String modelId) {
     String query = "SELECT DISTINCT mcc." + COLUMN_FORMULA + "\n FROM " + COMPONENT + " c,\n"
       + COMPARTMENTALIZED_COMPONENT + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc."
       + COLUMN_COMPONENT_ID + " AND\n cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c."
       + COLUMN_BIGG_ID + " = ? AND\n m." + COLUMN_BIGG_ID + " = ? AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID
       + " AND mcc.formula <> ''";
-    try {
-      Connection connection = connector.getConnection();
-      PreparedStatement pStatement = connection.prepareStatement(query);
-      pStatement.setString(1, abbreviation);
-      pStatement.setString(2, modelId);
-      ResultSet resultSet = pStatement.executeQuery();
-      while (resultSet.next()) {
-        if (!result.isEmpty()) {
-          logger.severe(
-            String.format("Chemical formula query returned multiple results:\nAbbreviation: %s\nModel ID: %s",
-              abbreviation, modelId));
-        } else {
-          result = resultSet.getString(1);
-        }
+    Set<String> results = runFormulaQuery(query, componentId, modelId);
+    if (results.size() == 1) {
+      return Optional.of(results.iterator().next());
+    } else {
+      if (results.size() > 1) {
+        logger.info(String.format("Could not retrieve unique chemical formula for component '%s' and model '%s'",
+          componentId, modelId));
       }
-      pStatement.close();
-      connection.close();
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
+      return Optional.empty();
     }
-    return result == null ? "" : result;
   }
 
 
@@ -255,7 +209,7 @@ public class BiGGDB {
    * @param biggId
    * @return
    */
-  public static String getCompartmentName(BiGGId biggId) {
+  public static Optional<String> getCompartmentName(BiGGId biggId) {
     String query = "SELECT name FROM compartment WHERE bigg_id = ? AND name <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -266,25 +220,30 @@ public class BiGGDB {
    * @param param
    * @return
    */
-  public static String singleParamStatement(String query, String param) {
-    String result = "";
+  public static Optional<String> singleParamStatement(String query, String param) {
+    Set<String> results = new HashSet<>();
     try {
       Connection connection = connector.getConnection();
       PreparedStatement pStatement = connection.prepareStatement(query);
       pStatement.setString(1, param);
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
-        if (!result.isEmpty()) {
-          logger.severe(String.format("Query returned multiple results for parameter %s\nQuery:\n%s", param, query));
-        }
-        result = resultSet.getString(1);
+        results.add(resultSet.getString(1));
       }
       pStatement.close();
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return result;
+    results = results.stream().filter(result -> result != null && !result.isEmpty()).collect(Collectors.toSet());
+    if (results.size() == 1) {
+      return Optional.of(results.iterator().next());
+    } else {
+      if (results.size() > 1) {
+        logger.severe(String.format("Query returned multiple results for parameter %s\nQuery:\n%s", param, query));
+      }
+      return Optional.empty();
+    }
   }
 
 
@@ -292,7 +251,7 @@ public class BiGGDB {
    * @param biggId
    * @return
    */
-  public static String getComponentName(BiGGId biggId) {
+  public static Optional<String> getComponentName(BiGGId biggId) {
     String query = "SELECT name FROM component WHERE bigg_id = ? AND name <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -302,7 +261,7 @@ public class BiGGDB {
    * @param biggId
    * @return
    */
-  public static String getComponentType(BiGGId biggId) {
+  public static Optional<String> getComponentType(BiGGId biggId) {
     String query = "SELECT type FROM component WHERE bigg_id = ? AND name <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -316,7 +275,7 @@ public class BiGGDB {
    * @return
    */
   public static TreeSet<String> getGeneIds(String label) {
-    TreeSet<String> set = new TreeSet<>();
+    TreeSet<String> results = new TreeSet<>();
     String query = SELECT + URL_PREFIX + ", s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, "
       + GENOME_REGION + " gr\n" + "WHERE d." + COLUMN_ID + " = s." + COLUMN_DATA_SOURCE_ID + " AND\n s." + COLUMN_OME_ID
       + " = gr." + COLUMN_ID + " AND\n gr." + COLUMN_BIGG_ID + " = ? AND\n d." + COLUMN_BIGG_ID + " != " + OLD_BIGG_ID
@@ -331,7 +290,7 @@ public class BiGGDB {
         String collection = resultSet.getString(1);
         String identifier = resultSet.getString(2);
         if (collection != null && identifier != null) {
-          resource = collection + identifier;
+          resource = collection.replaceAll("http://", "https://") + identifier;
         } else if (collection == null) {
           logger.fine(mpMessageBundle.getString("COLLECTION_NULL_GENE"));
           continue;
@@ -339,16 +298,14 @@ public class BiGGDB {
           logger.warning(format(mpMessageBundle.getString("IDENTIFIER_NULL_GENE"), collection));
           continue;
         }
-        if ((resource = Registry.checkResourceUrl(resource)) != null) {
-          set.add(resource);
-        }
+        Registry.checkResourceUrl(resource).map(results::add);
       }
       pStatement.close();
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return set;
+    return results;
   }
 
 
@@ -356,7 +313,7 @@ public class BiGGDB {
    * @param label
    * @return
    */
-  public static String getGeneName(String label) {
+  public static Optional<String> getGeneName(String label) {
     String query = "SELECT s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, " + GENOME_REGION
       + " gr\n" + "WHERE d." + COLUMN_ID + " = s." + COLUMN_DATA_SOURCE_ID + " AND\n s." + COLUMN_OME_ID + " = gr."
       + COLUMN_ID + " AND\n gr." + COLUMN_BIGG_ID + " = ? AND\n d." + COLUMN_BIGG_ID + " LIKE " + REFSEQ_NAME
@@ -387,7 +344,7 @@ public class BiGGDB {
    * @return
    */
   public static List<String> getReactionRules(String query, String reactionId, String modelId) {
-    List<String> result = new ArrayList<>();
+    List<String> results = new ArrayList<>();
     try {
       Connection connection = connector.getConnection();
       PreparedStatement pStatement = connection.prepareStatement(query);
@@ -395,14 +352,14 @@ public class BiGGDB {
       pStatement.setString(2, modelId);
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
-        result.add(resultSet.getString(1));
+        results.add(resultSet.getString(1));
       }
       pStatement.close();
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return result;
+    return results;
   }
 
 
@@ -410,7 +367,7 @@ public class BiGGDB {
    * @param abbreviation
    * @return
    */
-  public static String getOrganism(String abbreviation) {
+  public static Optional<String> getOrganism(String abbreviation) {
     String query = "SELECT g." + COLUMN_ORGANISM + FROM + GENOME + " g, " + MODEL + " m WHERE m." + COLUMN_GENOME_ID
       + " = g." + COLUMN_ID + " AND m." + COLUMN_BIGG_ID + " = ?";
     return singleParamStatement(query, abbreviation);
@@ -422,7 +379,7 @@ public class BiGGDB {
    * @return
    */
   public static List<Pair<String, String>> getPublications(String abbreviation) {
-    List<Pair<String, String>> result = new LinkedList<>();
+    List<Pair<String, String>> results = new LinkedList<>();
     String query = "SELECT p." + COLUMN_REFERENCE_TYPE + ", p." + COLUMN_REFERENCE_ID + " FROM  " + PUBLICATION + " p, "
       + PUBLICATION_MODEL + " pm, " + MODEL + " m WHERE p." + COLUMN_ID + " = pm." + COLUMN_PUBLICATION_ID + " AND pm."
       + COLUMN_MODEL_ID + " = m." + COLUMN_ID + " AND m." + COLUMN_BIGG_ID + " = ?";
@@ -433,14 +390,14 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         String key = resultSet.getString(1);
-        result.add(pairOf(key.equals("pmid") ? "pubmed" : key, resultSet.getString(2)));
+        results.add(pairOf(key.equals("pmid") ? "pubmed" : key, resultSet.getString(2)));
       }
       pStatement.close();
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return result;
+    return results;
   }
 
 
@@ -448,7 +405,7 @@ public class BiGGDB {
    * @param abbreviation
    * @return
    */
-  public static String getReactionName(String abbreviation) {
+  public static Optional<String> getReactionName(String abbreviation) {
     String query = "SELECT name FROM reaction WHERE bigg_id = ? AND name <> ''";
     return singleParamStatement(query, abbreviation);
   }
@@ -472,11 +429,7 @@ public class BiGGDB {
       pStatement.setString(1, biggId.getAbbreviation());
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
-        String resource = resultSet.getString(1);
-        resource = Registry.checkResourceUrl(resource);
-        if (resource != null) {
-          resources.add(resource);
-        }
+        Registry.checkResourceUrl(resultSet.getString(1)).map(resources::add);
       }
       pStatement.close();
       connection.close();
@@ -529,6 +482,10 @@ public class BiGGDB {
   }
 
 
+  /**
+   * @param table
+   * @return
+   */
   public static Set<String> getOnce(String table) {
     Set<String> biggIds = new LinkedHashSet<>();
     try {
@@ -555,85 +512,74 @@ public class BiGGDB {
    * @param compartmentId
    * @return
    */
-  public static int getChargeByCompartment(String componentId, String compartmentId) {
+  public static Optional<Integer> getChargeByCompartment(String componentId, String compartmentId) {
     String query = "SELECT DISTINCT mcc." + COLUMN_CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT
       + " cc, " + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + COLUMN_BIGG_ID + " = ? AND c." + COLUMN_ID
       + " = cc." + COLUMN_COMPONENT_ID + " AND co." + COLUMN_BIGG_ID + " = ? AND co." + COLUMN_ID + " = cc."
       + COLUMN_COMPARTMENT_ID + " and cc." + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID
       + " AND LENGTH(CAST( mcc." + COLUMN_CHARGE + " AS text)) > 0 ORDER BY mcc." + COLUMN_CHARGE;
-    String charge = "";
-    boolean unique = true;
+    Set<String> results = runChargeQuery(query, componentId, compartmentId);
+    if (results.size() == 1) {
+      return Optional.of(Integer.parseInt(results.iterator().next()));
+    } else {
+      if (results.size() > 1) {
+        logger.warning(String.format("Could not retrieve unique charge for component '%s' and compartment '%s'",
+          componentId, compartmentId));
+      }
+      return Optional.empty();
+    }
+  }
+
+
+  /**
+   * @param query
+   * @param componentId
+   * @param compartmentOrModelId
+   * @return
+   */
+  private static Set<String> runChargeQuery(String query, String componentId, String compartmentOrModelId) {
+    Set<String> results = new HashSet<>();
     try {
       Connection connection = connector.getConnection();
       PreparedStatement pStatement = connection.prepareStatement(query);
       pStatement.setString(1, componentId);
-      pStatement.setString(2, compartmentId);
+      pStatement.setString(2, compartmentOrModelId);
       ResultSet resultSet = pStatement.executeQuery();
-      String result = "";
-      if (resultSet.isBeforeFirst()) {
-        while (resultSet.next()) {
-          result = resultSet.getString(1);
-          if (result != null && !result.trim().isEmpty()) {
-            break;
-          }
-        }
-      }
       while (resultSet.next()) {
-        String tmp = resultSet.getString(1);
-        if (tmp != null && !tmp.trim().isEmpty()) {
-          logger.info(format(mpMessageBundle.getString("RST_NOT_UNIQUE"), "charge", componentId, compartmentId));
-          unique = false;
-        }
+        results.add(resultSet.getString(1));
       }
       pStatement.close();
       connection.close();
-      if (unique) {
-        charge = result;
-      }
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    if (charge == null || charge.trim().length() == 0) {
-      return Integer.MIN_VALUE;
-    }
-    return Integer.parseInt(charge);
+    return results.stream().filter(charge -> charge != null && !charge.isEmpty()).collect(Collectors.toSet());
   }
 
 
   /**
    * Get charge for known model id
    *
-   * @param abbreviation
+   * @param componentId
    * @param modelId
    * @return
    */
-  public static int getCharge(String abbreviation, String modelId) {
-    int result = Integer.MIN_VALUE;
+  public static Optional<Integer> getCharge(String componentId, String modelId) {
     String query =
       "SELECT DISTINCT mcc." + COLUMN_CHARGE + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT + " cc,\n"
         + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + COLUMN_ID + " = cc." + COLUMN_COMPONENT_ID + " AND\n cc."
         + COLUMN_ID + " = mcc." + COLUMN_COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + COLUMN_BIGG_ID + " = ? AND\n m."
         + COLUMN_BIGG_ID + " = ? AND\n m." + COLUMN_ID + " = mcc." + COLUMN_MODEL_ID + " AND mcc.charge IS NOT NULL";
-    try {
-      Connection connection = connector.getConnection();
-      PreparedStatement pStatement = connection.prepareStatement(query);
-      pStatement.setString(1, abbreviation);
-      pStatement.setString(2, modelId);
-      ResultSet resultSet = pStatement.executeQuery();
-      while (resultSet.next()) {
-        if (result > Integer.MIN_VALUE) {
-          logger.severe(String.format("Charge query returned multiple results for abbreviation: %s\nModel ID: %s",
-            abbreviation, modelId));
-        } else {
-          result = resultSet.getInt(1);
-        }
+    Set<String> results = runChargeQuery(query, componentId, modelId);
+    if (results.size() == 1) {
+      return Optional.of(Integer.parseInt(results.iterator().next()));
+    } else {
+      if (results.size() > 1) {
+        logger.warning(String.format("Could not retrieve unique charge for component '%s' and compartment '%s'",
+          componentId, modelId));
       }
-      pStatement.close();
-      connection.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
+      return Optional.empty();
     }
-    return result;
   }
 
 
@@ -643,8 +589,8 @@ public class BiGGDB {
    */
   public static boolean isPseudoreaction(String reactionId) {
     String query = "SELECT pseudoreaction FROM reaction WHERE bigg_id = ?";
-    String result = singleParamStatement(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
-    return (result != null) && result.equals("t");
+    Optional<String> result = singleParamStatement(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
+    return result.isPresent() && result.get().equals("t");
   }
 
 
@@ -654,8 +600,8 @@ public class BiGGDB {
    * @param dataSourceId
    * @return String
    */
-  public static String getBiggIdFromSynonym(String dataSourceId, String synonym, String type) {
-    String biggId = null;
+  public static Optional<String> getBiggIdFromSynonym(String dataSourceId, String synonym, String type) {
+    Set<String> results = new HashSet<>();
     String query;
     switch (type) {
     case TYPE_SPECIES:
@@ -674,7 +620,7 @@ public class BiGGDB {
         + COLUMN_SYNONYM + " = ? AND s." + COLUMN_OME_ID + " = g." + COLUMN_ID;
       break;
     default:
-      return null;
+      return Optional.empty();
     }
     try {
       Connection connection = connector.getConnection();
@@ -682,21 +628,18 @@ public class BiGGDB {
       pStatement.setString(1, dataSourceId);
       pStatement.setString(2, synonym);
       ResultSet resultSet = pStatement.executeQuery();
-      if (resultSet.next()) {
-        biggId = resultSet.getString(1);
-      } else {
-        connection.close();
-        return null;
-      }
-      // return null if more than one BiGG Id is obtained
-      if (resultSet.next()) {
-        connection.close();
-        return null;
+      while (resultSet.next()) {
+        results.add(resultSet.getString(1));
       }
       connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }
-    return biggId;
+    results = results.stream().filter(biggId -> biggId != null && !biggId.isEmpty()).collect(Collectors.toSet());
+    if (results.size() == 1) {
+      return Optional.of(results.iterator().next());
+    } else {
+      return Optional.empty();
+    }
   }
 }

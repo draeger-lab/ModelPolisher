@@ -3,41 +3,18 @@ package edu.ucsd.sbrg.bigg;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.sql.Date;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.parsers.JSONwriter;
-import edu.ucsd.sbrg.util.GPRParser;
-import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.CVTerm.Qualifier;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -55,6 +32,7 @@ import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
 import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
@@ -214,15 +192,11 @@ public class BiGGAnnotation {
    * @param model
    */
   private void annotate(Model model) {
-    String organism = BiGGDB.getOrganism(model.getId());
     int taxonId = BiGGDB.getTaxonId(model.getId());
     if (taxonId > Integer.MIN_VALUE) {
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId)));
     }
-    processReplacements(model, organism);
-    if (!model.isSetName()) {
-      model.setName(organism);
-    }
+    BiGGDB.getOrganism(model.getId()).ifPresent(organism -> processReplacements(model, organism));
     if (QueryOnce.isModel(model.getId())) {
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, Registry.createURI("bigg.model", model.getId())));
     }
@@ -250,8 +224,11 @@ public class BiGGAnnotation {
     replacements.put("${organism}", organism);
     replacements.put("${bigg_id}", model.getId());
     replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-    replacements.put("${bigg.timestamp}", format("{0,date}", BiGGDB.getBiGGVersion()));
-    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header, data, "Species", attributes));
+    replacements.put("${bigg.timestamp}", format("{0,date}", BiGGDB.getBiGGVersion().map(Date::toString).orElse("")));
+    replacements.put("${species_table}", "");
+    if (!model.isSetName()) {
+      model.setName(organism);
+    }
   }
 
 
@@ -293,10 +270,7 @@ public class BiGGAnnotation {
       compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("bigg.compartment", biggId)));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
-        String name = BiGGDB.getCompartmentName(biggId);
-        if ((name != null) && !name.isEmpty()) {
-          compartment.setName(name);
-        }
+        BiGGDB.getCompartmentName(biggId).ifPresent(compartment::setName);
       }
     }
   }
@@ -341,9 +315,8 @@ public class BiGGAnnotation {
       List<String> resources = species.getAnnotation().getListOfCVTerms().stream()
                                       .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       if (!resources.isEmpty()) {
-        String tmp = getBiGGIdFromResources(resources, BiGGDB.TYPE_SPECIES);
         // update id if we found something
-        id = tmp.isEmpty() ? id : tmp;
+        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_SPECIES).orElse(id);
       }
     }
     if (!id.startsWith("M_")) {
@@ -356,28 +329,33 @@ public class BiGGAnnotation {
   /**
    * @param resources
    */
-  private String getBiGGIdFromResources(List<String> resources, String type) {
+  private Optional<String> getBiGGIdFromResources(List<String> resources, String type) {
     for (String resource : resources) {
-      // Get identifiers.org URI for resource and fix ids
-      resource = Registry.checkResourceUrl(resource);
-      if (resource == null) {
-        continue;
-      }
-      // Get data source and id from identifiers.or URI
-      List<String> parts = Registry.getPartsFromCanonicalURI(resource);
-      if (parts.isEmpty()) {
-        continue;
-      }
-      String dataSource = parts.get(0);
-      String synonymId = parts.get(1);
-      if (QueryOnce.isDataSource(dataSource)) {
-        String id = BiGGDB.getBiggIdFromSynonym(dataSource, synonymId, type);
-        if (id != null) {
-          return id;
-        }
+      Optional<String> id = Registry.checkResourceUrl(resource).map(Registry::getPartsFromCanonicalURI)
+                                    .flatMap(parts -> getBiggIdFromParts(parts, type));
+      if (id.isPresent()) {
+        return id;
       }
     }
-    return "";
+    return Optional.empty();
+  }
+
+
+  /**
+   * @param parts
+   * @param type
+   * @return
+   */
+  private Optional<String> getBiggIdFromParts(List<String> parts, String type) {
+    String dataSource = parts.get(0);
+    String synonymId = parts.get(1);
+    if (QueryOnce.isDataSource(dataSource)) {
+      Optional<String> id = BiGGDB.getBiggIdFromSynonym(dataSource, synonymId, type);
+      if (id.isPresent()) {
+        return id;
+      }
+    }
+    return Optional.empty();
   }
 
 
@@ -388,7 +366,7 @@ public class BiGGAnnotation {
   private void setSpeciesName(Species species, BiGGId biggId) {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
-      species.setName(SBMLPolisher.polishName(BiGGDB.getComponentName(biggId)));
+      BiGGDB.getComponentName(biggId).map(SBMLPolisher::polishName).ifPresent(species::setName);
     }
   }
 
@@ -398,24 +376,22 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setSBOTermFromComponentType(Species species, BiGGId biggId) {
-    String type = BiGGDB.getComponentType(biggId);
-    if (type == null) {
-      return;
-    }
-    switch (type) {
-    case "metabolite":
-      species.setSBOTerm(SBO.getSimpleMolecule());
-      break;
-    case "protein":
-      species.setSBOTerm(SBO.getProtein());
-      break;
-    default:
-      Parameters parameters = Parameters.get();
-      if (parameters.omitGenericTerms) {
-        species.setSBOTerm(SBO.getMaterialEntity());
+    BiGGDB.getComponentType(biggId).ifPresent(type -> {
+      switch (type) {
+      case "metabolite":
+        species.setSBOTerm(SBO.getSimpleMolecule());
+        break;
+      case "protein":
+        species.setSBOTerm(SBO.getProtein());
+        break;
+      default:
+        Parameters parameters = Parameters.get();
+        if (parameters.omitGenericTerms) {
+          species.setSBOTerm(SBO.getMaterialEntity());
+        }
+        break;
       }
-      break;
-    }
+    });
   }
 
 
@@ -467,37 +443,33 @@ public class BiGGAnnotation {
     boolean isBiGGModel = QueryOnce.isModel(modelId);
     boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.equals("");
     if (!fbcSpecPlug.isSetChemicalFormula()) {
-      String chemicalFormula = "";
+      Optional<String> chemicalFormula = Optional.empty();
       if (isBiGGModel) {
         chemicalFormula = BiGGDB.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
-      } else if (compartmentNonEmpty) {
+      }
+      if ((!isBiGGModel || chemicalFormula.isEmpty()) && compartmentNonEmpty) {
         chemicalFormula = BiGGDB.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
       }
-      if (!chemicalFormula.isEmpty()) {
+      chemicalFormula.ifPresent(formula -> {
         try {
-          fbcSpecPlug.setChemicalFormula(chemicalFormula);
+          fbcSpecPlug.setChemicalFormula(formula);
         } catch (IllegalArgumentException exc) {
           logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
         }
-      }
+      });
     }
-    Integer charge = null;
+    Optional<Integer> chargeFromBiGG = Optional.empty();
     if (isBiGGModel) {
-      charge = BiGGDB.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+      chargeFromBiGG = BiGGDB.getCharge(biggId.getAbbreviation(), species.getModel().getId());
     } else if (compartmentNonEmpty) {
-      charge = BiGGDB.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
+      chargeFromBiGG = BiGGDB.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
     }
     if (species.isSetCharge()) {
-      if (charge != null && charge != species.getCharge() && charge > Integer.MIN_VALUE ) {
-        logger.warning(
-          format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId()));
-      }
+      chargeFromBiGG.filter(charge -> charge != species.getCharge()).ifPresent(charge -> logger.warning(
+        format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId())));
       species.unsetCharge();
     }
-    if (charge != null && charge != 0 && charge > Integer.MIN_VALUE) {
-      // If charge is set and charge = 0 -> this can mean it is only a default!
-      fbcSpecPlug.setCharge(charge);
-    }
+    chargeFromBiGG.filter(charge -> charge != 0).ifPresent(fbcSpecPlug::setCharge);
   }
 
 
@@ -532,10 +504,8 @@ public class BiGGAnnotation {
     // reaction.id
     BiGGId biggId = BiGGId.createReactionId(id);
     String abbreviation = biggId.getAbbreviation();
-    String name = BiGGDB.getReactionName(abbreviation);
-    if ((name != null) && !name.equals(reaction.getName())) {
-      reaction.setName(SBMLPolisher.polishName(name));
-    }
+    BiGGDB.getReactionName(abbreviation).filter(name -> !name.equals(reaction.getName())).map(SBMLPolisher::polishName)
+          .ifPresent(reaction::setName);
     List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneRactionRule : geneReactionRules) {
       GPRParser.parseGPR(reaction, geneRactionRule, parameters.omitGenericTerms);
@@ -558,9 +528,8 @@ public class BiGGAnnotation {
       List<String> resources = reaction.getAnnotation().getListOfCVTerms().stream()
                                        .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       if (!resources.isEmpty()) {
-        String tmp = getBiGGIdFromResources(resources, BiGGDB.TYPE_REACTION);
         // update id if we found something
-        id = tmp.isEmpty() ? id : tmp;
+        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_REACTION).orElse(id);
       }
     }
     if (!id.startsWith("R_")) {
@@ -699,9 +668,8 @@ public class BiGGAnnotation {
       List<String> resources = geneProduct.getAnnotation().getListOfCVTerms().stream()
                                           .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       if (!resources.isEmpty()) {
-        String tmp = getBiGGIdFromResources(resources, BiGGDB.TYPE_GENE_PRODUCT);
         // update id if we found something
-        id = tmp.isEmpty() ? id : tmp;
+        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_GENE_PRODUCT).orElse(id);
       }
     }
     if (!id.startsWith("G_")) {
@@ -719,32 +687,19 @@ public class BiGGAnnotation {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // label is stored without "G_" prefix in BiGG
-    for (String resource : BiGGDB.getGeneIds(biggId.getAbbreviation())) {
-      resource = Registry.checkResourceUrl(resource);
-      if (resource == null) {
-        continue;
-      }
-      List<String> parts = Registry.getPartsFromCanonicalURI(resource);
-      if (parts.size() < 1) {
-        continue;
-      }
-      String collection = parts.get(0);
-      if (collection == null) {
-        continue;
-      } else if (!resource.contains("identifiers.org")) {
-        logger.severe(format(mpMessageBundle.getString("PATTERN_MISMATCH_DROP"), collection));
-        continue;
-      }
-      switch (collection) {
-      case "interpro":
-      case "pdb":
-      case "uniprot":
-        termIs.addResource(resource);
-        break;
-      default:
-        termEncodedBy.addResource(resource);
-      }
-    }
+    BiGGDB.getGeneIds(biggId.getAbbreviation()).forEach(
+      resource -> Registry.checkResourceUrl(resource).map(Registry::getPartsFromCanonicalURI)
+                          .filter(parts -> parts.size() > 0).map(parts -> parts.get(0)).ifPresent(collection -> {
+                            switch (collection) {
+                            case "interpro":
+                            case "pdb":
+                            case "uniprot":
+                              termIs.addResource(resource);
+                              break;
+                            default:
+                              termEncodedBy.addResource(resource);
+                            }
+                          }));
     if (termIs.getResourceCount() > 0) {
       geneProduct.addCVTerm(termIs);
     }
@@ -763,15 +718,14 @@ public class BiGGAnnotation {
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
-    String geneName = BiGGDB.getGeneName(label);
-    if (geneName != null) {
+    BiGGDB.getGeneName(label).ifPresent(geneName -> {
       if (geneName.isEmpty()) {
         logger.fine(format(mpMessageBundle.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
       } else if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
         logger.warning(format(mpMessageBundle.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
       }
       geneProduct.setName(geneName);
-    }
+    });
   }
 
 

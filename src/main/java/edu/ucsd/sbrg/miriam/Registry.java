@@ -185,11 +185,21 @@ public class Registry {
    *        resource URI to be added as annotation
    * @return corrected resource URI
    */
-  public static String checkResourceUrl(String resource) {
-    // TODO: clarify what to do with ncbigi entries, don't write them for now -> direct links should still be
-    // resolvable: https://www.ncbi.nlm.nih.gov/protein/GI:
+  public static Optional<String> checkResourceUrl(String resource) {
+    // no longer supported by identifiers.org, but should still resolve, keep and fix missing id prefix
     if (resource.contains("ncbigi")) {
-      return null;
+      String URLWithoutId = Registry.getDataCollectionPartFromURI(resource);
+      String[] split = resource.split("/");
+      int len = split.length;
+      String id = split[len - 1];
+      if (!id.startsWith("GI:")) {
+        if (id.startsWith("gi:")) {
+          resource = Registry.replace(resource, id, id.replaceAll("gi:", "GI:"));
+        } else {
+          resource = Registry.replace(resource, id, "GI:" + id);
+        }
+      }
+      return Optional.of(resource);
     }
     /*
      * Either [namespace prefix]:[accession] or [provider code]/[namespace prefix]:[accession] second option is
@@ -231,7 +241,7 @@ public class Registry {
       provider = PREFIX_FOR_COLLECTION.get(provider);
     } else if (!COLLECTION_FOR_PREFIX.containsKey(provider)) {
       logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
-      return resource;
+      return Optional.of(resource);
     }
     String collection = COLLECTION_FOR_PREFIX.get(provider);
     String regexp = getPattern(collection);
@@ -244,9 +254,11 @@ public class Registry {
     }
     if (resource == null) {
       logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), report_resource, collection));
+      return Optional.empty();
+    } else {
+      logger.fine(format("Added resource {0}", resource));
+      return Optional.of(resource);
     }
-    logger.fine(format("Added resource {0}", resource));
-    return resource;
   }
 
 

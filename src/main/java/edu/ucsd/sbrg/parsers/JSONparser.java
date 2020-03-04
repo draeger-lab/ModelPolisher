@@ -6,34 +6,14 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -44,11 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zbit.sbml.util.SBMLtools;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.parsers.models.Compartments;
-import edu.ucsd.sbrg.parsers.models.Gene;
-import edu.ucsd.sbrg.parsers.models.Metabolite;
+import edu.ucsd.sbrg.parsers.models.*;
 import edu.ucsd.sbrg.parsers.models.Reaction;
-import edu.ucsd.sbrg.parsers.models.Root;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
@@ -178,16 +155,10 @@ public class JSONparser {
     String providerCode = entry.getKey();
     Object ids = entry.getValue();
     if (ids instanceof String) {
-      String resource = checkResource(providerCode, (String) ids);
-      if (resource != null) {
-        annotations.add(resource);
-      }
+      checkResource(providerCode, (String) ids).map(annotations::add);
     } else if (ids instanceof ArrayList) {
       for (String id : ((ArrayList<String>) ids)) {
-        String resource = checkResource(providerCode, id);
-        if (resource != null) {
-          annotations.add(resource);
-        }
+        checkResource(providerCode, id).map(annotations::add);
       }
     } else {
       logger.severe(
@@ -202,15 +173,14 @@ public class JSONparser {
    * @param id
    * @return
    */
-  private String checkResource(String providerCode, String id) {
+  private Optional<String> checkResource(String providerCode, String id) {
     String resource;
     if (id.startsWith("http")) {
       resource = id;
     } else {
       resource = Registry.createURI(providerCode, id);
     }
-    resource = Registry.checkResourceUrl(resource);
-    return resource;
+    return Registry.checkResourceUrl(resource);
   }
 
 

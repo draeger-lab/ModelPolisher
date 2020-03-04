@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,10 +46,13 @@ public class RegistryTest {
         String id = res.getSampleId();
         String urlPattern = res.getUrlPattern();
         String sourceURL = urlPattern.replaceAll("\\{\\$id}", id);
-        String canonicalURL = Registry.checkResourceUrl(sourceURL);
-        assertTrue(canonicalURL.startsWith("https://identifiers.org"));
-        List<String> parts = Registry.getPartsFromCanonicalURI(canonicalURL);
-        assertEquals(2, parts.size());
+        Optional<String> canonicalURL = Registry.checkResourceUrl(sourceURL);
+        assertTrue(canonicalURL.isPresent());
+        canonicalURL.ifPresent(url -> {
+          assertTrue(url.startsWith("https://identifiers.org"));
+          List<String> parts = Registry.getPartsFromCanonicalURI(url);
+          assertEquals(2, parts.size());
+        });
         // While most provider inequalities result in correct resource resolution, a few need to be handled differently
         // TODO: add this handling
         // keep this in the comments for now:

@@ -11,34 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.util.GPRParser;
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBase;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.Unit;
-import org.sbml.jsbml.UnitDefinition;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -48,17 +27,13 @@ import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
-import us.hebi.matlab.mat.types.Array;
-import us.hebi.matlab.mat.types.Cell;
-import us.hebi.matlab.mat.types.Char;
+import us.hebi.matlab.mat.types.*;
 import us.hebi.matlab.mat.types.MatFile.Entry;
-import us.hebi.matlab.mat.types.MatlabType;
-import us.hebi.matlab.mat.types.Matrix;
-import us.hebi.matlab.mat.types.Struct;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -488,14 +463,15 @@ public class COBRAparser {
           } else {
             resource = Registry.createURI(prefix, id);
           }
-          resource = Registry.checkResourceUrl(resource);
-          if (resource != null) {
-            term.addResource(resource);
-            success = true;
-            logger.finest(format(mpMessageBundle.getString("ADDED_URI_COBRA"), resource));
-          } else {
-            logger.severe(format(mpMessageBundle.getString("ADD_URI_FAILED_COBRA"), collection, id));
-          }
+          String finalId = id;
+          success = Registry.checkResourceUrl(resource).map(res -> {
+            term.addResource(res);
+            logger.finest(format(mpMessageBundle.getString("ADDED_URI_COBRA"), res));
+            return true;
+          }).orElseGet(() -> {
+            logger.severe(format(mpMessageBundle.getString("ADD_URI_FAILED_COBRA"), collection, finalId));
+            return false;
+          });
         }
       }
     }
