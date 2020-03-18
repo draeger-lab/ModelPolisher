@@ -6,14 +6,34 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Compartment;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -24,8 +44,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zbit.sbml.util.SBMLtools;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.parsers.models.*;
+import edu.ucsd.sbrg.parsers.models.Compartments;
+import edu.ucsd.sbrg.parsers.models.Gene;
+import edu.ucsd.sbrg.parsers.models.Metabolite;
 import edu.ucsd.sbrg.parsers.models.Reaction;
+import edu.ucsd.sbrg.parsers.models.Root;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
@@ -119,10 +142,12 @@ public class JSONparser {
   }
 
 
+
   /**
    * @param node
    * @param annotation
    */
+  @SuppressWarnings("unchecked")
   public void parseAnnotation(SBase node, Object annotation) {
     if (Optional.ofNullable(annotation).orElse("").equals("")) {
       return;
@@ -150,6 +175,7 @@ public class JSONparser {
    * @param entry
    * @return
    */
+  @SuppressWarnings("unchecked")
   private Set<String> parseAnnotation(Map.Entry<String, Object> entry) {
     Set<String> annotations = new HashSet<>();
     String providerCode = entry.getKey();
@@ -188,6 +214,7 @@ public class JSONparser {
    * @param node
    * @param notes
    */
+  @SuppressWarnings("unchecked")
   public void parseNotes(SBase node, Object notes) {
     Set<String> content = new HashSet<>();
     if (Optional.ofNullable(notes).orElse("").equals("")) {
@@ -226,6 +253,7 @@ public class JSONparser {
    * @param entry
    * @return
    */
+  @SuppressWarnings("unchecked")
   private String parseNotes(Map.Entry<String, Object> entry) {
     String note = "";
     String key = entry.getKey();
@@ -234,7 +262,7 @@ public class JSONparser {
       note = key + ":" + value;
     } else if (value instanceof ArrayList) {
       StringJoiner items = new StringJoiner(",", "[", "]");
-      ((ArrayList) value).forEach(item -> items.add((String) item));
+      ((List<String>) value).forEach(items::add);
       note = key + ":" + items.toString();
     } else {
       logger.severe(String.format("Please open an issue to see parsing for notes content format '%s' implemented.",
@@ -278,14 +306,13 @@ public class JSONparser {
     Model model = builder.getModel();
     for (Metabolite metabolite : metabolites) {
       String id = metabolite.getId();
-      if (!id.isEmpty()) {
-        BiGGId metId = BiGGId.createMetaboliteId(id);
+      BiGGId.createMetaboliteId(id).ifPresent(metId -> {
         if (model.getSpecies(metId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate species with id: '%s'", id));
         } else {
           parseMetabolite(model, metabolite, metId);
         }
-      }
+      });
     }
   }
 
@@ -336,15 +363,14 @@ public class JSONparser {
     Model model = builder.getModel();
     for (Gene gene : genes) {
       String id = gene.getId();
-      if (!id.isEmpty()) {
-        BiGGId geneId = BiGGId.createGeneId(id);
+      BiGGId.createGeneId(id).ifPresent(geneId -> {
         FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate gene with id: '%s'", id));
         } else {
           parseGene(model, gene, geneId.toBiGGId());
         }
-      }
+      });
     }
   }
 
@@ -376,15 +402,14 @@ public class JSONparser {
     logger.info(format(mpMessageBundle.getString("NUM_REACTIONS"), reactSize));
     for (Reaction reaction : reactions) {
       String id = reaction.getId();
-      if (!id.isEmpty()) {
-        // Add prefix for BiGGId
-        BiGGId reactionId = BiGGId.createReactionId(id);
+      // Add prefix for BiGGId
+      BiGGId.createReactionId(id).ifPresent(reactionId -> {
         if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
           logger.warning(String.format("Skipping duplicate reaction with id: '%s'", id));
         } else {
           parseReaction(builder, reaction, reactionId.toBiGGId());
         }
-      }
+      });
     }
   }
 
@@ -439,25 +464,27 @@ public class JSONparser {
    * @param model
    * @param r
    */
+  @SuppressWarnings("unchecked")
   private void setReactionStoichiometry(Reaction reaction, Model model, org.sbml.jsbml.Reaction r) {
     Map<String, Double> metabolites = reaction.getMetabolites().get();
     for (Map.Entry<String, Double> metabolite : metabolites.entrySet()) {
       // removed mu code, as unused not not matching schema
       String id = metabolite.getKey();
-      BiGGId metId = BiGGId.createMetaboliteId(id);
-      double value = metabolite.getValue();
-      if (value != 0d) {
-        Species species = model.getSpecies(metId.toBiGGId());
-        if (species == null) {
-          species = model.createSpecies(metId.toBiGGId());
-          logger.info(format(mpMessageBundle.getString("SPECIES_UNDEFINED"), metId, r.getId()));
+      BiGGId.createMetaboliteId(id).ifPresent(metId -> {
+        double value = metabolite.getValue();
+        if (value != 0d) {
+          Species species = model.getSpecies(metId.toBiGGId());
+          if (species == null) {
+            species = model.createSpecies(metId.toBiGGId());
+            logger.info(format(mpMessageBundle.getString("SPECIES_UNDEFINED"), metId, r.getId()));
+          }
+          if (value < 0d) {
+            ModelBuilder.buildReactants(r, pairOf(-value, species));
+          } else {
+            ModelBuilder.buildProducts(r, pairOf(value, species));
+          }
         }
-        if (value < 0d) {
-          ModelBuilder.buildReactants(r, pairOf(-value, species));
-        } else {
-          ModelBuilder.buildProducts(r, pairOf(value, species));
-        }
-      }
+      });
     }
   }
 

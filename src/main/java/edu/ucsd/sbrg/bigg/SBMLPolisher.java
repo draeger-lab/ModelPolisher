@@ -17,12 +17,37 @@ package edu.ucsd.sbrg.bigg;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Compartment;
+import org.sbml.jsbml.InitialAssignment;
+import org.sbml.jsbml.ListOf;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.NamedSBase;
+import org.sbml.jsbml.Parameter;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBO;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.SpeciesReference;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.Variable;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.util.ModelBuilder;
 import org.sbml.jsbml.util.ResourceManager;
 
@@ -31,6 +56,7 @@ import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
 import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLFix;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
@@ -72,10 +98,6 @@ public class SBMLPolisher {
    *
    */
   private boolean checkMassBalance = true;
-  /**
-   *
-   */
-  private String documentTitlePattern = "[biggId] - [organism]";
   /**
    * Switch to decide if generic and obvious terms should be used.
    */
@@ -356,19 +378,33 @@ public class SBMLPolisher {
   public void polish(Species species) {
     String id = species.getId();
     if (id.isEmpty()) {
+      // remove species with missing id, produces invalid SBML
+      if (species.isSetName()) {
+        logger.severe(String.format(
+          "Removing species '%s' due to missing id. Check your Model for entries missing the id attribute or duplicates.",
+          species.getName()));
+      } else {
+        logger.severe("Removing species with missing id and name. Check your Model for species without id and name.");
+      }
+      species.getModel().removeSpecies(species);
       return;
     }
     if (species.getId().endsWith("_boundary")) {
       logger.warning(format(mpMessageBundle.getString("SPECIES_ID_INVALID"), id));
       id = id.substring(0, id.length() - 9);
-      if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-        logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
-        species.setBoundaryCondition(true);
+      boolean uniqueId = species.getModel().findUniqueNamedSBase(id) == null;
+      if (uniqueId) {
+        if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
+          logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
+          species.setBoundaryCondition(true);
+        }
+        species.setId(id);
+      } else {
+        //TODO: handle species where removing '_boundary' part from id produces duplicates
       }
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
-    BiGGId biggId = BiGGId.createMetaboliteId(id);
     /*
      * Set mandatory attributes to default values
      * TODO: make those maybe user settings.
@@ -382,12 +418,14 @@ public class SBMLPolisher {
     if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
       species.setMetaId(species.getId());
     }
-    if (biggId.isSetCompartmentCode() && species.isSetCompartment()
-      && !biggId.getCompartmentCode().equals(species.getCompartment())) {
-      logger.warning(format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"), species.getId(),
-        species.getCompartment(), biggId.getCompartmentCode()));
-      species.setCompartment(biggId.getCompartmentCode());
-    }
+    BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
+      if (biggId.isSetCompartmentCode() && species.isSetCompartment()
+        && !biggId.getCompartmentCode().equals(species.getCompartment())) {
+        logger.warning(format(mpMessageBundle.getString("CHANGE_COMPART_REFERENCE"), species.getId(),
+          species.getCompartment(), biggId.getCompartmentCode()));
+        species.setCompartment(biggId.getCompartmentCode());
+      }
+    });
     checkCompartment(species);
   }
 
@@ -397,15 +435,21 @@ public class SBMLPolisher {
    */
   public void checkCompartment(NamedSBase nsb) {
     if ((nsb instanceof Species) && !((Species) nsb).isSetCompartment()) {
-      BiGGId biggId = BiGGId.createMetaboliteId(nsb.getId());
-      if (biggId.isSetCompartmentCode()) {
-        ((Species) nsb).setCompartment(biggId.getCompartmentCode());
-      } else {
+      Optional<BiGGId> biggId = BiGGId.createMetaboliteId(nsb.getId());
+      boolean setCompartment = false;
+      if (biggId.isPresent()) {
+        if (biggId.get().isSetCompartmentCode()) {
+          ((Species) nsb).setCompartment(biggId.get().getCompartmentCode());
+          setCompartment = true;
+        }
+      }
+      if (!setCompartment) {
         return;
       }
     } else if ((nsb instanceof Reaction) && !((Reaction) nsb).isSetCompartment()) {
       return;
     }
+    // fixme: can be removed, we only ever pass Species to this method
     String cId = (nsb instanceof Species) ? ((Species) nsb).getCompartment() : ((Reaction) nsb).getCompartment();
     Model model = nsb.getModel();
     Compartment c = (Compartment) model.findUniqueNamedSBase(cId);
@@ -438,8 +482,19 @@ public class SBMLPolisher {
    */
   public boolean polish(Reaction r) {
     String id = r.getId();
-    BiGGId biggId = BiGGId.createReactionId(id);
-    setSBOTermFromPattern(r, biggId);
+    if (id.isEmpty()) {
+      // remove species with missing id, produces invalid SBML
+      if (r.isSetName()) {
+        logger.severe(String.format(
+          "Removing reaction '%s' due to missing id. Check your Model for entries missing the id attribute or duplicates.",
+          r.getName()));
+      } else {
+        logger.severe("Removing reaction with missing id and name. Check your Model for reaction without id and name.");
+      }
+      r.getModel().removeReaction(r);
+      return false;
+    }
+    BiGGId.createReactionId(id).ifPresent(biggId -> setSBOTermFromPattern(r, biggId));
     String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
     if (r.isSetListOfReactants()) {
       String cId = polish(r.getListOfReactants(), SBO.getReactant());
@@ -458,7 +513,6 @@ public class SBMLPolisher {
     if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
       r.setMetaId(id);
     }
-    // TOOD: check if thi9 is handled by BiGGId implementation
     String rName = r.getName();
     if (rName.matches(".*_copy\\d*")) {
       rName = rName.substring(0, rName.lastIndexOf('_'));
@@ -511,6 +565,9 @@ public class SBMLPolisher {
       if (!sr.isSetSBOTerm() && !omitGenericTerms) {
         sr.setSBOTerm(defaultSBOterm);
       }
+      if (!sr.isSetConstant()) {
+        sr.setConstant(false);
+      }
       Species species = model.getSpecies(sr.getSpecies());
       if (species != null) {
         if (!species.isSetCompartment() || (compartmentId == null)
@@ -553,7 +610,7 @@ public class SBMLPolisher {
    * @param r
    */
   private void checkBalance(Reaction r) {
-    // TODO: check ids and change messages
+    // TODO: change messages
     if (!r.isSetSBOTerm()) {
       // The reaction has not been recognized as demand or exchange reaction
       if (r.getReactantCount() == 0) {
@@ -586,6 +643,7 @@ public class SBMLPolisher {
         logger.fine(format(mpMessageBundle.getString("ATOMS_OK"), r.getId()));
       }
     }
+    GPRParser.convertAssociationsToFBCV2(r, omitGenericTerms);
   }
 
 
@@ -777,22 +835,23 @@ public class SBMLPolisher {
    */
   public void polish(GeneProduct geneProduct) {
     String label = null;
-    String id = geneProduct.getId();
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
       label = geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
-      label = id;
+      label = geneProduct.getId();
     }
     if (label == null) {
       return;
     }
-    id = BiGGId.createGeneId(id).toBiGGId();
-    if (!id.equals(geneProduct.getId())) {
-      geneProduct.setId(id);
-    }
-    if (geneProduct.getCVTermCount() > 0) {
-      geneProduct.setMetaId(id);
-    }
+    BiGGId.createGeneId(geneProduct.getId()).ifPresent(biggId -> {
+      String id = biggId.toBiGGId();
+      if (!id.equals(geneProduct.getId())) {
+        geneProduct.setId(id);
+      }
+      if (geneProduct.getCVTermCount() > 0) {
+        geneProduct.setMetaId(id);
+      }
+    });
     if (!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None")) {
       geneProduct.setName(label);
     }
@@ -814,7 +873,7 @@ public class SBMLPolisher {
   /**
    * @param p
    */
-  public void polish(Parameter p) {
+  private void polish(Parameter p) {
     if (p.isSetId() && !p.isSetName()) {
       // TODO: what is happening here?
       p.setName(polishName(p.getId()));
@@ -827,7 +886,7 @@ public class SBMLPolisher {
    * @return
    */
   public static String polishName(String name) {
-    // fixme: can this be replaced by BiGGId creation?
+    // can this be replaced by BiGGId creation?
     String newName = name;
     if (name.startsWith("?_")) {
       newName = name.substring(2);
@@ -886,9 +945,8 @@ public class SBMLPolisher {
    *        the modelNamePattern to set
    */
   public void setDocumentTitlePattern(String modelNamePattern) {
-    documentTitlePattern = modelNamePattern;
     Parameters parameters = Parameters.get();
-    parameters.documentTitlePattern = documentTitlePattern;
+    parameters.documentTitlePattern = modelNamePattern;
   }
 
 

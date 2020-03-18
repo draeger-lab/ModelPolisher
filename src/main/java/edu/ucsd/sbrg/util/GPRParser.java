@@ -1,8 +1,17 @@
 package edu.ucsd.sbrg.util;
 
-import de.zbit.util.Utils;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+
+import java.io.StringReader;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import org.sbml.jsbml.ASTNode;
+import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.fbc.And;
@@ -16,12 +25,10 @@ import org.sbml.jsbml.ext.fbc.GeneProductRef;
 import org.sbml.jsbml.ext.fbc.LogicalOperator;
 import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
+import org.sbml.jsbml.xml.XMLNode;
 
-import java.io.StringReader;
-import java.text.MessageFormat;
-import java.util.logging.Logger;
-
-import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
+import de.zbit.util.Utils;
+import edu.ucsd.sbrg.bigg.BiGGId;
 
 public class GPRParser {
 
@@ -29,6 +36,10 @@ public class GPRParser {
    * A {@link Logger} for this class.
    */
   private static final Logger logger = Logger.getLogger(GPRParser.class.getName());
+  /**
+   * Mapping holding geneAssociations from model annotations
+   */
+  private static Map<String, XMLNode> oldGeneAssociations;
 
   /**
    * @param r
@@ -39,11 +50,11 @@ public class GPRParser {
       Association association = null;
       try {
         association =
-            convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))),
-                r.getId(), r.getModel(), omitGenericTerms);
+          convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))),
+            r.getId(), r.getModel(), omitGenericTerms);
       } catch (Throwable exc) {
         logger.warning(
-            MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
+          MessageFormat.format(mpMessageBundle.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
       }
       if (association != null) {
         parseGPR(r, association, omitGenericTerms);
@@ -59,7 +70,7 @@ public class GPRParser {
    * @return
    */
   public static Association convertToAssociation(ASTNode ast, String reactionId, Model model,
-                                                 boolean omitGenericTerms) {
+    boolean omitGenericTerms) {
     int level = model.getLevel(), version = model.getVersion();
     if (ast.isLogical()) {
       LogicalOperator operator;
@@ -99,23 +110,32 @@ public class GPRParser {
    * @return
    */
   public static GeneProductRef createGPR(String identifier, String reactionId, Model model) {
+    // TODO: check if this could return an empty gpr in real cases
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
     // check if this id exists in the model
-    identifier = BiGGId.createGeneId(identifier).toBiGGId();
-    if (!model.containsUniqueNamedSBase(identifier)) {
-      GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(identifier);
-      if (gp == null) {
-        logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), identifier, reactionId));
-        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        gp = fbcPlug.createGeneProduct(identifier);
-        gp.setLabel(identifier);
-      } else {
-        logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), identifier));
-        gp.setId(identifier);
+    String oldId = identifier.startsWith("G_") ? identifier : "G_" + identifier;
+    boolean containsOldId = !model.containsUniqueNamedSBase(oldId);
+    BiGGId.createGeneId(identifier).map(BiGGId::toBiGGId).ifPresent(id -> {
+      if (!model.containsUniqueNamedSBase(id)) {
+        GeneProduct gp;
+        if (containsOldId) {
+          gp = (GeneProduct) model.findUniqueNamedSBase(oldId);
+        } else {
+          gp = (GeneProduct) model.findUniqueNamedSBase(id);
+        }
+        if (gp == null) {
+          logger.warning(MessageFormat.format(mpMessageBundle.getString("CREATE_MISSING_GPR"), id, reactionId));
+          FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+          gp = fbcPlug.createGeneProduct(id);
+          gp.setLabel(id);
+        } else {
+          logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
+          gp.setId(id);
+        }
       }
-    }
-    gpr.setGeneProduct(identifier);
+      gpr.setGeneProduct(id);
+    });
     return gpr;
   }
 
@@ -131,8 +151,115 @@ public class GPRParser {
       GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
       gpa.setAssociation(association);
       plugin.setGeneProductAssociation(gpa);
-    } else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
-      mergeAssociation(r, association, plugin, omitGenericTerms);
+    }
+    // fixme: disable for now, the equality check does not seem to work correctly
+    /*
+     * else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
+     * mergeAssociation(r, association, plugin, omitGenericTerms);
+     * }
+     */
+  }
+
+
+  /**
+   * @param reaction
+   */
+  public static void convertAssociationsToFBCV2(Reaction reaction, boolean omitGenericTerms) {
+    Model model = reaction.getModel();
+    Annotation annotation = model.getAnnotation();
+    XMLNode node = annotation.getNonRDFannotation();
+    if (node == null) {
+      return;
+    }
+    if (oldGeneAssociations == null) {
+      oldGeneAssociations = new HashMap<>();
+      for (int i = 0; i < node.getChildCount(); i++) {
+        XMLNode current = node.getChild(i);
+        if (current.getName().equals("geneAssociation")) {
+          String reactionId = current.getAttributes().getValue("reaction");
+          oldGeneAssociations.put(reactionId, node.getChild(i));
+          node.removeChild(i);
+        }
+      }
+    }
+    String id = reaction.getId();
+    XMLNode ga = oldGeneAssociations.getOrDefault(id, null);
+    if (ga != null) {
+      FBCReactionPlugin plugin = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+      GeneProductAssociation gpa = new GeneProductAssociation(reaction.getLevel(), reaction.getVersion());
+      List<Association> associations = processAssociation(ga, model, omitGenericTerms);
+      if (associations.size() == 1) {
+        gpa.setAssociation(associations.get(0));
+        plugin.setGeneProductAssociation(gpa);
+      }
+    }
+  }
+
+
+  /**
+   * @param association
+   * @return
+   */
+  private static List<Association> processAssociation(XMLNode association, Model model, boolean omitGenericTerms) {
+    int level = model.getLevel(), version = model.getVersion();
+    List<Association> associations = new ArrayList<>();
+    for (int i = 0; i < association.getChildCount(); i++) {
+      XMLNode current = association.getChild(i);
+      switch (current.getName()) {
+      case "and":
+        And and = new And(level, version);
+        if (!omitGenericTerms) {
+          and.setSBOTerm(173); // AND
+        }
+        and.addAllAssociations(processAssociation(current, model, omitGenericTerms));
+        if (and.isSetListOfAssociations()) {
+          associations.add(and);
+        }
+        break;
+      case "or":
+        Or or = new Or(level, version);
+        if (!omitGenericTerms) {
+          or.setSBOTerm(174); // OR
+        }
+        or.addAllAssociations(processAssociation(current, model, omitGenericTerms));
+        if (or.isSetListOfAssociations()) {
+          associations.add(or);
+        }
+        break;
+      case "gene":
+        String geneReference = current.getAttributes().getValue("reference");
+        GeneProductRef gpr = new GeneProductRef(level, version);
+        BiGGId.createGeneId(geneReference).map(BiGGId::toBiGGId).ifPresent(id -> {
+          if (!model.containsUniqueNamedSBase(id)) {
+            GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(id);
+            if (gp == null) {
+              logger.warning(String.format("Creating missing gene product %s", id));
+              FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+              gp = fbcPlug.createGeneProduct(id);
+              gp.setLabel(id);
+            } else {
+              logger.info(MessageFormat.format(mpMessageBundle.getString("UPDATE_GP_ID"), gp.getId(), id));
+              gp.setId(id);
+            }
+          }
+          gpr.setGeneProduct(id);
+        });
+        if (gpr.isSetGeneProduct()) {
+          associations.add(gpr);
+        }
+        break;
+      }
+    }
+    return associations;
+  }
+
+
+  /**
+   * resets Map containing geneAssociation XMLNodes, as it is only valid for one model
+   */
+  public static void clearAssociationMap() {
+    if (oldGeneAssociations != null) {
+      oldGeneAssociations = null;
     }
   }
 
@@ -144,7 +271,7 @@ public class GPRParser {
    * @param omitGenericTerms
    */
   private static void mergeAssociation(Reaction r, Association association, FBCReactionPlugin plugin,
-                                       boolean omitGenericTerms) {
+    boolean omitGenericTerms) {
     // get current association to replace
     Association old_association = plugin.getGeneProductAssociation().getAssociation();
     plugin.getGeneProductAssociation().unsetAssociation();

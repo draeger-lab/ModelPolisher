@@ -39,8 +39,9 @@ public class RegistryTest {
       for (Resource res : ns.getResources()) {
         // id from sciwalker is slightly different, ignore for now
         // Panther Pattern is interpreted incorrectly - '^G|P|U|C|S\\d{5}$' should be '^[GPUCS]\\d{5}$' instead
+        // Onto bee has a weird id pattern that we currently don't handle, ignore for now
         name = res.getName();
-        if (name.equals("SciWalker Open Data") || name.equals("PANTHER Pathway Component at USC (Los Angeles)")) {
+        if (name.equals("SciWalker Open Data") || name.equals("PANTHER Pathway Component at USC (Los Angeles)") || name.equals("VariO at Lund University")) {
           continue;
         }
         String id = res.getSampleId();

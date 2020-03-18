@@ -589,7 +589,7 @@ public class BiGGDB {
    */
   public static boolean isPseudoreaction(String reactionId) {
     String query = "SELECT pseudoreaction FROM reaction WHERE bigg_id = ?";
-    Optional<String> result = singleParamStatement(query, reactionId.startsWith("R_") ? reactionId.substring(2) : reactionId);
+    Optional<String> result = singleParamStatement(query, reactionId);
     return result.isPresent() && result.get().equals("t");
   }
 

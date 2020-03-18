@@ -24,8 +24,8 @@ public class CombineArchiveTest {
 
     @BeforeAll
     public static void produceCombine() throws JDOMException, CombineArchiveException, ParseException, IOException, URISyntaxException, TransformerException {
-        File modelFile = new File(CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile());
-        File glossaryFile = new File(CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/glossary.rdf").getFile());
+        File modelFile = new File(CombineArchiveTest.class.getResource("model.xml").getFile());
+        File glossaryFile = new File(CombineArchiveTest.class.getResource("glossary.rdf").getFile());
 
         CombineArchive ca = new CombineArchive(new File(modelFile.getAbsolutePath().substring(0, modelFile.getAbsolutePath().lastIndexOf('.')) + ".zip"));
 
@@ -46,7 +46,7 @@ public class CombineArchiveTest {
 
     @Test
     public void testArchiveComponents() throws JDOMException, CombineArchiveException, ParseException, IOException {
-        String modelLocation = CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile();
+        String modelLocation = CombineArchiveTest.class.getResource("model.xml").getFile();
         File caFile = new File(modelLocation.substring(0, modelLocation.lastIndexOf('.')) + ".zip");
         assertTrue(caFile.exists());
 
@@ -69,7 +69,7 @@ public class CombineArchiveTest {
 
     @AfterAll
     public static void cleanUp(){
-        String modelLocation = CombineArchiveTest.class.getClassLoader().getResource("edu/ucsd/sbrg/bigg/model.xml").getFile();
+        String modelLocation = CombineArchiveTest.class.getResource("model.xml").getFile();
         File caFile = new File(modelLocation.substring(0, modelLocation.lastIndexOf('.')) + ".zip");
         if(caFile.exists()) {
             caFile.delete();

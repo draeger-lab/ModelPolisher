@@ -1,29 +1,46 @@
 package edu.ucsd.sbrg.bigg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Thomas Zajac
  */
 public class BiGGIdTest {
 
+  private static Map<String, List<String>> biggIds = new HashMap<>();
   private static Map<String, BiGGId> correctMetaboliteId = new HashMap<>();
   private static Map<String, BiGGId> correctReactionId = new HashMap<>();
   private static Map<String, BiGGId> correctGeneProductId = new HashMap<>();
+  private static Map<String, String> processedIdentifiers = new HashMap<>();
 
   /**
    * Initializes BiGGIds for testing - empty IDs are should be handled elsewhere, as they are invalid in SBML
    */
   @BeforeAll
+  @SuppressWarnings("unchecked")
   public static void setUp() {
-    // metabolites - unique  cases from old implementation
+    // load all BiGG SBML IDs
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      biggIds = mapper.readValue(BiGGId.class.getResourceAsStream("bigg_models_data_ids.json"), Map.class);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    // metabolites - unique cases from old implementation
+    prepareMetaboliteId("h", "c", "h_c");
     prepareMetaboliteId("12dgr_HP", "c", "12dgr_HP_c");
     prepareMetaboliteId("13_cis_retnglc", "c", "13_cis_retnglc_c");
     prepareMetaboliteId("20ahchsterol", "m", "20ahchsterol_m");
@@ -41,7 +58,7 @@ public class BiGGIdTest {
     prepareReactionId("", "BIOMASS_HP_published", "", "BIOMASS_HP_published");
     // We don't handle reaction compartment code for now
     prepareReactionId("", "EX_h2o_e", "", "EX_h2o_e");
-    //r reactions - remaining cases
+    // r reactions - remaining cases
     prepareReactionId("", "EX_h2o_e", "", "R_EX_h2o_e");
     // gene products
     prepareGeneProductId("10090_AT1", "10090_AT1");
@@ -128,6 +145,51 @@ public class BiGGIdTest {
   }
 
 
+  @Test
+  public final void geneIdsValid() {
+    List<String> ids = biggIds.get("genes");
+    ids.forEach(id -> {
+      BiGGId.createGeneId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void metaboliteIdsValid() {
+    List<String> ids = biggIds.get("metabolites");
+    ids.forEach(id -> {
+      BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void reactionIdsValid() {
+    List<String> ids = biggIds.get("reactions");
+    ids.forEach(id -> {
+      BiGGId.createReactionId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void testIsSetMetaboliteCompartment() {
+    String metabolite = "M_5dglcn_c";
+    BiGGId biggId = BiGGId.createMetaboliteId(metabolite).get();
+    assertTrue(biggId.isSetCompartmentCode());
+    assertEquals("c", biggId.getCompartmentCode());
+  }
+
+
   /**
    * Test method for {@link BiGGId#hashCode()}.
    */
@@ -138,12 +200,25 @@ public class BiGGIdTest {
 
 
   /**
+   * Test method for {@link BiGGId#toBiGGId()} for geneProduct ids
+   */
+  @Test
+  public final void testToBiGGIdGeneProducts() {
+    for (Map.Entry<String, BiGGId> entry : correctGeneProductId.entrySet()) {
+      BiGGId.createGeneId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
+    }
+  }
+
+
+  /**
    * Test method for {@link BiGGId#toBiGGId()} for metabolite ids
    */
   @Test
   public final void testToBiGGIdMetabolites() {
     for (Map.Entry<String, BiGGId> entry : correctMetaboliteId.entrySet()) {
-      assertEquals(BiGGId.createMetaboliteId(entry.getKey()).toBiGGId(), entry.getValue().toBiGGId());
+      BiGGId.createMetaboliteId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
     }
   }
 
@@ -154,18 +229,8 @@ public class BiGGIdTest {
   @Test
   public final void testToBiGGIdReactions() {
     for (Map.Entry<String, BiGGId> entry : correctReactionId.entrySet()) {
-      assertEquals(BiGGId.createReactionId(entry.getKey()).toBiGGId(), entry.getValue().toBiGGId());
-    }
-  }
-
-
-  /**
-   * Test method for {@link BiGGId#toBiGGId()} for geneProduct ids
-   */
-  @Test
-  public final void testToBiGGIdGeneProducts() {
-    for (Map.Entry<String, BiGGId> entry : correctGeneProductId.entrySet()) {
-      assertEquals(BiGGId.createGeneId(entry.getKey()).toBiGGId(), entry.getValue().toBiGGId());
+      BiGGId.createReactionId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
     }
   }
 

@@ -16,7 +16,7 @@ class Parameters {
   /**
    * Singleton for ModelPolisher parameters
    */
-  private static Parameters parameters;
+  static Parameters parameters;
   /**
    * @see ModelPolisherOptions#INCLUDE_ANY_URI
    */
@@ -100,7 +100,7 @@ class Parameters {
   }
 
 
-  static Parameters get() {
+  public static Parameters get() {
     if (parameters != null) {
       return parameters;
     } else {
@@ -169,5 +169,75 @@ class Parameters {
       }
     }
     return null;
+  }
+
+
+  public Boolean getIncludeAnyURI() {
+    return includeAnyURI;
+  }
+
+
+  public Boolean getAnnotateWithBiGG() {
+    return annotateWithBiGG;
+  }
+
+
+  public Boolean getOutputCOMBINE() {
+    return outputCOMBINE;
+  }
+
+
+  public Boolean getAddADBAnnotations() {
+    return addADBAnnotations;
+  }
+
+
+  public Boolean getCheckMassBalance() {
+    return checkMassBalance;
+  }
+
+
+  public Boolean getNoModelNotes() {
+    return noModelNotes;
+  }
+
+
+  public ModelPolisherOptions.Compression getCompression() {
+    return compression;
+  }
+
+
+  public File getDocumentNotesFile() {
+    return documentNotesFile;
+  }
+
+
+  public String getDocumentTitlePattern() {
+    return documentTitlePattern;
+  }
+
+
+  public double[] getFluxCoefficients() {
+    return fluxCoefficients;
+  }
+
+
+  public String[] getFluxObjectives() {
+    return fluxObjectives;
+  }
+
+
+  public File getModelNotesFile() {
+    return modelNotesFile;
+  }
+
+
+  public Boolean getOmitGenericTerms() {
+    return omitGenericTerms;
+  }
+
+
+  public Boolean getSbmlValidation() {
+    return sbmlValidation;
   }
 }

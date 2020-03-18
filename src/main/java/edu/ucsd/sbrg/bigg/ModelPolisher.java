@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -47,6 +48,7 @@ import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
 import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
@@ -159,9 +161,12 @@ public class ModelPolisher extends Launcher {
   @Override
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
+    parameters = Parameters.init(args);
+    DBConfig.initBiGG(args, parameters.annotateWithBiGG);
+    DBConfig.initADB(args, parameters.addADBAnnotations);
     // Gives users the choice to pass an alternative model notes XHTML file to the program.
     try {
-      batchProcess(new File(args.getProperty(IOOptions.INPUT)), new File(args.getProperty(IOOptions.OUTPUT)), args);
+      batchProcess(new File(args.getProperty(IOOptions.INPUT)), new File(args.getProperty(IOOptions.OUTPUT)));
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
     }
@@ -185,13 +190,13 @@ public class ModelPolisher extends Launcher {
    * @throws IOException
    *         if input file is not found, or no file is present in input directory
    * @throws XMLStreamException
-   *         propagated from {@link #processFile(File, File, SBProperties)}
+   *         propagated from {@link #processFile(File, File)}
    */
-  private void batchProcess(File input, File output, SBProperties args) throws IOException, XMLStreamException {
+  private void batchProcess(File input, File output) throws IOException, XMLStreamException {
     if (!input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
-    parameters = Parameters.init(args);
+
     // Create output directory if output is a directory or create output file's directory if output is a file
     checkCreateOutDir(output);
     if (!input.isFile()) {
@@ -208,11 +213,11 @@ public class ModelPolisher extends Launcher {
       }
       for (File file : files) {
         File target = getOutputFileName(file, output);
-        batchProcess(file, target, args);
+        batchProcess(file, target);
       }
     } else {
       // NOTE: input is a single file, but output can be a file or a directory, i.e. for multimodel files (MAT format)
-      processFile(input, output, args);
+      processFile(input, output);
     }
   }
 
@@ -289,14 +294,12 @@ public class ModelPolisher extends Launcher {
    *        input file
    * @param output:
    *        output file or directory
-   * @param args:
-   *        SBProperties, i.e. commandline arguments
    * @throws XMLStreamException
    *         propagated from {@link #readAndPolish(File, File)}
    * @throws IOException
    *         propagated from {@link #readAndPolish(File, File)}
    */
-  private void processFile(File input, File output, SBProperties args) throws XMLStreamException, IOException {
+  private void processFile(File input, File output) throws XMLStreamException, IOException {
     // get fileType array and check if any value is true
     fileType = getFileType(input);
     if (fileType.equals(FileType.UNKNOWN)) {
@@ -307,8 +310,6 @@ public class ModelPolisher extends Launcher {
     if (output.isDirectory()) {
       output = getOutputFileName(input, output);
     }
-    DBConfig.initBiGG(args, parameters.annotateWithBiGG);
-    DBConfig.initADB(args, parameters.addADBAnnotations);
     readAndPolish(input, output);
   }
 
@@ -317,7 +318,7 @@ public class ModelPolisher extends Launcher {
    * Get file type from input file
    *
    * @param input
-   *        File used in {@link #batchProcess(File, File, SBProperties)}
+   *        File used in {@link #batchProcess(File, File)}
    * @return FileType of given file, only SBML, MatLab and JSON files are supported
    */
   private FileType getFileType(File input) {
@@ -363,6 +364,7 @@ public class ModelPolisher extends Launcher {
     polish(doc, output);
     // Clear map for next model
     SBMLUtils.cleanGPRMap();
+    GPRParser.clearAssociationMap();
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
     logger.info(String.format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
   }
@@ -424,13 +426,13 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    */
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
-    checkLevelAndVersion(doc);
+    doc = checkLevelAndVersion(doc);
     // Polishing
     SBMLPolisher polisher = initializeSBMLPolisher();
     doc = polisher.polish(doc);
     // Annotation
     if (parameters.annotateWithBiGG) {
-      BiGGAnnotation annotation = setAnnotationParameters(polisher);
+      BiGGAnnotation annotation = setAnnotationParameters();
       doc = annotation.annotate(doc);
     }
     // writing polished model
@@ -472,11 +474,13 @@ public class ModelPolisher extends Launcher {
    * @param doc:
    *        SBMLDocument
    */
-  private void checkLevelAndVersion(SBMLDocument doc) {
+  private SBMLDocument checkLevelAndVersion(SBMLDocument doc) {
     if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
       SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
+    CobraToFbcV2Converter converter = new CobraToFbcV2Converter();
+    return converter.convert(doc);
   }
 
 
@@ -500,11 +504,9 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param polisher:
-   *        SBMLPolisher Object to extract relevant options from
    * @return BiGGAnnotation object used for annotation with BiGG
    */
-  private BiGGAnnotation setAnnotationParameters(SBMLPolisher polisher) {
+  private BiGGAnnotation setAnnotationParameters() {
     BiGGAnnotation annotation = new BiGGAnnotation();
     if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
       annotation.setDocumentNotesFile(null);

@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
  * BiGG ID specification</a>.
  *
  * @author Andreas Dr&auml;ger
+ * @author Thomas Zajac
  */
 public class BiGGId {
 
@@ -46,7 +47,8 @@ public class BiGGId {
     ATPM("[Aa][Tt][Pp][Mm]"),
     BIOMASS("(([Rr]_?)?[Bb][Ii][Oo][Mm][Aa][Ss][Ss])(?:_(.+))?"),
     COMPARTMENT("[a-zA-Z][a-zA-Z0-9]?"),
-    PSEUDO("(([Rr]_?)?[Ee][Xx]_).*|(([Rr]_?)?[Dd][Mm]_).*|(([Rr]_?)?[Ss][Kk]_).*"),
+    METABOLITE_SPECIAL("M_(?<abbreviation>[a-zA-Z0-9])_(?<compartment>[a-z][a-z0-9]?)"),
+    PSEUDO("(([Rr]_?)?[Ee][Xx]_).*|(([Rr]_?)?[Dd][Mm]_).*|(([Rr]_?)?[Ss]([Ii][Nn])?[Kk]_).*"),
     UNIVERSAL("^(?<prefix>[RMG])_(?<abbreviation>[a-zA-Z0-9][a-zA-Z0-9_]+?)(?:_(?<compartment>[a-z][a-z0-9]?))?"
       + "(?:_(?<tissueCode>[A-Z][A-Z0-9]?))?$");
 
@@ -101,12 +103,15 @@ public class BiGGId {
   }
 
 
-  public static BiGGId createMetaboliteId(String id) {
+  public static Optional<BiGGId> createMetaboliteId(String id) {
     return createMetaboliteId(id, true);
   }
 
 
-  public static BiGGId createMetaboliteId(String id, boolean correct) {
+  public static Optional<BiGGId> createMetaboliteId(String id, boolean correct) {
+    if (id.isEmpty()) {
+      return Optional.empty();
+    }
     id = fixCompartmentCode(id);
     if (correct) {
       id = makeBiGGConform(id);
@@ -119,16 +124,30 @@ public class BiGGId {
         id = "M_" + id;
       }
     }
-    return new BiGGId(id);
+    // handle one letter abbreviation metabolites like 'h' which are not in accord with the specification, but still
+    // present in BiGG
+    Matcher metaboliteSpecialCase = IDPattern.METABOLITE_SPECIAL.get().matcher(id);
+    if (metaboliteSpecialCase.matches()) {
+      BiGGId biggId = new BiGGId();
+      biggId.setPrefix("M");
+      biggId.setAbbreviation(metaboliteSpecialCase.group("abbreviation"));
+      biggId.setCompartmentCode(metaboliteSpecialCase.group("compartment"));
+      return Optional.of(biggId);
+    } else {
+      return Optional.of(new BiGGId(id));
+    }
   }
 
 
-  public static BiGGId createGeneId(String id) {
+  public static Optional<BiGGId> createGeneId(String id) {
     return createGeneId(id, true);
   }
 
 
-  public static BiGGId createGeneId(String id, boolean correct) {
+  public static Optional<BiGGId> createGeneId(String id, boolean correct) {
+    if (id.isEmpty()) {
+      return Optional.empty();
+    }
     if (correct) {
       id = makeBiGGConform(id);
       if (id.startsWith("_")) {
@@ -140,11 +159,11 @@ public class BiGGId {
         id = "G_" + id;
       }
     }
-    return new BiGGId(id);
+    return Optional.of(new BiGGId(id));
   }
 
 
-  public static BiGGId createReactionId(String id) {
+  public static Optional<BiGGId> createReactionId(String id) {
     String prefixStripped = "";
     if (id.startsWith("R_") || id.startsWith("r_")) {
       prefixStripped = id.substring(2);
@@ -165,8 +184,10 @@ public class BiGGId {
   }
 
 
-  public static BiGGId createReactionId(String id, boolean correct, boolean isPseudo) {
-    // TODO: Add compartment code handling, possibly by interpreting abbreviation as metabolite id
+  public static Optional<BiGGId> createReactionId(String id, boolean correct, boolean isPseudo) {
+    if (id.isEmpty()) {
+      return Optional.empty();
+    }
     if (correct) {
       id = makeBiGGConform(id);
       if (id.startsWith("_")) {
@@ -178,7 +199,7 @@ public class BiGGId {
         id = "R_" + id;
       }
     }
-    return new BiGGId(id);
+    return Optional.of(new BiGGId(id));
   }
 
 
@@ -190,13 +211,13 @@ public class BiGGId {
            .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("]", "_RBRACKET_");
     Pattern parenCompartment = Pattern.compile("_LPAREN_(?<paren>.*?)_RPAREN_");
     Matcher parenMatcher = parenCompartment.matcher(id);
-    if (parenMatcher.matches()) {
-      id = id.replaceAll(parenCompartment.toString(), parenMatcher.group("paren"));
+    if (parenMatcher.find()) {
+      id = id.replaceAll(parenCompartment.toString(), "_" + parenMatcher.group("paren"));
     }
     Pattern bracketCompartment = Pattern.compile("_LBRACKET_(?<bracket>.*)_RBRACKET_");
     Matcher bracketMatcher = bracketCompartment.matcher(id);
-    if (bracketMatcher.matches()) {
-      id = id.replaceAll(bracketCompartment.toString(), bracketMatcher.group("bracket"));
+    if (bracketMatcher.find()) {
+      id = id.replaceAll(bracketCompartment.toString(), "_" + bracketMatcher.group("bracket"));
     }
     if (id.matches(".*_copy\\d*")) {
       id = id.substring(0, id.lastIndexOf('_'));
@@ -215,6 +236,14 @@ public class BiGGId {
       id = id.substring(0, id.length() - 1);
     }
     return id;
+  }
+
+
+  public static boolean isValid(String queryId) {
+    return IDPattern.ATPM.get().matcher(queryId).matches() || IDPattern.BIOMASS.get().matcher(queryId).matches()
+      || IDPattern.COMPARTMENT.get().matcher(queryId).matches()
+      || IDPattern.METABOLITE_SPECIAL.get().matcher(queryId).matches()
+      || IDPattern.PSEUDO.get().matcher(queryId).matches() || IDPattern.UNIVERSAL.get().matcher(queryId).matches();
   }
 
 
@@ -572,17 +601,7 @@ public class BiGGId {
    */
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass().getSimpleName());
-    builder.append(" [prefix=");
-    builder.append(prefix);
-    builder.append(", abbreviation=");
-    builder.append(abbreviation);
-    builder.append(", compartmentCode=");
-    builder.append(compartmentCode);
-    builder.append(", tissueCode=");
-    builder.append(tissueCode);
-    builder.append("]");
-    return builder.toString();
+    return getClass().getSimpleName() + " [prefix=" + prefix + ", abbreviation=" + abbreviation + ", compartmentCode="
+      + compartmentCode + ", tissueCode=" + tissueCode + "]";
   }
 }

@@ -9,15 +9,32 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.*;
-import org.sbml.jsbml.ext.fbc.*;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
+import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
@@ -32,8 +49,13 @@ import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
-import us.hebi.matlab.mat.types.*;
+import us.hebi.matlab.mat.types.Array;
+import us.hebi.matlab.mat.types.Cell;
+import us.hebi.matlab.mat.types.Char;
 import us.hebi.matlab.mat.types.MatFile.Entry;
+import us.hebi.matlab.mat.types.MatlabType;
+import us.hebi.matlab.mat.types.Matrix;
+import us.hebi.matlab.mat.types.Struct;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -324,10 +346,11 @@ public class COBRAparser {
     if (id.isEmpty()) {
       return;
     }
-    BiGGId biggId = BiGGId.createMetaboliteId(id);
-    Species species = model.createSpecies(biggId.toBiGGId());
-    parseSpeciesFields(species, i);
-    parseAnnotation(species, i);
+    BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
+      Species species = model.createSpecies(biggId.toBiGGId());
+      parseSpeciesFields(species, i);
+      parseAnnotation(species, i);
+    });
   }
 
 
@@ -381,30 +404,6 @@ public class COBRAparser {
       return true;
     }
     return false;
-  }
-
-
-  /**
-   * Attempts to parse the given String into a {@link Date} object. To this end,
-   * it applies some date format patterns that have been found in some mat
-   * files.
-   *
-   * @param dateString
-   *        the {@link String} to be parsed, i.e., what is assumed to
-   *        be a representation of some date.
-   * @return a {@link Date} object or {@code null} if parsing fails.
-   */
-  private Date parseDate(String dateString) {
-    try {
-      return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
-    } catch (ParseException exc) {
-      try {
-        return new SimpleDateFormat("yyyy/MM/dd").parse(dateString);
-      } catch (ParseException exc1) {
-        logException(exc1);
-      }
-    }
-    return null;
   }
 
 
@@ -614,10 +613,11 @@ public class COBRAparser {
     if (id.isEmpty()) {
       return;
     }
-    BiGGId biggId = BiGGId.createGeneId(id);
-    GeneProduct gp = modelPlug.createGeneProduct(biggId.toBiGGId());
-    gp.setLabel(id);
-    gp.setName(id);
+    BiGGId.createGeneId(id).ifPresent(biggId -> {
+      GeneProduct gp = modelPlug.createGeneProduct(biggId.toBiGGId());
+      gp.setLabel(id);
+      gp.setName(id);
+    });
   }
 
 
@@ -642,15 +642,16 @@ public class COBRAparser {
     if (reactionId.isEmpty()) {
       return;
     }
-    BiGGId biggId = BiGGId.createReactionId(reactionId);
-    Reaction reaction = model.createReaction(biggId.toBiGGId());
-    setNameAndReversibility(reaction, index);
-    setReactionBounds(builder, reaction, index);
-    buildReactantsProducts(model, reaction, index);
-    parseAnnotations(builder, reaction, reactionId, index);
-    if (reaction.getCVTermCount() > 0) {
-      reaction.setMetaId(reaction.getId());
-    }
+    BiGGId.createReactionId(reactionId).ifPresent(biggId -> {
+      Reaction reaction = model.createReaction(biggId.toBiGGId());
+      setNameAndReversibility(reaction, index);
+      setReactionBounds(builder, reaction, index);
+      buildReactantsProducts(model, reaction, index);
+      parseAnnotations(builder, reaction, reactionId, index);
+      if (reaction.getCVTermCount() > 0) {
+        reaction.setMetaId(reaction.getId());
+      }
+    });
   }
 
 
@@ -698,13 +699,14 @@ public class COBRAparser {
       if (coeff != 0d) {
         try {
           String id = toString(mlField.mets.get(i), ModelField.mets.name(), i + 1);
-          BiGGId metId = BiGGId.createMetaboliteId(id);
-          Species species = model.getSpecies(metId.toBiGGId());
-          if (coeff < 0d) { // Reactant
-            ModelBuilder.buildReactants(reaction, pairOf(-coeff, species));
-          } else if (coeff > 0d) { // Product
-            ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
-          }
+          BiGGId.createMetaboliteId(id).ifPresent(metId -> {
+            Species species = model.getSpecies(metId.toBiGGId());
+            if (coeff < 0d) { // Reactant
+              ModelBuilder.buildReactants(reaction, pairOf(-coeff, species));
+            } else if (coeff > 0d) { // Product
+              ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
+            }
+          });
         } catch (IllegalArgumentException exc) {
           logger.warning(format(mpMessageBundle.getString("REACT_PARTIC_INVALID"), Utils.getMessage(exc)));
         }
