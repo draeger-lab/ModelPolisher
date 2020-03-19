@@ -42,6 +42,16 @@ public class GPRParser {
   private static Map<String, XMLNode> oldGeneAssociations;
 
   /**
+   * resets Map containing geneAssociation XMLNodes, as it is only valid for one model
+   */
+  public static void clearAssociationMap() {
+    if (oldGeneAssociations != null) {
+      oldGeneAssociations = null;
+    }
+  }
+
+
+  /**
    * @param r
    * @param geneReactionRule
    */
@@ -152,12 +162,52 @@ public class GPRParser {
       gpa.setAssociation(association);
       plugin.setGeneProductAssociation(gpa);
     }
-    // fixme: disable for now, the equality check does not seem to work correctly
-    /*
-     * else if (!association.equals(plugin.getGeneProductAssociation().getAssociation())) {
-     * mergeAssociation(r, association, plugin, omitGenericTerms);
-     * }
-     */
+    // fixme: disable merging associations for now, the equality check does not seem to work correctly
+  }
+
+
+  /**
+   * @param r
+   * @param association
+   * @param plugin
+   * @param omitGenericTerms
+   */
+  private static void mergeAssociation(Reaction r, Association association, FBCReactionPlugin plugin,
+    boolean omitGenericTerms) {
+    // get current association to replace
+    Association old_association = plugin.getGeneProductAssociation().getAssociation();
+    plugin.getGeneProductAssociation().unsetAssociation();
+    GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+    // link all GPRs fetched with or
+    LogicalOperator or = new Or(r.getLevel(), r.getVersion());
+    if (!omitGenericTerms) {
+      or.setSBOTerm(174); // OR
+    }
+    if (old_association instanceof And) {
+      or.addAssociation(old_association);
+      or.addAssociation(association);
+      gpa.setAssociation(or);
+    } else if (old_association instanceof GeneProductRef) {
+      if (association instanceof Or) {
+        or = (Or) association;
+      } else {
+        or.addAssociation(association);
+      }
+      or.addAssociation(old_association);
+      gpa.setAssociation(or);
+    } else { // OR
+      if (association instanceof Or) {
+        for (int idx = 0; idx < association.getChildCount(); idx++) {
+          Association child = (Association) association.getChildAt(idx);
+          ((Or) association).removeAssociation(idx);
+          ((LogicalOperator) old_association).addAssociation(child);
+        }
+      } else {
+        ((LogicalOperator) old_association).addAssociation(association);
+      }
+      gpa.setAssociation(old_association);
+    }
+    plugin.setGeneProductAssociation(gpa);
   }
 
 
@@ -251,60 +301,5 @@ public class GPRParser {
       }
     }
     return associations;
-  }
-
-
-  /**
-   * resets Map containing geneAssociation XMLNodes, as it is only valid for one model
-   */
-  public static void clearAssociationMap() {
-    if (oldGeneAssociations != null) {
-      oldGeneAssociations = null;
-    }
-  }
-
-
-  /**
-   * @param r
-   * @param association
-   * @param plugin
-   * @param omitGenericTerms
-   */
-  private static void mergeAssociation(Reaction r, Association association, FBCReactionPlugin plugin,
-    boolean omitGenericTerms) {
-    // get current association to replace
-    Association old_association = plugin.getGeneProductAssociation().getAssociation();
-    plugin.getGeneProductAssociation().unsetAssociation();
-    GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
-    // link all GPRs fetched with or
-    LogicalOperator or = new Or(r.getLevel(), r.getVersion());
-    if (!omitGenericTerms) {
-      or.setSBOTerm(174); // OR
-    }
-    if (old_association instanceof And) {
-      or.addAssociation(old_association);
-      or.addAssociation(association);
-      gpa.setAssociation(or);
-    } else if (old_association instanceof GeneProductRef) {
-      if (association instanceof Or) {
-        or = (Or) association;
-      } else {
-        or.addAssociation(association);
-      }
-      or.addAssociation(old_association);
-      gpa.setAssociation(or);
-    } else { // OR
-      if (association instanceof Or) {
-        for (int idx = 0; idx < association.getChildCount(); idx++) {
-          Association child = (Association) association.getChildAt(idx);
-          ((Or) association).removeAssociation(idx);
-          ((LogicalOperator) old_association).addAssociation(child);
-        }
-      } else {
-        ((LogicalOperator) old_association).addAssociation(association);
-      }
-      gpa.setAssociation(old_association);
-    }
-    plugin.setGeneProductAssociation(gpa);
   }
 }

@@ -327,14 +327,14 @@ public class BiGGId {
   }
 
 
-  public static String extractCompartmentCode(String id) {
+  public static Optional<String> extractCompartmentCode(String id) {
     if (!Pattern.compile("(C_)?[a-z][a-z0-9]?").matcher(id).matches()) {
-      return "";
+      return Optional.empty();
     }
     if (id.startsWith("C_")) {
       id = id.substring(2);
     }
-    return id;
+    return Optional.of(id);
   }
 
 

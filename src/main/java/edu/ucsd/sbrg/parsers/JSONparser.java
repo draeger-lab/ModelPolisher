@@ -142,7 +142,6 @@ public class JSONparser {
   }
 
 
-
   /**
    * @param node
    * @param annotation
@@ -281,17 +280,13 @@ public class JSONparser {
     logger.info(format(mpMessageBundle.getString("NUM_COMPART"), compSize));
     Model model = builder.getModel();
     for (Map.Entry<String, String> compartment : compartments.entrySet()) {
-      String compartmentCode = BiGGId.extractCompartmentCode(compartment.getKey());
-      if (compartmentCode.isEmpty()) {
-        logger.info(String.format("Invalid compartment code '%s', skipping.", compartment.getKey()));
-        continue;
-      }
-      if (model.getCompartment(compartmentCode) != null) {
-        continue;
-      }
-      Compartment comp = model.createCompartment();
-      comp.setId(compartmentCode);
-      comp.setName(compartment.getValue());
+      BiGGId.extractCompartmentCode(compartment.getKey()).ifPresentOrElse(compartmentCode -> {
+        if (model.getCompartment(compartmentCode) == null) {
+          Compartment comp = model.createCompartment();
+          comp.setId(compartmentCode);
+          comp.setName(compartment.getValue());
+        }
+      }, () -> logger.info(String.format("Invalid compartment code '%s', skipping.", compartment.getKey())));
     }
   }
 

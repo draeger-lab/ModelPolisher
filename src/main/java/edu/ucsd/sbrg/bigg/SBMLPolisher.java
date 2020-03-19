@@ -17,14 +17,10 @@ package edu.ucsd.sbrg.bigg;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
@@ -330,6 +326,10 @@ public class SBMLPolisher {
   public void polish(Compartment c) {
     if (!c.isSetId()) {
       c.setId("d"); // default
+    } else {
+      // remove C_ prefix of compartment code, not in BiGGId specification
+      BiGGId.extractCompartmentCode(c.getId()).ifPresentOrElse(c::setId,
+        () -> logger.warning(String.format("CompartmentCode '%s' is not BiGGId conform.", c.getId())));
     }
     c.setSBOTerm(410); // implicit compartment
     if (!c.isSetName()) {
@@ -400,11 +400,15 @@ public class SBMLPolisher {
         }
         species.setId(id);
       } else {
-        //TODO: handle species where removing '_boundary' part from id produces duplicates
+        // TODO: handle species where removing '_boundary' part from id produces duplicates
+        for(Reaction reaction : species.getModel().getListOfReactions()){}
+
       }
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
+    // convert to valid BiGGId
+    BiGGId.createMetaboliteId(species.getId()).map(BiGGId::toBiGGId).ifPresent(species::setId);
     /*
      * Set mandatory attributes to default values
      * TODO: make those maybe user settings.
@@ -449,14 +453,19 @@ public class SBMLPolisher {
     } else if ((nsb instanceof Reaction) && !((Reaction) nsb).isSetCompartment()) {
       return;
     }
-    // fixme: can be removed, we only ever pass Species to this method
-    String cId = (nsb instanceof Species) ? ((Species) nsb).getCompartment() : ((Reaction) nsb).getCompartment();
-    Model model = nsb.getModel();
-    Compartment c = (Compartment) model.findUniqueNamedSBase(cId);
-    if (c == null) {
-      logger.warning(format(mpMessageBundle.getString("CREATE_MISSING_COMP"), cId, nsb.getId(), nsb.getElementName()));
-      c = model.createCompartment(cId);
-      polish(c);
+    if (nsb instanceof Species) {
+      String cId = ((Species) nsb).getCompartment();
+      Model model = nsb.getModel();
+      SBase candidate = model.findUniqueNamedSBase(cId);
+      if (candidate instanceof Compartment) {
+        // compartment can't be null here, instanceof would evaluate to false
+        Compartment c = (Compartment) candidate;
+        polish(c);
+      } else if (candidate == null) {
+        logger.warning(
+          format(mpMessageBundle.getString("CREATE_MISSING_COMP"), cId, nsb.getId(), nsb.getElementName()));
+        polish(model.createCompartment(cId));
+      }
     }
   }
 
@@ -494,7 +503,11 @@ public class SBMLPolisher {
       r.getModel().removeReaction(r);
       return false;
     }
-    BiGGId.createReactionId(id).ifPresent(biggId -> setSBOTermFromPattern(r, biggId));
+    BiGGId.createReactionId(id).ifPresent(biggId -> {
+      setSBOTermFromPattern(r, biggId);
+      r.setId(biggId.toBiGGId());
+    });
+    // TODO: make code more robust -> 'conflicting compartment codes?'
     String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
     if (r.isSetListOfReactants()) {
       String cId = polish(r.getListOfReactants(), SBO.getReactant());
@@ -511,7 +524,7 @@ public class SBMLPolisher {
       }
     }
     if (!r.isSetMetaId() && (r.getCVTermCount() > 0)) {
-      r.setMetaId(id);
+      r.setMetaId(r.getId());
     }
     String rName = r.getName();
     if (rName.matches(".*_copy\\d*")) {

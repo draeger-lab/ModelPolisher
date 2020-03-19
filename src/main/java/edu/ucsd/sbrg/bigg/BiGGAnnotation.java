@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -214,10 +215,8 @@ public class BiGGAnnotation {
    * @param model
    */
   private void annotate(Model model) {
-    int taxonId = BiGGDB.getTaxonId(model.getId());
-    if (taxonId > Integer.MIN_VALUE) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId)));
-    }
+    BiGGDB.getTaxonId(model.getId()).ifPresent(
+      taxonId -> model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId))));
     BiGGDB.getOrganism(model.getId()).ifPresent(organism -> processReplacements(model, organism));
     if (QueryOnce.isModel(model.getId())) {
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, Registry.createURI("bigg.model", model.getId())));
@@ -329,19 +328,22 @@ public class BiGGAnnotation {
    * @return
    */
   private Optional<BiGGId> checkId(Species species) {
-    String id = species.getId();
-    // extracting BiGGId if not present for species
-    boolean isBiGGid = id.matches("^(M_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
-    if (!isBiGGid) {
-      // Flatten all resources for all CVTerms into a list
-      List<String> resources = species.getAnnotation().getListOfCVTerms().stream()
-                                      .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
-      if (!resources.isEmpty()) {
-        // update id if we found something
-        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_SPECIES).orElse(id);
+    // TODO: compartments are not handled correctly -- is this at all possible to get right?
+    Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
+    Optional<String> id = metaboliteId.flatMap(biggId -> {
+      // extracting BiGGId if not present for species
+      boolean isBiGGid = QueryOnce.isMetabolite(biggId.getAbbreviation());
+      List<String> resources = new ArrayList<>();
+      if (!isBiGGid) {
+        // Flatten all resources for all CVTerms into a list
+        resources = species.getAnnotation().getListOfCVTerms().stream()
+                           .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                           .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       }
-    }
-    return BiGGId.createMetaboliteId(id);
+      // update id if we found something
+      return getBiGGIdFromResources(resources, BiGGDB.TYPE_SPECIES);
+    });
+    return id.map(BiGGId::createMetaboliteId).orElse(metaboliteId);
   }
 
 
@@ -420,8 +422,18 @@ public class BiGGAnnotation {
    */
   private void setCVTermResources(Species species, BiGGId biggId) {
     // Set of annotations calculated from BiGGDB and AnnotateDB
+    CVTerm cvTerm = null;
+    for (CVTerm term : species.getAnnotation().getListOfCVTerms()) {
+      if (term.getQualifier() == Qualifier.BQB_IS) {
+        cvTerm = term;
+        species.removeCVTerm(term);
+        break;
+      }
+    }
+    if (cvTerm == null) {
+      cvTerm = new CVTerm(Qualifier.BQB_IS);
+    }
     Set<String> annotations = new HashSet<>();
-    CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
     boolean isBiGGMetabolite = QueryOnce.isMetabolite(biggId.getAbbreviation());
     // using BiGG Database
     if (isBiGGMetabolite) {
@@ -433,10 +445,16 @@ public class BiGGAnnotation {
     annotations.addAll(linkOut);
     // using AnnotateDB
     if (parameters.getAddADBAnnotations() && AnnotateDB.inUse() && isBiGGMetabolite) {
-      // TODO: check if this works at all
+      // TODO: sabiork.reaction and strange IDs are returned, needs rework
       Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.toBiGGId());
       annotations.addAll(adb_annotations);
     }
+    // don't add resources that are already present
+    Set<String> existingAnnotations =
+      cvTerm.getResources().stream()
+            .map(resource -> resource.replaceAll("http://identifiers.org", "https://identifiers.org"))
+            .collect(Collectors.toSet());
+    annotations.removeAll(existingAnnotations);
     // adding annotations to cvTerm
     for (String annotation : annotations) {
       cvTerm.addResource(annotation);
@@ -541,11 +559,13 @@ public class BiGGAnnotation {
   private Optional<BiGGId> checkId(Reaction reaction) {
     String id = reaction.getId();
     // extracting BiGGId if not present for species
-    boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
+      && QueryOnce.isReaction(id);
     if (!isBiGGid) {
       // Flatten all resources for all CVTerms into a list
-      List<String> resources = reaction.getAnnotation().getListOfCVTerms().stream()
-                                       .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
+      List<String> resources =
+        reaction.getAnnotation().getListOfCVTerms().stream().filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       if (!resources.isEmpty()) {
         // update id if we found something
         id = getBiGGIdFromResources(resources, BiGGDB.TYPE_REACTION).orElse(id);
@@ -577,7 +597,6 @@ public class BiGGAnnotation {
         group = groupForName.get(subsystem);
       } else {
         GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) model.getPlugin(GroupsConstants.shortLabel);
-        // TODO: group id seems to be off, check if this is indeed correct
         group = groupsModelPlugin.createGroup("g" + (groupsModelPlugin.getGroupCount() + 1));
         group.setName(subsystem);
         group.setKind(Group.Kind.partonomy);
@@ -595,8 +614,18 @@ public class BiGGAnnotation {
    */
   private void setCVTermResources(Reaction reaction, BiGGId biggId) {
     // Set of annotations calculated from BiGGDB and AnnotateDB
+    CVTerm cvTerm = null;
+    for (CVTerm term : reaction.getAnnotation().getListOfCVTerms()) {
+      if (term.getQualifier() == Qualifier.BQB_IS) {
+        cvTerm = term;
+        reaction.removeCVTerm(term);
+        break;
+      }
+    }
+    if (cvTerm == null) {
+      cvTerm = new CVTerm(Qualifier.BQB_IS);
+    }
     Set<String> annotations = new HashSet<>();
-    CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
     boolean isBiGGReaction = QueryOnce.isReaction(biggId.getAbbreviation());
     // using BiGG Database
     if (isBiGGReaction) {
@@ -607,10 +636,16 @@ public class BiGGAnnotation {
     annotations.addAll(linkOut);
     // using AnnotateDB
     if (parameters.getAddADBAnnotations() && AnnotateDB.inUse() && isBiGGReaction) {
-      // TODO: check if this works at all
+      // TODO: probably similar problems as in the species case -- needs rework
       Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.toBiGGId());
       annotations.addAll(adb_annotations);
     }
+    // add only annotations not already present in model
+    Set<String> existingAnnotations =
+      cvTerm.getResources().stream()
+            .map(resource -> resource.replaceAll("http://identifiers.org", "https://identifiers.org"))
+            .collect(Collectors.toSet());
+    annotations.removeAll(existingAnnotations);
     // adding annotations to cvTerm
     for (String annotation : annotations) {
       cvTerm.addResource(annotation);
@@ -678,11 +713,12 @@ public class BiGGAnnotation {
    */
   private Optional<BiGGId> checkId(GeneProduct geneProduct) {
     String id = geneProduct.getId();
-    // extracting BiGGId if not present for species
+    // TODO: handle correctly, like species and reaction
     boolean isBiGGid = id.matches("^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
     if (!isBiGGid) {
       // Flatten all resources for all CVTerms into a list
       List<String> resources = geneProduct.getAnnotation().getListOfCVTerms().stream()
+                                          .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
                                           .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       if (!resources.isEmpty()) {
         // update id if we found something
