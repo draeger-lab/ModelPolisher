@@ -17,15 +17,21 @@ package edu.ucsd.sbrg.bigg;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.InitialAssignment;
+import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.ListOf;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Parameter;
@@ -364,10 +370,13 @@ public class SBMLPolisher {
    * @param model
    */
   public void polishListOfSpecies(Model model) {
-    for (int i = 0; i < model.getSpeciesCount(); i++) {
-      Species species = model.getSpecies(i);
+    List<Species> speciesToRemove = new ArrayList<>();
+    for (Species species : model.getListOfSpecies()) {
       progress.DisplayBar("Polishing Species (4/9)  "); // "Processing species " + species.getId());
-      polish(species);
+      polish(species).ifPresent(speciesToRemove::add);
+    }
+    for (Species species : speciesToRemove) {
+      model.removeSpecies(species);
     }
   }
 
@@ -375,7 +384,7 @@ public class SBMLPolisher {
   /**
    * @param species
    */
-  public void polish(Species species) {
+  public Optional<Species> polish(Species species) {
     String id = species.getId();
     if (id.isEmpty()) {
       // remove species with missing id, produces invalid SBML
@@ -386,29 +395,54 @@ public class SBMLPolisher {
       } else {
         logger.severe("Removing species with missing id and name. Check your Model for species without id and name.");
       }
-      species.getModel().removeSpecies(species);
-      return;
+      return Optional.of(species);
     }
     if (species.getId().endsWith("_boundary")) {
       logger.warning(format(mpMessageBundle.getString("SPECIES_ID_INVALID"), id));
+      String oldId = id;
       id = id.substring(0, id.length() - 9);
-      boolean uniqueId = species.getModel().findUniqueNamedSBase(id) == null;
-      if (uniqueId) {
-        if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-          logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
-          species.setBoundaryCondition(true);
+      // boolean uniqueId = species.getModel().getSpecies(id) == null;
+      // if (uniqueId) {
+      // if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
+      // logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
+      // species.setBoundaryCondition(true);
+      // }
+      ListOf<Reaction> reactions = species.getModel().getListOfReactions();
+      Set<Reaction> boundaryReactants = reactions.stream().filter(
+        reaction -> reaction.getListOfReactants().stream().anyMatch(reactant -> reactant.getSpecies().equals(oldId)))
+                                                 .collect(Collectors.toSet());
+      Set<Reaction> boundaryProducts = reactions.stream().filter(
+        reaction -> reaction.getListOfProducts().stream().anyMatch(product -> product.getSpecies().equals(oldId)))
+                                                .collect(Collectors.toSet());
+      if (boundaryReactants.size() == 0 && boundaryProducts.size() >= 1) {
+        boolean canBeRemoved = true;
+        for (Reaction reaction : boundaryProducts) {
+          FBCReactionPlugin fbc = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+          canBeRemoved &= !reaction.isReversible();
+          if (fbc.isSetLowerFluxBound()) {
+            canBeRemoved |= fbc.getLowerFluxBoundInstance().getValue() == 0d;
+          } else {
+            KineticLaw kl = reaction.getKineticLaw();
+            if (kl != null) {
+              LocalParameter lb = kl.getLocalParameter("LOWER_BOUND");
+              if (lb != null) {
+                canBeRemoved |= lb.getValue() == 0d;
+              }
+            }
+          }
         }
-        species.setId(id);
-      } else {
-        // TODO: handle species where removing '_boundary' part from id produces duplicates
-        for(Reaction reaction : species.getModel().getListOfReactions()){}
-
+        if (canBeRemoved) {
+          logger.severe(String.format("Removing unnecessary boundary species '%s' from model.", oldId));
+          boundaryProducts.forEach(reaction -> {
+            reaction.removeProduct(oldId);
+            reaction.setReversible(false);
+          });
+          return Optional.of(species);
+        }
       }
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
-    // convert to valid BiGGId
-    BiGGId.createMetaboliteId(species.getId()).map(BiGGId::toBiGGId).ifPresent(species::setId);
     /*
      * Set mandatory attributes to default values
      * TODO: make those maybe user settings.
@@ -431,6 +465,7 @@ public class SBMLPolisher {
       }
     });
     checkCompartment(species);
+    return Optional.empty();
   }
 
 
@@ -503,10 +538,7 @@ public class SBMLPolisher {
       r.getModel().removeReaction(r);
       return false;
     }
-    BiGGId.createReactionId(id).ifPresent(biggId -> {
-      setSBOTermFromPattern(r, biggId);
-      r.setId(biggId.toBiGGId());
-    });
+    BiGGId.createReactionId(id).ifPresent(biggId -> setSBOTermFromPattern(r, biggId));
     // TODO: make code more robust -> 'conflicting compartment codes?'
     String compartmentId = r.isSetCompartment() ? r.getCompartment() : null;
     if (r.isSetListOfReactants()) {

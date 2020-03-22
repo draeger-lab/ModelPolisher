@@ -375,12 +375,13 @@ public class BiGGDB {
    * @return
    */
   public static List<String> getGeneReactionRule(String reactionId, String modelId) {
-    return getReactionRules("SELECT REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
-      + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__') AS " + COLUMN_GENE_REACTION_RULE + " FROM "
-      + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r." + COLUMN_ID + " = mr." + COLUMN_REACTION_ID
-      + " AND m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND mr." + COLUMN_GENE_REACTION_RULE
-      + " IS NOT NULL AND  LENGTH(mr." + COLUMN_GENE_REACTION_RULE + ") > 0 AND r." + COLUMN_BIGG_ID + " = ? AND m."
-      + COLUMN_BIGG_ID + " = ? AND mr.gene_reaction_rule <> '' ORDER BY mr." + COLUMN_ID, reactionId, modelId);
+    return getReactionRules("SELECT REPLACE(REPLACE(RTRIM(REPLACE(REPLACE(mr." + COLUMN_GENE_REACTION_RULE
+      + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__'), '_AT', '__SBML_DOT__') AS "
+      + COLUMN_GENE_REACTION_RULE + " FROM " + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r."
+      + COLUMN_ID + " = mr." + COLUMN_REACTION_ID + " AND m." + COLUMN_ID + " = mr." + COLUMN_MODEL_ID + " AND mr."
+      + COLUMN_GENE_REACTION_RULE + " IS NOT NULL AND  LENGTH(mr." + COLUMN_GENE_REACTION_RULE + ") > 0 AND r."
+      + COLUMN_BIGG_ID + " = ? AND m." + COLUMN_BIGG_ID + " = ? AND mr.gene_reaction_rule <> '' ORDER BY mr."
+      + COLUMN_ID, reactionId, modelId);
   }
 
 

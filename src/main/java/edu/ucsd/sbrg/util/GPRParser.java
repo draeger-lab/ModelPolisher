@@ -161,8 +161,42 @@ public class GPRParser {
       GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
       gpa.setAssociation(association);
       plugin.setGeneProductAssociation(gpa);
+    } else if (!areEqual(association, plugin.getGeneProductAssociation().getAssociation())) {
+      mergeAssociation(r, association, plugin, omitGenericTerms);
     }
-    // fixme: disable merging associations for now, the equality check does not seem to work correctly
+  }
+
+
+  /**
+   * @param gpa1
+   * @param gpa2
+   * @return
+   */
+  private static boolean areEqual(Association gpa1, Association gpa2) {
+    if (gpa1.isLeaf() && gpa2.isLeaf()) {
+      return true;
+    } else if (gpa1 instanceof Or && gpa2 instanceof Or) {
+      if (((Or) gpa1).getNumChildren() != ((Or) gpa2).getNumChildren()) {
+        return false;
+      } else {
+        boolean childrenEqual = true;
+        for (int i = 0; i < ((Or) gpa1).getNumChildren(); i++) {
+          childrenEqual &= areEqual((Association) gpa1.getChildAt(i), (Association) gpa2.getChildAt(i));
+        }
+        return childrenEqual;
+      }
+    } else if (gpa1 instanceof And && gpa2 instanceof And) {
+      if (((And) gpa1).getNumChildren() != ((And) gpa2).getNumChildren()) {
+        return false;
+      } else {
+        boolean childrenEqual = true;
+        for (int i = 0; i < ((And) gpa1).getNumChildren(); i++) {
+          childrenEqual &= areEqual((Association) gpa1.getChildAt(i), (Association) gpa2.getChildAt(i));
+        }
+        return childrenEqual;
+      }
+    }
+    return false;
   }
 
 

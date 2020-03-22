@@ -207,7 +207,7 @@ public class BiGGId {
     if (Character.isDigit(id.charAt(0))) {
       id = "_" + id;
     }
-    id = id.replaceAll("[-/]", "__").replaceAll("(_?_SBML_DOT__?)|\\.", "_AT").replaceAll("\\(", "_LPAREN_")
+    id = id.replaceAll("[-/]", "__").replaceAll("\\.", "__SBML_DOT__").replaceAll("\\(", "_LPAREN_")
            .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("]", "_RBRACKET_");
     Pattern parenCompartment = Pattern.compile("_LPAREN_(?<paren>.*?)_RPAREN_");
     Matcher parenMatcher = parenCompartment.matcher(id);

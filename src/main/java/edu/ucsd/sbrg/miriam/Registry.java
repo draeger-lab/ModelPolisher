@@ -3,7 +3,12 @@ package edu.ucsd.sbrg.miriam;
 import static edu.ucsd.sbrg.bigg.ModelPolisher.mpMessageBundle;
 import static java.text.MessageFormat.format;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -186,6 +191,10 @@ public class Registry {
    * @return corrected resource URI
    */
   public static Optional<String> checkResourceUrl(String resource) {
+    //TODO: temporary fix, http vs https should be irrelevant, handle urlPattern differently for proper handling
+    if(resource.startsWith("http://www.reactome.org")){
+      resource = resource.replaceAll("http://www.reactome.org", "https://www.reactome.org");
+    }
     // no longer supported by identifiers.org, but should still resolve, keep and fix missing id prefix
     if (resource.contains("ncbigi")) {
       String URLWithoutId = Registry.getDataCollectionPartFromURI(resource);
@@ -200,6 +209,10 @@ public class Registry {
         }
       }
       return Optional.of(resource);
+    }
+    if (resource.startsWith("https://identifiers.org/omim")) {
+      // omim is present in BiGGDB, but is not valid, skip
+      return Optional.empty();
     }
     /*
      * Either [namespace prefix]:[accession] or [provider code]/[namespace prefix]:[accession] second option is
