@@ -9,8 +9,11 @@ import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.COLUMN_TARGET_TERM;
 import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.COLUMN_URLPATTERN;
 import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.MAPPING_VIEW;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
@@ -32,44 +35,50 @@ public class AnnotateDB {
   static final String METABOLITE_PREFIX = "M_";
   static final String REACTION_PREFIX = "R_";
   static final String GENE_PREFIX = "G_";
-  private SQLConnector connector;
+  private static PostgreSQLConnector connector;
+
+  /**
+   * Don't allow instantiation
+   */
+  private AnnotateDB() {
+  }
+
 
   /**
    * Initialize a SQL connection
-   *
-   * @param connector
-   * @throws SQLException
+   * 
+   * @param host
+   * @param port
+   * @param user
+   * @param passwd
+   * @param name
    */
-  AnnotateDB(SQLConnector connector) {
-    this.connector = connector;
+  public static void init(String host, String port, String user, String passwd, String name) {
+    connector = new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd, name);
   }
 
 
   /**
-   *
+   * 
    */
-  void startConnection() throws SQLException {
-    if (!connector.isConnected()) {
-      connector.connect();
-    }
+  public static void close() {
+    connector.close();
+  }
+
+  /**
+   * @return
+   */
+  public static boolean inUse() {
+    return connector != null;
   }
 
 
   /**
-   *
+   * @param type
+   * @param biggId
+   * @return
    */
-  public void closeConnection() {
-    if (connector.isConnected()) {
-      try {
-        connector.close();
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
-
-  public TreeSet<String> getAnnotations(String type, String biggId) {
+  public static Set<String> getAnnotations(String type, String biggId) {
     TreeSet<String> annotations = new TreeSet<>();
     if (!type.equals(BIGG_METABOLITE) && !type.equals(BIGG_REACTION)) {
       return annotations;
@@ -83,18 +92,22 @@ public class AnnotateDB {
       biggId = biggId.substring(0, biggId.length() - 2);
     }
     String query = SELECT + "m." + COLUMN_TARGET_TERM + ", ac." + COLUMN_URLPATTERN + FROM + MAPPING_VIEW + " m, "
-      + ADB_COLLECTION + " ac" + WHERE + "m." + COLUMN_SOURCE_NAMESPACE + " = '" + type + "' AND " + "m."
-      + COLUMN_SOURCE_TERM + " = '" + biggId + "' AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
+      + ADB_COLLECTION + " ac" + WHERE + "m." + COLUMN_SOURCE_NAMESPACE + " = ? AND " + "m." + COLUMN_SOURCE_TERM
+      + " = ? AND ac." + COLUMN_NAMESPACE + " = m." + COLUMN_TARGET_NAMESPACE;
     try {
-      startConnection();
-      ResultSet rst = connector.query(query);
-      while (rst.next()) {
-        String uri = rst.getString(COLUMN_URLPATTERN);
-        String id = rst.getString(COLUMN_TARGET_TERM);
+      Connection connection = connector.getConnection();
+      PreparedStatement pStatement = connection.prepareStatement(query);
+      pStatement.setString(1, type);
+      pStatement.setString(2, biggId);
+      ResultSet resultSet = pStatement.executeQuery();
+      while (resultSet.next()) {
+        String uri = resultSet.getString(COLUMN_URLPATTERN);
+        String id = resultSet.getString(COLUMN_TARGET_TERM);
         uri = uri.replace("{$id}", id);
         annotations.add(uri);
       }
-      closeConnection();
+      pStatement.close();
+      connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }

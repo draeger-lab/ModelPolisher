@@ -1,25 +1,45 @@
-apply plugin: "java"
+plugins {
+    id "java"
+    id "application"
+}
 
-defaultTasks "clean", "lightJar"
 // Java versions for compilation and output
-sourceCompatibility = "1.11"
-targetCompatibility = "1.11"
-archivesBaseName = "ModelPolisher"
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
-version = "2.0.1"
+defaultTasks "clean", "fatJar"
+archivesBaseName = "ModelPolisher"
+mainClassName = "ModelPolisher"
+version = "2.1"
 
 sourceSets {
-    main.java.srcDirs = ["src/main/java"]
-    main.resources.srcDirs = ["src/main/resources"]
-    main.resources.excludes = ["**/bigg.zip"]
-    test.java.srcDirs = ["src/test/java"]
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
+    }
+    test {
+        java {
+            srcDirs = ["src/test/java"]
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
 
 repositories {
     mavenCentral()
-    maven { url "http://www.ebi.ac.uk/~maven/m2repo" }
-    maven { url "http://jsbml.sourceforge.net/m2repo/" }
-    maven { url "http://oss.sonatype.org/content/repositories/snapshots"}
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     // local dependencies
     flatDir {
         dirs "lib/de/zbit/SysBio/1390"
@@ -27,31 +47,51 @@ repositories {
 }
 
 dependencies {
-    compile "javax.xml.bind:jaxb-api:2.3.1"
-    compile "javax.activation:activation:1.1"
-    compile "org.glassfish.jaxb:jaxb-runtime:2.3.1"
-    compile "org.sbml.jsbml:jsbml:1.4"
-    compile "de.zbit:SysBio:1390"
-    compile "org.xerial:sqlite-jdbc:3.21.0"
-    compile "org.postgresql:postgresql:42.2.2"
-    compile "org.biojava:biojava-ontology:5.0.0"
-    compile 'us.hebi.matlab.mat:mfl-core:0.5.3'
-    compile "com.fasterxml.jackson.core:jackson-core:2.9.10"
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.10"
-    compile "net.sf.jtidy:jtidy:r938"
-    compile "de.uni-rostock.sbi:CombineArchive:1.4.0"
-    testCompile "org.junit.jupiter:junit-jupiter-engine:5.1.0"
+    implementation "org.sbml.jsbml:jsbml:1.4"
+    implementation "de.zbit:SysBio:1390"
+    implementation "org.postgresql:postgresql:42.2.2"
+    implementation "org.biojava:biojava-ontology:5.0.0"
+    implementation 'us.hebi.matlab.mat:mfl-core:0.5.3'
+    implementation "com.fasterxml.jackson.core:jackson-core:2.10.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
+    implementation "net.sf.jtidy:jtidy:r938"
+    implementation "de.uni-rostock.sbi:CombineArchive:1.4.0"
+    implementation "com.zaxxer:HikariCP:3.4.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.5.2"
+}
+
+test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+// get latest version of MIRIAM registry
+task downloadMIRIAM() {
+    doFirst {
+        String registry = new URL("https://registry.api.identifiers.org/resolutionApi/getResolverDataset").getText()
+        File parentDir = new File("src/main/resources/edu/ucsd/sbrg/miriam/");
+        if (!parentDir.exists()) {
+            mkdir(parentDir)
+        }
+        File registryFile = new File(parentDir.toString() + "/IdentifiersOrg-Registry.json")
+        BufferedWriter writer = new BufferedWriter(new FileWriter(registryFile))
+        writer.write(registry)
+        writer.close()
+    }
+    processResources.dependsOn downloadMIRIAM
 }
 
 // config for all jar tasks
 tasks.withType(Jar) {
     dependsOn test
-    destinationDir = file("$rootDir/target")
+    destinationDirectory = file("$rootDir/target")
     manifest {
         attributes(
-                "Version": version,
+                "Version": project.version,
                 "Implementation-Title": "ModelPolisher",
-                "Implementation-Version": version,
+                "Implementation-Version": project.version,
                 "Specification-Vendor": "University of California, San Diego",
                 "Specification-Title": "ModelPolisher",
                 "Implementation-Vendor-Id": "edu.ucsd.sbrg",
@@ -61,26 +101,23 @@ tasks.withType(Jar) {
     }
 }
 
-//with dependencies, without bigg.sqlite
-task lightJar(type: Jar) {
-    exclude("**/bigg.sqlite")
-    baseName = project.name
+//with dependencies
+task fatJar(type: Jar) {
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
     from {
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
-    with jar
 }
 
 //build docker container
-task devel(type: Exec){
+task devel(type: Exec) {
     commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
             "export COMPOSE_FILE=docker-compose.devel.yml && " +
             "docker-compose pull && " +
             "docker-compose build && " +
             "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
-    dependsOn lightJar
+    dependsOn fatJar
 }
 
 // zip lib folder for release
@@ -88,8 +125,8 @@ task zipLibs(type: Zip) {
     from "lib"
     into "lib"
     include "**/**"
-    archiveName = "lib.zip"
-    destinationDir = file("target/")
+    archiveFileName = "lib.zip"
+    destinationDirectory = file("target/")
 }
 
 // zip script files for release
@@ -97,13 +134,13 @@ task zipScripts(type: Zip) {
     from "src/scripts"
     into "scripts"
     include "**/**"
-    archiveName = "scripts.zip"
-    destinationDir = file("target/")
+    archiveFileName = "scripts.zip"
+    destinationDirectory = file("target/")
 }
 
 // create lightJar for release
 task release() {
-    dependsOn lightJar
+    dependsOn fatJar
     dependsOn tasks["zipLibs"]
     dependsOn tasks["zipScripts"]
 }
@@ -115,12 +152,12 @@ clean.doFirst {
 }
 
 // bump jar version in ModelPolisher.sh
-if (project.file("./src/scripts/ModelPolisher.sh").exists()) {
+if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
-        replaceVersion("docker/java_docker/Dockerfile")
-        replaceVersion(".travis.yml")
-        replaceVersion("README.md")
-        replaceVersion("./src/scripts/ModelPolisher.sh")
+        replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
+        replaceVersion(rootProject.projectDir.toString() + "/.travis.yml")
+        replaceVersion(rootProject.projectDir.toString() + "/README.md")
+        replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
 }

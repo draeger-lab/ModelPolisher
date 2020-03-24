@@ -14,9 +14,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,7 +36,6 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import com.sun.istack.NotNull;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -49,9 +47,11 @@ import org.sbml.jsbml.TidySBMLWriter;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
 import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
+import org.sbml.jsbml.validator.offline.LoggingValidationContext;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
 import org.w3c.tidy.Tidy;
@@ -68,13 +68,15 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
-import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.db.ADBOptions;
 import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
+import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.parsers.JSONparser;
+import edu.ucsd.sbrg.util.GPRParser;
+import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
@@ -86,14 +88,6 @@ public class ModelPolisher extends Launcher {
    *
    */
   private Parameters parameters;
-  /**
-   *
-   */
-  private static BiGGDB bigg = null;
-  /**
-   *
-   */
-  private static AnnotateDB adb = null;
   /**
    * Type of current input file
    */
@@ -168,19 +162,22 @@ public class ModelPolisher extends Launcher {
   @Override
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
+    parameters = Parameters.init(args);
+    DBConfig.initBiGG(args, parameters.annotateWithBiGG);
+    DBConfig.initADB(args, parameters.addADBAnnotations);
     // Gives users the choice to pass an alternative model notes XHTML file to the program.
     try {
-      batchProcess(new File(args.getProperty(IOOptions.INPUT)), new File(args.getProperty(IOOptions.OUTPUT)), args);
+      batchProcess(new File(args.getProperty(IOOptions.INPUT)), new File(args.getProperty(IOOptions.OUTPUT)));
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
     }
     // make sure DB connections are closed in case of exception
     finally {
-      if (bigg != null) {
-        bigg.closeConnection();
+      if (BiGGDB.inUse()) {
+        BiGGDB.close();
       }
-      if (adb != null) {
-        adb.closeConnection();
+      if (AnnotateDB.inUse()) {
+        AnnotateDB.close();
       }
     }
   }
@@ -194,14 +191,12 @@ public class ModelPolisher extends Launcher {
    * @throws IOException
    *         if input file is not found, or no file is present in input directory
    * @throws XMLStreamException
-   *         propagated from {@link #processFile(File, File, SBProperties)}
+   *         propagated from {@link #processFile(File, File)}
    */
-  private void batchProcess(@NotNull File input, @NotNull File output, @NotNull SBProperties args)
-    throws IOException, XMLStreamException {
+  private void batchProcess(File input, File output) throws IOException, XMLStreamException {
     if (!input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
-    parameters = Parameters.init(args);
     // Create output directory if output is a directory or create output file's directory if output is a file
     checkCreateOutDir(output);
     if (!input.isFile()) {
@@ -218,11 +213,11 @@ public class ModelPolisher extends Launcher {
       }
       for (File file : files) {
         File target = getOutputFileName(file, output);
-        batchProcess(file, target, args);
+        batchProcess(file, target);
       }
     } else {
       // NOTE: input is a single file, but output can be a file or a directory, i.e. for multimodel files (MAT format)
-      processFile(input, output, args);
+      processFile(input, output);
     }
   }
 
@@ -299,14 +294,12 @@ public class ModelPolisher extends Launcher {
    *        input file
    * @param output:
    *        output file or directory
-   * @param args:
-   *        SBProperties, i.e. commandline arguments
    * @throws XMLStreamException
    *         propagated from {@link #readAndPolish(File, File)}
    * @throws IOException
    *         propagated from {@link #readAndPolish(File, File)}
    */
-  private void processFile(File input, File output, SBProperties args) throws XMLStreamException, IOException {
+  private void processFile(File input, File output) throws XMLStreamException, IOException {
     // get fileType array and check if any value is true
     fileType = getFileType(input);
     if (fileType.equals(FileType.UNKNOWN)) {
@@ -317,8 +310,6 @@ public class ModelPolisher extends Launcher {
     if (output.isDirectory()) {
       output = getOutputFileName(input, output);
     }
-    bigg = DBConfig.getBiGG(args, parameters.annotateWithBiGG);
-    adb = DBConfig.getADB(args, parameters.addADBAnnotations);
     readAndPolish(input, output);
   }
 
@@ -327,7 +318,7 @@ public class ModelPolisher extends Launcher {
    * Get file type from input file
    *
    * @param input
-   *        File used in {@link #batchProcess(File, File, SBProperties)}
+   *        File used in {@link #batchProcess(File, File)}
    * @return FileType of given file, only SBML, MatLab and JSON files are supported
    */
   private FileType getFileType(File input) {
@@ -356,33 +347,24 @@ public class ModelPolisher extends Launcher {
   private void readAndPolish(File input, File output) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
     logger.info(format(mpMessageBundle.getString("READ_FILE_INFO"), input.getAbsolutePath()));
-    List<SBMLDocument> docs = new ArrayList<>();
+    SBMLDocument doc;
     // reading or parsing input
     if (fileType.equals(FileType.MAT_FILE)) {
-      docs.addAll(COBRAparser.read(input, parameters.omitGenericTerms));
+      doc = COBRAparser.read(input, parameters.omitGenericTerms);
     } else if (fileType.equals(FileType.JSON_FILE)) {
-      docs.add(JSONparser.read(input));
+      doc = JSONparser.read(input);
     } else {
       checkHTMLTags(input);
-      docs.add(SBMLReader.read(input, new UpdateListener()));
+      doc = SBMLReader.read(input, new UpdateListener());
     }
-    if (docs.size() == 0) {
+    if (doc == null) {
       logger.severe(format(mpMessageBundle.getString("ALL_DOCS_PARSE_ERROR"), input.toString()));
       return;
     }
-    int count = 0;
-    for (SBMLDocument doc : docs) {
-      if (count != 0) {
-        String newPath = FileTools.removeFileExtension(output.getPath());
-        if (count > 1) {
-          newPath = newPath.substring(0, newPath.length() - 2);
-        }
-        newPath += format("_{0}.xml", count);
-        output = new File(newPath);
-      }
-      polish(doc, output);
-      count++;
-    }
+    polish(doc, output);
+    // Clear map for next model
+    SBMLUtils.cleanGPRMap();
+    GPRParser.clearAssociationMap();
     time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
     logger.info(String.format(mpMessageBundle.getString("FINISHED_TIME"), (time / 60), (time % 60)));
   }
@@ -444,19 +426,22 @@ public class ModelPolisher extends Launcher {
    * @throws XMLStreamException
    */
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
-    checkLevelAndVersion(doc);
+    doc = checkLevelAndVersion(doc);
     // Polishing
-    SBMLPolisher polisher = setPolisherParameters();
+    SBMLPolisher polisher = initializeSBMLPolisher();
     doc = polisher.polish(doc);
     // Annotation
     if (parameters.annotateWithBiGG) {
-      BiGGAnnotation annotation = setAnnotationParameters(polisher);
+      BiGGAnnotation annotation = setAnnotationParameters();
       doc = annotation.annotate(doc);
     }
-    // producing & writing glossary
-    writeGlossary(doc, output);
+    // writing polished model
+    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
+    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     // produce COMBINE archive and delete output model and glossary
     if (parameters.outputCOMBINE) {
+      // producing & writing glossary
+      writeGlossary(doc, output);
       writeCombineArchive(output);
     }
     if (parameters.compression != Compression.NONE) {
@@ -473,8 +458,11 @@ public class ModelPolisher extends Launcher {
       default:
         break;
       }
-      if ((parameters.sbmlValidation != null) && parameters.sbmlValidation) {
-        validate(archive);
+      if (!output.delete()) {
+        logger.warning(String.format("Failed to delete output file '%s' after compression.", output.getAbsolutePath()));
+      }
+      if (parameters.sbmlValidation) {
+        validate(archive, false);
       }
     }
   }
@@ -486,18 +474,20 @@ public class ModelPolisher extends Launcher {
    * @param doc:
    *        SBMLDocument
    */
-  private void checkLevelAndVersion(SBMLDocument doc) {
+  private SBMLDocument checkLevelAndVersion(SBMLDocument doc) {
     if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info(mpMessageBundle.getString("TRY_CONV_LVL3_V1"));
       SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
+    CobraToFbcV2Converter converter = new CobraToFbcV2Converter();
+    return converter.convert(doc);
   }
 
 
   /**
    * @return SBMLPolisher object with all relevant paramters set
    */
-  private SBMLPolisher setPolisherParameters() {
+  private SBMLPolisher initializeSBMLPolisher() {
     SBMLPolisher polisher = new SBMLPolisher();
     polisher.setCheckMassBalance(parameters.checkMassBalance);
     polisher.setOmitGenericTerms(parameters.omitGenericTerms);
@@ -514,12 +504,10 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * @param polisher:
-   *        SBMLPolisher Object to extract relevant options from
    * @return BiGGAnnotation object used for annotation with BiGG
    */
-  private BiGGAnnotation setAnnotationParameters(SBMLPolisher polisher) {
-    BiGGAnnotation annotation = new BiGGAnnotation(bigg, adb);
+  private BiGGAnnotation setAnnotationParameters() {
+    BiGGAnnotation annotation = new BiGGAnnotation();
     if ((parameters.noModelNotes != null) && parameters.noModelNotes) {
       annotation.setDocumentNotesFile(null);
       annotation.setModelNotesFile(null);
@@ -551,9 +539,6 @@ public class ModelPolisher extends Launcher {
       output.getAbsolutePath().substring(0, output.getAbsolutePath().lastIndexOf('.')) + "_glossary.rdf";
     logger.info(format(mpMessageBundle.getString("WRITE_RDF_FILE_INFO"), glossaryLocation));
     writeTidyRDF(new File(glossaryLocation), glossary);
-    // writing polished model
-    logger.info(format(mpMessageBundle.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
-    TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
   }
 
 
@@ -666,20 +651,61 @@ public class ModelPolisher extends Launcher {
     InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8)),
       StandardCharsets.UTF_8);
     tidy.parse(in, out);
+    try {
+      in.close();
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 
   /**
    * @param filename
    */
-  private void validate(String filename) {
-    String output = "xml";
-    String offcheck = "p,u";
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("output", output);
-    parameters.put("offcheck", offcheck);
-    logger.info("Validating  " + filename + "\n");
-    SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
+  private void validate(String filename, boolean online) {
+    if (online) {
+      logger.info("Validating '%s' using online validator.");
+      String output = "xml";
+      String offcheck = "p,u";
+      Map<String, String> parameters = new HashMap<>();
+      parameters.put("output", output);
+      parameters.put("offcheck", offcheck);
+      logger.info("Validating  " + filename + "\n");
+      SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
+      handleErrorLog(sbmlErrorLog, filename);
+    } else {
+      logger.info("Validating '%s' using offline validator.");
+      SBMLDocument doc = null;
+      try {
+        InputStream istream;
+        if (filename.endsWith(".gz")) {
+          istream = ZIPUtils.GUnzipStream(filename);
+        } else {
+          istream = new FileInputStream(filename);
+        }
+        doc = SBMLReader.read(istream);
+      } catch (XMLStreamException | IOException e) {
+        e.printStackTrace();
+      }
+      if (doc != null) {
+        LoggingValidationContext context = new LoggingValidationContext(doc.getLevel(), doc.getVersion());
+        context.loadConstraints(SBMLDocument.class);
+        context.validate(doc);
+        SBMLErrorLog sbmlErrorLog = context.getErrorLog();
+        handleErrorLog(sbmlErrorLog, filename);
+      } else {
+        logger.severe(String.format("Failed reading file '%s' for offline validation.", filename));
+      }
+    }
+  }
+
+
+  /**
+   * @param sbmlErrorLog
+   * @param filename
+   */
+  private void handleErrorLog(SBMLErrorLog sbmlErrorLog, String filename) {
     if (sbmlErrorLog != null) {
       logger.info(format(mpMessageBundle.getString("VAL_ERR_COUNT"), sbmlErrorLog.getErrorCount(), filename));
       // printErrors

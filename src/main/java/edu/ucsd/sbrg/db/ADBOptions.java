@@ -17,7 +17,7 @@ public interface ADBOptions extends KeyProvider {
    *
    */
   @SuppressWarnings("unchecked")
-  Option<Integer> PORT = new Option<>("ADB_PORT", Integer.class, "Port", 5432);
+  Option<Integer> PORT = new Option<>("ADB_PORT", Integer.class, "Port", 1013);
   /**
    *
    */

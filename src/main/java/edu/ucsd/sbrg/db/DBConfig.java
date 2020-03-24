@@ -1,16 +1,13 @@
 package edu.ucsd.sbrg.db;
 
-import java.sql.SQLException;
-
 import de.zbit.util.prefs.SBProperties;
 
 public class DBConfig {
 
-  public static AnnotateDB getADB(SBProperties args, boolean annotateWithADB) {
-    if (annotateWithADB) {
-      return getADB(args);
+  public static void initADB(SBProperties args, boolean annotateWithADB) {
+    if (annotateWithADB && ! AnnotateDB.inUse()) {
+      initADB(args);
     }
-    return null;
   }
 
 
@@ -21,7 +18,7 @@ public class DBConfig {
    * @param args:
    *        Arguments from Commandline
    */
-  private static AnnotateDB getADB(SBProperties args) {
+  private static void initADB(SBProperties args) {
     String name = args.getProperty(ADBOptions.DBNAME);
     String host = args.getProperty(ADBOptions.HOST);
     String passwd = args.getProperty(ADBOptions.PASSWD);
@@ -31,25 +28,16 @@ public class DBConfig {
     run &= iStrNotNullOrEmpty(host);
     run &= iStrNotNullOrEmpty(port);
     run &= iStrNotNullOrEmpty(user);
-    AnnotateDB adb = null;
     if (run) {
-      try {
-        adb = new AnnotateDB(
-          new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd != null ? passwd : "", name));
-      } catch (ClassNotFoundException exc) {
-        exc.printStackTrace();
-        System.exit(1);
-      }
+      AnnotateDB.init(host, port, user, passwd, name);
     }
-    return adb;
   }
 
 
-  public static BiGGDB getBiGG(SBProperties args, boolean annotateWithBiGG) {
-    if (annotateWithBiGG) {
-      return getBiGG(args);
+  public static void initBiGG(SBProperties args, boolean annotateWithBiGG) {
+    if (annotateWithBiGG && !BiGGDB.inUse()) {
+      initBiGG(args);
     }
-    return null;
   }
 
 
@@ -59,7 +47,7 @@ public class DBConfig {
    * @param args:
    *        Arguments from Commandline
    */
-  private static BiGGDB getBiGG(SBProperties args) {
+  private static void initBiGG(SBProperties args) {
     String name = args.getProperty(BiGGDBOptions.DBNAME);
     String host = args.getProperty(BiGGDBOptions.HOST);
     String passwd = args.getProperty(BiGGDBOptions.PASSWD);
@@ -69,17 +57,9 @@ public class DBConfig {
     run &= iStrNotNullOrEmpty(host);
     run &= iStrNotNullOrEmpty(port);
     run &= iStrNotNullOrEmpty(user);
-    BiGGDB bigg = null;
     if (run) {
-      try {
-        bigg =
-          new BiGGDB(new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd != null ? passwd : "", name));
-      } catch (SQLException | ClassNotFoundException exc) {
-        exc.printStackTrace();
-        System.exit(1);
-      }
+      BiGGDB.init(host, port, user, passwd, name);
     }
-    return bigg;
   }
 
 

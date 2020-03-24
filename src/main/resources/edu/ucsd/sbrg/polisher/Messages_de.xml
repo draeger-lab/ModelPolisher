@@ -4,8 +4,9 @@
     <entry key="ABREV_INVALID">Ungültige Abkürzung: ''{0}''</entry>
     <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also. NOTE: Effective only if 'annotate-with-bigg' is true.</entry>
     <entry key="ADD_KIND_TO_GROUP">Adding missing kind attribute to group {0}.</entry>
-    <entry key="ADD_PREFIX_GI">Füge fehlendes GI: Präfix hinzu.</entry>
-    <entry key="ADD_PREFIX_GO">Füge fehlendes GO: Präfix hinzu.</entry>
+    <entry key="ADD_PREFIX_CHEBI">Füge fehlenden CHEBI: Namespace hinzu.</entry>
+    <entry key="ADD_PREFIX_GI">Füge fehlendes GI: Namespace hinzu.</entry>
+    <entry key="ADD_PREFIX_GO">Füge fehlendes GO: Namespace hinzu.</entry>
     <entry key="ADD_URI_FAILED_COBRA">Konnte aus Collection ''{0}'' und Id ''{1}'' keine Ressource URI bilden .</entry>
     <entry key="ADDED_FLUX_OBJ">Flux objective für Reaktion ''{0}'' mit Koeffizient {1,number} zum Model {2} hinzugefügt.</entry>
     <entry key="ADDED_UNIT_DEF">Grundlegende Unit Definition mmol_per_gDW_per_hr zum Model hinzugefügt</entry>
