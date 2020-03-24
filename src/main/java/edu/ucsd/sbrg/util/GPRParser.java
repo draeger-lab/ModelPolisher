@@ -6,8 +6,10 @@ import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.sbml.jsbml.ASTNode;
@@ -220,6 +222,21 @@ public class GPRParser {
     if (old_association instanceof And) {
       or.addAssociation(old_association);
       or.addAssociation(association);
+      Set<String> gprs = new HashSet<>();
+      for (int i = 0; i < or.getChildCount(); i++) {
+        Association current = (Association) or.getChildAt(i);
+        if (current instanceof GeneProductRef) {
+          String geneProduct = ((GeneProductRef) current).getGeneProduct();
+          if (gprs.contains(geneProduct)) {
+            if (!or.removeAssociation(current)) {
+              logger.warning(String.format("Failed to unset duplicate GeneProductReference '%s' for reaction '%s'",
+                geneProduct, r.getId()));
+            }
+          } else {
+            gprs.add(geneProduct);
+          }
+        }
+      }
       gpa.setAssociation(or);
     } else if (old_association instanceof GeneProductRef) {
       if (association instanceof Or) {
