@@ -21,17 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.InitialAssignment;
-import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.ListOf;
-import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Parameter;
@@ -399,45 +395,12 @@ public class SBMLPolisher {
     }
     if (species.getId().endsWith("_boundary")) {
       logger.warning(format(mpMessageBundle.getString("SPECIES_ID_INVALID"), id));
-      String oldId = id;
       id = id.substring(0, id.length() - 9);
-      // boolean uniqueId = species.getModel().getSpecies(id) == null;
-      // if (uniqueId) {
-      // if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-      // logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
-      // species.setBoundaryCondition(true);
-      // }
-      ListOf<Reaction> reactions = species.getModel().getListOfReactions();
-      Set<Reaction> boundaryReactants = reactions.stream().filter(
-        reaction -> reaction.getListOfReactants().stream().anyMatch(reactant -> reactant.getSpecies().equals(oldId)))
-                                                 .collect(Collectors.toSet());
-      Set<Reaction> boundaryProducts = reactions.stream().filter(
-        reaction -> reaction.getListOfProducts().stream().anyMatch(product -> product.getSpecies().equals(oldId)))
-                                                .collect(Collectors.toSet());
-      if (boundaryReactants.size() == 0 && boundaryProducts.size() >= 1) {
-        boolean canBeRemoved = true;
-        for (Reaction reaction : boundaryProducts) {
-          FBCReactionPlugin fbc = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
-          canBeRemoved &= !reaction.isReversible();
-          if (fbc.isSetLowerFluxBound()) {
-            canBeRemoved |= fbc.getLowerFluxBoundInstance().getValue() == 0d;
-          } else {
-            KineticLaw kl = reaction.getKineticLaw();
-            if (kl != null) {
-              LocalParameter lb = kl.getLocalParameter("LOWER_BOUND");
-              if (lb != null) {
-                canBeRemoved |= lb.getValue() == 0d;
-              }
-            }
-          }
-        }
-        if (canBeRemoved) {
-          logger.severe(String.format("Removing unnecessary boundary species '%s' from model.", oldId));
-          boundaryProducts.forEach(reaction -> {
-            reaction.removeProduct(oldId);
-            reaction.setReversible(false);
-          });
-          return Optional.of(species);
+      boolean uniqueId = species.getModel().findUniqueNamedSBase(id) == null;
+      if (uniqueId) {
+        if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
+          logger.warning(format(mpMessageBundle.getString("BOUNDARY_FLAG_MISSING"), id));
+          species.setBoundaryCondition(true);
         }
       }
     } else if (!species.isSetBoundaryCondition()) {

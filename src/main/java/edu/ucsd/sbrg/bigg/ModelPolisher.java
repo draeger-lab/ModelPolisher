@@ -5,7 +5,6 @@ package edu.ucsd.sbrg.bigg;
 
 import static java.text.MessageFormat.format;
 
-
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -36,7 +36,6 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -52,6 +51,7 @@ import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
 import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
+import org.sbml.jsbml.validator.offline.LoggingValidationContext;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
 import org.w3c.tidy.Tidy;
@@ -75,6 +75,7 @@ import edu.ucsd.sbrg.db.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
 import edu.ucsd.sbrg.parsers.COBRAparser;
 import edu.ucsd.sbrg.parsers.JSONparser;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
@@ -196,7 +197,6 @@ public class ModelPolisher extends Launcher {
     if (!input.exists()) {
       throw new IOException(format(mpMessageBundle.getString("READ_FILE_ERROR"), input.toString()));
     }
-
     // Create output directory if output is a directory or create output file's directory if output is a file
     checkCreateOutDir(output);
     if (!input.isFile()) {
@@ -458,11 +458,11 @@ public class ModelPolisher extends Launcher {
       default:
         break;
       }
-      if(!output.delete()){
+      if (!output.delete()) {
         logger.warning(String.format("Failed to delete output file '%s' after compression.", output.getAbsolutePath()));
       }
       if (parameters.sbmlValidation) {
-        validate(archive);
+        validate(archive, false);
       }
     }
   }
@@ -663,14 +663,49 @@ public class ModelPolisher extends Launcher {
   /**
    * @param filename
    */
-  private void validate(String filename) {
-    String output = "xml";
-    String offcheck = "p,u";
-    Map<String, String> parameters = new HashMap<>();
-    parameters.put("output", output);
-    parameters.put("offcheck", offcheck);
-    logger.info("Validating  " + filename + "\n");
-    SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
+  private void validate(String filename, boolean online) {
+    if (online) {
+      logger.info("Validating '%s' using online validator.");
+      String output = "xml";
+      String offcheck = "p,u";
+      Map<String, String> parameters = new HashMap<>();
+      parameters.put("output", output);
+      parameters.put("offcheck", offcheck);
+      logger.info("Validating  " + filename + "\n");
+      SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
+      handleErrorLog(sbmlErrorLog, filename);
+    } else {
+      logger.info("Validating '%s' using offline validator.");
+      SBMLDocument doc = null;
+      try {
+        InputStream istream;
+        if (filename.endsWith(".gz")) {
+          istream = ZIPUtils.GUnzipStream(filename);
+        } else {
+          istream = new FileInputStream(filename);
+        }
+        doc = SBMLReader.read(istream);
+      } catch (XMLStreamException | IOException e) {
+        e.printStackTrace();
+      }
+      if (doc != null) {
+        LoggingValidationContext context = new LoggingValidationContext(doc.getLevel(), doc.getVersion());
+        context.loadConstraints(SBMLDocument.class);
+        context.validate(doc);
+        SBMLErrorLog sbmlErrorLog = context.getErrorLog();
+        handleErrorLog(sbmlErrorLog, filename);
+      } else {
+        logger.severe(String.format("Failed reading file '%s' for offline validation.", filename));
+      }
+    }
+  }
+
+
+  /**
+   * @param sbmlErrorLog
+   * @param filename
+   */
+  private void handleErrorLog(SBMLErrorLog sbmlErrorLog, String filename) {
     if (sbmlErrorLog != null) {
       logger.info(format(mpMessageBundle.getString("VAL_ERR_COUNT"), sbmlErrorLog.getErrorCount(), filename));
       // printErrors
