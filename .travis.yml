@@ -16,7 +16,7 @@ before_install:
 - git clone https://github.com/SBRG/bigg_models_data
 install:
 # use current build artifact instead of published version
-- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-2.1.jar /\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
+- printf "FROM openjdk:11-slim\n\nCOPY ModelPolisher-2.1-beta.jar /\nCMD \"/bin/sh\"" > docker/java_docker/Dockerfile
 - gradle devel
 - docker-compose up -d
 - docker ps -a
@@ -27,9 +27,9 @@ before_script:
 - while ! pg_isready -h 0.0.0.0 -p 1013 > /dev/null; do sleep 1; done
 - echo "Databases are up"
 script:
-- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
-- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
-- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1-beta.jar --input=/models/ecoli_core_model.xml --output=/models/out/ecoli_core_model.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1-beta.jar --input=/models/yeast_7.00.xml --output=/models/out/yeast_7.00.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
+- travis_wait docker-compose run -v $MODELS:/models polisher sh -c "java -jar /ModelPolisher-2.1-beta.jar --input=/models/RECON1.xml --output=/models/out/RECON1.xml --annotate-with-bigg=true --add-adb-annotations=true --output-combine=true && ls -lish models/out"
 after_script:
 - docker-compose down
 git:

@@ -77,8 +77,8 @@
     <entry key="ID_MISSING_FOR_TYPE">Found element of type {0} without defined id.</entry>
     <entry key="ID_PREFIX_UNKNOWN">Id ''{0}'' seems to have no known prefix.</entry>
     <entry key="IDENTIFIER_NULL_GENE">Identifier was null for collection ''{0}'' and this gene resource URI </entry>
-    <entry key="ILLEGAL_STOICH_PROD">Some products in reaction {0} have an illegal stoichiometry</entry>
-    <entry key="ILLEGAL_STOICH_REACT">Some reactants in reaction {0} have an illegal stoichiometry</entry>
+    <entry key="ILLEGAL_STOICH_PROD">Some products in reaction {0} have an non strict stoichiometry</entry>
+    <entry key="ILLEGAL_STOICH_REACT">Some reactants in reaction {0} have an non strict stoichiometry</entry>
     <entry key="INCLUDE_ANY_URI_DESC">This switch allows users to specify if also those database cross-links should be extracted from BiGG Models database for which currently no entry in the MIRIAM exists. If set to true, ModelPolisher also includes URIs that do not contain the pattern identifiers.org.</entry>
     <entry key="INPUT_DESC">SBML, MAT or JSON files, or directories</entry>
     <entry key="IS_COMPARTMENT_FAILED">Could not determine if ''{0}'' is a compartment or not: {1}.</entry>

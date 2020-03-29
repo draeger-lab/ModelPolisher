@@ -665,7 +665,7 @@ public class ModelPolisher extends Launcher {
    */
   private void validate(String filename, boolean online) {
     if (online) {
-      logger.info("Validating '%s' using online validator.");
+      logger.info(String.format("Validating '%s' using online validator.", filename));
       String output = "xml";
       String offcheck = "p,u";
       Map<String, String> parameters = new HashMap<>();
@@ -675,7 +675,7 @@ public class ModelPolisher extends Launcher {
       SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
       handleErrorLog(sbmlErrorLog, filename);
     } else {
-      logger.info("Validating '%s' using offline validator.");
+      logger.info(String.format("Validating '%s' using offline validator.", filename));
       SBMLDocument doc = null;
       try {
         InputStream istream;

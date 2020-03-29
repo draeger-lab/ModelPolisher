@@ -77,8 +77,8 @@
     <entry key="ID_MISSING_FOR_TYPE">Element des Typs {0} ohne definierte Id gefunden.</entry>
     <entry key="ID_PREFIX_UNKNOWN">Id ''{0}'' besitzt kein bekanntes Präfix.</entry>
     <entry key="IDENTIFIER_NULL_GENE">Id ist null für die Collection ''{0}'' und diese Gene Ressource URI</entry>
-    <entry key="ILLEGAL_STOICH_PROD">Einige Produkte in Reaktion {0} besitzen eine ungültige Stöchiometrie</entry>
-    <entry key="ILLEGAL_STOICH_REACT">Einige Reaktanten in Reaktion {0} besitzen eine ungültige Stöchiometrie</entry>
+    <entry key="ILLEGAL_STOICH_PROD">Einige Produkte in Reaktion {0} besitzen eine nicht strikte Stöchiometrie</entry>
+    <entry key="ILLEGAL_STOICH_REACT">Einige Reaktanten in Reaktion {0} besitzen eine nicht strikte Stöchiometrie</entry>
     <entry key="INCLUDE_ANY_URI_DESC">Dieser Switch erlaubt es Benutzern festzulegen, ob auch Datenbank Kreuzreferenzen für die momentan kein Eintrag in MIRIAM existieŕt aus der BiGG Models Datenbank extrahiert werden sollen. Wenn wahr, schließt ModelPolisher für die Annotationen solche mit ein, die nicht dem Pattern identifiers.org entsprechen.</entry>
     <entry key="INPUT_DESC">SBML, MAT oder JSON Dateien, oder Verzeichnisse</entry>
     <entry key="IS_COMPARTMENT_FAILED">Konnte nicht bestimmen, ob ''{0}'' ein Kompartiment ist oder nicht: {1}.</entry>

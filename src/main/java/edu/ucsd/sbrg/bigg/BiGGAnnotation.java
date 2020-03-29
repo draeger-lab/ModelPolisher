@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -456,7 +457,9 @@ public class BiGGAnnotation {
             .collect(Collectors.toSet());
     annotations.removeAll(existingAnnotations);
     // adding annotations to cvTerm
-    for (String annotation : annotations) {
+    List<String> sortedAnnotations = new ArrayList<>(annotations);
+    Collections.sort(sortedAnnotations);
+    for (String annotation : sortedAnnotations) {
       cvTerm.addResource(annotation);
     }
     if (cvTerm.getResourceCount() > 0) {
@@ -647,7 +650,9 @@ public class BiGGAnnotation {
             .collect(Collectors.toSet());
     annotations.removeAll(existingAnnotations);
     // adding annotations to cvTerm
-    for (String annotation : annotations) {
+    List<String> sortedAnnotations = new ArrayList<>(annotations);
+    Collections.sort(sortedAnnotations);
+    for (String annotation : sortedAnnotations) {
       cvTerm.addResource(annotation);
     }
     if (cvTerm.getResourceCount() > 0) {
@@ -713,7 +718,6 @@ public class BiGGAnnotation {
    */
   private Optional<BiGGId> checkId(GeneProduct geneProduct) {
     String id = geneProduct.getId();
-    // TODO: handle correctly, like species and reaction
     boolean isBiGGid = id.matches("^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
     if (!isBiGGid) {
       // Flatten all resources for all CVTerms into a list

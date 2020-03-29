@@ -12,7 +12,7 @@ java {
 defaultTasks "clean", "fatJar"
 archivesBaseName = "ModelPolisher"
 mainClassName = "ModelPolisher"
-version = "2.1"
+version = "2.1-beta"
 
 sourceSets {
     main {

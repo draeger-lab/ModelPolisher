@@ -326,11 +326,14 @@ public class JSONparser {
     String formula = Optional.ofNullable(metabolite.getFormula()).orElse("");
     int charge = metabolite.getCharge();
     FBCSpeciesPlugin specPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+    boolean validFormula = false;
     if (!formula.isEmpty()) {
       try {
         specPlug.setChemicalFormula(formula);
+        validFormula = true;
       } catch (IllegalArgumentException exc) {
-        logger.warning(String.format("Invalid formula for metabolite '%s' : %s", biggId.toBiGGId(), formula));
+        logger.warning(
+          String.format("Invalid formula for metabolite '%s' : %s. Setting in notes", biggId.toBiGGId(), formula));
       }
     }
     specPlug.setCharge(charge);
@@ -342,6 +345,13 @@ public class JSONparser {
     // constraint sense is specified in former parser, not specified in scheme, thus ignored for now
     parseAnnotation(species, metabolite.getAnnotation());
     parseNotes(species, metabolite.getNotes());
+    if (!validFormula) {
+      try {
+        species.appendNotes("<p>FORMULA: " + formula + "</p>\n");
+      } catch (XMLStreamException e) {
+        e.printStackTrace();
+      }
+    }
     if (species.isSetAnnotation()) {
       species.setMetaId(species.getId());
     }

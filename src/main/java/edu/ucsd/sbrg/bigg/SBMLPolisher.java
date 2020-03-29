@@ -27,7 +27,9 @@ import java.util.regex.Pattern;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.InitialAssignment;
+import org.sbml.jsbml.KineticLaw;
 import org.sbml.jsbml.ListOf;
+import org.sbml.jsbml.LocalParameter;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Parameter;
@@ -48,6 +50,7 @@ import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.util.ModelBuilder;
 import org.sbml.jsbml.util.ResourceManager;
+import org.sbml.jsbml.xml.XMLNode;
 
 import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
@@ -71,10 +74,10 @@ public class SBMLPolisher {
     ATP_MAINTENANCE(".*[Aa][Tt][Pp][Mm]"),
     BIOMASS_CASE_INSENSITIVE(".*[Bb][Ii][Oo][Mm][Aa][Ss][Ss].*"),
     BIOMASS_CASE_SENSITIVE(".*BIOMASS.*"),
-    DEFAULT_FLUX_BOUND(".*_[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*"),
-    DEMAND_REACTION(".*_[Dd][Mm]_.*"),
-    EXCHANGE_REACTION(".*_[Ee][Xx]_.*"),
-    SINK_REACTION(".*_[Ss]([Ii][Nn])?[Kk]_.*");
+    DEFAULT_FLUX_BOUND("(.*_)?[Dd][Ee][Ff][Aa][Uu][Ll][Tt]_.*"),
+    DEMAND_REACTION("(.*_)?[Dd][Mm]_.*"),
+    EXCHANGE_REACTION("(.*_)?[Ee][Xx]_.*"),
+    SINK_REACTION("(.*_)?[Ss]([Ii][Nn])?[Kk]_.*");
 
     private Pattern pattern;
 
@@ -534,6 +537,8 @@ public class SBMLPolisher {
     } else {
       checkBalance(r);
     }
+    fluxObjectiveFromLocalParameter(r);
+    associationFromNotes(r);
     boolean strict = checkBounds(r);
     strict = checkReactantsProducts(r, strict);
     return strict;
@@ -585,7 +590,7 @@ public class SBMLPolisher {
           compartmentId = species.getCompartment();
         }
       } else {
-        logger.warning(format(mpMessageBundle.getString("SPECIES_REFERENCE_INVALID"), sr.getSpecies()));
+        logger.info(format(mpMessageBundle.getString("SPECIES_REFERENCE_INVALID"), sr.getSpecies()));
       }
     }
     if ((compartmentId == null) || compartmentId.isEmpty()) {
@@ -626,15 +631,14 @@ public class SBMLPolisher {
         if (r.isReversible()) {
           // TODO: sink reaction
         } else if (r.getSBOTerm() != 628) {
-          logger.info(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
-          // logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
+          // logger.info(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
           r.setSBOTerm(628); // demand reaction
         }
       } else if (r.getProductCount() == 0) {
         if (r.isReversible()) {
           // TODO: source reaction
         } else {
-          logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
+          // logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), r.getId()));
           r.setSBOTerm(628); // demand reaction
         }
       }
@@ -656,6 +660,69 @@ public class SBMLPolisher {
 
 
   /**
+   * Set flux objective and its coefficient from reaction kinetic law, if no flux objective exists for the reaction
+   *
+   * @param r:
+   *        Reaction
+   */
+  private void fluxObjectiveFromLocalParameter(Reaction r) {
+    FBCModelPlugin modelPlugin = (FBCModelPlugin) r.getModel().getPlugin(FBCConstants.shortLabel);
+    Objective obj = modelPlugin.getObjective(0);
+    if (obj == null) {
+      obj = modelPlugin.createObjective("obj");
+      obj.setType(Objective.Type.MAXIMIZE);
+      modelPlugin.getListOfObjectives().setActiveObjective(obj.getId());
+    }
+    boolean foExists = obj.getListOfFluxObjectives().stream().anyMatch(fo -> fo.getReactionInstance().equals(r));
+    if (foExists) {
+      return;
+    }
+    KineticLaw kl = r.getKineticLaw();
+    if (kl != null) {
+      LocalParameter coefficient = kl.getLocalParameter("OBJECTIVE_COEFFICIENT");
+      if (coefficient != null) {
+        FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
+        fo.setCoefficient(coefficient.getValue());
+        fo.setReaction(r);
+      }
+    }
+  }
+
+
+  /**
+   * Convert GENE_ASSOCIATION in reaction notes to FBCv2 {#GeneProductAssociation}
+   *
+   * @param r:
+   *        Reaction
+   */
+  private void associationFromNotes(Reaction r) {
+    FBCReactionPlugin reactionPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+    if (!reactionPlugin.isSetGeneProductAssociation() && r.isSetNotes()) {
+      XMLNode body = r.getNotes().getChildElement("body", null);
+      if (body != null) {
+        for (XMLNode p : body.getChildElements("p", null)) {
+          if (p.getChildCount() == 1) {
+            String associationCandidate = p.getChildAt(0).getCharacters();
+            if (associationCandidate.startsWith("GENE_ASSOCIATION: ")) {
+              String[] splits = associationCandidate.split("GENE_ASSOCIATION: ");
+              if (splits.length == 2) {
+                String association = splits[1];
+                if (!association.isEmpty()) {
+                  GPRParser.parseGPR(r, association, Parameters.get().getOmitGenericTerms());
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  /**
+   * Check if existing FBC flux bounds fulfill the strict requirement.
+   * Bounds with no instance present are tried to be inferred from the reaction {#KineticLaw}
+   *
    * @param r
    * @return
    */
@@ -663,13 +730,41 @@ public class SBMLPolisher {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     Parameter lb = rPlug.getLowerFluxBoundInstance();
     Parameter ub = rPlug.getUpperFluxBoundInstance();
-    boolean strict = polishFluxBound(lb) && polishFluxBound(ub);
+    boolean lbExists = polishFluxBound(lb);
+    // set bounds from KineticLaw, if they are not set in FBC, create global Parameter, as required by specification
+    if (!lbExists) {
+      LocalParameter bound = getBoundFromLocal(r, "LOWER_BOUND");
+      if (bound != null) {
+        lb = new Parameter(bound);
+        Parameter existingParameter = getParameterVariant(r, lb, bound.getValue());
+        if (existingParameter != null) {
+          rPlug.setLowerFluxBound(existingParameter);
+        } else {
+          r.getModel().addParameter(lb);
+          rPlug.setLowerFluxBound(lb);
+        }
+        lbExists = polishFluxBound(rPlug.getLowerFluxBoundInstance());
+      }
+    }
+    boolean ubExists = polishFluxBound(ub);
+    if (!ubExists) {
+      LocalParameter bound = getBoundFromLocal(r, "UPPER_BOUND");
+      if (bound != null) {
+        ub = new Parameter(bound);
+        Parameter existingParameter = getParameterVariant(r, ub, bound.getValue());
+        if (existingParameter != null) {
+          rPlug.setUpperFluxBound(existingParameter);
+        } else {
+          r.getModel().addParameter(ub);
+          rPlug.setUpperFluxBound(ub);
+        }
+        ubExists = polishFluxBound(rPlug.getUpperFluxBoundInstance());
+      }
+    }
+    boolean strict = lbExists && ubExists;
     if (strict) {
-      strict = checkBound(lb);
-      strict &= lb.isSetValue() && (lb.getValue() < Double.POSITIVE_INFINITY);
-      strict &= checkBound(ub);
-      strict &= ub.isSetValue() && (ub.getValue() > Double.NEGATIVE_INFINITY);
-      strict &= lb.isSetValue() && ub.isSetValue() && (lb.getValue() <= ub.getValue());
+      strict = checkBound(lb) && lb.getValue() < Double.POSITIVE_INFINITY && checkBound(ub)
+        && ub.getValue() > Double.NEGATIVE_INFINITY && lb.getValue() <= ub.getValue();
       if (!strict) {
         logger.warning(format(mpMessageBundle.getString("FLUX_BOUND_ERROR"), r.getId()));
       }
@@ -699,6 +794,45 @@ public class SBMLPolisher {
 
 
   /**
+   * @param r:
+   *        Reaction
+   * @param parameterName:
+   *        LOWER_BOUND or UPPER_BOUND
+   * @return
+   */
+  private LocalParameter getBoundFromLocal(Reaction r, String parameterName) {
+    KineticLaw kl = r.getKineticLaw();
+    if (kl != null) {
+      return kl.getLocalParameter(parameterName);
+    }
+    return null;
+  }
+
+
+  /**
+   * @param r:
+   *        Reaction
+   * @param bound:
+   *        lower or upper bound instance
+   * @param boundValue:
+   *        value of {#LocalParameter} bound obtained from {{@link #getBoundFromLocal(Reaction, String)}}
+   * @return
+   */
+  private Parameter getParameterVariant(Reaction r, Parameter bound, double boundValue) {
+    if (boundValue == -1000d) {
+      bound.setId("DEFAULT_LOWER_BOUND");
+    } else if (boundValue == 0d) {
+      bound.setId("DEFAULT_BOUND");
+    } else if (boundValue == 1000d) {
+      bound.setId("DEFAULT_UPPER_BOUND");
+    } else {
+      bound.setId(r.getId() + "_" + bound.getId());
+    }
+    return r.getModel().getParameter(bound.getId());
+  }
+
+
+  /**
    * Checks if a given bound parameter satisfies the required properties of a
    * strict flux bound parameter:
    * <li>not null
@@ -724,13 +858,13 @@ public class SBMLPolisher {
     if (strict && r.isSetListOfReactants()) {
       strict = checkSpeciesReferences(r.getListOfReactants());
       if (!strict) {
-        logger.warning(format(mpMessageBundle.getString("ILLEGAL_STOICH_PROD"), r.getId()));
+        logger.warning(format(mpMessageBundle.getString("ILLEGAL_STOICH_REACT"), r.getId()));
       }
     }
     if (strict && r.isSetListOfProducts()) {
       strict = checkSpeciesReferences(r.getListOfProducts());
       if (!strict) {
-        logger.warning(format(mpMessageBundle.getString("ILLEGAL_STOICH_REACT"), r.getId()));
+        logger.warning(format(mpMessageBundle.getString("ILLEGAL_STOICH_PROD"), r.getId()));
       }
     }
     return strict;
@@ -745,8 +879,8 @@ public class SBMLPolisher {
   public boolean checkSpeciesReferences(ListOf<SpeciesReference> listOfSpeciesReference) {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
-      strict &= sr.isConstant() && sr.isSetStoichiometry() && !sr.isSetStoichiometryMath()
-        && !Double.isNaN(sr.getValue()) && Double.isFinite(sr.getValue());
+      strict &=
+        sr.isConstant() && sr.isSetStoichiometry() && !Double.isNaN(sr.getValue()) && Double.isFinite(sr.getValue());
     }
     return strict;
   }
