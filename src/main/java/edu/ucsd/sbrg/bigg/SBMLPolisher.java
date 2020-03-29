@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -680,7 +681,7 @@ public class SBMLPolisher {
     KineticLaw kl = r.getKineticLaw();
     if (kl != null) {
       LocalParameter coefficient = kl.getLocalParameter("OBJECTIVE_COEFFICIENT");
-      if (coefficient != null) {
+      if (coefficient != null && coefficient.getValue() != 0d) {
         FluxObjective fo = obj.createFluxObjective("fo_" + r.getId());
         fo.setCoefficient(coefficient.getValue());
         fo.setReaction(r);
@@ -875,7 +876,6 @@ public class SBMLPolisher {
    * @param listOfSpeciesReference
    * @return
    */
-  @SuppressWarnings("deprecation")
   public boolean checkSpeciesReferences(ListOf<SpeciesReference> listOfSpeciesReference) {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
@@ -932,6 +932,9 @@ public class SBMLPolisher {
           strict &= polishListOfFluxObjectives(strict, objective);
         }
       }
+      // removed unused objectives, i.e. those without flux objectives
+      modelPlug.getListOfObjectives().stream().filter(Predicate.not(Objective::isSetListOfFluxObjectives))
+               .forEach(modelPlug::removeObjective);
     }
     return strict;
   }
