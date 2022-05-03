@@ -15,3 +15,5 @@ jsbml.log
 /out
 /src/main/resources/edu/ucsd/sbrg/example_models/output
 /src/test/resources/edu/ucsd/sbrg/bigg/e_coli_core.zip
+*.class
+/bin
