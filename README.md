@@ -39,12 +39,12 @@ NOTE: You may run ModelPolisher, without building, using Docker (preferred). See
 
 ModelPolisher uses `gradle` to build. Make sure you have `gradle (version >= 5.0)` installed in your system before following the procedure below.
 
-First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle. Gradle runs task `lightJar` by default which produces `jar` file, with dependencies, for ModelPolisher in `<path>/ModelPolisher/target/` directory. So, in order to build ModelPolisher run any of following command under `ModelPolisher/` directory:
+First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle. Gradle runs task `fatJar` by default which produces `jar` file, with dependencies, for ModelPolisher in `<path>/ModelPolisher/target/` directory. So, in order to build ModelPolisher run any of following command under `ModelPolisher/` directory:
 
-`gradle lightJar` or `gradle`  
+`gradle fatJar` or `gradle`
 Additionally `gradle devel` is provided to easily run a non-release version with [Docker](#non-release).
 
-NOTE: `lightJar` requires `postgresql` database(s) to be set-up to run ModelPolisher.
+NOTE: `fatJar` requires `postgresql` database(s) to be set-up to run ModelPolisher.
 
 # <a name="run-ModelPolisher"></a>How to run ModelPolisher? : Polish Models
 We recommend users to run ModelPolisher [using `docker`](#using-docker), though ModelPolisher can be run [from ModelPolisher `jar`](#using-jar), which is preferred for developers.
@@ -54,7 +54,7 @@ NOTE: ModelPolisher provides various command line options which can be seen usin
 java -jar <path>/ModelPolisher/target/ModelPolisher-2.1-beta.jar -? 
 ```
 
-In the example commands below few options are taken by default. See list of mostly used options [here](https://github.com/draeger-lab/ModelPolisher/wiki/Mostly-Used-Command-Line-Options).
+In the example commands below few options are taken by default. See list of mostly used options [here](https://github.com/draeger-lab/ModelPolisher/wiki/Command-Line-Arguments).
 
 ## <a name="using-docker"></a>Using Docker
 ModelPolisher can be run in docker containers. This allows user to skip the build process, and database setup required to run ModelPolisher. Please install `docker` and `docker-compose`, if not installed already.
@@ -131,7 +131,7 @@ java -jar "<path>/ModelPolisher/target/ModelPolisher-2.1-beta.jar" \
 We understand problems in setting-up database backend and that a developer would need to build ModelPolisher multiple times and making required changes in `java` Dockerfile will be a tedious task.
 We recommend the following practice for developers:
 1. Set up required databases by running `docker-compose up`.
-2. After making required changes in codebase build `jar` by `gradle lightJar`.
+2. After making required changes in codebase build `jar` by `gradle fatJar`.
 3. Run the newly build jar using:
 ```
 java -jar ./target/ModelPolisher-2.1-beta.jar --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=0.0.0.0 --bigg-port=1310 --add-adb-annotations=true --adb-host=0.0.0.0 --adb-port=1013
