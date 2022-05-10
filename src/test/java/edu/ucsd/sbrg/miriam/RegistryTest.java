@@ -8,7 +8,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.miriam.models.Miriam;
