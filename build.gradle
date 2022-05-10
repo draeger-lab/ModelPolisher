@@ -117,6 +117,9 @@ tasks.withType(Jar) {
 
 //with dependencies
 task fatJar(type: Jar) {
+    
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath
     from {
