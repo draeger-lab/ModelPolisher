@@ -16,45 +16,24 @@ Moreover, it fixes some apparent errors in the models and uses mappings from [An
 
 ModelPolisher is primarily a command-line based tool. You can run ModelPolisher locally [using `Docker`](#using-docker) or using  your installation of BiGG Models database (see https://github.com/SBRG/bigg_models). 
 
-Note: If you run into trouble with larger files, especially `_java.lang.OutOfMemoryError: GC overhead limit exceeded_`, please use the JVM `Xmx` flag (e.g., `java -Xmx4G -jar ModelPolisher-VERSION.jar` ).
-
 # Table of Contents
 
-* [How to cite ModelPolisher?](#cite-ModelPolisher)
-* [How to build?](#build-instructions)
-* [How to run ModelPolisher?](#run-ModelPolisher)
+* [Usage Notes](#run-ModelPolisher)
   * [Using Docker](#using-docker)
   * [Using ModelPolisher jar](#using-jar)
+* [How to cite ModelPolisher?](#cite-ModelPolisher)
 * [Licenses](#licenses)
 
-# <a name="cite-ModelPolisher"></a>How to cite ModelPolisher?
+# <a name="run-ModelPolisher"></a>Usage Notes
 
-The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
-
-The article ["BiGG Models: A platform for integrating, standardizing and sharing genome-scale models"](https://nar.oxfordjournals.org/content/44/D1/D515) describes BiGG Models knowledge-base including ModelPolisher.
-
-# <a name="build-instructions"></a>How to build?
-
-NOTE: You may run ModelPolisher, without building, using Docker (preferred). See [here](#using-docker).
-
-ModelPolisher uses `gradle` to build. Make sure you have `gradle (version >= 5.0)` installed in your system before following the procedure below.
-
-First clone this github project and go to directory `<path>/ModelPolisher/`. Then, ModelPolisher can be built using Gradle. Gradle runs task `fatJar` by default which produces `jar` file, with dependencies, for ModelPolisher in `<path>/ModelPolisher/target/` directory. So, in order to build ModelPolisher run any of following command under `ModelPolisher/` directory:
-
-`gradle fatJar` or `gradle`
-Additionally `gradle devel` is provided to easily run a non-release version with [Docker](#non-release).
-
-NOTE: `fatJar` requires `postgresql` database(s) to be set-up to run ModelPolisher.
-
-# <a name="run-ModelPolisher"></a>How to run ModelPolisher? : Polish Models
 We recommend users to run ModelPolisher [using `docker`](#using-docker), though ModelPolisher can be run [from ModelPolisher `jar`](#using-jar), which is preferred for developers.
 
-NOTE: ModelPolisher provides various command line options which can be seen using:
+NOTE: ModelPolisher provides various command line arguments which can be seen using arguments `-?` and `--help`:
 ```
 java -jar <path>/ModelPolisher/target/ModelPolisher-2.1.jar -? 
 ```
 
-In the example commands below few options are taken by default. See list of mostly used options [here](https://github.com/draeger-lab/ModelPolisher/wiki/Command-Line-Arguments).
+See further documentation on the most important arguments here [here](https://github.com/draeger-lab/ModelPolisher/wiki/Command-Line-Arguments).
 
 ## <a name="using-docker"></a>Using Docker
 ModelPolisher can be run in docker containers. This allows user to skip the build process, and database setup required to run ModelPolisher. Please install `docker` and `docker-compose`, if not installed already.
@@ -137,6 +116,12 @@ We recommend the following practice for developers:
 java -jar ./target/ModelPolisher-2.1.jar --input=<input> --output=<output> --output-combine=true --annotate-with-bigg=true --bigg-host=0.0.0.0 --bigg-port=1310 --add-adb-annotations=true --adb-host=0.0.0.0 --adb-port=1013
 ```
 Note: All above commands must be run in `<path>/ModelPolisher/` directory and you must have installed Java `version >= 8` and Gradle `version >= 5.0`.
+# <a name="cite-ModelPolisher"></a>How to cite ModelPolisher?
+
+The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
+
+The article ["BiGG Models: A platform for integrating, standardizing and sharing genome-scale models"](https://nar.oxfordjournals.org/content/44/D1/D515) describes BiGG Models knowledge-base including ModelPolisher.
+
 # <a name="licenses"></a>Licenses
 
 ModelPolisher is distributed under the MIT License (see LICENSE).
