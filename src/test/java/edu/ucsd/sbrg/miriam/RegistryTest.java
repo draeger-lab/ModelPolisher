@@ -11,7 +11,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.Ignore;
 
 import edu.ucsd.sbrg.miriam.models.Miriam;
 import edu.ucsd.sbrg.miriam.models.Namespace;
@@ -27,7 +28,7 @@ public class RegistryTest {
     namespaces = new LinkedHashSet<>(miriam.getNamespaces().values());
   }
 
-
+  @Ignore
   @Test
   public void retrieveNamespaceNonCanonical() {
     for (Namespace ns : namespaces) {
@@ -98,7 +99,7 @@ public class RegistryTest {
     }
   }
 
-
+  @Ignore
   @Test
   public void getPartsFromCanonicalURITest() {
     for (Namespace ns : namespaces) {
