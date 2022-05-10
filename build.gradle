@@ -168,6 +168,16 @@ clean.doFirst {
     file("target").deleteDir()
 }
 
+task javadocs(type: Javadoc) {
+    doFirst {
+        // make sure that directory exists
+        file(new File(rootProject.projectDir.toString() + "/docs")).mkdirs()
+    }
+    destinationDir = new File(rootProject.projectDir.toString() + "/docs")
+    classpath = sourceSets.main.runtimeClasspath
+    source = sourceSets.main.allJava
+}
+
 // bump jar version in ModelPolisher.sh
 if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
