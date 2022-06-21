@@ -168,14 +168,13 @@ public class SBMLFix {
         logger.info(MessageFormat.format(MESSAGES.getString("OBJ_SOLUTION"), activeObjective.getId()));
       }
     } else {
-      activeObjective =
-        fbcPlug.getListOfObjectives().firstHit(new NameFilter(fbcPlug.getListOfObjectives().getActiveObjective()));
+      activeObjective = fbcPlug.getListOfObjectives().getActiveObjectiveInstance();
     }
     if (activeObjective != null) {
       if (!activeObjective.isSetListOfFluxObjectives()) {
         logger.severe(MessageFormat.format(MESSAGES.getString("TRY_GUESS_MISSING_FLUX_OBJ"), modelDescriptor));
         if (listOfReactions != null) {
-          if (fluxObjectives != null) {
+          if (fluxObjectives != null && fluxObjectives.length != 0) {
             /*
              * An array of target reactions is provided. We want to use this as
              * flux objectives.
