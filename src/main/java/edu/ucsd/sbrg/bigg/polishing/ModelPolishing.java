@@ -17,9 +17,11 @@ import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.Objective;
 
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -120,8 +122,12 @@ public class ModelPolishing {
         }
       }
       // removed unused objectives, i.e. those without flux objectives
-      modelPlug.getListOfObjectives().stream().filter(Predicate.not(Objective::isSetListOfFluxObjectives))
-               .forEach(modelPlug::removeObjective);
+      // modelPlug.getListOfObjectives().remove
+      Collection<Objective> removals = modelPlug.getListOfObjectives()
+              .stream()
+              .filter(Predicate.not(Objective::isSetListOfFluxObjectives))
+              .collect(Collectors.toList());
+      modelPlug.getListOfObjectives().removeAll(removals);
     }
   }
 
