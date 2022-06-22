@@ -44,6 +44,7 @@ sourceSets {
 test {
     useJUnitPlatform()
     testLogging {
+        showStandardStreams = true
         events "passed", "skipped", "failed"
     }
 }
@@ -57,28 +58,22 @@ repositories {
     }
 }
 
-def jacksonVersion = "2.11.3"
-def jupiterVersion = "5.7.0"
+def jacksonVersion = "2.13.3"
+def jupiterVersion = "5.8.2"
 
 dependencies {
-    implementation "org.sbml.jsbml:jsbml:1.5"
+    implementation "org.sbml.jsbml:jsbml:1.6.1"
     implementation "de.zbit:SysBio:1390"
-    implementation "org.postgresql:postgresql:42.2.18"
-    implementation "org.biojava:biojava-ontology:5.4.0"
-    implementation 'us.hebi.matlab.mat:mfl-core:0.5.6'
+    implementation "org.postgresql:postgresql:42.4.0"
+    implementation "org.biojava:biojava-ontology:6.0.5"
+    implementation 'us.hebi.matlab.mat:mfl-core:0.5.9'
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     implementation "net.sf.jtidy:jtidy:r938"
     implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
-    implementation "com.zaxxer:HikariCP:3.4.5"
+    implementation "com.zaxxer:HikariCP:5.0.1"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
-}
-
-test {
-    testLogging {
-        showStandardStreams = true
-    }
 }
 
 // get latest version of MIRIAM registry
