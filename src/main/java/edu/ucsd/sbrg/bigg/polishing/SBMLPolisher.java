@@ -21,7 +21,6 @@ import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.util.ModelBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,126 +102,7 @@ public class SBMLPolisher {
     ModelPolishing modelPolishing = new ModelPolishing(model, strict, progress);
     modelPolishing.polish();
   }
-
-
-  /**
-   * Check that all basic {@link UnitDefinition}s and {@link Unit}s exist and creates them, if not
-   *
-   * @param model
-   *        {@link Model} to polish
-   */
-  public void polishListOfUnitDefinitions(Model model) {
-    progress.DisplayBar("Polishing Unit Definitions (2/9)  "); // "Processing unit definitions");
-    int udCount = model.getUnitDefinitionCount();
-    ListOf<UnitDefinition> unitDefinitions = model.getListOfUnitDefinitions();
-    UnitDefinition mmol_per_gDW_per_hr = setBasicUnitDefinition(model);
-    setUnits(model, unitDefinitions);
-    UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
-    boolean substanceExists = true;
-    if (substanceUnits == null) {
-      substanceUnits = model.createUnitDefinition(UnitDefinition.SUBSTANCE);
-      substanceUnits.setName("Millimoles per gram (dry weight)");
-      substanceExists = false;
-    }
-    if (!model.isSetExtentUnits()) {
-      model.setExtentUnits(substanceUnits.getId());
-    }
-    if (!model.isSetSubstanceUnits()) {
-      model.setSubstanceUnits(substanceUnits.getId());
-    }
-    for (Unit unit : mmol_per_gDW_per_hr.getListOfUnits()) {
-      switch (unit.getKind()) {
-      case SECOND:
-        // Assumes it is per hour:
-        UnitDefinition ud = model.getTimeUnitsInstance();
-        if (ud == null) {
-          ud = model.createUnitDefinition(UnitDefinition.TIME);
-          model.setTimeUnits(ud.getId());
-          Unit timeUnit = safeClone(unit);
-          timeUnit.setExponent(1d);
-          ud.setName("Hour");
-          ud.addUnit(timeUnit);
-          timeUnit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000032")));
-          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000032")));
-        }
-        break;
-      case GRAM:
-        unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, unit.getKind().getUnitOntologyIdentifier()));
-        if (!substanceExists) {
-          substanceUnits.addUnit(safeClone(unit));
-        }
-        break;
-      case MOLE:
-        if (unit.getScale() == -3) {
-          unit.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000040")));
-        }
-        if (!substanceExists) {
-          substanceUnits.addUnit(safeClone(unit));
-        }
-        break;
-      default:
-        break;
-      }
-    }
-    while (progress.getCallNumber() < udCount) {
-      progress.DisplayBar("Polishing Unit Definitions (2/9)  ");
-    }
-  }
-
-
-  /**
-   * Adds basic unit definitions to model, if not present
-   *
-   * @param model
-   *        {@link Model} to polish
-   * @return Millimoles per gram (dry weight) per hour {@link UnitDefinition}
-   */
-  private UnitDefinition setBasicUnitDefinition(Model model) {
-    UnitDefinition mmol_per_gDW_per_hr = model.getUnitDefinition("mmol_per_gDW_per_hr");
-    if (mmol_per_gDW_per_hr == null) {
-      mmol_per_gDW_per_hr = model.createUnitDefinition("mmol_per_gDW_per_hr");
-      logger.finest(MESSAGES.getString("ADDED_UNIT_DEF"));
-    }
-    if (mmol_per_gDW_per_hr.getUnitCount() < 1) {
-      ModelBuilder.buildUnit(mmol_per_gDW_per_hr, 1d, -3, Unit.Kind.MOLE, 1d);
-      ModelBuilder.buildUnit(mmol_per_gDW_per_hr, 1d, 0, Unit.Kind.GRAM, -1d);
-      ModelBuilder.buildUnit(mmol_per_gDW_per_hr, 3600d, 0, Unit.Kind.SECOND, -1d);
-    }
-    if (!mmol_per_gDW_per_hr.isSetName()) {
-      mmol_per_gDW_per_hr.setName("Millimoles per gram (dry weight) per hour");
-    }
-    if (!mmol_per_gDW_per_hr.isSetMetaId()) {
-      mmol_per_gDW_per_hr.setMetaId(mmol_per_gDW_per_hr.getId());
-    }
-    mmol_per_gDW_per_hr.addCVTerm(
-      new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, Registry.createURI("pubmed", 7986045)));
-    return mmol_per_gDW_per_hr;
-  }
-
-
-  /**
-   * Sets substance, volume and time units for model, if not set
-   *
-   * @param model
-   *        {@link Model} to polish
-   * @param unitDefinitions
-   *        {@link ListOf} {@link UnitDefinition}s to check
-   */
-  private void setUnits(Model model, ListOf<UnitDefinition> unitDefinitions) {
-    UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
-    if (substanceUnits == null && unitDefinitions.get("substance") != null) {
-      model.setSubstanceUnits(UnitDefinition.SUBSTANCE);
-    }
-    UnitDefinition volumeUnits = model.getVolumeUnitsInstance();
-    if (volumeUnits == null && unitDefinitions.get("volume") != null) {
-      model.setVolumeUnits(UnitDefinition.VOLUME);
-    }
-    UnitDefinition timeUnits = model.getTimeUnitsInstance();
-    if (timeUnits == null && unitDefinitions.get("time") != null) {
-      model.setTimeUnits(UnitDefinition.TIME);
-    }
-  }
-
+  
 
   /**
    * @param model
