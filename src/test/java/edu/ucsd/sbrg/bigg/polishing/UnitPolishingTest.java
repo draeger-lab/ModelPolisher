@@ -8,31 +8,33 @@ import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SBMLPolisherTest {
+public class UnitPolishingTest {
 
     @Test
     public void modelWithNoUnitDefinitions() {
         var m = new Model();
         m.setLevel(3);
         m.setVersion(2);
-        var polisher = new SBMLPolisher();
-        polisher.setProgress(new ProgressBar(0));
-        polisher.polish(m);
+        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        polisher.polishListOfUnitDefinitions();
+
         assertEquals(3, m.getListOfUnitDefinitions().getChildCount());
-        assertEquals(Set.of("mmol_per_gDW_per_hr", "substance", "time"),
+        assertEquals(List.of("mmol_per_gDW_per_hr", "substance", "time"),
                 m.getListOfUnitDefinitions()
                         .stream()
                         .map(UnitDefinition::getId)
-                        .collect(Collectors.toSet()));
+                        .collect(Collectors.toList()));
         assertNotNull(m.getSubstanceUnitsInstance());
         assertNotNull(m.getTimeUnitsInstance());
         assertNotNull(m.getExtentUnitsInstance());
     }
+
 
     /**
      * If a growth unit exists that has units defined, the default units are not created.
@@ -55,9 +57,9 @@ public class SBMLPolisherTest {
         someUnit.setVersion(2);
         someUnit.setId("some");
         growth.addUnit(someUnit);
-        var polisher = new SBMLPolisher();
-        polisher.setProgress(new ProgressBar(0));
-        polisher.polish(m);
+        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        polisher.polishListOfUnitDefinitions();
+
         assertEquals(Set.of("mmol_per_gDW_per_hr", "substance"),
                 m.getListOfUnitDefinitions()
                         .stream()
@@ -93,9 +95,8 @@ public class SBMLPolisherTest {
         time.setId("test_time");
         uds.add(time);
         m.setTimeUnits("test_time");
-        var polisher = new SBMLPolisher();
-        polisher.setProgress(new ProgressBar(0));
-        polisher.polish(m);
+        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        polisher.polishListOfUnitDefinitions();
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "test_time", "test_substance"),
                 m.getListOfUnitDefinitions()
