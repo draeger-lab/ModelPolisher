@@ -3,7 +3,7 @@ package edu.ucsd.sbrg.bigg.annotation;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.Parameters;
-import edu.ucsd.sbrg.bigg.polishing.SBMLPolisher;
+import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
 import edu.ucsd.sbrg.util.GPRParser;
@@ -16,11 +16,7 @@ import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -101,8 +97,10 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   public void setName(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    BiGGDB.getReactionName(abbreviation).filter(name -> !name.equals(reaction.getName())).map(SBMLPolisher::polishName)
-          .ifPresent(reaction::setName);
+    BiGGDB.getReactionName(abbreviation)
+            .filter(name -> !name.equals(reaction.getName()))
+            .map(PolishingUtils::polishName)
+            .ifPresent(reaction::setName);
   }
 
 
