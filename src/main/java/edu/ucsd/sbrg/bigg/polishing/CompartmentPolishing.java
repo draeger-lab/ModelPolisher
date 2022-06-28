@@ -18,13 +18,7 @@ import edu.ucsd.sbrg.bigg.BiGGId;
 
 public class CompartmentPolishing {
 
-  /**
-   * A {@link Logger} for this class.
-   */
   private final static transient Logger logger = Logger.getLogger(CompartmentPolishing.class.getName());
-  /**
-   * Localization support.
-   */
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Compartment compartment;
 
@@ -32,10 +26,6 @@ public class CompartmentPolishing {
     this.compartment = compartment;
   }
 
-
-  /**
-   *
-   */
   public void polish() {
     Registry.processResources(compartment.getAnnotation());
     if (!compartment.isSetId()) {
@@ -47,7 +37,6 @@ public class CompartmentPolishing {
     }
     compartment.setSBOTerm(410); // implicit compartment
     if (!compartment.isSetName()) {
-      // TODO: make the name of a compartment a user setting
       compartment.setName("default");
     }
     if (!compartment.isSetMetaId() && (compartment.getCVTermCount() > 0)) {
@@ -62,12 +51,10 @@ public class CompartmentPolishing {
     }
     if (!compartment.isSetUnits()) {
       Model model = compartment.getModel();
-      // Let's take the model's default unless we don't have anything defined.
-      if ((model == null) || !(model.isSetLengthUnits() || model.isSetAreaUnits() || model.isSetVolumeUnits())) {
-        // TODO: set compartment units.
-        /*
-         * This is a temporary solution until we agree on something better.
-         */
+      if ((model == null)
+              || !(model.isSetLengthUnits()
+              || model.isSetAreaUnits()
+              || model.isSetVolumeUnits())) {
         compartment.setUnits(Unit.Kind.DIMENSIONLESS);
       }
     }
