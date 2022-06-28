@@ -96,7 +96,7 @@ public class SBMLPolisher {
     }
     progress = new ProgressBar(count);
     progress.DisplayBar("Polishing Model (1/9)  ");
-    polishListOfUnitDefinitions(model);
+    new UnitPolishing(model, progress).polishListOfUnitDefinitions();
     polishListOfCompartments(model);
     polishListOfSpecies(model);
     boolean strict = polishListOfReactions(model);
