@@ -27,25 +27,14 @@ import static java.text.MessageFormat.format;
 
 public class ModelPolishing {
 
-  /**
-   * A {@link Logger} for this class.
-   */
   private static final transient Logger logger = Logger.getLogger(ModelPolishing.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
-   *
-   */
+
   protected AbstractProgressBar progress;
-  /**
-   *
-   */
+
   private final Model model;
-  /**
-   *
-   */
+
   private boolean strict;
 
   public ModelPolishing(Model model, boolean strict, AbstractProgressBar progress) {
@@ -54,10 +43,6 @@ public class ModelPolishing {
     this.progress = progress;
   }
 
-
-  /**
-   *
-   */
   public void polish() {
     Registry.processResources(model.getAnnotation());
     if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
@@ -79,10 +64,6 @@ public class ModelPolishing {
     polishListOfParameters(model);
   }
 
-
-  /**
-   * @return
-   */
   public void polishListOfInitialAssignments() {
     for (InitialAssignment ia : model.getListOfInitialAssignments()) {
       progress.DisplayBar("Polishing Initial Assignments (6/9)  ");
@@ -100,11 +81,6 @@ public class ModelPolishing {
     }
   }
 
-
-  /**
-   * @param modelPlug
-   * @return
-   */
   public void polishListOfObjectives(FBCModelPlugin modelPlug) {
     if (modelPlug.getObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any Objectives in the model.
@@ -131,11 +107,6 @@ public class ModelPolishing {
     }
   }
 
-
-  /**
-   * @param objective
-   * @return
-   */
   public void polishListOfFluxObjectives(Objective objective) {
     if (objective.getFluxObjectiveCount() == 0) {
       // Note: the strict attribute does not require the presence of any flux objectives.
@@ -153,22 +124,13 @@ public class ModelPolishing {
     }
   }
 
-
-  /**
-   * @param fbcModelPlug
-   */
   public void polishListOfGeneProducts(FBCModelPlugin fbcModelPlug) {
     for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
       progress.DisplayBar("Polishing Gene Products (8/9)  ");
-      GeneProductPolishing geneProductPolishing = new GeneProductPolishing(geneProduct);
-      geneProductPolishing.polish();
+      new GeneProductPolishing(geneProduct).polish();
     }
   }
 
-
-  /**
-   * @param model
-   */
   public void polishListOfParameters(Model model) {
     for (int i = 0; i < model.getParameterCount(); i++) {
       progress.DisplayBar("Polishing Parameters (9/9)  ");
