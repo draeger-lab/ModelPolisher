@@ -4,7 +4,7 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.Parameters;
-import edu.ucsd.sbrg.bigg.polishing.SBMLPolisher;
+import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -101,7 +101,7 @@ public class SpeciesAnnotation extends CVTermAnnotation {
   public void setName(BiGGId biggId) {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
-      BiGGDB.getComponentName(biggId).map(SBMLPolisher::polishName).ifPresent(species::setName);
+      BiGGDB.getComponentName(biggId).map(PolishingUtils::polishName).ifPresent(species::setName);
     }
   }
 

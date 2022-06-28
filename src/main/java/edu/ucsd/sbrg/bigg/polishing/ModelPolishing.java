@@ -171,14 +171,9 @@ public class ModelPolishing {
     }
   }
 
-
-  /**
-   * @param p
-   */
   private void polish(Parameter p) {
     if (p.isSetId() && !p.isSetName()) {
-      // what is happening here?
-      p.setName(SBMLPolisher.polishName(p.getId()));
+      p.setName(PolishingUtils.polishName(p.getId()));
     }
   }
 }
