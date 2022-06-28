@@ -1,33 +1,25 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
-import static java.text.MessageFormat.format;
-
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
-
+import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBase;
 import org.sbml.jsbml.Species;
 
-import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
+import static java.text.MessageFormat.format;
 
 public class SpeciesPolishing {
 
-  /**
-   * A {@link Logger} for this class.
-   */
   private static final transient Logger logger = Logger.getLogger(SpeciesPolishing.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
-   *
-   */
+
   private final Species species;
 
   public SpeciesPolishing(Species species) {
@@ -36,7 +28,8 @@ public class SpeciesPolishing {
 
 
   /**
-   * @return {@link Optional} containing a {@link Species} that should be removed from the model due to missing id
+   * @return {@link Optional} of a {@link Species} that should be removed
+   * from the model due to missing id
    */
   public Optional<Species> polish() {
     Registry.processResources(species.getAnnotation());
@@ -50,7 +43,7 @@ public class SpeciesPolishing {
       }
       return Optional.of(species);
     }
-    // this is likely not correct, something should be done with this species id
+
     if (species.getId().endsWith("_boundary")) {
       logger.warning(format(MESSAGES.getString("SPECIES_ID_INVALID"), id));
       if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
@@ -60,10 +53,8 @@ public class SpeciesPolishing {
     } else if (!species.isSetBoundaryCondition()) {
       species.setBoundaryCondition(false);
     }
-    /*
-     * Set mandatory attributes to default values
-     * TODO: make those maybe user settings.
-     */
+
+    // Set mandatory attributes to default values
     if (!species.isSetHasOnlySubstanceUnits()) {
       species.setHasOnlySubstanceUnits(true);
     }
@@ -86,9 +77,6 @@ public class SpeciesPolishing {
   }
 
 
-  /**
-   * @param species
-   */
   public void checkCompartment(Species species) {
     if (!species.isSetCompartment()) {
       Optional<BiGGId> biggId = BiGGId.createMetaboliteId(species.getId());
@@ -105,7 +93,7 @@ public class SpeciesPolishing {
     }
     String cId = species.getCompartment();
     Model model = species.getModel();
-    // We could polish a species without model
+
     if (model == null) {
       return;
     }
