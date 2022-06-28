@@ -32,20 +32,12 @@ import static java.text.MessageFormat.format;
 
 public class ReactionPolishing {
 
-  /**
-   * A {@link Logger} for this class.
-   */
   private final static transient Logger logger = Logger.getLogger(ReactionPolishing.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+
   private static final transient ResourceBundle MESSAGES =
     de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Reaction reaction;
 
-  /**
-   *
-   */
   public enum Patterns {
 
     ATP_MAINTENANCE(".*[Aa][Tt][Pp][Mm]"),
@@ -91,14 +83,12 @@ public class ReactionPolishing {
       return false;
     }
     BiGGId.createReactionId(id).ifPresent(this::setSBOTermFromPattern);
-    // this is confusing, as null is used to represent two different outcomes...
     String compartmentId = reaction.isSetCompartment() ? reaction.getCompartment() : null;
     boolean conflict = false;
     if (reaction.isSetListOfReactants()) {
-      // Polishing of speciesReferences is a side effect here, which is ... well, not optimal
       Optional<String> cIdFromReactants = polish(reaction.getListOfReactants(), SBO.getReactant());
       conflict = cIdFromReactants.isEmpty();
-      // only set compartment code if all source agree
+      // only set compartment code if all sources agree
       if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromReactants.get()))) {
         reaction.setCompartment(cIdFromReactants.get());
       }
@@ -106,7 +96,7 @@ public class ReactionPolishing {
     if (reaction.isSetListOfProducts()) {
       Optional<String> cIdFromProducts = polish(reaction.getListOfProducts(), SBO.getProduct());
       conflict |= cIdFromProducts.isEmpty();
-      // only set compartment code if all source agree, else unset
+      // only set compartment code if all sources agree, else unset
       if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromProducts.get()))) {
         reaction.setCompartment(cIdFromProducts.get());
       } else {
@@ -136,8 +126,8 @@ public class ReactionPolishing {
     }
     // bounds cannot be fetched, if no model exists, thus for such cases the default should be false
     boolean strict = false;
-    // only run when model is present, as this code either depends on the model or has side effects creating children
-    // objects for the model
+    // only run when model is present, as this code either depends on the model
+    // or creates children objects on the model
     if (reaction.getModel() != null) {
       GPRParser.convertAssociationsToFBCV2(reaction, Parameters.get().omitGenericTerms());
       fluxObjectiveFromLocalParameter();
@@ -148,11 +138,6 @@ public class ReactionPolishing {
     return strict;
   }
 
-
-  /**
-   * @param id
-   * @return
-   */
   private void setSBOTermFromPattern(BiGGId id) {
     String abbrev = id.getAbbreviation();
     if (Patterns.BIOMASS_CASE_INSENSITIVE.getPattern().matcher(abbrev).matches()) {
@@ -170,16 +155,17 @@ public class ReactionPolishing {
 
 
   /**
-   * Polishes {@link SpeciesReference}s, i.e. reactants or products and tries to retrieve a compartment code for the
-   * reaction,
+   * Polishes {@link SpeciesReference}s, i.e. reactants or products and tries to retrieve
+   * a compartment code for the reaction,
    * if it can be resolved unambiguously from the references
    *
    * @param speciesReferences:
    *        List of reactants or products
    * @param defaultSBOterm:
    *        reactant or product SBO term
-   * @return {@link Optional#empty()} if compartment was not set for one of the species or could not be resolved
-   *         unambiguously, else {@link Optional#of}, where the wrapped string is the compartment code
+   * @return {@link Optional#empty()} if compartment was not set for one of the species
+   *         or could not be resolved unambiguously,
+   *         else {@link Optional#of}, where the wrapped string is the compartment code
    */
   private Optional<String> polish(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
     Optional<String> compartmentId = Optional.empty();
@@ -211,9 +197,6 @@ public class ReactionPolishing {
   }
 
 
-  /**
-   *
-   */
   private void checkBalance() {
     // TODO: change messages
     if (!reaction.isSetSBOTerm()) {
@@ -235,7 +218,8 @@ public class ReactionPolishing {
         }
       }
     }
-    if (Parameters.get().checkMassBalance() && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
+    if (Parameters.get().checkMassBalance()
+            && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
       // check atom balance only if the reaction is not identified as biomass
       // production, demand, exchange or ATP maintenance.
       AtomCheckResult<Reaction> defects = AtomBalanceCheck.checkAtomBalance(reaction, 1);
@@ -251,7 +235,8 @@ public class ReactionPolishing {
 
 
   /**
-   * Set flux objective and its coefficient from reaction kinetic law, if no flux objective exists for the reaction
+   * Set flux objective and its coefficient from reaction kinetic law,
+   * if no flux objective exists for the reaction
    */
   private void fluxObjectiveFromLocalParameter() {
     FBCModelPlugin modelPlugin = (FBCModelPlugin) reaction.getModel().getPlugin(FBCConstants.shortLabel);
@@ -261,7 +246,8 @@ public class ReactionPolishing {
       obj.setType(Objective.Type.MAXIMIZE);
       modelPlugin.getListOfObjectives().setActiveObjective(obj.getId());
     }
-    boolean foExists = obj.getListOfFluxObjectives().stream().anyMatch(fo -> fo.getReactionInstance().equals(reaction));
+    boolean foExists = obj.getListOfFluxObjectives().stream()
+            .anyMatch(fo -> fo.getReactionInstance().equals(reaction));
     if (foExists) {
       return;
     }
@@ -315,7 +301,8 @@ public class ReactionPolishing {
     Parameter lb = rPlug.getLowerFluxBoundInstance();
     Parameter ub = rPlug.getUpperFluxBoundInstance();
     boolean lbExists = polishFluxBound(lb);
-    // set bounds from KineticLaw, if they are not set in FBC, create global Parameter, as required by specification
+    // set bounds from KineticLaw, if they are not set in FBC, create global Parameter,
+    // as required by specification
     if (!lbExists) {
       LocalParameter bound = getBoundFromLocal(reaction, "LOWER_BOUND");
       if (bound != null) {
@@ -360,9 +347,7 @@ public class ReactionPolishing {
 
 
   /**
-   * @param bound
-   * @return {@code true} if this method successfully updated the bound
-   *         parameter.
+   * @return {@code true} if this method successfully updated the bound parameter.
    */
   public boolean polishFluxBound(Parameter bound) {
     if (bound == null) {
@@ -378,11 +363,8 @@ public class ReactionPolishing {
 
 
   /**
-   * @param r:
-   *        Reaction
    * @param parameterName:
    *        LOWER_BOUND or UPPER_BOUND
-   * @return
    */
   private LocalParameter getBoundFromLocal(Reaction r, String parameterName) {
     KineticLaw kl = r.getKineticLaw();
@@ -394,12 +376,11 @@ public class ReactionPolishing {
 
 
   /**
-   * @param r:
-   *        Reaction
    * @param bound:
    *        lower or upper bound instance
    * @param boundValue:
-   *        value of {#LocalParameter} bound obtained from {{@link #getBoundFromLocal(Reaction, String)}}
+   *        value of {#LocalParameter} bound obtained
+   *        from {{@link #getBoundFromLocal(Reaction, String)}}
    * @return
    */
   private Parameter getParameterVariant(Reaction r, Parameter bound, double boundValue) {
@@ -429,14 +410,12 @@ public class ReactionPolishing {
    *         strict FBC models, {@code false} otherwise.
    */
   public boolean checkBound(Parameter bound) {
-    return (bound != null) && bound.isConstant() && bound.isSetValue() && !Double.isNaN(bound.getValue());
+    return (bound != null) && bound.isConstant()
+            && bound.isSetValue()
+            && !Double.isNaN(bound.getValue());
   }
 
 
-  /**
-   * @param strict
-   * @return
-   */
   private boolean checkReactantsProducts(boolean strict) {
     if (strict && reaction.isSetListOfReactants()) {
       strict = checkSpeciesReferences(reaction.getListOfReactants());
@@ -454,15 +433,14 @@ public class ReactionPolishing {
   }
 
 
-  /**
-   * @param listOfSpeciesReference
-   * @return
-   */
   public boolean checkSpeciesReferences(ListOf<SpeciesReference> listOfSpeciesReference) {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
       strict &=
-        sr.isConstant() && sr.isSetStoichiometry() && !Double.isNaN(sr.getValue()) && Double.isFinite(sr.getValue());
+        sr.isConstant()
+                && sr.isSetStoichiometry()
+                && !Double.isNaN(sr.getValue())
+                && Double.isFinite(sr.getValue());
     }
     return strict;
   }
