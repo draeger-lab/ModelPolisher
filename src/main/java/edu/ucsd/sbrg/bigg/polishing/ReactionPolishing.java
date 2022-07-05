@@ -6,21 +6,10 @@ import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.bigg.Parameters;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
-import org.sbml.jsbml.KineticLaw;
-import org.sbml.jsbml.ListOf;
-import org.sbml.jsbml.LocalParameter;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.Objective;
+import org.sbml.jsbml.*;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.util.ResourceManager;
+import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.xml.XMLNode;
 
 import java.util.Optional;
@@ -111,7 +100,9 @@ public class ReactionPolishing {
       rName = rName.substring(0, rName.lastIndexOf('_'));
       reaction.setName(rName);
     }
-    if (!reaction.isSetFast()) {
+    if ((!reaction.isSetLevelAndVersion()
+            || reaction.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) <= 0)
+            && !reaction.isSetFast()) {
       reaction.setFast(false);
     }
     if (!reaction.isSetReversible()) {
