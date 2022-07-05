@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.bigg.polishing;
 
 import de.zbit.util.progressbar.ProgressBar;
 import org.junit.jupiter.api.Test;
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
@@ -41,11 +40,10 @@ public class UnitPolishingTest {
     @Test
     public void existingGrowthDefinitionIsUnchanged() {
         var m = new Model(3, 2);
-        var uds = new ListOf<UnitDefinition>(3, 2);
-        m.setListOfUnitDefinitions(uds);
+
         UnitDefinition growth = new UnitDefinition(3, 2);
         growth.setId("mmol_per_gDW_per_hr");
-        uds.add(growth);
+        m.addUnitDefinition(growth);
         var someUnit = new Unit(3, 2);
         someUnit.setId("some");
         growth.addUnit(someUnit);
@@ -73,15 +71,14 @@ public class UnitPolishingTest {
     @Test
     public void existingSubstanceAndTimeAreUnchanged() {
         var m = new Model(3, 2);
-        var uds = new ListOf<UnitDefinition>(3, 2);
-        m.setListOfUnitDefinitions(uds);
+
         var substance = new UnitDefinition(3, 2);
         substance.setId("test_substance");
-        uds.add(substance);
+        m.addUnitDefinition(substance);
         m.setSubstanceUnits("test_substance");
         var time = new UnitDefinition(3, 2);
         time.setId("test_time");
-        uds.add(time);
+        m.addUnitDefinition(time);
         m.setTimeUnits("test_time");
         var polisher = new UnitPolishing(m, new ProgressBar(0));
         polisher.polishListOfUnitDefinitions();
