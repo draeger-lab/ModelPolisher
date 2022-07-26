@@ -1,52 +1,22 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
-import de.zbit.util.prefs.SBProperties;
 import de.zbit.util.progressbar.ProgressBar;
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
-import edu.ucsd.sbrg.bigg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ModelPolishingTest {
-
-    private void initParameters() {
-        initParameters(Map.of());
-    }
-
-    private void initParameters(Map<String, String> params) {
-        var props = new SBProperties();
-        props.setProperty("INPUT", "bla");
-        props.setProperty("OUTPUT", "bla");
-
-        for (var pair : params.entrySet()) {
-            props.setProperty(pair.getKey(), pair.getValue());
-        }
-        props.setProperty("COMPRESSION_TYPE", ModelPolisherOptions.Compression.NONE.name());
-        try {
-            var parameters = Parameters.class.getDeclaredField("parameters");
-            parameters.setAccessible(true);
-            parameters.set(null, null);
-            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
-            init.setAccessible(true);
-            init.invoke(null, props);
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-            assertTrue(false, "Reflection on parameters failed. Sorry");
-        }
-    }
 
     /**
      * Test that if an objective is set and it has flux objectives too, it won't be overwritten.
