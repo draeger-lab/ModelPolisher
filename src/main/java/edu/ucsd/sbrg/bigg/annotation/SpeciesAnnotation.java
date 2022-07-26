@@ -71,7 +71,6 @@ public class SpeciesAnnotation extends CVTermAnnotation {
    */
   @Override
   public Optional<BiGGId> checkId() {
-    // TODO: compartments are not handled correctly -- is this at all possible to get right?
     Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
     Optional<String> id = metaboliteId.flatMap(biggId -> {
       // extracting BiGGId if not present for species
