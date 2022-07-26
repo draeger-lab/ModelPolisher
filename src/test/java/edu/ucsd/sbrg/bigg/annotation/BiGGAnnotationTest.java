@@ -1,21 +1,7 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg.annotation;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import edu.ucsd.sbrg.bigg.Parameters;
 import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLReader;
-import org.sbml.jsbml.Species;
-
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.util.UpdateListener;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BiGGAnnotationTest {
 
