@@ -1,33 +1,51 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.bigg.polishing;
 
 import de.zbit.util.prefs.SBProperties;
 import de.zbit.util.progressbar.ProgressBar;
-import edu.ucsd.sbrg.bigg.polishing.ModelPolishing;
+import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
+import edu.ucsd.sbrg.bigg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class ModelPolishingTest {
 
-    private void initParameters(String fluxObjectives) {
+    private void initParameters() {
+        initParameters(Map.of());
+    }
+
+    private void initParameters(Map<String, String> params) {
         var props = new SBProperties();
         props.setProperty("INPUT", "bla");
         props.setProperty("OUTPUT", "bla");
-        if (null != fluxObjectives) {
-            props.setProperty("FLUX_OBJECTIVES", fluxObjectives);
+
+        for (var pair : params.entrySet()) {
+            props.setProperty(pair.getKey(), pair.getValue());
         }
         props.setProperty("COMPRESSION_TYPE", ModelPolisherOptions.Compression.NONE.name());
-        Parameters.parameters = null;
-        Parameters.init(props);
+        try {
+            var parameters = Parameters.class.getDeclaredField("parameters");
+            parameters.setAccessible(true);
+            parameters.set(null, null);
+            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
+            init.setAccessible(true);
+            init.invoke(null, props);
+        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
+            e.printStackTrace();
+            assertTrue(false, "Reflection on parameters failed. Sorry");
+        }
     }
 
     /**
@@ -47,7 +65,7 @@ public class ModelPolishingTest {
         m.createReaction("objective_reaction1");
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters(" objective_reaction1 ");
+        initParameters(Map.of("FLUX_OBJECTIVES", " objective_reaction1 "));
 
         var polishing = new ModelPolishing(m, false, new ProgressBar(0));
         polishing.polish();
@@ -76,7 +94,8 @@ public class ModelPolishingTest {
         m.createReaction("objective_reaction2");
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters(" objective_reaction1:objective_reaction2 ");
+        initParameters(Map.of("FLUX_OBJECTIVES",
+                " objective_reaction1:objective_reaction2 "));
 
         var polishing = new ModelPolishing(m, false, new ProgressBar(0));
         polishing.polish();
@@ -115,7 +134,7 @@ public class ModelPolishingTest {
 
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters(null);
+        initParameters();
 
         var polishing = new ModelPolishing(m, false, new ProgressBar(0));
         polishing.polish();
@@ -129,4 +148,5 @@ public class ModelPolishingTest {
                         .map(FluxObjective::getReaction)
                         .collect(Collectors.toSet()));
     }
+
 }
