@@ -58,6 +58,7 @@ class PostgreSQLConnector {
     properties.setProperty("dataSource.password", password);
     properties.setProperty("dataSource.databaseName", dbName);
     properties.setProperty("dataSource.serverName", host);
+    properties.setProperty("dataSource.portNumber", Integer.toString(port));
     HikariConfig config = new HikariConfig(properties);
     config.setMaximumPoolSize(16);
     config.setReadOnly(true);
