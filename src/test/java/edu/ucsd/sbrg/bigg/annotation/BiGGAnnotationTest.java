@@ -1,23 +1,45 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
-import edu.ucsd.sbrg.bigg.Parameters;
+import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
+import org.junit.jupiter.api.Test;
+import org.sbml.jsbml.CVTerm;
+import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
-public class BiGGAnnotationTest {
+import java.util.Map;
 
-  private static Parameters parameters;
-  private static SBMLDocument doc;
+import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
+import static edu.ucsd.sbrg.TestUtils.initParameters;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//  @BeforeAll
-//  public static void setUp() throws IOException, XMLStreamException {
-//    // get test file
-//    String input = BiGGAnnotationTest.class.getResource("models/ecoli_core.xml").getFile();
-//    doc = SBMLReader.read(new File(input), new UpdateListener());
-//    // DB connection
-//    BiGGDB.init("biggdb", "5432", "postgres", "postgres", "bigg");
-//  }
-//
-//
+public class BiGGAnnotationTest extends BiGGDBTest {
+
+  @Test
+  public void annotatePublication() {
+    initParameters(Map.of(
+            ModelPolisherOptions.ANNOTATE_WITH_BIGG.getOptionName(),
+            "true",
+            ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
+            "true"));
+    var sbml = new SBMLDocument(3, 2);
+    var m = new Model("iJO1366", 3,2);
+    sbml.setModel(m);
+    var annotater = new BiGGAnnotation();
+
+    assertFalse(m.isSetMetaId());
+    assertTrue(m.getCVTerms().isEmpty());
+
+    annotater.annotate(sbml);
+
+    assertTrue(m.isSetMetaId());
+    assertCVTermIsPresent(m,
+            CVTerm.Type.MODEL_QUALIFIER,
+            CVTerm.Qualifier.BQM_IS_DESCRIBED_BY,
+            "https://identifiers.org/pubmed/21988831",
+            "Expected pubmed publication reference 21988831 not present on the model.");
+    }
+
 //  @Test
 //  public void getBiGGIdFromResourcesTest() {
 //    for (Species species : doc.getModel().getListOfSpecies()) {
@@ -31,9 +53,5 @@ public class BiGGAnnotationTest {
 //  }
 //
 //
-//  @AfterAll
-//  public static void cleanUp() {
-//    if (BiGGDB.inUse())
-//      BiGGDB.close();
-//  }
+
 }
