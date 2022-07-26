@@ -1,8 +1,5 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
-import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
-import edu.ucsd.sbrg.bigg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
@@ -12,41 +9,13 @@ import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.XMLTriple;
 
 import javax.xml.stream.XMLStreamException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReactionPolishingTest {
-
-    private void initParameters() {
-        initParameters(new HashMap<>());
-    }
-
-    private void initParameters(Map<String, String> params) {
-        var props = new SBProperties();
-        props.setProperty("INPUT", "bla");
-        props.setProperty("OUTPUT", "bla");
-
-        for (var pair : params.entrySet()) {
-            props.setProperty(pair.getKey(), pair.getValue());
-        }
-        props.setProperty("COMPRESSION_TYPE", ModelPolisherOptions.Compression.NONE.name());
-        try {
-            var parameters = Parameters.class.getDeclaredField("parameters");
-            parameters.setAccessible(true);
-            parameters.set(null, null);
-            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
-            init.setAccessible(true);
-            init.invoke(null, props);
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-            assertTrue(false, "Reflection on parameters failed. Sorry");
-        }
-    }
 
     @Test
     public void noIdReactionIsDeletedFromModel() {
