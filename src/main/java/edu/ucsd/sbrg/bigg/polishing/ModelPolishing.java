@@ -93,7 +93,7 @@ public class ModelPolishing {
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug,
             Parameters.get().fluxCoefficients(), Parameters.get().fluxObjectives());
         }
-        if (objective.isSetListOfFluxObjectives()) {
+        if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().size() == 0) {
           polishListOfFluxObjectives(objective);
         }
       }
@@ -101,7 +101,8 @@ public class ModelPolishing {
       // modelPlug.getListOfObjectives().remove
       Collection<Objective> removals = modelPlug.getListOfObjectives()
               .stream()
-              .filter(Predicate.not(Objective::isSetListOfFluxObjectives))
+              .filter(Predicate.not(Objective::isSetListOfFluxObjectives)
+              .or(o -> o.getListOfFluxObjectives().size() == 0))
               .collect(Collectors.toList());
       modelPlug.getListOfObjectives().removeAll(removals);
     }
