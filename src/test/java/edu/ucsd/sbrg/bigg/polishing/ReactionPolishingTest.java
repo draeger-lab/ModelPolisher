@@ -157,51 +157,8 @@ public class ReactionPolishingTest {
         assertEquals(null, r.getCompartmentInstance());
     }
 
-    /**
-     * Note that this test is to be understood in tandem with the next one.
-     * Together they show that not only are inconsistent compartments in reaction
-     * products handled fundamentally different that in reactants,
-     * there also is an ordering dependency at play there.
-     * <p>
-     * I considers this behaviour a bug, the unit tests are here to document this
-     * and verify that the fix once implemented works.
-     */
     @Test
-    public void orderingDependencyProductCompartmentsLeadToUnset1() {
-        var model = new Model(3, 2);
-        initParameters();
-        var r = model.createReaction("some_reaction");
-        var cytosol = model.createCompartment("c");
-        var extracellular = model.createCompartment("e");
-
-        r.setCompartment(cytosol);
-
-        var s1 = model.createSpecies("s1", cytosol);
-        r.createProduct(s1);
-
-        var s2 = model.createSpecies("s2", extracellular);
-        r.createProduct(s2);
-
-        assertEquals(cytosol, r.getCompartmentInstance());
-
-        new ReactionPolishing(r).polish();
-
-        assertEquals(2, r.getListOfProducts().size());
-        assertEquals(Set.of(cytosol, extracellular), r.getListOfProducts().stream()
-                .map(SpeciesReference::getSpeciesInstance)
-                .map(Species::getCompartmentInstance)
-                .collect(Collectors.toSet()));
-        assertEquals(cytosol, r.getCompartmentInstance());
-    }
-
-    /**
-     * Please take note of the comment on the test above, as these only make
-     * sense in tandem.
-     * <p>
-     * tl;dr: this test documents a bug
-     */
-    @Test
-    public void orderingDependencyProductCompartmentsLeadToUnset2() {
+    public void inconsistentProductCompartmentsLeadToUnset() {
         var model = new Model(3, 2);
         initParameters();
         var r = model.createReaction("some_reaction");
@@ -296,10 +253,11 @@ public class ReactionPolishingTest {
     }
 
     /**
-     * Note: this test documents a bug.
+     * Note: this test documents
+     * https://github.com/draeger-lab/ModelPolisher/issues/122
      */
     @Test
-    public void defaultsAreAbortedMidway() {
+    public void defaultsAreSetEvenIfCompartmentsAreInconsistent() {
         var model = new Model(3, 2);
         initParameters();
         var r = model.createReaction("some_reaction");
@@ -327,10 +285,10 @@ public class ReactionPolishingTest {
         assertEquals(3, r.getListOfProducts().size());
         assertEquals("SBO:0000011", product1.getSBOTermID());
         assertEquals("SBO:0000011", product2.getSBOTermID());
-        assertEquals("", product3.getSBOTermID());
+        assertEquals("SBO:0000011", product3.getSBOTermID());
         assertTrue(product1.isSetConstant());
         assertTrue(product2.isSetConstant());
-        assertFalse(product3.isSetConstant());
+        assertTrue(product3.isSetConstant());
     }
 
     /**
