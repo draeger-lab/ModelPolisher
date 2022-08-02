@@ -6,6 +6,7 @@ import edu.ucsd.sbrg.bigg.Parameters;
 import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -19,9 +20,6 @@ import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation.getBiGGIdFromResources;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_REACTION;
 
 public class ReactionAnnotation extends CVTermAnnotation {
 
@@ -64,7 +62,6 @@ public class ReactionAnnotation extends CVTermAnnotation {
     });
   }
 
-
   /**
    * Checks if {@link Species#getId()} returns a correct {@link BiGGId} and tries to retrieve a corresponding
    * {@link BiGGId} based on annotations present.
@@ -77,18 +74,50 @@ public class ReactionAnnotation extends CVTermAnnotation {
     String id = reaction.getId();
     // extracting BiGGId if not present for species
     boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
-      && QueryOnce.isReaction(id);
+            && QueryOnce.isReaction(id);
     if (!isBiGGid) {
       // Flatten all resources for all CVTerms into a list
-      List<String> resources =
-        reaction.getAnnotation().getListOfCVTerms().stream().filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
-      if (!resources.isEmpty()) {
-        // update id if we found something
-        id = getBiGGIdFromResources(resources, TYPE_REACTION).orElse(id);
-      }
+      Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
+              .stream()
+              .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+              .flatMap(term -> term.getResources().stream())
+              .map(Registry::checkResourceUrl)
+              .flatMap(Optional::stream)
+              .map(Registry::getPartsFromIdentifiersURI)
+              .map(parts -> {
+                String prefix = parts.get(0);
+                String synonymId = parts.get(1);
+                return BiGGDB.getBiggIdsForReactionForeignId(prefix, synonymId);
+              })
+              .flatMap(Collection::stream)
+              .filter(this::matchingCompartments)
+              .map(fr -> fr.reactionId)
+              .collect(Collectors.toSet());
+      id = ids.stream()
+              .findFirst()
+              .orElse(id);
     }
     return BiGGId.createReactionId(id);
+  }
+
+  private boolean matchingCompartments(BiGGDB.ForeignReaction foreignReaction) {
+    if (!reaction.isSetCompartment()
+            && null == foreignReaction.compartmentId
+            && null == foreignReaction.compartmentName) {
+      return true;
+    } else if (!reaction.isSetCompartment()
+            && (null != foreignReaction.compartmentId
+            || null != foreignReaction.compartmentName)) {
+      return false;
+    } else if (reaction.isSetCompartment()) {
+      return reaction.getCompartment()
+              .equals(foreignReaction.compartmentId);
+    } else if (reaction.isSetCompartmentInstance()
+            && reaction.getCompartmentInstance().isSetName()) {
+      return reaction.getCompartmentInstance().getName()
+              .equals(foreignReaction.compartmentName);
+    } else
+      return false;
   }
 
 
