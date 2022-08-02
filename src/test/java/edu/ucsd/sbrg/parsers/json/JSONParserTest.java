@@ -1,24 +1,15 @@
-package edu.ucsd.sbrg.parsers;
+package edu.ucsd.sbrg.parsers.json;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import edu.ucsd.sbrg.parsers.json.JSONParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.parsers.json.models.Compartments;
+import edu.ucsd.sbrg.parsers.json.models.Metabolite;
+import edu.ucsd.sbrg.parsers.json.models.Reaction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.sbml.jsbml.AbstractSBase;
-import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -26,13 +17,14 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.util.ModelBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.parsers.json.models.Compartments;
-import edu.ucsd.sbrg.parsers.json.models.Metabolite;
-import edu.ucsd.sbrg.parsers.json.models.Reaction;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class JSONParserTest {
 
@@ -73,13 +65,6 @@ public class JSONParserTest {
     assertNotNull(compartment);
     assertEquals("cell wall", compartment.getName());
   }
-
-
-  @Test
-  public void parseGeneTest() {
-    // TODO: implement test
-  }
-
 
   @Test
   public void parseReactionTest() {
@@ -161,7 +146,6 @@ public class JSONParserTest {
       groupsModelPlugin.getListOfGroups().stream().map(AbstractSBase::getName).collect(Collectors.toList());
     assertEquals(1, groupNames.size());
     assertTrue(groupNames.contains("dummy"));
-    // TODO: add edge case
   }
 
 
@@ -190,6 +174,25 @@ public class JSONParserTest {
     assertEquals("C10H12N5O7P", fbc.getChemicalFormula());
     assertFalse(species.isSetAnnotation());
     assertFalse(species.isSetNotes());
-    // TODO: add edge cases
+  }
+
+  @Test
+  public void iJB785isParsedWithoutError() throws XMLStreamException {
+    var iJB785 = new File(JSONParserTest.class.getResource("iJB785.json").getFile());
+    try {
+      var sbmlDoc = JSONParser.read(iJB785);
+
+      // see https://github.com/draeger-lab/ModelPolisher/issues/27 for context on this assertion
+      var s =  sbmlDoc.getModel().getListOfSpecies()
+              .stream()
+              .filter(x -> x.getName().equals("Protein component of biomass"))
+              .findFirst();
+      assertTrue(s.isPresent(), "A formerly problematic metabolite in the model could not be found to be tested.");
+      assertTrue(s.get().getNotesString().contains("H70.5616C44.9625O13.1713S0.2669N12.1054R-1.0"),
+              "Formula from the model not retained in notes!");
+    } catch (IOException e) {
+      e.printStackTrace();
+      assertTrue(false, "Parsing iJB785.json threw an exception.");
+    }
   }
 }
