@@ -1,16 +1,13 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
 import edu.ucsd.sbrg.TestUtils;
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
-import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
-import java.util.Map;
 import java.util.Set;
 
 import static edu.ucsd.sbrg.TestUtils.*;
@@ -202,14 +199,8 @@ public class SpeciesAnnotationTest extends BiGGDBTest {
      */
     @Test
     public void getBiGGIdFromResourcesTest() {
-        initParameters(Map.of(
-                ModelPolisherOptions.ANNOTATE_WITH_BIGG.getOptionName(),
-                "true",
-                ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
-                "true"));
-        var sbml = new SBMLDocument(3, 2);
+        initParameters();
         var m = new Model("iJO1366", 3, 2);
-        sbml.setModel(m);
         var s1 = m.createSpecies("some_name");
         var s2 = m.createSpecies("some_other_name");
 
@@ -223,13 +214,14 @@ public class SpeciesAnnotationTest extends BiGGDBTest {
                 CVTerm.Qualifier.BQB_IS,
                 "https://identifiers.org/biocyc/META:ATP"));
 
-        var annotater = new BiGGAnnotation();
-        annotater.annotate(sbml);
 
+        // new SpeciesAnnotation(s1).annotate();
+        new SpeciesAnnotation(s2).annotate();
+//
+//        assertEquals(1, s1.getCVTermCount());
+//        assertEquals(29, s1.getCVTerm(0).getNumResources());
         assertEquals(1, s2.getCVTermCount());
-        assertEquals(29, s1.getCVTerm(0).getNumResources());
-        assertEquals(1, s2.getCVTermCount());
-        assertEquals(30, s2.getCVTerm(0).getNumResources());
+        assertEquals(29, s2.getCVTerm(0).getNumResources());
     }
 
 }
