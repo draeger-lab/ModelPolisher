@@ -119,4 +119,20 @@ public class ModelPolishingTest {
                         .collect(Collectors.toSet()));
     }
 
+    @Test
+    public void emptyObjectivesAreRemoved() {
+        var m = new Model(3,2);
+        var fbcPlugin = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
+
+        initParameters();
+
+        var o1 = fbcPlugin.createObjective("obj1");
+        fbcPlugin.setActiveObjective(o1);
+        // o1.setListOfFluxObjectives(new ListOf<>());
+
+        var polishing = new ModelPolishing(m, false, new ProgressBar(0));
+        polishing.polish();
+
+        assertEquals(0, fbcPlugin.getObjectiveCount());
+    }
 }
