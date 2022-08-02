@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
+import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -10,6 +11,7 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.ext.groups.Member;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,22 +22,26 @@ public class ReactionAnnotationTest extends BiGGDBTest {
 
     @Test
     public void getBiGGIdFromResourcesTest() {
-        initParameters();
+        initParameters(Map.of(ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
+                "true"));
         var m = new Model("iJO1366", 3, 2);
         var r1 = m.createReaction("some_name");
         var r2 = m.createReaction("some_other_name");
         var r3 = m.createReaction("some_third_name");
 
+        r1.setCompartment("m");
         r1.addCVTerm(new CVTerm(
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
                 "http://identifiers.org/biocyc/META:ACETATEKIN-RXN"));
 
+        r2.setCompartment("e");
         r2.addCVTerm(new CVTerm(
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
                 "http://identifiers.org/metanetx.reaction/MNXR103371"));
 
+        r3.setCompartment("c");
         r3.addCVTerm(new CVTerm(
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
@@ -44,18 +50,21 @@ public class ReactionAnnotationTest extends BiGGDBTest {
         var gPlugin = (GroupsModelPlugin) m.getPlugin(GroupsConstants.shortLabel);
         assertEquals(0, gPlugin.getGroupCount());
 
-        new ReactionAnnotation(r1).annotate();
+                new ReactionAnnotation(r1).annotate();
         new ReactionAnnotation(r2).annotate();
         new ReactionAnnotation(r3).annotate();
 
         var r1FbcPlugin = (FBCReactionPlugin) r1.getPlugin(FBCConstants.shortLabel);
         var gpa1 =  r1FbcPlugin.getGeneProductAssociation();
         assertNull(gpa1);
-        assertEquals(false, r1.isSetCompartment());
-        assertEquals("", r1.getName());
+        assertEquals("Acetate kinase, mitochondrial", r1.getName());
         assertEquals(1, r1.getCVTermCount());
-        assertEquals(1, r1.getCVTerm(0).getNumResources());
+        assertEquals(11, r1.getCVTerm(0).getNumResources());
 
+        var r2FbcPlugin = (FBCReactionPlugin) r2.getPlugin(FBCConstants.shortLabel);
+        var gpa2 =  r2FbcPlugin.getGeneProductAssociation();
+        assertNull(gpa2);
+        assertEquals("", r2.getName());
         assertEquals(1, r2.getCVTermCount());
         assertEquals(1, r2.getCVTerm(0).getNumResources());
 
@@ -63,8 +72,7 @@ public class ReactionAnnotationTest extends BiGGDBTest {
         var gpa3 =  r3FbcPlugin.getGeneProductAssociation();
         assertNotNull(gpa3);
         assertEquals("G_b2388", ((GeneProductRef) gpa3.getAssociation()).getGeneProduct());
-        assertEquals(false, r1.isSetCompartment());
-        assertEquals("", r1.getName());
+        assertEquals("Hexokinase (D-glucose:ATP)", r3.getName());
         assertEquals(1, r3.getCVTermCount());
         assertEquals(11, r3.getCVTerm(0).getNumResources());
 

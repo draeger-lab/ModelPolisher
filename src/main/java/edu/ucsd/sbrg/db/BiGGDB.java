@@ -14,81 +14,23 @@
  */
 package edu.ucsd.sbrg.db;
 
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_REACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_SPECIES;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.ACCESSION_VALUE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.BIGG_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.CHARGE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.COMPARTMENTALIZED_COMPONENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.COMPARTMENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.COMPONENT_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.DATA_SOURCE_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.DATE_TIME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.FORMULA;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.GENE_REACTION_RULE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.GENOME_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.LOCUS_TAG;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.MODEL_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.NAME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.OME_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.ORGANISM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.PSEUDOREACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.PUBLICATION_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.REACTION_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.REFERENCE_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.REFERENCE_TYPE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.SUBSYSTEM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.SYNONYM_COL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.TAXON_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.TYPE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.COMPARTMENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.COMPARTMENTALIZED_COMPONENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.COMPONENT;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.DATABASE_VERSION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.DATA_SOURCE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.GENE;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.GENOME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.GENOME_REGION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.MCC;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.MODEL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.MODEL_REACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.OLD_BIGG_ID;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.PUBLICATION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.PUBLICATION_MODEL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.REACTION;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.REFSEQ_NAME;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.REFSEQ_PATTERN;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.SYNONYM;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.URL;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.URL_PREFIX;
-import static java.text.MessageFormat.format;
-import static org.sbml.jsbml.util.Pair.pairOf;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import org.sbml.jsbml.util.Pair;
-
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
+import org.sbml.jsbml.util.Pair;
+
+import java.sql.Date;
+import java.sql.*;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.*;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.*;
+import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.*;
+import static java.text.MessageFormat.format;
+import static org.sbml.jsbml.util.Pair.pairOf;
 
 /**
  * @author Andreas Dr&auml;ger
@@ -756,5 +698,60 @@ public class BiGGDB {
     } else {
       return Optional.empty();
     }
+  }
+
+
+  public static class ForeignReaction {
+    public final String reactionId;
+    public final String compartmentId;
+    public final String compartmentName;
+
+    public ForeignReaction(String reactionId, String compartmentId, String compartmentName) {
+      this.reactionId = reactionId;
+      this.compartmentId = compartmentId;
+      this.compartmentName = compartmentName;
+    }
+  }
+
+  /**
+   * @param synonym
+   * @param dataSourceId
+   * @return String
+   */
+  public static Collection<ForeignReaction> getBiggIdsForReactionForeignId(String dataSourceId,
+                                                                    String synonym) {
+    Set<ForeignReaction> results = new HashSet<>();
+
+    var query = "SELECT R.BIGG_ID AS REACTION_BIGG_ID, "
+            + "C.BIGG_ID AS COMPARTMENT_BIGG_ID, "
+            + "C.NAME AS COMPARTMENT_NAME "
+            + "FROM REACTION R "
+            + "left join REACTION_MATRIX RM "
+            + "on RM.REACTION_ID = R.ID "
+            + "left join COMPARTMENTALIZED_COMPONENT CC "
+            + "on RM.COMPARTMENTALIZED_COMPONENT_ID = CC.ID "
+            + "left join COMPARTMENT C "
+            + "on CC.COMPARTMENT_ID = C.ID "
+            + "join synonym s "
+            + "on synonym = ? and r.id = s.ome_id "
+            + "join data_source d "
+            + "on s.data_source_id = d.id and d.bigg_id = ?";
+
+    try (var connection = connector.getConnection()) {
+      var pStatement = connection.prepareStatement(query);
+      pStatement.setString(1, synonym);
+      pStatement.setString(2, dataSourceId);
+      var resultSet = pStatement.executeQuery();
+      while (resultSet.next()) {
+        var reactionBiggId = resultSet.getString(1);
+        var compartmentBiggId = resultSet.getString(2);
+        var compartmentName = resultSet.getString(3);
+        var r = new ForeignReaction(reactionBiggId, compartmentBiggId, compartmentName);
+        results.add(r);
+      }
+    } catch (SQLException exc) {
+      logger.warning(Utils.getMessage(exc));
+    }
+    return results;
   }
 }
