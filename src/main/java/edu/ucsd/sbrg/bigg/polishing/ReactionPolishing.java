@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -159,8 +160,7 @@ public class ReactionPolishing {
    *         else {@link Optional#of}, where the wrapped string is the compartment code
    */
   private Optional<String> polish(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
-    Optional<String> compartmentId = Optional.empty();
-    Model model = speciesReferences.getModel();
+    // set defaults
     for (SpeciesReference sr : speciesReferences) {
       if (!sr.isSetSBOTerm() && !Parameters.get().omitGenericTerms()) {
         sr.setSBOTerm(defaultSBOterm);
@@ -168,23 +168,21 @@ public class ReactionPolishing {
       if (!sr.isSetConstant()) {
         sr.setConstant(false);
       }
-      if (model == null) {
-        continue;
-      }
-      Species species = model.getSpecies(sr.getSpecies());
-      if (species != null) {
-        // Assumed intention here, that conflicting compartment information cannot be resolved
-        if (!species.isSetCompartment()
-          || compartmentId.map(id -> !id.equals(species.getCompartment())).orElse(false)) {
-          return compartmentId;
-        } else {
-          compartmentId = Optional.of(species.getCompartment());
-        }
-      } else {
-        logger.info(format(MESSAGES.getString("SPECIES_REFERENCE_INVALID"), sr.getSpecies()));
-      }
     }
-    return compartmentId;
+    // determine common compartment
+    Model model = speciesReferences.getModel();
+    if (null != model) {
+      var modelSpecies = speciesReferences.stream()
+              .map(SpeciesReference::getSpeciesInstance)
+              .map(Optional::ofNullable)
+              .map(o -> o.map(Species::getCompartmentInstance))
+              .flatMap(Optional::stream)
+              .map(Compartment::getId)
+              .collect(Collectors.toSet());
+
+      return modelSpecies.size() == 1 ? modelSpecies.stream().findFirst() : Optional.empty();
+    }
+    return Optional.empty();
   }
 
 
