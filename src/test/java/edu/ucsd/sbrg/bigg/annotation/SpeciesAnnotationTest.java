@@ -1,17 +1,19 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
 import edu.ucsd.sbrg.TestUtils;
+import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
+import java.util.Map;
 import java.util.Set;
 
-import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
-import static edu.ucsd.sbrg.TestUtils.assertCVTermsArePresent;
+import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SpeciesAnnotationTest extends BiGGDBTest {
@@ -195,5 +197,39 @@ public class SpeciesAnnotationTest extends BiGGDBTest {
 
     }
 
+    /**
+     * Same principle as above, just testing for kegg and biocyc too.
+     */
+    @Test
+    public void getBiGGIdFromResourcesTest() {
+        initParameters(Map.of(
+                ModelPolisherOptions.ANNOTATE_WITH_BIGG.getOptionName(),
+                "true",
+                ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
+                "true"));
+        var sbml = new SBMLDocument(3, 2);
+        var m = new Model("iJO1366", 3, 2);
+        sbml.setModel(m);
+        var s1 = m.createSpecies("some_name");
+        var s2 = m.createSpecies("some_other_name");
+
+        s1.addCVTerm(new CVTerm(
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                "https://identifiers.org/kegg.compound/C00001"));
+
+        s2.addCVTerm(new CVTerm(
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                "https://identifiers.org/biocyc/META:ATP"));
+
+        var annotater = new BiGGAnnotation();
+        annotater.annotate(sbml);
+
+        assertEquals(1, s2.getCVTermCount());
+        assertEquals(29, s1.getCVTerm(0).getNumResources());
+        assertEquals(1, s2.getCVTermCount());
+        assertEquals(30, s2.getCVTerm(0).getNumResources());
+    }
 
 }
