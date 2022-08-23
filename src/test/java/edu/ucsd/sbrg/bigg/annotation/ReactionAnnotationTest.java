@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ReactionAnnotationTest extends BiGGDBTest {
+public class ReactionAnnotationTest extends BiGGDBContainerTest {
 
     @Test
     public void getBiGGIdFromResourcesTest() {
@@ -50,7 +50,7 @@ public class ReactionAnnotationTest extends BiGGDBTest {
         var gPlugin = (GroupsModelPlugin) m.getPlugin(GroupsConstants.shortLabel);
         assertEquals(0, gPlugin.getGroupCount());
 
-                new ReactionAnnotation(r1).annotate();
+        new ReactionAnnotation(r1).annotate();
         new ReactionAnnotation(r2).annotate();
         new ReactionAnnotation(r3).annotate();
 

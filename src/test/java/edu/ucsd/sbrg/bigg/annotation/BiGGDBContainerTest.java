@@ -8,7 +8,7 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 
 @Testcontainers
-public abstract class BiGGDBTest {
+public abstract class BiGGDBContainerTest {
 
     static final GenericContainer bigg = new GenericContainer(DockerImageName.parse("preloaded_bigg:latest"))
             .withExposedPorts(5432)

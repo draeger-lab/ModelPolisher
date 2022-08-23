@@ -5,6 +5,7 @@ import edu.ucsd.sbrg.bigg.IOOptions;
 import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
 import edu.ucsd.sbrg.bigg.Parameters;
 import org.sbml.jsbml.AbstractNamedSBase;
+import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
 
 import java.lang.reflect.InvocationTargetException;
@@ -87,11 +88,11 @@ public class TestUtils {
         assertTrue(false, message);
     }
 
-    public static void assertCVTermsArePresent(AbstractNamedSBase entity,
-                                             CVTerm.Type t,
-                                             CVTerm.Qualifier q,
-                                             Collection<String> uris,
-                                             String message) {
+    public static void assertCVTermsArePresent(AbstractSBase entity,
+                                               CVTerm.Type t,
+                                               CVTerm.Qualifier q,
+                                               Collection<String> uris,
+                                               String message) {
         var cvTerms = entity.getCVTerms();
         for(var term : cvTerms) {
             // this is just an awkward way to implement set difference, sorry bout that
@@ -109,7 +110,8 @@ public class TestUtils {
                 return;
             }
         }
-        assertTrue(false, message);
+        assertTrue(false, message
+                + "Instead: " + entity.getCVTerms().toString());
     }
 
     /**
