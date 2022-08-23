@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.db;
 
+import edu.ucsd.sbrg.bigg.annotation.BiGGDBContainerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-public class BiGGDBTest {
+public class BiGGDBTest extends BiGGDBContainerTest {
 
     @BeforeEach
     public void setup() {

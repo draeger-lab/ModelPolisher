@@ -19,9 +19,15 @@ public class UnitPolishing {
     public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, Registry.createURI("pubmed", 7986045));
     public static final String GROWTH_UNIT_ID = "mmol_per_gDW_per_hr";
     public static final String GROWTH_UNIT_NAME = "Millimoles per gram (dry weight) per hour";
-    public static final CVTerm CV_TERM_IS_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000040"));
-    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000032"));
-    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000032"));
+    public static final CVTerm CV_TERM_IS_SUBSTANCE_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000006"));
+    public static final CVTerm CV_TERM_IS_TIME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000003"));
+    public static final CVTerm CV_TERM_IS_VOLUME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000095"));
+    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000010"));
+    public static final CVTerm CV_TERM_IS_UO_HOUR = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000032"));
+    public static final CVTerm CV_TERM_IS_UO_MMOL = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000040"));
+    public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000021"));
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000010"));
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000013"));
 
     AbstractProgressBar progress;
     Model model;
@@ -38,108 +44,155 @@ public class UnitPolishing {
         progress.DisplayBar("Polishing Unit Definitions (2/9)  "); // "Processing unit definitions");
         int udCount = model.getUnitDefinitionCount();
         var unitDefinitions = model.getListOfUnitDefinitions();
-        var growth = createGrowthUnitDefinition();
-        annotateGrowthUnitDefinition(growth);
 
-        setModelUnits(unitDefinitions);
-        setSubstanceUnit(unitDefinitions, growth);
-        setTimeUnit(growth);
+        var growth = createGrowthUnitDefinition();
+
+        setModelUnits(growth, unitDefinitions);
 
         UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
-        if (!model.isSetExtentUnits()) {
+        if (!model.isSetExtentUnits())
             model.setExtentUnits(substanceUnits.getId());
-        }
-        if (!model.isSetSubstanceUnits()) {
+
+        if (!model.isSetSubstanceUnits())
             model.setSubstanceUnits(substanceUnits.getId());
-        }
+
         while (progress.getCallNumber() < udCount) {
             progress.DisplayBar("Polishing Unit Definitions (2/9)  ");
         }
     }
 
     /**
-     * Adds basic unit definitions to model, if not present
-     *
-     * @return Millimoles per gram (dry weight) per hour {@link UnitDefinition}
+     * Using a growth unit as the template for equivalence, find a potentially already existing
+     * growth unit.
      */
-    private UnitDefinition createGrowthUnitDefinition() {
-        var growth = model.getUnitDefinition(GROWTH_UNIT_ID);
-        if (growth == null) {
-            growth = model.createUnitDefinition(GROWTH_UNIT_ID);
-            logger.finest(MESSAGES.getString("ADDED_UNIT_DEF"));
-        }
-        if (growth.getUnitCount() < 1) {
-            ModelBuilder.buildUnit(growth, 1d, -3, Unit.Kind.MOLE, 1d);
-            ModelBuilder.buildUnit(growth, 1d, 0, Unit.Kind.GRAM, -1d);
-            ModelBuilder.buildUnit(growth, 3600d, 0, Unit.Kind.SECOND, -1d);
-        }
-        if (!growth.isSetName()) {
-            growth.setName(GROWTH_UNIT_NAME);
-        }
-        if (!growth.isSetMetaId()) {
-            growth.setMetaId(growth.getId());
-        }
+    private Optional<UnitDefinition> findGrowthUnit(ListOf<UnitDefinition> uds, UnitDefinition growth) {
+        return uds.stream().filter(u -> UnitDefinition.areEquivalent(u, growth)).findFirst();
+    }
+
+    /**
+     * This unit will be created if no other growth unit can be extracted from the model.
+     */
+    private UnitDefinition defaultGrowthUnitDefinition() {
+        var growth = new UnitDefinition(model.getLevel(), model.getVersion());
+        growth.setId(GROWTH_UNIT_ID);
+        growth.setName(GROWTH_UNIT_NAME);
+        ModelBuilder.buildUnit(growth, 1d, -3, Unit.Kind.MOLE, 1d);
+        ModelBuilder.buildUnit(growth, 1d, 0, Unit.Kind.GRAM, -1d);
+        ModelBuilder.buildUnit(growth, 3600d, 0, Unit.Kind.SECOND, -1d);
         return growth;
+    }
+
+    private UnitDefinition createGrowthUnitDefinition() {
+        var growth = defaultGrowthUnitDefinition();
+        var otherGrowth = findGrowthUnit(model.getListOfUnitDefinitions(), growth).orElse(growth);
+        if (!growth.isSetMetaId())
+            growth.setMetaId(growth.getId());
+        annotateGrowthUnitDefinition(growth);
+        if (otherGrowth.equals(growth) && null != model.getUnitDefinition(GROWTH_UNIT_ID)) {
+            model.getUnitDefinition(GROWTH_UNIT_ID).setId(GROWTH_UNIT_ID + "__preexisting");
+        }
+        model.addUnitDefinition(growth);
+        return growth;
+    }
+
+    private CVTerm genericUnitAnnotation(Unit u) {
+        return new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF,
+                u.getKind().getUnitOntologyIdentifier());
     }
 
     private void annotateGrowthUnitDefinition(UnitDefinition growth) {
         growth.addCVTerm(CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT);
-        getUnitByKind(growth, Unit.Kind.MOLE)
-                .filter(unit -> unit.getScale() == -3)
-                .ifPresent(unit -> unit.addCVTerm(CV_TERM_IS_UO_MOLE));
-        getUnitByKind(growth, Unit.Kind.GRAM)
-                .ifPresent(unit -> unit.addCVTerm(new CVTerm(
-                        CVTerm.Qualifier.BQB_IS_VERSION_OF,
-                        unit.getKind().getUnitOntologyIdentifier())));
+        getUnitByKind(growth, Unit.Kind.MOLE).ifPresent(
+                u -> {
+                    switch (u.getScale()) {
+                        case -3: u.addCVTerm(CV_TERM_IS_UO_MMOL); break;
+                        default:
+                            u.addCVTerm(this.genericUnitAnnotation(u));
+                    }
+                }
+        );
+        getUnitByKind(growth, Unit.Kind.GRAM).ifPresent(this::genericUnitAnnotation);
+        getUnitByKind(growth, Unit.Kind.SECOND).ifPresent(
+                u -> {
+                    switch (Double.valueOf(u.getMultiplier()).intValue()) {
+                        case 1: u.addCVTerm(CV_TERM_IS_UO_SECOND); break;
+                        case 3600: u.addCVTerm(CV_TERM_IS_UO_HOUR); break;
+                        default:
+                            u.addCVTerm(this.genericUnitAnnotation(u));
+                    }
+                });
     }
-
 
     /**
-     * Sets substance, volume and time units for model from the models unit definitions, if not set
+     * Sets substance, volume and time units for model from the models unit definitions,
+     * or the growth unit,
+     * if not set.
      */
-    private void setModelUnits(ListOf<UnitDefinition> unitDefinitions) {
+    private void setModelUnits(UnitDefinition growth, ListOf<UnitDefinition> unitDefinitions) {
         var substanceUnits = model.getSubstanceUnitsInstance();
-        if (substanceUnits == null && unitDefinitions.get(UnitDefinition.SUBSTANCE) != null) {
-            model.setSubstanceUnits(UnitDefinition.SUBSTANCE);
-        }
-        var volumeUnits = model.getVolumeUnitsInstance();
-        if (volumeUnits == null && unitDefinitions.get(UnitDefinition.VOLUME) != null) {
-            model.setVolumeUnits(UnitDefinition.VOLUME);
-        }
-        var timeUnits = model.getTimeUnitsInstance();
-        if (timeUnits == null && unitDefinitions.get(UnitDefinition.TIME) != null) {
-            model.setTimeUnits(UnitDefinition.TIME);
-        }
-    }
-
-    private void setSubstanceUnit(ListOf<UnitDefinition> unitDefinitions, UnitDefinition growth) {
-        if (null == model.getSubstanceUnitsInstance()) {
-            if (unitDefinitions.get(UnitDefinition.SUBSTANCE) != null) {
+        if (substanceUnits == null)
+            if (unitDefinitions.get(UnitDefinition.SUBSTANCE) != null)
                 model.setSubstanceUnits(UnitDefinition.SUBSTANCE);
-            } else {
-                final var substanceUnits = model.createUnitDefinition(UnitDefinition.SUBSTANCE);
-                substanceUnits.setName("Millimoles per gram (dry weight)");
-                getUnitByKind(growth, Unit.Kind.GRAM).ifPresent(unit -> substanceUnits.addUnit(safeClone(unit)));
-                getUnitByKind(growth, Unit.Kind.MOLE).ifPresent(unit -> substanceUnits.addUnit(safeClone(unit)));
-                model.setSubstanceUnits(substanceUnits);
-            }
-        }
+            else
+                model.setSubstanceUnits(createSubstanceUnit(growth));
+        model.getSubstanceUnitsInstance().addCVTerm(CV_TERM_IS_SUBSTANCE_UNIT);
+        var timeUnits = model.getTimeUnitsInstance();
+        if (timeUnits == null)
+            if (unitDefinitions.get(UnitDefinition.TIME) != null)
+                model.setTimeUnits(UnitDefinition.TIME);
+            else
+                model.setTimeUnits(createTimeUnit(growth));
+        model.getTimeUnitsInstance().addCVTerm(CV_TERM_IS_TIME_UNIT);
+        var volumeUnits = model.getVolumeUnitsInstance();
+        if (volumeUnits == null && unitDefinitions.get(UnitDefinition.VOLUME) != null)
+            model.setVolumeUnits(UnitDefinition.VOLUME);
+        if (null != volumeUnits)
+            model.getVolumeUnitsInstance().addCVTerm(CV_TERM_IS_VOLUME_UNIT);
     }
 
-    private void setTimeUnit(UnitDefinition growth) {
-        if (null == model.getTimeUnitsInstance() ) {
-            getUnitByKind(growth, Unit.Kind.SECOND)
-                    .ifPresent(unit -> {
-                        var timeUnitDefinition = model.createUnitDefinition(UnitDefinition.TIME);
-                        timeUnitDefinition.setName("Hour");
-                        model.setTimeUnits(timeUnitDefinition.getId());
-                        var timeUnit = safeClone(unit);
-                        timeUnit.setExponent(1d);
-                        timeUnitDefinition.addUnit(timeUnit);
-                        timeUnit.addCVTerm(CV_TERM_IS_UO_SECOND);
-                        timeUnit.addCVTerm(CV_TERM_IS_VERSION_OF_UO_SECOND);
+    private UnitDefinition createSubstanceUnit(UnitDefinition growth) {
+            final var substanceUnits = model.createUnitDefinition(UnitDefinition.SUBSTANCE);
+            getUnitByKind(growth, Unit.Kind.GRAM).ifPresentOrElse(
+                    unit -> substanceUnits.addUnit(safeClone(unit)),
+                    () -> {
+                        var u = substanceUnits.createUnit(Unit.Kind.GRAM);
+                        u.setMultiplier(1);
+                        u.setExponent(-1d);
+                        u.setScale(0);
+                        u.addCVTerm(CV_TERM_IS_UO_GRAM);
                     });
-        }
+            getUnitByKind(growth, Unit.Kind.MOLE).ifPresentOrElse(
+                    unit -> substanceUnits.addUnit(safeClone(unit)),
+                    () -> {
+                        var u = substanceUnits.createUnit(Unit.Kind.MOLE);
+                        u.setMultiplier(1);
+                        u.setExponent(1d);
+                        u.setScale(-3);
+                        u.addCVTerm(CV_TERM_IS_UO_MMOL);
+                        u.addCVTerm(CV_TERM_IS_VERSION_OF_UO_MOLE);
+                    });
+            return substanceUnits;
+    }
+
+    private UnitDefinition createTimeUnit(UnitDefinition growth) {
+        final var timeUnitDefinition = model.createUnitDefinition(UnitDefinition.TIME);
+        getUnitByKind(growth, Unit.Kind.SECOND).ifPresentOrElse(
+                unit -> {
+                    var timeUnit = safeClone(unit);
+                    if(timeUnit.getExponent() < 0)
+                        timeUnit.setExponent(timeUnit.getExponent() * -1);
+                    timeUnitDefinition.addUnit(timeUnit);
+                },
+                () -> {
+                    var timeUnit = timeUnitDefinition.createUnit(Unit.Kind.SECOND);
+                    timeUnit.setMultiplier(3600);
+                    timeUnit.setScale(0);
+                    timeUnit.setExponent(1d);
+                    timeUnit.addCVTerm(CV_TERM_IS_UO_HOUR);
+                    timeUnit.addCVTerm(CV_TERM_IS_VERSION_OF_UO_SECOND);
+                    timeUnitDefinition.setName("Hour");
+                });
+        return timeUnitDefinition;
     }
 
     private Optional<Unit> getUnitByKind(UnitDefinition ud, Unit.Kind kind) {
