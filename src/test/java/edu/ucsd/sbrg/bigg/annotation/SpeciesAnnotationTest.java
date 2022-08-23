@@ -13,7 +13,7 @@ import java.util.Set;
 import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SpeciesAnnotationTest extends BiGGDBTest {
+public class SpeciesAnnotationTest extends BiGGDBContainerTest {
 
     @BeforeEach
     public void init() {

@@ -9,7 +9,7 @@ import org.sbml.jsbml.SBO;
 import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CompartmentAnnotationTest extends BiGGDBTest {
+public class CompartmentAnnotationTest extends BiGGDBContainerTest {
 
 
     @Test

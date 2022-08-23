@@ -12,7 +12,7 @@ import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BiGGAnnotationTest extends BiGGDBTest {
+public class BiGGAnnotationTest extends BiGGDBContainerTest {
 
     @Test
     public void annotatePublication() {
