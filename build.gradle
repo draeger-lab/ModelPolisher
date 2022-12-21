@@ -50,11 +50,11 @@ repositories {
 dependencies {
     implementation "org.sbml.jsbml:jsbml:1.4"
     implementation "de.zbit:SysBio:1390"
-    implementation "org.postgresql:postgresql:42.2.2"
+    implementation "org.postgresql:postgresql:42.2.13"
     implementation "org.biojava:biojava-ontology:5.0.0"
     implementation 'us.hebi.matlab.mat:mfl-core:0.5.3'
-    implementation "com.fasterxml.jackson.core:jackson-core:2.10.1"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.1"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.14.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.14.1"
     implementation "net.sf.jtidy:jtidy:r938"
     implementation "de.uni-rostock.sbi:CombineArchive:1.4.0"
     implementation "com.zaxxer:HikariCP:3.4.2"
