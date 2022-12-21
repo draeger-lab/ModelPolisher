@@ -1,9 +1,6 @@
 FROM openjdk:11-slim
-MAINTAINER ktrivedi@cs.iitr.ac.in
+MAINTAINER zajac.thomas1992@gmail.com
 
-RUN apt-get update &&\
-apt-get install -y wget &&\
-wget https://modelpolisher.s3.ap-south-1.amazonaws.com/ModelPolisher-2.0.jar &&\
-rm -rf /var/lib/apt/lists/*
-
+RUN mkdir -p /.java/.systemPrefs && mkdir /.java/.userPrefs && chmod -R 755 /.java
+COPY ModelPolisher-2.1-beta.jar /
 CMD "/bin/sh"

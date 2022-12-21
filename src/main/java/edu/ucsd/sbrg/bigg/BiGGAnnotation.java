@@ -9,16 +9,36 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.*;
+import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
+import org.sbml.jsbml.Compartment;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBO;
+import org.sbml.jsbml.SBase;
+import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
@@ -30,7 +50,13 @@ import org.sbml.jsbml.util.Pair;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
+import de.zbit.util.progressbar.AbstractProgressBar;
+import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.db.AnnotateDB;
+import edu.ucsd.sbrg.db.BiGGDB;
+import edu.ucsd.sbrg.db.QueryOnce;
 import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 
 /**
@@ -39,18 +65,6 @@ import edu.ucsd.sbrg.util.SBMLUtils;
  */
 public class BiGGAnnotation {
 
-  /**
-   * BiGGBD instance, contains methods to run specific queries against the BiGG db
-   */
-  private BiGGDB bigg;
-  /**
-   * AnnotateDB instance, contains methods to run specific queries against the AnnotateDB
-   */
-  private AnnotateDB adb;
-  /**
-   * SBMLPolisher instance, containing methods and booleans used by BiGGAnnotation
-   */
-  private SBMLPolisher polisher;
   /**
    * A {@link Logger} for this class.
    */
@@ -72,17 +86,18 @@ public class BiGGAnnotation {
    * Default document notes
    */
   private String documentNotesFile = "SBMLDocumentNotes.html";
-
+  /**
+   *
+   */
+  private AbstractProgressBar progress;
+  /**
+   *
+   */
+  private int initialGeneProducts;
 
   /**
-   * @param bigg
-   * @param adb
-   * @param polisher
    */
-  public BiGGAnnotation(BiGGDB bigg, AnnotateDB adb, SBMLPolisher polisher) {
-    this.bigg = bigg;
-    this.adb = adb;
-    this.polisher = polisher;
+  public BiGGAnnotation() {
   }
 
 
@@ -90,13 +105,21 @@ public class BiGGAnnotation {
    * @param doc
    * @return
    */
-  SBMLDocument annotate(SBMLDocument doc) {
+  public SBMLDocument annotate(SBMLDocument doc) {
     if (!doc.isSetModel()) {
       logger.info(baseBundle.getString("NO_MODEL_FOUND"));
       return doc;
     }
     Model model = doc.getModel();
     replacements = new HashMap<>();
+    // add fake count so it never reaches 100 before gene products are processed
+    int count = model.getCompartmentCount() + model.getSpeciesCount() + model.getReactionCount() + 50;
+    if (model.isSetPlugin(FBCConstants.shortLabel)) {
+      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      initialGeneProducts = fbcModelPlug.getGeneProductCount();
+      count += initialGeneProducts;
+    }
+    progress = new ProgressBar(count);
     annotate(model);
     try {
       appendNotes(doc);
@@ -105,48 +128,10 @@ public class BiGGAnnotation {
     }
     // Recursively sort and group all annotations in the SBMLDocument.
     mergeMIRIAMannotations(doc);
+    if (progress != null) {
+      progress.finished();
+    }
     return doc;
-  }
-
-
-  /**
-   * @param model
-   */
-  private void annotate(Model model) {
-    String organism = bigg.getOrganism(model.getId());
-    Integer taxonId = bigg.getTaxonId(model.getId());
-    if (taxonId != null) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, polisher.createURI("taxonomy", taxonId)));
-    }
-    // Note: date is probably not accurate.
-    // Date date = bigg.getModelCreationDate(model.getId());
-    // if (date != null) {
-    // History history = model.createHistory();
-    // history.setCreatedDate(date);
-    // }
-    String name = polisher.getDocumentTitlePattern();
-    name = name.replace("[biggId]", model.getId());
-    name = name.replace("[organism]", organism);
-    replacements.put("${title}", name);
-    replacements.put("${organism}", organism);
-    replacements.put("${bigg_id}", model.getId());
-    replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-    replacements.put("${bigg.timestamp}", format("{0,date}", bigg.getBiGGVersion()));
-    replacements.put("${species_table}", ""); // XHTMLBuilder.table(header, data, "Species", attributes));
-    if (!model.isSetName()) {
-      model.setName(organism);
-    }
-    if (bigg.isModel(model.getId())) {
-      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, polisher.createURI("bigg.model", model.getId())));
-    }
-    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
-      model.setMetaId(model.getId());
-    }
-    annotatePublications(model);
-    annotateListOfCompartments(model);
-    annotateListOfSpecies(model);
-    annotateListOfReactions(model);
-    annotateListOfGeneProducts(model);
   }
 
 
@@ -230,19 +215,57 @@ public class BiGGAnnotation {
   /**
    * @param model
    */
-  private void annotatePublications(Model model) {
-    List<Pair<String, String>> publications = null;
-    try {
-      publications = bigg.getPublications(model.getId());
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+  private void annotate(Model model) {
+    BiGGDB.getTaxonId(model.getId()).ifPresent(
+      taxonId -> model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId))));
+    BiGGDB.getOrganism(model.getId()).ifPresent(organism -> processReplacements(model, organism));
+    if (QueryOnce.isModel(model.getId())) {
+      model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, Registry.createURI("bigg.model", model.getId())));
     }
+    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
+      model.setMetaId(model.getId());
+    }
+    annotatePublications(model);
+    annotateListOfCompartments(model);
+    annotateListOfSpecies(model);
+    annotateListOfReactions(model);
+    annotateListOfGeneProducts(model);
+  }
+
+
+  /**
+   * @param model
+   * @param organism
+   */
+  private void processReplacements(Model model, String organism) {
+    Parameters parameters = Parameters.get();
+    String name = parameters.getDocumentTitlePattern();
+    name = name.replace("[biggId]", model.getId());
+    name = name.replace("[organism]", organism);
+    replacements.put("${title}", name);
+    replacements.put("${organism}", organism);
+    replacements.put("${bigg_id}", model.getId());
+    replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
+    replacements.put("${bigg.timestamp}", BiGGDB.getBiGGVersion().map(date -> format("{0,date}", date)).orElse(""));
+    replacements.put("${species_table}", "");
+    if (!model.isSetName()) {
+      model.setName(organism);
+    }
+  }
+
+
+  /**
+   * @param model
+   */
+  private void annotatePublications(Model model) {
+    progress.DisplayBar("Annotating Publications (1/5)  ");
+    List<Pair<String, String>> publications = BiGGDB.getPublications(model.getId());
     int numPublications;
-    if (publications != null && (numPublications = publications.size()) > 0) {
-      String resources[] = new String[numPublications];
+    if ((numPublications = publications.size()) > 0) {
+      String[] resources = new String[numPublications];
       int i = 0;
       for (Pair<String, String> publication : publications) {
-        resources[i++] = polisher.createURI(publication.getKey(), publication.getValue());
+        resources[i++] = Registry.createURI(publication.getKey(), publication.getValue());
       }
       model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));
     }
@@ -254,6 +277,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfCompartments(Model model) {
     for (int i = 0; i < model.getCompartmentCount(); i++) {
+      progress.DisplayBar("Annotating Compartments (2/5)  ");
       annotateCompartment(model.getCompartment(i));
     }
   }
@@ -264,14 +288,11 @@ public class BiGGAnnotation {
    */
   private void annotateCompartment(Compartment compartment) {
     BiGGId biggId = new BiGGId(compartment.getId());
-    if (bigg.isCompartment(biggId.getAbbreviation())) {
-      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, polisher.createURI("bigg.compartment", biggId)));
+    if (QueryOnce.isCompartment(biggId.getAbbreviation())) {
+      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("bigg.compartment", biggId)));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
-        String name = bigg.getCompartmentName(biggId);
-        if ((name != null) && !name.isEmpty()) {
-          compartment.setName(name);
-        }
+        BiGGDB.getCompartmentName(biggId).ifPresent(compartment::setName);
       }
     }
   }
@@ -282,6 +303,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfSpecies(Model model) {
     for (int i = 0; i < model.getSpeciesCount(); i++) {
+      progress.DisplayBar("Annotating Species (3/5)  ");
       annotateSpecies(model.getSpecies(i));
     }
   }
@@ -291,97 +313,73 @@ public class BiGGAnnotation {
    * @param species
    */
   private void annotateSpecies(Species species) {
-    String id = species.getId();
-
-    //extracting BiGGId if not present for species
-    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
-    if(!isBiGGid){
-      Annotation annotation = species.getAnnotation();
-      ArrayList<String> list_Uri = new ArrayList<>();
-      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
-        list_Uri.addAll(cvTerm.getResources());
-      }
-      if(!list_Uri.isEmpty()) {
-        String temp;
-        temp = getSpeciesBiGGIdFromUriList(list_Uri);
-        if(temp!=null) {
-          //update the id in species
-          id = temp;
-        }
-      }
-    }
-
-    //This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as species.id
-    BiGGId biggId = polisher.extractBiGGId(id);
-    if (biggId == null) {
-        return;
-    }
-    setSpeciesName(species, biggId);
-    setSBOTermFromComponentType(species, biggId);
-    setCVTermResources(species, biggId);
-    FBCSetFormulaCharge(species, biggId);
+    // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
+    // species.id
+    checkId(species).ifPresent(biggId -> {
+      setSpeciesName(species, biggId);
+      setSBOTermFromComponentType(species, biggId);
+      setCVTermResources(species, biggId);
+      FBCSetFormulaCharge(species, biggId);
+    });
   }
+
 
   /**
-   * @param list_Uri
+   * @param species
+   * @return
    */
-  private String getSpeciesBiGGIdFromUriList(List<String> list_Uri){
-    String biggId = null;
-    for(String uri : list_Uri){
-      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
-      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
-      //crop uri to remove synonym identifier from end
-      uri = uri.substring(0,uri.lastIndexOf('/'));
-      dataSource = uri.substring(uri.lastIndexOf('/')+1);
-
-      //updating the dataSource and synonym_id to match bigg database
-      switch (dataSource){
-
-        //bigg.metabolite data_source identifier will directly give biggId
-        case "bigg.metabolite":
-          return "M_"+synonym_id;
-
-        case "metanetx.chemical" :
-          dataSource = "mnx.chemical";
-          break;
-
-        case "chebi" : break;
-
-        case "kegg.compound" : break;
-
-        case "hmdb" : break;
-
-        case "lipidmaps" : break;
-
-        case "kegg.drug" : break;
-
-        case "seed.compound" : break;
-
-        case "biocyc" : break;
-
-        case "sgd" :
-          return null; //it maps to a gene not a component
-
-        case "uniprot" :
-          return null; //it maps to a gene not a component
-
-        default:
-          return null; //the dataSource must belong one of above
+  private Optional<BiGGId> checkId(Species species) {
+    // TODO: compartments are not handled correctly -- is this at all possible to get right?
+    Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
+    Optional<String> id = metaboliteId.flatMap(biggId -> {
+      // extracting BiGGId if not present for species
+      boolean isBiGGid = QueryOnce.isMetabolite(biggId.getAbbreviation());
+      List<String> resources = new ArrayList<>();
+      if (!isBiGGid) {
+        // Flatten all resources for all CVTerms into a list
+        resources = species.getAnnotation().getListOfCVTerms().stream()
+                           .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                           .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
       }
+      // update id if we found something
+      return getBiGGIdFromResources(resources, BiGGDB.TYPE_SPECIES);
+    });
+    return id.map(BiGGId::createMetaboliteId).orElse(metaboliteId);
+  }
 
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_SPECIES);
-      if(currentBiGGId!=null){
-        if(biggId==null){
-          biggId = currentBiGGId;
-        }else {
-          //we must get same biggId from each synonym
-          if(!currentBiGGId.equals(biggId))
-            return null;
-        }
+
+  /**
+   * @param resources
+   */
+  private Optional<String> getBiGGIdFromResources(List<String> resources, String type) {
+    for (String resource : resources) {
+      Optional<String> id = Registry.checkResourceUrl(resource).map(Registry::getPartsFromCanonicalURI)
+                                    .flatMap(parts -> getBiggIdFromParts(parts, type));
+      if (id.isPresent()) {
+        return id;
       }
     }
-    return biggId == null ? null : "M_"+biggId;
+    return Optional.empty();
   }
+
+
+  /**
+   * @param parts
+   * @param type
+   * @return
+   */
+  private Optional<String> getBiggIdFromParts(List<String> parts, String type) {
+    String dataSource = parts.get(0);
+    String synonymId = parts.get(1);
+    if (QueryOnce.isDataSource(dataSource)) {
+      Optional<String> id = BiGGDB.getBiggIdFromSynonym(dataSource, synonymId, type);
+      if (id.isPresent()) {
+        return id;
+      }
+    }
+    return Optional.empty();
+  }
+
 
   /**
    * @param species
@@ -390,11 +388,7 @@ public class BiGGAnnotation {
   private void setSpeciesName(Species species, BiGGId biggId) {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
-      try {
-        species.setName(polisher.polishName(bigg.getComponentName(biggId)));
-      } catch (SQLException exc) {
-        logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
-      }
+      BiGGDB.getComponentName(biggId).map(SBMLPolisher::polishName).ifPresent(species::setName);
     }
   }
 
@@ -404,23 +398,22 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setSBOTermFromComponentType(Species species, BiGGId biggId) {
-    String type = bigg.getComponentType(biggId);
-    if (type == null) {
-      return;
-    }
-    switch (type) {
-    case "metabolite":
-      species.setSBOTerm(SBO.getSimpleMolecule());
-      break;
-    case "protein":
-      species.setSBOTerm(SBO.getProtein());
-      break;
-    default:
-      if (polisher.omitGenericTerms) {
-        species.setSBOTerm(SBO.getMaterialEntity());
+    BiGGDB.getComponentType(biggId).ifPresent(type -> {
+      switch (type) {
+      case "metabolite":
+        species.setSBOTerm(SBO.getSimpleMolecule());
+        break;
+      case "protein":
+        species.setSBOTerm(SBO.getProtein());
+        break;
+      default:
+        Parameters parameters = Parameters.get();
+        if (parameters.getOmitGenericTerms()) {
+          species.setSBOTerm(SBO.getMaterialEntity());
+        }
+        break;
       }
-      break;
-    }
+    });
   }
 
 
@@ -429,35 +422,46 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setCVTermResources(Species species, BiGGId biggId) {
-    //Set of annotations calculated from BiGGDB and AnnotateDB
-    Set<String> annotations_set = new HashSet<>();
-    CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
-
-    boolean isBiGGMetabolite = bigg.isMetabolite(biggId.getAbbreviation());
-
-    //using BiGG Database
+    // Set of annotations calculated from BiGGDB and AnnotateDB
+    CVTerm cvTerm = null;
+    for (CVTerm term : species.getAnnotation().getListOfCVTerms()) {
+      if (term.getQualifier() == Qualifier.BQB_IS) {
+        cvTerm = term;
+        species.removeCVTerm(term);
+        break;
+      }
+    }
+    if (cvTerm == null) {
+      cvTerm = new CVTerm(Qualifier.BQB_IS);
+    }
+    Set<String> annotations = new HashSet<>();
+    boolean isBiGGMetabolite = QueryOnce.isMetabolite(biggId.getAbbreviation());
+    // using BiGG Database
     if (isBiGGMetabolite) {
-      annotations_set.add(polisher.createURI("bigg.metabolite", biggId));
+      annotations.add(Registry.createURI("bigg.metabolite", biggId));
     }
-    try {
-      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, false);
-      // convert to set to remove possible duplicates; TreeSet respects order
-      annotations_set.addAll(linkOut);
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    Parameters parameters = Parameters.get();
+    Set<String> linkOut = BiGGDB.getResources(biggId, parameters.getIncludeAnyURI(), false);
+    // convert to set to remove possible duplicates; TreeSet respects order
+    annotations.addAll(linkOut);
+    // using AnnotateDB
+    if (parameters.getAddADBAnnotations() && AnnotateDB.inUse() && isBiGGMetabolite) {
+      // TODO: sabiork.reaction and strange IDs are returned, needs rework
+      Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.toBiGGId());
+      annotations.addAll(adb_annotations);
     }
-
-    //using AnnotateDB
-    if(adb!=null && isBiGGMetabolite) {
-      TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_METABOLITE, biggId.getIdString());
-      annotations_set.addAll(adb_annotations);
-    }
-
-    //adding annotations to cvTerm
-    for(String annotation : annotations_set){
+    // don't add resources that are already present
+    Set<String> existingAnnotations =
+      cvTerm.getResources().stream()
+            .map(resource -> resource.replaceAll("http://identifiers.org", "https://identifiers.org"))
+            .collect(Collectors.toSet());
+    annotations.removeAll(existingAnnotations);
+    // adding annotations to cvTerm
+    List<String> sortedAnnotations = new ArrayList<>(annotations);
+    Collections.sort(sortedAnnotations);
+    for (String annotation : sortedAnnotations) {
       cvTerm.addResource(annotation);
     }
-
     if (cvTerm.getResourceCount() > 0) {
       species.addCVTerm(cvTerm);
     }
@@ -476,36 +480,36 @@ public class BiGGAnnotation {
     String modelId = species.getModel().getId();
     String compartmentCode = biggId.getCompartmentCode();
     FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
+    boolean isBiGGModel = QueryOnce.isModel(modelId);
+    boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.equals("");
     if (!fbcSpecPlug.isSetChemicalFormula()) {
-      String chemicalFormula = null;
-      if (bigg.isModel(modelId)) {
-        chemicalFormula = bigg.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
-      } else if (compartmentCode != null && !compartmentCode.equals("")) {
-        chemicalFormula = bigg.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
+      Optional<String> chemicalFormula = Optional.empty();
+      if (isBiGGModel) {
+        chemicalFormula = BiGGDB.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
       }
-      try {
-        fbcSpecPlug.setChemicalFormula(chemicalFormula);
-      } catch (IllegalArgumentException exc) {
-        logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
+      if ((!isBiGGModel || chemicalFormula.isEmpty()) && compartmentNonEmpty) {
+        chemicalFormula = BiGGDB.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
       }
+      chemicalFormula.ifPresent(formula -> {
+        try {
+          fbcSpecPlug.setChemicalFormula(formula);
+        } catch (IllegalArgumentException exc) {
+          logger.severe(format(mpMessageBundle.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
+        }
+      });
     }
-    Integer charge = null;
-    if (bigg.isModel(modelId)) {
-      charge = bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
-    } else if (compartmentCode != null && !compartmentCode.equals("")) {
-      charge = bigg.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
+    Optional<Integer> chargeFromBiGG = Optional.empty();
+    if (isBiGGModel) {
+      chargeFromBiGG = BiGGDB.getCharge(biggId.getAbbreviation(), species.getModel().getId());
+    } else if (compartmentNonEmpty) {
+      chargeFromBiGG = BiGGDB.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
     }
     if (species.isSetCharge()) {
-      if ((charge != null) && (charge != species.getCharge())) {
-        logger.warning(
-          format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId()));
-      }
+      chargeFromBiGG.filter(charge -> charge != species.getCharge()).ifPresent(charge -> logger.warning(
+        format(mpMessageBundle.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId())));
       species.unsetCharge();
     }
-    if ((charge != null) && (charge != 0)) {
-      // If charge is set and charge = 0 -> this can mean it is only a default!
-      fbcSpecPlug.setCharge(charge);
-    }
+    chargeFromBiGG.filter(charge -> charge != 0).ifPresent(fbcSpecPlug::setCharge);
   }
 
 
@@ -514,6 +518,7 @@ public class BiGGAnnotation {
    */
   private void annotateListOfReactions(Model model) {
     for (int i = 0; i < model.getReactionCount(); i++) {
+      progress.DisplayBar("Annotating Reactions (4/5)  ");
       annotateReaction(model.getReaction(i));
     }
   }
@@ -523,98 +528,53 @@ public class BiGGAnnotation {
    * @param reaction
    */
   private void annotateReaction(Reaction reaction) {
-    String id = reaction.getId();
-
-    //extract biggId if not present for reaction
-    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
-    if(!isBiGGid){
-      Annotation annotation = reaction.getAnnotation();
-      ArrayList<String> list_Uri = new ArrayList<>();
-      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
-        list_Uri.addAll(cvTerm.getResources());
-      }
-      if(!list_Uri.isEmpty()) {
-        String temp;
-        temp = getReactionBiGGIdFromUriList(list_Uri);
-        if(temp!=null) {
-          id = temp;
+    checkId(reaction).ifPresent(biggId -> {
+      String abbreviation = biggId.getAbbreviation();
+      Parameters parameters = Parameters.get();
+      if (!reaction.isSetSBOTerm()) {
+        if (BiGGDB.isPseudoreaction(abbreviation)) {
+          reaction.setSBOTerm(631);
+        } else if (!parameters.getOmitGenericTerms()) {
+          reaction.setSBOTerm(375); // generic process
         }
       }
-    }
-
-    if (!reaction.isSetSBOTerm()) {
-      if (bigg.isPseudoreaction(id)) {
-        reaction.setSBOTerm(631);
-      } else if (!polisher.omitGenericTerms) {
-        reaction.setSBOTerm(375); // generic process
+      if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
+        reaction.setMetaId(biggId.toBiGGId());
       }
-    }
-    if ((reaction.getCVTermCount() > 0) && !reaction.isSetMetaId()) {
-      reaction.setMetaId(id);
-    }
-
-    //This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as reaction.id
-    BiGGId biggId = polisher.extractBiGGId(id);
-    if (id.startsWith("R_")) {
-      id = id.substring(2);
-    }
-    String name = bigg.getReactionName(id);
-    if ((name != null) && !name.equals(reaction.getName())) {
-      reaction.setName(polisher.polishName(name));
-    }
-    List<String> geneReactionRules = bigg.getGeneReactionRule(id, reaction.getModel().getId());
-    for (String geneRactionRule : geneReactionRules) {
-      SBMLUtils.parseGPR(reaction, geneRactionRule, polisher.omitGenericTerms);
-    }
-    parseSubsystems(reaction, biggId);
-    setCVTermResources(reaction, biggId);
+      // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
+      // reaction.id
+      BiGGDB.getReactionName(abbreviation).filter(name -> !name.equals(reaction.getName()))
+            .map(SBMLPolisher::polishName).ifPresent(reaction::setName);
+      List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
+      for (String geneRactionRule : geneReactionRules) {
+        GPRParser.parseGPR(reaction, geneRactionRule, parameters.getOmitGenericTerms());
+      }
+      parseSubsystems(reaction, biggId);
+      setCVTermResources(reaction, biggId);
+    });
   }
 
+
   /**
-   * @param list_Uri
+   * @param reaction
+   * @return
    */
-  private String getReactionBiGGIdFromUriList(List<String> list_Uri){
-    String biggId = null;
-    for(String uri : list_Uri){
-      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
-      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
-      uri = uri.substring(0,uri.lastIndexOf('/'));
-      dataSource = uri.substring(uri.lastIndexOf('/')+1);
-
-      //updating the dataSource and synonym_id to match bigg database
-      switch (dataSource){
-
-        //bigg.metabolite data_source identifier will directly give biggId
-        case "bigg.reaction":
-          return "R_"+synonym_id;
-
-        case "metanetx.reaction":
-          dataSource = "mnx.equation";
-          break;
-
-        case "kegg.reaction" : break;
-
-        case "ec-code" :
-          dataSource = "ec";
-          break;
-
-        case "rhea" : break;
-
-        default:
-          return null; //the dataSource must belong one of above
-      }
-
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_REACTION);
-
-      if(biggId==null){
-        biggId = currentBiGGId;
-      }else {
-        //we must get same biggId from each synonym
-        if(!currentBiGGId.equals(biggId))
-          return null;
+  private Optional<BiGGId> checkId(Reaction reaction) {
+    String id = reaction.getId();
+    // extracting BiGGId if not present for species
+    boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
+      && QueryOnce.isReaction(id);
+    if (!isBiGGid) {
+      // Flatten all resources for all CVTerms into a list
+      List<String> resources =
+        reaction.getAnnotation().getListOfCVTerms().stream().filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
+      if (!resources.isEmpty()) {
+        // update id if we found something
+        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_REACTION).orElse(id);
       }
     }
-    return biggId == null ? null : "R_"+biggId;
+    return BiGGId.createReactionId(id);
   }
 
 
@@ -624,7 +584,7 @@ public class BiGGAnnotation {
    */
   private void parseSubsystems(Reaction reaction, BiGGId biggId) {
     Model model = reaction.getModel();
-    List<String> subsystems = bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
+    List<String> subsystems = BiGGDB.getSubsystems(model.getId(), biggId.getAbbreviation());
     if (subsystems.size() < 1) {
       return;
     }
@@ -656,31 +616,43 @@ public class BiGGAnnotation {
    * @param biggId
    */
   private void setCVTermResources(Reaction reaction, BiGGId biggId) {
-    //Set of annotations calculated from BiGGDB and AnnotateDB
-    Set<String> annotations_set = new HashSet<>();
-    CVTerm cvTerm = new CVTerm(Qualifier.BQB_IS);
-
-    boolean isBiGGReaction = bigg.isReaction(reaction.getId());
-
-    //using BiGG Database
+    // Set of annotations calculated from BiGGDB and AnnotateDB
+    CVTerm cvTerm = null;
+    for (CVTerm term : reaction.getAnnotation().getListOfCVTerms()) {
+      if (term.getQualifier() == Qualifier.BQB_IS) {
+        cvTerm = term;
+        reaction.removeCVTerm(term);
+        break;
+      }
+    }
+    if (cvTerm == null) {
+      cvTerm = new CVTerm(Qualifier.BQB_IS);
+    }
+    Set<String> annotations = new HashSet<>();
+    boolean isBiGGReaction = QueryOnce.isReaction(biggId.getAbbreviation());
+    // using BiGG Database
     if (isBiGGReaction) {
-      annotations_set.add(polisher.createURI("bigg.reaction", biggId));
+      annotations.add(Registry.createURI("bigg.reaction", biggId));
     }
-    try {
-      TreeSet<String> linkOut = bigg.getResources(biggId, polisher.includeAnyURI, true);
-      annotations_set.addAll(linkOut);
-    } catch (SQLException exc) {
-      logger.severe(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
+    Parameters parameters = Parameters.get();
+    Set<String> linkOut = BiGGDB.getResources(biggId, parameters.getIncludeAnyURI(), true);
+    annotations.addAll(linkOut);
+    // using AnnotateDB
+    if (parameters.getAddADBAnnotations() && AnnotateDB.inUse() && isBiGGReaction) {
+      // TODO: probably similar problems as in the species case -- needs rework
+      Set<String> adb_annotations = AnnotateDB.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.toBiGGId());
+      annotations.addAll(adb_annotations);
     }
-
-    //using AnnotateDB
-    if(adb!=null && isBiGGReaction) {
-      TreeSet<String> adb_annotations = adb.getAnnotations(AnnotateDB.BIGG_REACTION, biggId.getIdString());
-      annotations_set.addAll(adb_annotations);
-    }
-
-    //adding annotations to cvTerm
-    for(String annotation : annotations_set){
+    // add only annotations not already present in model
+    Set<String> existingAnnotations =
+      cvTerm.getResources().stream()
+            .map(resource -> resource.replaceAll("http://identifiers.org", "https://identifiers.org"))
+            .collect(Collectors.toSet());
+    annotations.removeAll(existingAnnotations);
+    // adding annotations to cvTerm
+    List<String> sortedAnnotations = new ArrayList<>(annotations);
+    Collections.sort(sortedAnnotations);
+    for (String annotation : sortedAnnotations) {
       cvTerm.addResource(annotation);
     }
     if (cvTerm.getResourceCount() > 0) {
@@ -698,8 +670,17 @@ public class BiGGAnnotation {
   private void annotateListOfGeneProducts(Model model) {
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      // update progress bar for added geneProducts
+      int changed = fbcModelPlugin.getNumGeneProducts() - initialGeneProducts;
+      if (changed > 0) {
+        long current = progress.getCallNumber();
+        // substract fake count
+        progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed - 50);
+        progress.setCallNr(current);
+      }
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
-        annotateGeneProduct(geneProduct, fbcModelPlugin);
+        progress.DisplayBar("Annotating Gene Products (5/5)  ");
+        annotateGeneProduct(geneProduct);
       }
     }
   }
@@ -708,120 +689,71 @@ public class BiGGAnnotation {
   /**
    * @param geneProduct
    */
-  private void annotateGeneProduct(GeneProduct geneProduct, FBCModelPlugin fbcModelPlugin) {
-    String label = null;
-    String id = geneProduct.getId();
-
-    String calculatedBiGGId = id;
-    boolean isBiGGid = id.matches("^([RMG])_([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
-    if(!isBiGGid || !bigg.isGenePresentInBigg(geneProduct)){
-      Annotation annotation = geneProduct.getAnnotation();
-      ArrayList<String> list_Uri = new ArrayList<>();
-      for(CVTerm cvTerm : annotation.getListOfCVTerms()){
-        list_Uri.addAll(cvTerm.getResources());
-      }
-      if(!list_Uri.isEmpty()) {
-        String temp;
-        temp = getGeneProductBiGGIdFromUriList(list_Uri);
-        if(temp!=null) {
-          //update the id in geneProduct
-          calculatedBiGGId = temp;
-        }
-      }
-    }
-
+  private void annotateGeneProduct(GeneProduct geneProduct) {
+    Optional<String> label = Optional.empty();
+    Optional<BiGGId> biggId = checkId(geneProduct);
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
-      label = geneProduct.getLabel();
+      label = Optional.of(geneProduct.getLabel());
     } else if (geneProduct.isSetId()) {
-      label = id;
+      label = biggId.map(BiGGId::toBiGGId);
     }
-    if (label == null) {
+    if (label.isEmpty()) {
       return;
     }
-    // fix not updated geneProductReference in Association
+    // fix geneProductReference in Association not updated
     SBMLUtils.updateGeneProductReference(geneProduct);
-    setCVTermResources(geneProduct, calculatedBiGGId);
-    if (geneProduct.getCVTermCount() > 0) {
-      geneProduct.setMetaId(id);
-    }
-    setGPLabelName(geneProduct, label);
-  }
-
-  private String getGeneProductBiGGIdFromUriList(List<String> list_Uri) {
-    String biggId = null;
-    for(String uri : list_Uri){
-      String dataSource, synonym_id, currentBiGGId; //currentBiGGId is id calculated in current iteration
-      synonym_id = uri.substring(uri.lastIndexOf('/')+1);
-      uri = uri.substring(0,uri.lastIndexOf('/'));
-      dataSource = uri.substring(uri.lastIndexOf('/')+1);
-
-      //updating the dataSource and synonym_id to match bigg database
-      switch (dataSource){
-        case "ncbigi":
-          synonym_id = synonym_id.substring(3);
-          break;
-
-        case "ncbigene" : break;
-
-        case "goa" : break;
-
-        case "interpro" : break;
-
-        case "asap" : break;
-
-        case "ecogene" : break;
-
-        case "uniprot" : break;
-
-        default:
-          return null; //the dataSource must belong one of above
+    biggId.ifPresent(id -> {
+      setCVTermResources(geneProduct, id);
+      if (geneProduct.getCVTermCount() > 0) {
+        geneProduct.setMetaId(id.toBiGGId());
       }
-
-      currentBiGGId = bigg.getBiggIdFromSynonym(dataSource,synonym_id,BiGGDB.TYPE_GENE_PRODUCT);
-
-      if(biggId==null){
-        biggId = currentBiGGId;
-      }else {
-        //we must get same biggId from each synonym
-        if(!currentBiGGId.equals(biggId))
-          return null;
-      }
-    }
-    return biggId == null ? null : "G_"+biggId;
+    });
+    setGPLabelName(geneProduct, label.get());
   }
 
 
   /**
    * @param geneProduct
-   * @param id
+   * @return
    */
-  private void setCVTermResources(GeneProduct geneProduct, String id) {
+  private Optional<BiGGId> checkId(GeneProduct geneProduct) {
+    String id = geneProduct.getId();
+    boolean isBiGGid = id.matches("^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    if (!isBiGGid) {
+      // Flatten all resources for all CVTerms into a list
+      List<String> resources = geneProduct.getAnnotation().getListOfCVTerms().stream()
+                                          .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                                          .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
+      if (!resources.isEmpty()) {
+        // update id if we found something
+        id = getBiGGIdFromResources(resources, BiGGDB.TYPE_GENE_PRODUCT).orElse(id);
+      }
+    }
+    return BiGGId.createGeneId(id);
+  }
+
+
+  /**
+   * @param geneProduct
+   * @param biggId
+   */
+  private void setCVTermResources(GeneProduct geneProduct, BiGGId biggId) {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // label is stored without "G_" prefix in BiGG
-    if (id.startsWith("G_")) {
-      id = id.substring(2);
-    }
-    for (String resource : bigg.getGeneIds(id)) {
-      // get Collection part from uri without url prefix - all uris should
-      // begin with http://identifiers.org, else this may fail
-      String collection = Registry.getDataCollectionPartFromURI(resource);
-      if (collection == null) {
-        continue;
-      } else if (!resource.contains("identifiers.org")) {
-        logger.severe(format(mpMessageBundle.getString("PATTERN_MISMATCH_DROP"), collection));
-        continue;
-      }
-      switch (collection) {
-      case "interpro":
-      case "pdb":
-      case "uniprot":
-        termIs.addResource(resource);
-        break;
-      default:
-        termEncodedBy.addResource(resource);
-      }
-    }
+    BiGGDB.getGeneIds(biggId.getAbbreviation()).forEach(
+      resource -> Registry.checkResourceUrl(resource).map(Registry::getPartsFromCanonicalURI)
+                          .filter(parts -> parts.size() > 0).map(parts -> parts.get(0)).ifPresent(collection -> {
+                            switch (collection) {
+                            case "interpro":
+                            case "pdb":
+                            case "uniprot":
+                              termIs.addResource(resource);
+                              break;
+                            default:
+                              termEncodedBy.addResource(resource);
+                            }
+                          }));
     if (termIs.getResourceCount() > 0) {
       geneProduct.addCVTerm(termIs);
     }
@@ -840,190 +772,14 @@ public class BiGGAnnotation {
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
-    String geneName = bigg.getGeneName(label);
-    if (geneName != null) {
+    BiGGDB.getGeneName(label).ifPresent(geneName -> {
       if (geneName.isEmpty()) {
         logger.fine(format(mpMessageBundle.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
       } else if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
         logger.warning(format(mpMessageBundle.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
       }
       geneProduct.setName(geneName);
-    }
-  }
-
-
-  /**
-   * Checks resource URIs and logs those not matching the specified pattern
-   * Used to check URIs obtained from BiGGDB
-   * A resource URI that does not match the pattern will be logged and not added
-   * to the model
-   * For a collection not in the registry correctness is assumed
-   *
-   * @param resource:
-   *        resource URI to be added as annotation
-   * @return corrected resource URI
-   */
-  static String checkResourceUrl(String resource) {
-    String collection = Registry.getDataCollectionPartFromURI(resource);
-    String identifier = Registry.getIdentifierFromURI(resource);
-    if (collection.isEmpty()) {
-      // not a valid resource URI, drop
-      return null;
-    } else if (!isCheckable(resource, collection)) {
-      return resource;
-    } else if (!resource.contains("identifiers.org")) {
-      collection = Registry.getCollectionFor(resource);
-      if (!collection.isEmpty()) {
-        resource = Registry.getURI(collection, identifier);
-      }
-    }
-    String regexp = Registry.getPattern(collection);
-    if (regexp.equals("")) {
-      logger.severe(format(mpMessageBundle.getString("UNCAUGHT_URI"), resource));
-      return resource;
-    }
-    Boolean correct = Registry.checkPattern(identifier, collection);
-    String report_resource = resource;
-    if (!correct) {
-      logger.info(format(mpMessageBundle.getString("PATTERN_MISMATCH_INFO"), identifier, regexp, collection));
-      resource = fixResource(resource, identifier);
-    }
-    if (resource == null) {
-      logger.warning(format(mpMessageBundle.getString("CORRECTION_FAILED_DROP"), report_resource, collection));
-    }
-    logger.fine(format("Added resource {0}", resource));
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param collection
-   */
-  private static boolean isCheckable(String resource, String collection) {
-    // not present in miriam
-    boolean checkable = true;
-    if (collection.contains("molecular-networks.com")) {
-      logger.fine(format(mpMessageBundle.getString("NO_URI_CHECK_WARN"), resource));
-      checkable = false;
-    }
-    return checkable;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixResource(String resource, String identifier) {
-    if (resource.contains("kegg")) {
-      // We can correct the kegg collection
-      resource = fixKEGGCollection(resource, identifier);
-    } else if (resource.contains("ncbigi")) {
-      // add possibly missing "gi:" prefix to identifier
-      resource = fixGI(resource, identifier);
-    } else if (resource.contains("go") && !resource.contains("goa")) {
-      resource = fixGO(resource, identifier);
-    } else if (resource.contains("ec-code")) {
-      resource = fixECCode(resource, identifier);
-    } else if (resource.contains("rhea") && resource.contains("#")) {
-      // remove last part, it's invalid either way, even though it gets resolved due to misinterpretation as non
-      // existing anchor
-      resource = resource.split("#")[0];
-      logger.info(format(mpMessageBundle.getString("CHANGED_RHEA"), resource));
-    } else if (resource.contains("reactome")) {
-      String resource_old = resource;
-      resource = fixReactome(resource, identifier);
-      logger.info(format(mpMessageBundle.getString("CHANGED_REACTOME"), resource_old, resource));
-    } else {
-      resource = null;
-    }
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixKEGGCollection(String resource, String identifier) {
-    if (identifier.startsWith("D")) {
-      logger.info(mpMessageBundle.getString("CHANGE_KEGG_DRUG"));
-      resource = Registry.replace(resource, "kegg.compound", "kegg.drug");
-    } else if (identifier.startsWith("G")) {
-      logger.info(mpMessageBundle.getString("CHANGE_KEGG_GLYCAN"));
-      resource = Registry.replace(resource, "kegg.compound", "kegg.glycan");
-    }
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixGI(String resource, String identifier) {
-    if (!identifier.toLowerCase().startsWith("gi:")) {
-      logger.info(mpMessageBundle.getString("ADD_PREFIX_GI"));
-      return Registry.replace(resource, identifier, "GI:" + identifier);
-    }
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixGO(String resource, String identifier) {
-    if (!identifier.toLowerCase().startsWith("go:")) {
-      logger.info(mpMessageBundle.getString("ADD_PREFIX_GO"));
-      return Registry.replace(resource, identifier, "GO:" + identifier);
-    }
-    return resource;
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixECCode(String resource, String identifier) {
-    int missingDots = identifier.length() - identifier.replace(".", "").length();
-    if (missingDots < 1) {
-      logger.warning(format(mpMessageBundle.getString("EC_CHANGE_FAILED"), identifier));
-      return null;
-    }
-    String replacement = identifier;
-    for (int count = missingDots; count < 3; count++) {
-      replacement += ".-";
-    }
-    return Registry.replace(resource, identifier, replacement);
-  }
-
-
-  /**
-   * @param resource
-   * @param identifier
-   * @return
-   */
-  private static String fixReactome(String resource, String identifier) {
-    if (!identifier.startsWith("R-ALL-REACT_")) {
-      return null;
-    }
-    identifier = identifier.split("_")[1];
-    resource = Registry.replace(resource, "R-ALL-REACT_", "");
-    String collection = Registry.getDataCollectionPartFromURI(resource);
-    if (Registry.checkPattern(identifier, collection)) {
-      return Registry.getURI(collection, identifier);
-    } else {
-      return null;
-    }
+    });
   }
 
 
@@ -1048,7 +804,7 @@ public class BiGGAnnotation {
         if (!start) {
           continue;
         }
-        if (line.matches(".*\\$\\{.*\\}.*")) {
+        if (line.matches(".*\\$\\{.*}.*")) {
           for (String key : replacements.keySet()) {
             line = line.replace(key, replacements.get(key));
           }
@@ -1065,18 +821,10 @@ public class BiGGAnnotation {
 
 
   /**
-   * @return the modelNotes
-   */
-  File getModelNotesFile() {
-    return new File(modelNotes);
-  }
-
-
-  /**
    * @param modelNotes
    *        the modelNotes to set
    */
-  void setModelNotesFile(File modelNotes) {
+  public void setModelNotesFile(File modelNotes) {
     this.modelNotes = modelNotes != null ? modelNotes.getAbsolutePath() : null;
   }
 
@@ -1084,7 +832,7 @@ public class BiGGAnnotation {
   /**
    * @param documentNotesFile
    */
-  void setDocumentNotesFile(File documentNotesFile) {
+  public void setDocumentNotesFile(File documentNotesFile) {
     this.documentNotesFile = documentNotesFile != null ? documentNotesFile.getAbsolutePath() : null;
   }
 }

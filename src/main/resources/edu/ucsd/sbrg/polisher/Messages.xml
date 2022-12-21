@@ -4,8 +4,9 @@
     <entry key="ABREV_INVALID">Invalid abbreviation: ''{0}'</entry>
     <entry key="ADD_ADB_ANNOTATIONS_DESC">If set to true, annotations will be added to species and reactions from AnnotateDB also. NOTE: Effective only if 'annotate-with-bigg' is true.</entry>
     <entry key="ADD_KIND_TO_GROUP">Adding missing kind attribute to group {0}.</entry>
-    <entry key="ADD_PREFIX_GI">Adding missing GI: prefix.</entry>
-    <entry key="ADD_PREFIX_GO">Adding missing GO: prefix.</entry>
+    <entry key="ADD_PREFIX_CHEBI">Adding missing CHEBI: namespace.</entry>
+    <entry key="ADD_PREFIX_GI">Adding missing GI: namespace.</entry>
+    <entry key="ADD_PREFIX_GO">Adding missing GO: namespace.</entry>
     <entry key="ADD_URI_FAILED_COBRA">Could not obtain resource URI for collection ''{0}'' and id ''{1}''.</entry>
     <entry key="ADDED_FLUX_OBJ">Added flux objective for reaction ''{0}'' with coefficient {1,number} to model {2}.</entry>
     <entry key="ADDED_UNIT_DEF">Added basic mmol_per_gDW_per_hr unit definition to model</entry>
@@ -76,8 +77,8 @@
     <entry key="ID_MISSING_FOR_TYPE">Found element of type {0} without defined id.</entry>
     <entry key="ID_PREFIX_UNKNOWN">Id ''{0}'' seems to have no known prefix.</entry>
     <entry key="IDENTIFIER_NULL_GENE">Identifier was null for collection ''{0}'' and this gene resource URI </entry>
-    <entry key="ILLEGAL_STOICH_PROD">Some products in reaction {0} have an illegal stoichiometry</entry>
-    <entry key="ILLEGAL_STOICH_REACT">Some reactants in reaction {0} have an illegal stoichiometry</entry>
+    <entry key="ILLEGAL_STOICH_PROD">Some products in reaction {0} have an non strict stoichiometry</entry>
+    <entry key="ILLEGAL_STOICH_REACT">Some reactants in reaction {0} have an non strict stoichiometry</entry>
     <entry key="INCLUDE_ANY_URI_DESC">This switch allows users to specify if also those database cross-links should be extracted from BiGG Models database for which currently no entry in the MIRIAM exists. If set to true, ModelPolisher also includes URIs that do not contain the pattern identifiers.org.</entry>
     <entry key="INPUT_DESC">SBML, MAT or JSON files, or directories</entry>
     <entry key="IS_COMPARTMENT_FAILED">Could not determine if ''{0}'' is a compartment or not: {1}.</entry>
@@ -113,7 +114,7 @@
     <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
     <entry key="OUTPUT_DESC">Output SBML file</entry>
     <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
-    <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because of {1}</entry>
+    <entry key="PARSE_GPR_ERROR">Could not parse ''{0}'' because {1}</entry>
     <entry key="PARSE_ID_FAILED">Failed to correctly parse id ''{0}''. {1}</entry>
     <entry key="PATTERN_MISMATCH">Identifier ''{0}'' did not match the pattern ''{1}''</entry>
     <entry key="PATTERN_MISMATCH_DROP">Collection ''{0}'' does not match expected pattern. It will not be added as resource.</entry>
@@ -164,7 +165,7 @@
     <entry key="VAL_ERROR">No SBML validation possible, process terminated with errors.</entry>
     <entry key="VERSION_NR_MISSING">There is no version number provided for this model</entry>
     <entry key="WRITE_COMBINE_ARCHIVE">Writing COMBINE Archive {0}</entry>
-    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}.</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}. Skipping directory.</entry>
     <entry key="WRITE_FILE_INFO">Writing output file {0}</entry>
     <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
     <entry key="WRITE_TO_FILE_ERROR">Cannot write to file {0}.</entry>

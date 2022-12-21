@@ -1,38 +1,192 @@
-/**
- * 
- */
 package edu.ucsd.sbrg.bigg;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * @author Thomas Zajac
  */
 public class BiGGIdTest {
 
-  static final String[] ID_STRINGS = {"G_1818", "R_EX_h2o_e", "M_nadh_c",
-    "M_14glucan_e", "R_2AGPE181tipp", "G_SDY_0121", "M_13_cis_retnglc_c",
-    "R_24_25DHVITD2tm", "G_10090_AT1", "M_20ahchsterol_m", "R_1a_24_25VITD2Hm",
-    "R_3DSPHR", "G_Acmsd", "M_12dgr_HP_c", "R_BIOMASS_HP_published",
-    "M_26dap__M_c", "R_BIOMASS_Ecoli_TM", "G_S_0001", "M_26dap_LL_c",
-    "R_BIOMASS_Ecoli_core_w_GAM", "G_test_mm_MM"};
-  static BiGGId[] testIds;
+  private static Map<String, List<String>> biggIds = new HashMap<>();
+  private static Map<String, BiGGId> correctMetaboliteId = new HashMap<>();
+  private static Map<String, BiGGId> correctReactionId = new HashMap<>();
+  private static Map<String, BiGGId> correctGeneProductId = new HashMap<>();
+  private static Map<String, String> processedIdentifiers = new HashMap<>();
+
+  /**
+   * Initializes BiGGIds for testing - empty IDs are should be handled elsewhere, as they are invalid in SBML
+   */
+  @BeforeAll
+  @SuppressWarnings("unchecked")
+  public static void setUp() {
+    // load all BiGG SBML IDs
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      biggIds = mapper.readValue(BiGGId.class.getResourceAsStream("bigg_models_data_ids.json"), Map.class);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    // metabolites - unique cases from old implementation
+    prepareMetaboliteId("h", "c", "h_c");
+    prepareMetaboliteId("12dgr_HP", "c", "12dgr_HP_c");
+    prepareMetaboliteId("13_cis_retnglc", "c", "13_cis_retnglc_c");
+    prepareMetaboliteId("20ahchsterol", "m", "20ahchsterol_m");
+    prepareMetaboliteId("26dap__M", "c", "26dap__M_c");
+    prepareMetaboliteId("nadh", "c", "nadh_c");
+    // metabolites - remaining cases
+    prepareMetaboliteId("nadh", "", "nadh");
+    prepareMetaboliteId("nadh____", "c", "nadh_____c");
+    // reactions
+    prepareReactionId("R", "2AGPE181tipp", "", "2AGPE181tipp");
+    prepareReactionId("R", "24_25DHVITD2tm", "", "24_25DHVITD2tm");
+    prepareReactionId("R", "3DSPHR", "", "3DSPHR");
+    prepareReactionId("", "BIOMASS_Ecoli_core_w_GAM", "", "BIOMASS_Ecoli_core_w_GAM");
+    prepareReactionId("", "BIOMASS_Ecoli_TM", "", "BIOMASS_Ecoli_TM");
+    prepareReactionId("", "BIOMASS_HP_published", "", "BIOMASS_HP_published");
+    // We don't handle reaction compartment code for now
+    prepareReactionId("", "EX_h2o_e", "", "EX_h2o_e");
+    // r reactions - remaining cases
+    prepareReactionId("", "EX_h2o_e", "", "R_EX_h2o_e");
+    // gene products
+    prepareGeneProductId("10090_AT1", "10090_AT1");
+    prepareGeneProductId("1818", "1818");
+    prepareGeneProductId("1a_24_25VITD2Hm", "1a_24_25VITD2Hm");
+    prepareGeneProductId("Acmsd", "Acmsd");
+    prepareGeneProductId("SDY_0121", "SDY_0121");
+    prepareGeneProductId("S_0001", "S_0001");
+    // gene products reamining cases
+    // prepareGeneProductId("","");
+  }
 
 
   /**
-   * Initializes BiGGId-Array for testing
+   * Set up mapping for testIds to their corresponding correct BiGGId, test all four possibilites, i.e. w and w/o
+   * prefix, lowercase prefix and prepended underscore
+   *
+   * @param abbreviation:
+   *        Abbreviation part of id with no further semantic meaning
+   * @param compartmentCode:
+   *        CompartmentCode of id
+   * @param id:
+   *        Full id to test
    */
-  @BeforeClass
-  public static final void setUp() {
-    testIds = new BiGGId[ID_STRINGS.length];
-    for (int counter = 0; counter < ID_STRINGS.length; counter++) {
-      testIds[counter] = new BiGGId(ID_STRINGS[counter]);
+  private static void prepareMetaboliteId(String abbreviation, String compartmentCode, String id) {
+    String prefix = "M";
+    BiGGId biGGId = new BiGGId();
+    biGGId.setPrefix(prefix);
+    biGGId.setAbbreviation(abbreviation);
+    biGGId.setCompartmentCode(compartmentCode);
+    correctMetaboliteId.put(id, biGGId);
+    correctMetaboliteId.put("_" + id, biGGId);
+    correctMetaboliteId.put(prefix.toLowerCase() + "_" + id, biGGId);
+    correctMetaboliteId.put(prefix + "_" + id, biGGId);
+  }
+
+
+  /**
+   * Set up mapping for testIds to their corresponding correct BiGGId, test all four possibilites, i.e. w and w/o
+   * prefix, lowercase prefix and prepended underscore
+   * 
+   * @param prefix:
+   *        Reaction prefix, if not pseudoreaction
+   * @param abbreviation:
+   *        Abbreviation part of id with no further semantic meaning
+   * @param compartmentCode:
+   *        CompartmentCode of id
+   * @param id:
+   *        Full id to test
+   */
+  private static void prepareReactionId(String prefix, String abbreviation, String compartmentCode, String id) {
+    BiGGId biGGId = new BiGGId();
+    biGGId.setPrefix(prefix);
+    biGGId.setAbbreviation(abbreviation);
+    biGGId.setCompartmentCode(compartmentCode);
+    correctReactionId.put(id, biGGId);
+    correctReactionId.put("_" + id, biGGId);
+    // skip if pseudoreactions, produces duplicates of "_" + id for those
+    if (!prefix.isEmpty()) {
+      correctReactionId.put(prefix.toLowerCase() + "_" + id, biGGId);
+      correctReactionId.put(prefix + "_" + id, biGGId);
     }
+  }
+
+
+  /**
+   * Set up mapping for testIds to their corresponding correct BiGGId, test all four possibilites, i.e. w and w/o
+   * prefix, lowercase prefix and prepended underscore
+   *
+   * @param abbreviation:
+   *        Abbreviation part of id with no further semantic meaning
+   * @param id:
+   *        Full id to test
+   */
+  private static void prepareGeneProductId(String abbreviation, String id) {
+    String prefix = "G";
+    BiGGId biGGId = new BiGGId();
+    biGGId.setPrefix(prefix);
+    biGGId.setAbbreviation(abbreviation);
+    correctGeneProductId.put(id, biGGId);
+    correctGeneProductId.put("_" + id, biGGId);
+    correctGeneProductId.put(prefix.toLowerCase() + "_" + id, biGGId);
+    correctGeneProductId.put(prefix + "_" + id, biGGId);
+  }
+
+
+  @Test
+  public final void geneIdsValid() {
+    List<String> ids = biggIds.get("genes");
+    ids.forEach(id -> {
+      BiGGId.createGeneId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void metaboliteIdsValid() {
+    List<String> ids = biggIds.get("metabolites");
+    ids.forEach(id -> {
+      BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void reactionIdsValid() {
+    List<String> ids = biggIds.get("reactions");
+    ids.forEach(id -> {
+      BiGGId.createReactionId(id).ifPresent(biggId -> {
+        processedIdentifiers.put(id, biggId.toBiGGId());
+        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+      });
+    });
+  }
+
+
+  @Test
+  public final void testIsSetMetaboliteCompartment() {
+    String metabolite = "M_5dglcn_c";
+    BiGGId biggId = BiGGId.createMetaboliteId(metabolite).get();
+    assertTrue(biggId.isSetCompartmentCode());
+    assertEquals("c", biggId.getCompartmentCode());
   }
 
 
@@ -42,190 +196,46 @@ public class BiGGIdTest {
   @Test
   public final void testHashCode() {
     assertEquals(923521, new BiGGId().hashCode());
-    assertEquals(-2105880884, testIds[0].hashCode());
   }
 
 
   /**
-   * Test method for
-   * {@link BiGGId#equals(java.lang.Object)}.
-   * Tests equality of both Constructors and the equals Method
+   * Test method for {@link BiGGId#toBiGGId()} for geneProduct ids
    */
   @Test
-  public final void testEqualsObject() {
-    for (int idPos = 0; idPos < testIds.length; idPos++) {
-      BiGGId firstConstructorId = new BiGGId(ID_STRINGS[idPos]);
-      BiGGId testId = testIds[idPos];
-      BiGGId secondConstructorId =
-        new BiGGId(testId.getPrefix(), testId.getAbbreviation(),
-          testId.getCompartmentCode(), testId.getTissueCode());
-      assertEquals(testId, firstConstructorId);
-      assertTrue(testId.equals(firstConstructorId));
-      assertEquals(testId, secondConstructorId);
-      assertTrue(testId.equals(secondConstructorId));
+  public final void testToBiGGIdGeneProducts() {
+    for (Map.Entry<String, BiGGId> entry : correctGeneProductId.entrySet()) {
+      BiGGId.createGeneId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
     }
   }
 
 
   /**
-   * Test method for {@link BiGGId#isSetAbbreviation()}.
+   * Test method for {@link BiGGId#toBiGGId()} for metabolite ids
    */
   @Test
-  public final void testIsSetAbbreviation() {
-    for (int idPos = 0; idPos < testIds.length; idPos++) {
-      assertTrue(testIds[idPos].isSetAbbreviation());
+  public final void testToBiGGIdMetabolites() {
+    for (Map.Entry<String, BiGGId> entry : correctMetaboliteId.entrySet()) {
+      BiGGId.createMetaboliteId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
     }
   }
 
 
   /**
-   * Test method for {@link BiGGId#isSetCompartmentCode()}.
+   * Test method for {@link BiGGId#toBiGGId()} for reaction ids
    */
   @Test
-  public final void testIsSetCompartmentCode() {
-    assertFalse(new BiGGId().isSetCompartmentCode());
-    assertFalse(testIds[0].isSetCompartmentCode());
-    assertTrue(testIds[18].isSetCompartmentCode());
-  }
-
-
-  /**
-   * Test method for {@link BiGGId#isSetPrefix()}.
-   */
-  @Test
-  public final void testIsSetPrefix() {
-    for (int idPos = 0; idPos < testIds.length; idPos++) {
-      assertTrue(testIds[idPos].isSetPrefix());
-    }
-    assertFalse(new BiGGId().isSetPrefix());
-  }
-
-
-  /**
-   * Test method for {@link BiGGId#isSetTissueCode()}.
-   */
-  @Test
-  public final void testIsSetTissueCode() {
-    assertFalse(new BiGGId().isSetTissueCode());
-    assertFalse(testIds[0].isSetTissueCode());
-    assertFalse(testIds[18].isSetTissueCode());
-  }
-
-
-  /**
-   * Test method for
-   * {@link BiGGId#setCheckAbbreviation(java.lang.String)}.
-   */
-  @Test
-  public final void testSetAbbreviation() {
-    BiGGId oneTimeID = new BiGGId();
-    oneTimeID.setCheckAbbreviation("");
-    assertEquals("", oneTimeID.getAbbreviation());
-    assertEquals("26dap_LL", testIds[18].getAbbreviation());
-  }
-
-
-  /**
-   * Test method for
-   * {@link BiGGId#setCheckCompartmentCode(java.lang.String)}
-   * .
-   */
-  @Test
-  public final void testSetCheckCompartmentCode() {
-    assertEquals("c", testIds[18].getCompartmentCode());
-    assertEquals("mm", testIds[20].getCompartmentCode());
-  }
-
-
-  /**
-   * Test method for
-   * {@link BiGGId#setParsedPrefix(java.lang.String)}.
-   */
-  @Test
-  public final void testSetParsedPrefix() {
-    BiGGId oneTimeId = new BiGGId();
-    oneTimeId.setParsedPrefix("R_EX_FLUENT");
-    assertEquals("R_EX", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("R_DM_MORE_ENERGY");
-    assertEquals("R_DM", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("R_BIOMASS_MASS");
-    assertEquals("R_BIOMASS", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("R_I_AM_A_REACTION");
-    assertEquals("R", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("G_IACZ");
-    assertEquals("G", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("L_NOT_AN_ID");
-    assertEquals("", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setParsedPrefix("");
-    assertEquals("", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-  }
-
-
-  /**
-   * Test method for
-   * {@link BiGGId#setConstructorPrefix(java.lang.String)}.
-   */
-  @Test
-  public final void testSetConstructorPrefix() {
-    BiGGId oneTimeId = new BiGGId();
-    oneTimeId.setConstructorPrefix("R_EX_FLUENT");
-    assertEquals("", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("R_EX");
-    assertEquals("R_EX", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("R_DM");
-    assertEquals("R_DM", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("R_BIOMASS");
-    assertEquals("R_BIOMASS", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("R");
-    assertEquals("R", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("G");
-    assertEquals("G", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("L_NOT_AN_ID");
-    assertEquals("", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-    oneTimeId.setConstructorPrefix("");
-    assertEquals("", oneTimeId.getPrefix());
-    oneTimeId.unsetPrefix();
-  }
-
-
-  /**
-   * Test method for
-   * {@link BiGGId#setCheckTissueCode(java.lang.String)}.
-   */
-  @Test
-  public final void testSetCheckTissueCode() {
-    assertEquals("", testIds[18].getTissueCode());
-    assertEquals("MM", testIds[20].getTissueCode());
-  }
-
-
-  /**
-   * Test method for {@link BiGGId#toBiGGId()}.
-   */
-  @Test
-  public final void testToBiGGId() {
-    for (int idPos = 0; idPos < testIds.length; idPos++) {
-      assertEquals(ID_STRINGS[idPos], testIds[idPos].toBiGGId());
+  public final void testToBiGGIdReactions() {
+    for (Map.Entry<String, BiGGId> entry : correctReactionId.entrySet()) {
+      BiGGId.createReactionId(entry.getKey())
+            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
     }
   }
 
 
-  @AfterClass
-  public static final void cleanUp() {
-    testIds = null;
+  @AfterAll
+  public static void cleanUp() {
   }
 }

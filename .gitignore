@@ -5,8 +5,7 @@
 .project
 /build/
 /target/
-/src/main/resources/edu/ucsd/sbrg/bigg/bigg.zip
-/src/main/resources/edu/ucsd/sbrg/bigg/bigg.sqlite
+src/main/resources/edu/ucsd/sbrg/miriam/IdentifiersOrg-Registry.json
 /src/scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log
@@ -14,5 +13,7 @@ jsbml.log
 /minimalSysBio.xml
 /model_polisher.log
 /out
-/example_models/output
+/src/main/resources/edu/ucsd/sbrg/example_models/output
 /src/test/resources/edu/ucsd/sbrg/bigg/e_coli_core.zip
+*.class
+/bin

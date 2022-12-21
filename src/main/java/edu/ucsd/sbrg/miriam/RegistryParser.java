@@ -1,17 +1,27 @@
 package edu.ucsd.sbrg.miriam;
 
-import java.net.URL;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.ucsd.sbrg.miriam.xjc.Miriam;
+import edu.ucsd.sbrg.miriam.models.Miriam;
+import edu.ucsd.sbrg.miriam.models.Namespace;
+import edu.ucsd.sbrg.miriam.models.Root;
 
 public class RegistryParser {
 
+  private static final Logger logger = Logger.getLogger(RegistryParser.class.getName());
   private static RegistryParser parser;
-  private static URL registryLocation;
+  private static InputStream registry;
+
+  private RegistryParser() {
+    super();
+    registry = RegistryParser.class.getResourceAsStream("IdentifiersOrg-Registry.json");
+  }
 
 
   public static RegistryParser getInstance() {
@@ -22,17 +32,13 @@ public class RegistryParser {
   }
 
 
-  Miriam parse() throws JAXBException {
-    // stax/sax parser might be more efficient, as we only need a subset of the data
-    // we parse the whole tree for now
-    JAXBContext ctx = JAXBContext.newInstance(Miriam.class);
-    Unmarshaller unmarshaller = ctx.createUnmarshaller();
-    return (Miriam) unmarshaller.unmarshal(registryLocation);
-  }
-
-
-  private RegistryParser() {
-    super();
-    registryLocation = RegistryParser.class.getResource("IdentifiersOrg-Registry.xml");
+  Miriam parse() throws IOException {
+    logger.fine("Parsing MIRIAM registry");
+    ObjectMapper mapper = new ObjectMapper();
+    Root root =  mapper.readValue(registry, Root.class);
+    List<Namespace> namespaces = root.getPayload().get("namespaces");
+    HashMap<String, Namespace> prefixIndexedNamespaces = new HashMap<>();
+    namespaces.forEach(x -> prefixIndexedNamespaces.put(x.getPrefix(), x));
+    return Miriam.initFrom(prefixIndexedNamespaces);
   }
 }
