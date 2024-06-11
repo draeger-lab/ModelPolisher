@@ -12,7 +12,6 @@ import edu.ucsd.sbrg.util.SBMLUtils;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
