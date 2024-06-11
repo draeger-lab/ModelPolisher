@@ -2,7 +2,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     id 'com.github.jk1.dependency-license-report' version '2.0'
-    id "com.github.ben-manes.versions" version "0.51.0"    
+    id "com.github.ben-manes.versions" version "0.51.0"
     id "java"
     id "application"
 }
@@ -20,12 +20,12 @@ licenseReport {
 	/*
 	 - Ensures that similar licenses are grouped together
 	 */
-        new com.github.jk1.license.filter.LicenseBundleNormalizer(),
+	new com.github.jk1.license.filter.LicenseBundleNormalizer(),
 	/*
 	 - Transitive dependencies are not included in the report
 	 - Be aware that excluding transitive dependencies might omit some licenses from the report
 	 */
-        new com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter()
+	new com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter()
     ]
 }
 
@@ -49,44 +49,45 @@ java {
 sourceSets {
     // compiled into the main application JAR
     main {
-        java {
-            srcDirs = ["src/main/java"]
-        }
-        resources {
-            srcDirs = ["src/main/resources"]
-        }
+	java {
+	    srcDirs = ["src/main/java"]
+	}
+	resources {
+	    srcDirs = ["src/main/resources"]
+	}
     }
     // compiled and used for running tests
     // Depends on the output of the main source set,
     // i.e. includes the compiled classes from the main source set in its classpath.
     test {
-        java {
-            srcDirs = ["src/test/java"]
-        }
-        resources {
-            srcDirs = ["src/test/resources"]
-        }
+	java {
+	    srcDirs = ["src/test/java"]
+	}
+	resources {
+	    srcDirs = ["src/test/resources"]
+	}
     }
 }
 
 // specify where Gradle should look for dependencies
 // i.e. the locations (repositories) from which to fetch the libraries and plugins
 repositories {
-    // Use Maven Central    
+    // Use Maven Central
     mavenCentral()
     // snapshot versions of artifacts (i.e. dependency JARs)
     // Sonatype is the company behind the Maven Central repository
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     // resolve dependencies from a local directory
     flatDir {
-        dirs "lib/de/zbit/SysBio/1390"
+	dirs "lib/de/zbit/SysBio/1390"
     }
 }
 
 /** ==== Dependencies ==== **/
 // variables used in dependency definitions
-def jacksonVersion = "2.13.3"
-def jupiterVersion = "5.8.2"
+def jacksonVersion = "2.17.1"
+def jupiterVersion = "5.10.2"
+def testContainersVersion = "1.19.8"
 
 /*
  - `implementation`: Dependencies required for the main source set.
@@ -99,35 +100,35 @@ dependencies {
     // reading, writing, and manipulating SBML files
     implementation "org.sbml.jsbml:jsbml:1.6.1"
     // local dependency for systems biology tools
-    implementation "de.zbit:SysBio:1390"    
+    implementation "de.zbit:SysBio:1390"
     // official JDBC driver for PostgreSQL
-    implementation "org.postgresql:postgresql:42.4.0"    
+    implementation "org.postgresql:postgresql:42.7.3"
     // ontology support within BioJava
-    implementation "org.biojava:biojava-ontology:6.0.5"
+    implementation "org.biojava:biojava-ontology:7.1.1"
     // interacting with MATLAB files
-    implementation 'us.hebi.matlab.mat:mfl-core:0.5.9'   
+    implementation 'us.hebi.matlab.mat:mfl-core:0.5.15'
     // JSON processor
-    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"    
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     // data binding for Jackson
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     // Java port of HTML Tidy, for cleaning up malformed HTML
     implementation "net.sf.jtidy:jtidy:r938"
     // handle Combine Archives (packages of biological models)
-    implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"    
+    implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
     // JDBC connection pool
-    implementation "com.zaxxer:HikariCP:5.0.1"
+    implementation "com.zaxxer:HikariCP:5.1.0"
 
     // Test implementation dependencies
     // API for writing tests with JUnit 5
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"  
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
     // for integration testing with Docker containers
-    testImplementation "org.testcontainers:testcontainers:1.17.3"   
+    testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
     // integration of Testcontainers with JUnit Jupiter
-    testImplementation "org.testcontainers:junit-jupiter:1.17.3"
+    testImplementation "org.testcontainers:junit-jupiter:${testContainersVersion}"
 
     // Test runtime-only dependencies
     // runtime engine for executing tests with JUnit 5
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
 }
 
@@ -138,16 +139,16 @@ tasks.withType(Jar) {
     dependsOn test
     destinationDirectory = file("$rootDir/target")
     manifest {
-        attributes(
-                "Version": project.version,
-                "Implementation-Title": "ModelPolisher",
-                "Implementation-Version": project.version,
-                "Specification-Vendor": "University of California, San Diego",
-                "Specification-Title": "ModelPolisher",
-                "Implementation-Vendor-Id": "edu.ucsd.sbrg",
-                "Implementation-Vendor": "University of California, San Diego",
-                "Main-Class": "edu.ucsd.sbrg.bigg.ModelPolisher"
-        )
+	attributes(
+	    "Version": project.version,
+	    "Implementation-Title": "ModelPolisher",
+	    "Implementation-Version": project.version,
+	    "Specification-Vendor": "University of California, San Diego",
+	    "Specification-Title": "ModelPolisher",
+	    "Implementation-Vendor-Id": "edu.ucsd.sbrg",
+	    "Implementation-Vendor": "University of California, San Diego",
+	    "Main-Class": "edu.ucsd.sbrg.bigg.ModelPolisher"
+	)
     }
 }
 
@@ -163,14 +164,14 @@ tasks.withType(Test) {
 	// showStandardStreams = true
 	// events "passed", "skipped", "failed"
 	// exceptionFormat TestExceptionFormat.FULL
-        // showCauses true
-        // showExceptions true
-        // showStackTraces true
-        showStandardStreams = false
-        events "failed"
-        showCauses false
-        showExceptions false
-        showStackTraces false	
+	// showCauses true
+	// showExceptions true
+	// showStackTraces true
+	showStandardStreams = false
+	events "failed"
+	showCauses false
+	showExceptions false
+	showStackTraces false
     }
 }
 
@@ -184,43 +185,43 @@ clean.doFirst {
 // get latest version of MIRIAM registry
 task downloadMIRIAM {
     doLast {
-        def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
-        def parentDir = file('src/main/resources/edu/ucsd/sbrg/miriam')
-        def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
+	def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
+	def parentDir = file('src/main/resources/edu/ucsd/sbrg/miriam')
+	def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
 
-        if (!parentDir.exists()) {
-            parentDir.mkdirs()
-        }
+	if (!parentDir.exists()) {
+	    parentDir.mkdirs()
+	}
 
-        def registry = new URL(registryUrl).text
-        registryFile.text = registry
+	def registry = new URL(registryUrl).text
+	registryFile.text = registry
     }
 }
 
 // ensure downloadMIRIAM task is executed before processResources task
 // processResources is inbuilt in the Java plugin and
-// copies resources from src/main/resources to build/resources/main 
+// copies resources from src/main/resources to build/resources/main
 processResources.dependsOn(downloadMIRIAM)
 
 // create distributable standalone JAR that includes
 // not only the project's compiled classes but also all the dependencies' classes
 task uberJar(type: Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    
+
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath
     from {
-        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+	configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 }
 
 // build a Docker container image after rebuilding the JAR
 task buildDockerContainer(type: Exec) {
     commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
-            "export COMPOSE_FILE=docker-compose.devel.yml && " +
-            "docker-compose pull && " +
-            "docker-compose build && " +
-            "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
+	"export COMPOSE_FILE=docker-compose.devel.yml && " +
+	"docker-compose pull && " +
+	"docker-compose build && " +
+	"rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
     dependsOn uberJar
 }
 
@@ -228,8 +229,8 @@ task buildDockerContainer(type: Exec) {
 // the generation of Javadocs when the task is executed
 task javadocs(type: Javadoc) {
     doFirst {
-        // make sure that directory exists
-        file(new File(rootProject.projectDir.toString() + "/docs")).mkdirs()
+	// make sure that directory exists
+	file(new File(rootProject.projectDir.toString() + "/docs")).mkdirs()
     }
     destinationDir = new File(rootProject.projectDir.toString() + "/docs")
     classpath = sourceSets.main.runtimeClasspath
@@ -240,9 +241,9 @@ task javadocs(type: Javadoc) {
 // bump jar version in ModelPolisher.sh
 if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
-        replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
-        replaceVersion(rootProject.projectDir.toString() + "/README.md")
-        replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
+	replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
+	replaceVersion(rootProject.projectDir.toString() + "/README.md")
+	replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
 }
@@ -252,12 +253,12 @@ def replaceVersion(path) {
     File file = new File(path)
     String MPVersion = /ModelPolisher-(.*?)\d{1,2}(.\d{1,2}){1,2}(-beta)?.jar/
     file.eachLine {
-        line ->
-            content.add(line.replaceAll(MPVersion, "ModelPolisher-" + "${version}.jar"))
+	line ->
+	content.add(line.replaceAll(MPVersion, "ModelPolisher-" + "${version}.jar"))
     }
     BufferedWriter writer = new BufferedWriter(new FileWriter(file))
     content.each {
-        line -> writer.writeLine(line)
+	line -> writer.writeLine(line)
     }
     writer.close()
 }
