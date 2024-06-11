@@ -13,7 +13,7 @@ public class CompactEntry {
   private final String prefix;
   private final String sampleId;
   private final boolean deprecated;
-  private final boolean namespaceEmbeddedInLui;
+  private final boolean namespaceEmbeddedInLui; // LUI = Local Unique Identifiers
   private final List<CompactResource> resources;
 
   private CompactEntry(Namespace namespace) {
@@ -68,6 +68,11 @@ public class CompactEntry {
   }
 
 
+  /**
+   * Checks if the namespace is embedded in the locally unique identifier (LUI).
+   * 
+   * @return {@code true} if the namespace is embedded in the LUI, {@code false} otherwise.
+   */
   public boolean isNamespaceEmbeddedInLui() {
     return namespaceEmbeddedInLui;
   }

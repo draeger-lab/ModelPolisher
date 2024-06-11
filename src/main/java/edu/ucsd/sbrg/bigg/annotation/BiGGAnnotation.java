@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamException;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
+import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -45,7 +46,11 @@ import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.BiGGDBContract;
 import edu.ucsd.sbrg.db.QueryOnce;
 
+
 /**
+ * This class is responsible for annotating SBML models using data from the BiGG database.
+ * It handles the addition of annotations related to compartments, species, reactions, and gene products.
+ * 
  * @author Thomas Zajac
  *         This code runs only, if ANNOTATE_WITH_BIGG is true
  */
@@ -70,14 +75,15 @@ public class BiGGAnnotation {
 
   public BiGGAnnotation() {
   }
-
+  
 
   /**
-   * Adds annotations from BiGG Knowledgebase for the model contained in the {@link SBMLDocument}
-   * 
-   * @param doc:
-   *        {@link SBMLDocument} to be annotated with data from BiGG Knowledgebase
-   * @return Annotated SBMLDocument
+   * Annotates an SBMLDocument using data from the BiGG Knowledgebase. This method processes various components of the
+   * SBML model such as compartments, species, reactions, and gene products by adding relevant annotations from BiGG.
+   * It also handles the addition of publications and notes related to the model.
+   *
+   * @param doc The SBMLDocument that contains the model to be annotated.
+   * @return The annotated SBMLDocument.
    */
   public SBMLDocument annotate(SBMLDocument doc) {
     if (!doc.isSetModel()) {
@@ -85,30 +91,37 @@ public class BiGGAnnotation {
       return doc;
     }
     Model model = doc.getModel();
-    // add fake count so it never reaches 100 before gene products are processed, as new gene products are added
+    // Initialize the count for progress tracking, adding a buffer to ensure progress does not reach 100% prematurely, as new gene products are added
     // dynamically
     int count = model.getCompartmentCount() + model.getSpeciesCount() + model.getReactionCount() + 50;
+    // Check for the FBC plugin and adjust the count based on the number of gene products
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-      initialGeneProducts = fbcModelPlug.getGeneProductCount();
+      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      initialGeneProducts = fbcModelPlugin.getGeneProductCount();
       count += initialGeneProducts;
     }
+    // Set up the progress bar for tracking annotation progress
     progress = new ProgressBar(count);
+    // Process replacements for placeholders in the model notes
     Map<String, String> replacements = processReplacements(model);
+    // Annotate the model with general information
     ModelAnnotation modelAnnotation = new ModelAnnotation(model);
     modelAnnotation.annotate();
+    // Annotate various components of the model
     annotatePublications(model);
     annotateListOfCompartments(model);
     annotateListOfSpecies(model);
     annotateListOfReactions(model);
     annotateListOfGeneProducts(model);
+    // Append notes to the document, handling potential I/O and XML exceptions
     try {
       appendNotes(doc, replacements);
     } catch (IOException | XMLStreamException exc) {
       logger.warning(MESSAGES.getString("FAILED_WRITE_NOTES"));
     }
-    // Recursively sort and group all annotations in the SBMLDocument.
+    // Merge all MIRIAM annotations to ensure they are correctly grouped and sorted
     mergeMIRIAMannotations(doc);
+    // Finalize the progress once all tasks are completed
     if (progress != null) {
       progress.finished();
     }
@@ -117,19 +130,26 @@ public class BiGGAnnotation {
 
 
   /**
-   * Replace placeholders in {@link Parameters#documentTitlePattern()} and ModelNotes
+   * Processes and replaces placeholders in the document title pattern and model notes with actual values from the model.
+   * This method retrieves the model ID and organism information from the BiGG database, and uses these along with
+   * other parameters to populate a map of replacements. These replacements are used later to substitute placeholders
+   * in the SBMLDocument notes.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model The {@link Model} contained within the {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}.
+   * @return A map of placeholder strings and their corresponding replacement values.
    */
   private Map<String, String> processReplacements(Model model) {
+    // Retrieve the model ID
     String id = model.getId();
-    // Empty organism name should be ok, if it is not a BiGG model
+    // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
     String organism = BiGGDB.getOrganism(id).orElse("");
+    // Access the current parameters instance
     Parameters parameters = Parameters.get();
+    // Retrieve and process the document title pattern by replacing placeholders
     String name = parameters.documentTitlePattern();
     name = name.replace("[biggId]", id);
     name = name.replace("[organism]", organism);
+    // Initialize a map to hold the replacement values
     Map<String, String> replacements = new HashMap<>();
     replacements.put("${organism}", organism);
     replacements.put("${title}", name);
@@ -137,6 +157,7 @@ public class BiGGAnnotation {
     replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
     replacements.put("${bigg.timestamp}", BiGGDB.getBiGGVersion().map(date -> format("{0,date}", date)).orElse(""));
     replacements.put("${species_table}", "");
+    // Set the model name to the organism name if it is not already set
     if (!model.isSetName()) {
       model.setName(organism);
     }
@@ -145,19 +166,20 @@ public class BiGGAnnotation {
 
 
   /**
-   * Replaces generic placeholders in notes files and appends both note types
+   * This method appends notes to the SBMLDocument and its model by replacing placeholders in the notes files.
+   * It handles both model-specific notes and document-wide notes.
    *
-   * @param doc:
-   *        {@link SBMLDocument} to add notes to
-   * @throws IOException:
-   *         propagated from {@link SBMLDocument#appendNotes(String)} or {@link Model#appendNotes(String)}
-   * @throws XMLStreamException:
-   *         propagated from {@link SBMLDocument#appendNotes(String)} or {@link Model#appendNotes(String)}
+   * @param doc The SBMLDocument to which the notes will be appended.
+   * @param replacements A map containing the placeholder text and their replacements.
+   * @throws IOException If there is an error reading the notes files or writing to the document.
+   * @throws XMLStreamException If there is an error processing the XML content of the notes.
    */
   private void appendNotes(SBMLDocument doc, Map<String, String> replacements) throws IOException, XMLStreamException {
     Parameters parameters = Parameters.get();
     String modelNotesFile = "ModelNotes.html";
     String documentNotesFile = "SBMLDocumentNotes.html";
+    
+    // Determine the files to use for model and document notes based on user settings
     if (parameters.noModelNotes()) {
       modelNotesFile = null;
       documentNotesFile = null;
@@ -171,9 +193,13 @@ public class BiGGAnnotation {
         documentNotesFile = documentNotes != null ? documentNotes.getAbsolutePath() : null;
       }
     }
+    
+    // Append document notes if the title placeholder is present and the notes file is specified
     if (replacements.containsKey("${title}") && (documentNotesFile != null)) {
       doc.appendNotes(parseNotes(documentNotesFile, replacements));
     }
+    
+    // Append model notes if the notes file is specified
     if (modelNotesFile != null) {
       doc.getModel().appendNotes(parseNotes(modelNotesFile, replacements));
     }
@@ -211,13 +237,13 @@ public class BiGGAnnotation {
 
 
   /**
-   * @param sbase:
-   *        Current {@link SBase} to merge annotations for
-   * @param miriam:
-   *        Current annotations for the given {@link SBase}
-   * @return Returns {@code true}, if there are different {@link CVTerm} instances with the same qualifier that need to
-   *         be
-   *         merged
+   * Evaluates and merges CVTerm annotations for a given SBase element. This method checks each CVTerm associated with
+   * the SBase and determines if there are multiple CVTerms with the same Qualifier that need merging. It also corrects
+   * invalid qualifiers based on the type of SBase (Model or other biological elements).
+   *
+   * @param sbase The SBase element whose annotations are to be evaluated and potentially merged.
+   * @param miriam A sorted map that groups CVTerm resources by their qualifiers.
+   * @return true if there are CVTerms with the same qualifier that need to be merged, false otherwise.
    */
   private boolean hashMIRIAMuris(SBase sbase, SortedMap<Qualifier, SortedSet<String>> miriam) {
     boolean doMerge = false;
@@ -247,11 +273,13 @@ public class BiGGAnnotation {
 
 
   /**
-   * Add publication annotation for given {@link Model}.
-   * Only works for models contained in BiGG
+   * This method annotates a given {@link Model} with publication references retrieved from the BiGG database.
+   * It is specifically designed to work with models that are part of the BiGG database. The method first checks
+   * if the model exists in the BiGG database. If it does, it retrieves a list of publications associated with
+   * the model's ID. Each publication is then converted into a URI and added to the model as a {@link CVTerm}
+   * with the qualifier {@link CVTerm.Qualifier#BQM_IS_DESCRIBED_BY}.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model the {@link Model} to be annotated, which is contained within an {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
    */
   private void annotatePublications(Model model) {
     progress.DisplayBar("Annotating Publications (1/5)  ");
@@ -273,49 +301,51 @@ public class BiGGAnnotation {
 
 
   /**
-   * Delegates annotation processing for all compartments contained in the {@link Model}
+   * This method delegates the annotation processing for each compartment within the provided {@link Model}.
+   * It iterates over all compartments in the model, updating the progress display and invoking the annotation
+   * process for each compartment.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model the {@link Model} contained within the {@link SBMLDocument} that is passed to {@link #annotate(SBMLDocument)}
    */
   private void annotateListOfCompartments(Model model) {
-    for (int i = 0; i < model.getCompartmentCount(); i++) {
+    for (Compartment compartment : model.getListOfCompartments()) {
       progress.DisplayBar("Annotating Compartments (2/5)  ");
-      CompartmentAnnotation compartmentAnnotation = new CompartmentAnnotation(model.getCompartment(i));
+      CompartmentAnnotation compartmentAnnotation = new CompartmentAnnotation(compartment);
       compartmentAnnotation.annotate();
     }
   }
 
 
   /**
-   * Delegates annoation processing for all chemical species contained in the {@link Model}
+   * Delegates annotation processing for all chemical species contained in the {@link Model}.
+   * This method iterates over each species in the model and applies specific annotations.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
    */
   private void annotateListOfSpecies(Model model) {
-    for (int i = 0; i < model.getSpeciesCount(); i++) {
+    for (Species species : model.getListOfSpecies()) {
       progress.DisplayBar("Annotating Species (3/5)  ");
-      SpeciesAnnotation speciesAnnotation = new SpeciesAnnotation(model.getSpecies(i));
+      SpeciesAnnotation speciesAnnotation = new SpeciesAnnotation(species);
       speciesAnnotation.annotate();
     }
   }
 
-
+  
   /**
-   * Tries to get a BiGG ID specification conform id from BiGG knowledgebase for a given {@link Species},
-   * {@link Reaction} or {@link GeneProduct} from the annotations present
+   * Attempts to extract a BiGG ID that conforms to the BiGG ID specification from the BiGG knowledgebase. This method
+   * processes annotations for biological entities such as {@link Species}, {@link Reaction}, or {@link GeneProduct}.
+   * Each entity's annotations are provided as a list of URIs, which are then parsed to retrieve the BiGG ID.
    *
-   * @param resources:
-   *        Annotations for the given object, should be a list of URIs
-   * @param type:
-   *        Either {@link BiGGDBContract.Constants#TYPE_SPECIES}, {@link BiGGDBContract.Constants#TYPE_REACTION} or
-   *        {@link BiGGDBContract.Constants#TYPE_GENE_PRODUCT}
-   * @return {@link Optional<String>} if an id could be retrieved, else {@link Optional#empty()}
+   * @param resources A list of URIs containing annotations for the biological entity.
+   * @param type The type of the biological entity, which can be one of the following:
+   *             {@link BiGGDBContract.Constants#TYPE_SPECIES}, {@link BiGGDBContract.Constants#TYPE_REACTION}, or
+   *             {@link BiGGDBContract.Constants#TYPE_GENE_PRODUCT}.
+   * @return An {@link Optional<String>} containing the BiGG ID if it could be successfully retrieved, otherwise {@link Optional#empty()}.
    */
   public static Optional<String> getBiGGIdFromResources(List<String> resources, String type) {
     for (String resource : resources) {
-      Optional<String> id = Registry.checkResourceUrl(resource).map(Registry::getPartsFromIdentifiersURI)
+      Optional<String> id = Registry.checkResourceUrl(resource)
+                                    .map(Registry::getPartsFromIdentifiersURI)
                                     .flatMap(parts -> getBiggIdFromParts(parts, type));
       if (id.isPresent()) {
         return id;
@@ -326,15 +356,13 @@ public class BiGGAnnotation {
 
 
   /**
-   * Tries to get id from BiGG Knowledgebase based on annotation prefix and id for specific species, reaction or gene
-   * product
+   * Attempts to retrieve a BiGG identifier from the BiGG Knowledgebase using a given prefix and identifier. This method
+   * is used for specific biological entities such as species, reactions, or gene products.
    *
-   * @param parts:
-   *        Parts retrieved from the identifiers.org URI - prefix and id
-   * @param type:
-   *        Either {@link BiGGDBContract.Constants#TYPE_SPECIES}, {@link BiGGDBContract.Constants#TYPE_REACTION} or
-   *        {@link BiGGDBContract.Constants#TYPE_GENE_PRODUCT}
-   * @return {@link Optional<String>} containing the id, if one could be retrieved, else {@link Optional#empty()}
+   * @param parts A list containing two elements: the prefix and the identifier, both extracted from an identifiers.org URI.
+   * @param type  The type of biological entity for which the ID is being retrieved. Valid types are defined in
+   *              {@link BiGGDBContract.Constants} and include TYPE_SPECIES, TYPE_REACTION, and TYPE_GENE_PRODUCT.
+   * @return An {@link Optional<String>} containing the BiGG ID if found, otherwise {@link Optional#empty()}.
    */
   private static Optional<String> getBiggIdFromParts(List<String> parts, String type) {
     String prefix = parts.get(0);
@@ -350,37 +378,44 @@ public class BiGGAnnotation {
 
 
   /**
-   * Delegates annotation of reactions
+   * Delegates the annotation process for each reaction in the given SBML model.
+   * This method iterates over all reactions in the model, updates the progress display,
+   * and invokes the annotation for each reaction.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model The SBML model containing reactions to be annotated. It is part of the {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}.
    */
   private void annotateListOfReactions(Model model) {
-    for (int i = 0; i < model.getReactionCount(); i++) {
+    for (Reaction reaction : model.getListOfReactions()) {
       progress.DisplayBar("Annotating Reactions (4/5)  ");
-      ReactionAnnotation reactionAnnotation = new ReactionAnnotation(model.getReaction(i));
+      ReactionAnnotation reactionAnnotation = new ReactionAnnotation(reaction);
       reactionAnnotation.annotate();
     }
   }
 
 
   /**
-   * Delegates annotation of gene products
+   * This method handles the annotation of gene products in a given SBML model. It checks if the model has the FBC plugin
+   * set and then proceeds to annotate each gene product found within the model. The progress bar is updated to reflect
+   * the number of gene products being annotated.
    *
-   * @param model:
-   *        {@link Model} contained within {@link SBMLDocument} passed to {@link #annotate(SBMLDocument)}
+   * @param model The SBML model containing gene products to be annotated. It must be an instance of {@link Model} 
+   *              contained within an {@link SBMLDocument} that is passed to {@link #annotate(SBMLDocument)}.
    */
   private void annotateListOfGeneProducts(Model model) {
+    // Check if the FBC plugin is set in the model
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-      // update progress bar for added geneProducts, i.e. change dummy count to correct one
+      
+      // Calculate the change in the number of gene products to update the progress bar accordingly
       int changed = fbcModelPlugin.getNumGeneProducts() - initialGeneProducts;
       if (changed > 0) {
         long current = progress.getCallNumber();
-        // substract fake count
+        // Adjust the total number of calls for the progress bar by subtracting the placeholder count
         progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed - 50);
         progress.setCallNr(current);
       }
+      
+      // Iterate over each gene product and annotate it
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
         progress.DisplayBar("Annotating Gene Products (5/5)  ");
         GeneProductAnnotation geneProductAnnotation = new GeneProductAnnotation(geneProduct);
@@ -391,13 +426,17 @@ public class BiGGAnnotation {
 
 
   /**
-   * @param location:
-   *        relative path to the resource from this class.
-   * @param replacements:
-   *        map of actual values for placeholder tokens in the notes
-   * @return Constants.URL_PREFIX + " like '%%identifiers.org%%'"
-   * @throws IOException:
-   *         propagated from {@link FileInputStream()}
+   * Parses the notes from a specified location and replaces placeholder tokens with actual values.
+   * This method first attempts to read the resource from the classpath. If the resource is not found,
+   * it falls back to reading from the filesystem. It processes the content line by line, starting to
+   * append lines to the result after encountering a `<body>` tag and stopping after a `</body>` tag.
+   * Any placeholders in the format `${placeholder}` found within the body are replaced with corresponding
+   * values provided in the `replacements` map.
+   *
+   * @param location The relative path to the resource from this class.
+   * @param replacements A map of placeholder tokens to their actual values to be replaced in the notes.
+   * @return A string containing the processed notes with placeholders replaced by actual values.
+   * @throws IOException If an I/O error occurs while reading the file.
    */
   private String parseNotes(String location, Map<String, String> replacements) throws IOException {
     StringBuilder sb = new StringBuilder();

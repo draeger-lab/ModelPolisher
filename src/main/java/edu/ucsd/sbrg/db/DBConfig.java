@@ -2,21 +2,33 @@ package edu.ucsd.sbrg.db;
 
 import de.zbit.util.prefs.SBProperties;
 
+
+/**
+ * This class provides configuration and initialization methods for database connections.
+ * It supports operations for two specific databases: ADB and BiGG.
+ * It includes methods to initialize these databases based on command line arguments
+ * and to check if the necessary parameters are provided before establishing connections.
+ */
 public class DBConfig {
 
+  /**
+   * Initializes the ADB database if the conditions are met.
+   * It checks if annotation with ADB is required and if ADB is not already in use.
+   *
+   * @param args            Command line arguments provided for database configuration.
+   * @param annotateWithADB Flag indicating whether to annotate with ADB.
+   */
   public static void initADB(SBProperties args, boolean annotateWithADB) {
-    if (annotateWithADB && ! AnnotateDB.inUse()) {
+    if (annotateWithADB && !AnnotateDB.inUse()) {
       initADB(args);
     }
   }
 
-
   /**
-   * Sets DB to use, depending on provided arguments:
-   * If annotateWithBigg is true and all arguments are provided, PostgreSQL is used
+   * Private helper method to initialize the ADB database connection.
+   * It retrieves database connection parameters from the provided arguments and initializes the connection if all parameters are valid.
    *
-   * @param args:
-   *        Arguments from Commandline
+   * @param args Command line arguments containing database connection parameters.
    */
   private static void initADB(SBProperties args) {
     String name = args.getProperty(ADBOptions.DBNAME);
@@ -33,19 +45,24 @@ public class DBConfig {
     }
   }
 
-
+  /**
+   * Initializes the BiGG database if the conditions are met.
+   * It checks if annotation with BiGG is required and if BiGG is not already in use.
+   *
+   * @param args             Command line arguments provided for database configuration.
+   * @param annotateWithBiGG Flag indicating whether to annotate with BiGG.
+   */
   public static void initBiGG(SBProperties args, boolean annotateWithBiGG) {
     if (annotateWithBiGG && !BiGGDB.inUse()) {
       initBiGG(args);
     }
   }
 
-
   /**
-   * If annotateWithBigg is true and all arguments are provided, connection is established, else
+   * Private helper method to initialize the BiGG database connection.
+   * It retrieves database connection parameters from the provided arguments and initializes the connection if all parameters are valid.
    *
-   * @param args:
-   *        Arguments from Commandline
+   * @param args Command line arguments containing database connection parameters.
    */
   private static void initBiGG(SBProperties args) {
     String name = args.getProperty(BiGGDBOptions.DBNAME);
@@ -62,10 +79,11 @@ public class DBConfig {
     }
   }
 
-
   /**
-   * @param string
-   * @return
+   * Utility method to check if a string is neither null nor empty.
+   *
+   * @param string The string to check.
+   * @return true if the string is not null and not empty, false otherwise.
    */
   private static boolean iStrNotNullOrEmpty(String string) {
     return !(string == null || string.isEmpty());

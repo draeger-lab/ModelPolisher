@@ -119,6 +119,11 @@ public class ModelPolishingTest {
                         .collect(Collectors.toSet()));
     }
 
+    /**
+     * Test to ensure that objectives without any flux objectives are removed from the model.
+     * This test initializes a model with a single objective that has no flux objectives set,
+     * runs the polishing process, and then checks that the objective count is zero.
+     */
     @Test
     public void emptyObjectivesAreRemoved() {
         var m = new Model(3,2);

@@ -24,6 +24,13 @@ import static edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation.getBiGGIdFromResource
 import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_SPECIES;
 import static java.text.MessageFormat.format;
 
+/**
+ * This class provides functionality to annotate a species in an SBML model using BiGG database identifiers.
+ * It extends the {@link CVTermAnnotation} class, allowing it to manage controlled vocabulary (CV) terms
+ * associated with the species. The class handles various aspects of species annotation including setting
+ * the species' name, SBO term, and additional annotations. It also sets the chemical formula and charge
+ * for the species using FBC (Flux Balance Constraints) extensions.
+ */
 public class SpeciesAnnotation extends CVTermAnnotation {
 
   /**
@@ -45,57 +52,62 @@ public class SpeciesAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Annotates given species with different information from BiGG Knowledgebase.
-   * Sets a name, if possible, if none is set the name corresponds to the species BiGGId.
-   * Adds chemical formula for the species.
-   **/
+   * This method annotates a species with various details fetched from the BiGG Knowledgebase. It performs the following:
+   * 1. Sets the species name based on the BiGGId. If the species does not have a name, it uses the BiGGId as the name.
+   * 2. Assigns an SBO (Systems Biology Ontology) term to the species based on the BiGGId.
+   * 3. Adds additional annotations to the species, such as database cross-references.
+   * 4. Sets the chemical formula and charge for the species using FBC (Flux Balance Constraints) extensions.
+   *
+   * The BiGGId used for these operations is either derived from the species' URI list or directly from its ID if available.
+   */
   @Override
   public void annotate() {
-    // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
-    // species.id
+    // Retrieve the BiGGId for the species, either from its URI list or its direct ID
     checkId().ifPresent(biggId -> {
-      setName(biggId);
-      setSBOTerm(biggId);
-      addAnnotations(biggId);
-      FBCSetFormulaCharge(biggId);
+      setName(biggId); // Set the species name based on the BiGGId
+      setSBOTerm(biggId); // Assign the appropriate SBO term
+      addAnnotations(biggId); // Add database cross-references and other annotations
+      FBCSetFormulaCharge(biggId); // Set the chemical formula and charge
     });
   }
 
 
   /**
-   * Checks if {@link Species#getId()} returns a correct {@link BiGGId} and tries to retrieve a corresponding
-   * {@link BiGGId} based on annotations present.
+   * Validates the species ID and attempts to retrieve a corresponding BiGGId based on existing annotations.
+   * This method first tries to create a BiGGId from the species ID. If the species ID does not correspond to a known
+   * BiGGId in the database, it then searches through the species' annotations to find a valid BiGGId.
    *
-   * @return If creation was successful, internal ModelPolisher internal BiGGId representation wrapped in an Optional is
-   *         returned, else Optional.empty() is returned
+   * @return An {@link Optional} containing the BiGGId if a valid one is found or created, otherwise {@link Optional#empty()}
    */
   @Override
   public Optional<BiGGId> checkId() {
+    // Attempt to create a BiGGId from the species ID
     Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
+    // Check if the created BiGGId is valid, if not, try to find a BiGGId from annotations
     Optional<String> id = metaboliteId.flatMap(biggId -> {
-      // extracting BiGGId if not present for species
       boolean isBiGGid = QueryOnce.isMetabolite(biggId.getAbbreviation());
       List<String> resources = new ArrayList<>();
       if (!isBiGGid) {
-        // Flatten all resources for all CVTerms into a list
+        // Collect all resources from CVTerms that qualify as BQB_IS
         resources = species.getAnnotation().getListOfCVTerms().stream()
                            .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                           .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
+                           .flatMap(term -> term.getResources().stream())
+                           .collect(Collectors.toList());
       }
-      // update id if we found something
+      // Attempt to retrieve a BiGGId from the collected resources
       return getBiGGIdFromResources(resources, TYPE_SPECIES);
     });
-    // Create BiGGId from retrieved id or return BiGGId constructed for original id
+    // Return the found BiGGId or the originally created one if no new ID was found
     return id.map(BiGGId::createMetaboliteId).orElse(metaboliteId);
   }
 
 
   /**
-   * Set species name from BiGG Knowledgebase if name is not yet set or corresponds to the species id.
-   * Depends on the presence of the BiGGId in BiGG
+   * Updates the name of the species based on data retrieved from the BiGG Knowledgebase. The species name is set only if it
+   * has not been previously set or if the current name follows a default format that combines the BiGGId abbreviation and
+   * compartment code. This method relies on the availability of a valid {@link BiGGId} for the species.
    *
-   * @param biggId:
-   *        {@link BiGGId} constructed from the species id
+   * @param biggId The {@link BiGGId} associated with the species, used to fetch the component name from the BiGG database.
    */
   public void setName(BiGGId biggId) {
     if (!species.isSetName()
@@ -106,42 +118,42 @@ public class SpeciesAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Set SBO terms for species, depending on its component type, i.e. metabolite, protein or a generic material entity.
-   * Annotation for the last case is only written, if {@link Parameters#omitGenericTerms()} returns {@code false}.
-   * If no component type can be retrieved from BiGG, annotation with material entity can still be performed
+   * Assigns the SBO term to a species based on its component type as determined from the BiGG database.
+   * The component type can be a metabolite, protein, or a generic material entity. If the component type is not explicitly
+   * identified in the BiGG database, the species is annotated as a generic material entity unless the configuration
+   * explicitly omits such generic terms (controlled by {@link Parameters#omitGenericTerms()}).
    *
-   * @param biggId:
-   *        {@link BiGGId} constructed from the species id
+   * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
   private void setSBOTerm(BiGGId biggId) {
     Parameters parameters = Parameters.get();
     BiGGDB.getComponentType(biggId).ifPresentOrElse(type -> {
       switch (type) {
       case "metabolite":
-        species.setSBOTerm(SBO.getSimpleMolecule());
+        species.setSBOTerm(SBO.getSimpleMolecule()); // Assign SBO term for simple molecules (metabolites).
         break;
       case "protein":
-        species.setSBOTerm(SBO.getProtein());
+        species.setSBOTerm(SBO.getProtein()); // Assign SBO term for proteins.
         break;
       default:
         if (!parameters.omitGenericTerms()) {
-          species.setSBOTerm(SBO.getMaterialEntity());
+          species.setSBOTerm(SBO.getMaterialEntity()); // Assign SBO term for generic material entities.
         }
         break;
       }
     }, () -> {
       if (!parameters.omitGenericTerms()) {
-        species.setSBOTerm(SBO.getMaterialEntity());
+        species.setSBOTerm(SBO.getMaterialEntity()); // Default SBO term assignment when no specific type is found.
       }
     });
   }
 
 
   /**
-   * Add annotations for species based on {@link BiGGId}, update http to https for MIRIAM URIs and merge duplicates
+   * This method delegates the task of adding annotations to the species based on the provided {@link BiGGId}.
+   * It ensures that annotations are added to the species, updates HTTP URIs to HTTPS in MIRIAM URIs, and merges any duplicate annotations.
    *
-   * @param biggId:
-   *        {@link BiGGId} from species id
+   * @param biggId the {@link BiGGId} associated with the species ID, used for fetching and adding annotations.
    */
   @Override
   public void addAnnotations(BiGGId biggId) {
@@ -150,10 +162,15 @@ public class SpeciesAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Tries to set chemical formula and charge for the given species
+   * Sets the chemical formula and charge for a species based on the provided BiGGId.
+   * This method first checks if the species belongs to a BiGG model and retrieves the compartment code.
+   * It then attempts to set the chemical formula if it has not been set already. The formula is fetched
+   * from the BiGG database either based on the model ID or the compartment code if the model ID fetch fails.
+   * If the formula is successfully retrieved, it is set using the FBCSpeciesPlugin.
+   * Similarly, the charge is fetched and set if the species does not already have a charge set.
+   * If a charge is fetched and it contradicts an existing charge, a warning is logged and the existing charge is unset.
    *
-   * @param biggId:
-   *        {@link BiGGId} from species id
+   * @param biggId: {@link BiGGId} from species id
    */
   @SuppressWarnings("deprecation")
   private void FBCSetFormulaCharge(BiGGId biggId) {

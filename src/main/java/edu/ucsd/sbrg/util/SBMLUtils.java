@@ -40,14 +40,16 @@ public class SBMLUtils {
    */
   public static final String SUBSYSTEM_LINK = "SUBSYSTEM_LINK";
   /**
-   * HashMap holding all gene product references in a model for updating
+   * A static map that holds references to all gene products within a model, facilitating quick updates.
    */
   private static Map<String, GeneProductRef> geneProductReferences = new HashMap<>();
 
   /**
-   * Apply updated GeneID to geneProductReferenece
+   * Updates the reference of a gene product in the geneProductReferences map using the gene product's ID.
+   * If the gene product ID starts with "G_", it strips this prefix before updating.
+   * If the map is initially empty, it initializes the map with the current model's reactions.
    * 
-   * @param gp
+   * @param gp The GeneProduct whose reference needs to be updated.
    */
   public static void updateGeneProductReference(GeneProduct gp) {
     if (geneProductReferences.isEmpty()) {
@@ -63,9 +65,11 @@ public class SBMLUtils {
     }
   }
 
-
   /**
-   * @param reactions
+   * Initializes the geneProductReferences map by traversing through all reactions and their associated gene products.
+   * It handles both direct gene product references and nested logical operators that might contain gene product references.
+   * 
+   * @param reactions The list of reactions to scan for gene product associations.
    */
   private static void initGPRMap(ListOf<Reaction> reactions) {
     for (Reaction r : reactions) {
@@ -84,9 +88,8 @@ public class SBMLUtils {
     }
   }
 
-
   /**
-   * 
+   * Clears the geneProductReferences map, removing all entries.
    */
   public static void clearGPRMap() {
     geneProductReferences = new HashMap<>();
@@ -94,7 +97,12 @@ public class SBMLUtils {
 
 
   /**
-   * @param association
+   * Recursively processes nested associations to map gene products to their references.
+   * This method traverses through each child of the given association. If the child is a
+   * LogicalOperator, it recursively processes it. If the child is a GeneProductRef, it
+   * adds it to the geneProductReferences map.
+   *
+   * @param association The association to process, which can contain nested associations.
    */
   private static void processNested(Association association) {
     for (int idx = 0; idx < association.getChildCount(); idx++) {
@@ -102,18 +110,21 @@ public class SBMLUtils {
       if (child instanceof LogicalOperator) {
         processNested((Association) child);
       } else {
-        // has to GeneProductReference
+        // This child is assumed to be a GeneProductRef
         GeneProductRef gpr = (GeneProductRef) child;
         geneProductReferences.put(gpr.getGeneProduct(), gpr);
       }
     }
   }
 
-
   /**
-   * @param oldId
-   * @param newId
-   * @param fbcModelPlug
+   * Updates the reaction reference ID from an old ID to a new ID within the FluxObjectives of a given FBCModelPlugin.
+   * This method iterates through all objectives and their associated flux objectives in the model plugin,
+   * replacing the old reaction ID with the new one wherever found.
+   *
+   * @param oldId The old reaction ID to be replaced.
+   * @param newId The new reaction ID to replace the old one.
+   * @param fbcModelPlug The FBCModelPlugin containing the objectives and flux objectives to be updated.
    */
   public static void updateReactionRef(String oldId, String newId, FBCModelPlugin fbcModelPlug) {
     if ((fbcModelPlug != null) && fbcModelPlug.isSetListOfObjectives()) {
@@ -132,18 +143,22 @@ public class SBMLUtils {
 
 
   /**
-   * Add a direct link from the reaction to the member pointing to that
-   * reaction.
+   * Establishes a link between a reaction and a subsystem member by setting the member's reference to the reaction.
+   * Additionally, it ensures that the reaction maintains a set of all members linked to it. If the set does not exist,
+   * it is created and the member is added to it.
    * 
-   * @param r
-   * @param member
+   * @param r The reaction object to which the member should be linked.
+   * @param member The subsystem member that should be linked to the reaction.
    */
   @SuppressWarnings("unchecked")
   public static void createSubsystemLink(Reaction r, Member member) {
+    // Set the member's reference ID to the reaction.
     member.setIdRef(r);
+    // Check if the reaction has an existing set of members; if not, create one.
     if (r.getUserObject(SUBSYSTEM_LINK) == null) {
       r.putUserObject(SUBSYSTEM_LINK, new HashSet<Member>());
     }
+    // Add the member to the reaction's set of linked members.
     ((Set<Member>) r.getUserObject(SUBSYSTEM_LINK)).add(member);
   }
 }

@@ -7,8 +7,12 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 /**
- * Corresponds to a MIRIAM namespace entry, reduced to data needed by ModelPolisher
+ * Represents a MIRIAM namespace entry, encapsulating the essential data required by ModelPolisher.
+ * A namespace in MIRIAM is a collection of identifiers under a common context, typically representing
+ * a specific database or a type of biological entity. This class provides methods to manage and interact
+ * with these identifiers, including pattern matching, URL resolution, and checking deprecation status.
  */
 class Namespace implements Node {
 
@@ -29,6 +33,8 @@ class Namespace implements Node {
 
 
   /**
+   * Retrieves the list of resources associated with this namespace.
+   * 
    * @return List of resources for a namespace
    */
   public List<Resource> getLeaves() {
@@ -54,11 +60,16 @@ class Namespace implements Node {
   }
 
 
+  /**
+   * Determines if the namespace is embedded within the locally unique identifier (LUI).
+   * 
+   * @return {@code true} if the namespace is embedded in the LUI, {@code false} otherwise.
+   */
   public boolean isNamespaceEmbeddedInLui() {
     return entry.isNamespaceEmbeddedInLui();
   }
 
-
+  
   public boolean matchesPattern(String query) {
     return Pattern.compile(getPattern()).matcher(query).matches();
   }
@@ -91,15 +102,25 @@ class Namespace implements Node {
     return "identifiers.org/" + getPrefix() + "/" + idPattern;
   }
 
-
+  /**
+   * Resolves the full URL for a given identifier based on whether the namespace is embedded in the LUI.
+   * If the namespace is embedded, it extracts the prefix pattern from the namespace pattern and constructs the URL.
+   * If the namespace is not embedded, it directly appends the identifier to the base URL.
+   *
+   * @param id The identifier to be resolved.
+   * @return The fully resolved URL as a String.
+   * @throws IllegalStateException if the prefix cannot be extracted when expected.
+   */
   @Override
   public String resolveID(String id) {
     if (isNamespaceEmbeddedInLui()) {
+      // Compile a pattern to extract the prefix from the namespace pattern.
       Pattern prefixPattern = Pattern.compile("\\(?[\\w\\\\]+?[:]\\)?");
+        // Quickfix for escaped colon in CCO and possibly others
       Matcher prefixMatcher = prefixPattern.matcher(getPattern().replaceAll("\\^|\\$", ""));
       if (prefixMatcher.find()) {
         String pattern = prefixMatcher.group();
-        // Quickfix for escaped colon in CCO and possibly others
+        // Handle the special case where the colon might be escaped in the pattern.
         if (pattern.endsWith("\\:")) {
           pattern = pattern.substring(0, pattern.length() - 2) + ":";
         }
@@ -107,6 +128,7 @@ class Namespace implements Node {
       }
       throw new IllegalStateException("Could not extract prefix, this should not happen.");
     } else {
+      // Construct the URL directly if the namespace is not embedded in the LUI.
       return "https://identifiers.org/" + getPrefix() + "/" + id;
     }
   }

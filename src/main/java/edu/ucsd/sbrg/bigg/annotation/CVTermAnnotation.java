@@ -26,6 +26,12 @@ import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_METABOLITE;
 import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_REACTION;
 import static java.text.MessageFormat.format;
 
+/**
+ * Abstract class providing a framework for annotating SBML elements with Controlled Vocabulary (CV) Terms.
+ * This class defines the basic structure and operations for adding annotations to SBML elements based on BiGG IDs.
+ * It includes methods to check the validity of BiGG IDs, add annotations to SBML elements, and specifically handle
+ * annotations for Species and Reactions using data from BiGG and other databases.
+ */
 public abstract class CVTermAnnotation {
 
   /**
@@ -33,23 +39,38 @@ public abstract class CVTermAnnotation {
    */
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
+  /**
+   * Abstract method to annotate an SBML element. Implementations should define specific annotation logic.
+   */
   abstract void annotate();
 
-
+  /**
+   * Abstract method to check the validity of a BiGG ID. Implementations should return an Optional containing
+   * the BiGG ID if it is valid, or an empty Optional if not.
+   *
+   * @return Optional containing the valid BiGG ID or empty if the ID is invalid.
+   */
   abstract Optional<BiGGId> checkId();
 
-
+  /**
+   * Abstract method to add annotations to an SBML element using a BiGG ID. Implementations should define how
+   * annotations are added based on the specific type of SBML element and the source of the annotations.
+   *
+   * @param biggId The BiGGId used for fetching annotations.
+   */
   abstract void addAnnotations(BiGGId biggId);
 
-
   /**
-   * Common annotation method for species and reactions, as they shared much of their code
+   * Adds annotations to an SBML node (either a Species or a Reaction) using a given BiGGId.
+   * This method first checks if the node is an instance of Species or Reaction and throws an IllegalArgumentException if not.
+   * It then removes any existing CVTerm with the qualifier BQB_IS, prepares a new CVTerm if none existed,
+   * and collects annotations from various sources (BiGG database, AnnotateDB) based on whether the node is a Species or Reaction.
+   * These annotations are filtered to remove any that already exist on the node, sorted, and then added to the node.
+   * Finally, it ensures that the node has a metaId set if it has any CVTerms.
    *
-   * @param node:
-   *        {@link Reaction} or {@link Species} to get annotations for
-   * @throws IllegalArgumentException
-   *         if passed {@link SBase} is not a {@link Species} or {@link Reaction}, as the method is only applicable for
-   *         both those cases
+   * @param node The SBML node to annotate, which should be either a Species or a Reaction.
+   * @param biggId The BiGGId used for fetching annotations.
+   * @throws IllegalArgumentException If the node is neither a Species nor a Reaction.
    */
   void addAnnotations(SBase node, BiGGId biggId) throws IllegalArgumentException {
     if (!(node instanceof Species) && !(node instanceof Reaction)) {

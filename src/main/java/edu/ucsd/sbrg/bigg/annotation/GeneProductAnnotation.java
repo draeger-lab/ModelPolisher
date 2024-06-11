@@ -19,6 +19,11 @@ import static edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation.getBiGGIdFromResource
 import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
 import static java.text.MessageFormat.format;
 
+/**
+ * Provides functionality to annotate gene products in an SBML model using data from the BiGG database.
+ * This class extends {@link CVTermAnnotation} and specifically handles the annotation of {@link GeneProduct} instances.
+ * It includes methods to validate gene product IDs, retrieve and set labels, and add annotations based on BiGG IDs.
+ */
 public class GeneProductAnnotation extends CVTermAnnotation {
 
   /**
@@ -34,23 +39,30 @@ public class GeneProductAnnotation extends CVTermAnnotation {
    */
   private final GeneProduct geneProduct;
 
+  /**
+   * Constructs a new {@link GeneProductAnnotation} instance for a given {@link GeneProduct}.
+   *
+   * @param geneProduct The {@link GeneProduct} to be annotated.
+   */
   public GeneProductAnnotation(GeneProduct geneProduct) {
     this.geneProduct = geneProduct;
   }
 
 
   /**
-   * Adds annotation for a gene product
+   * Annotates a gene product by adding relevant metadata and references.
+   * This method first checks the gene product's ID for validity and retrieves a corresponding BiGGId if available.
+   * It then attempts to get a label for the gene product. If no label is found, the method returns early.
+   * If a label is present, it updates the gene product reference in the association, adds annotations using the BiGGId,
+   * and sets the gene product's metaId if it has any CV terms. Finally, it sets the gene product's label name.
    */
   @Override
   public void annotate() {
     Optional<BiGGId> biggId = checkId();
-    // TODO: don't pass optional around, handle this differently
     Optional<String> label = getLabel(biggId);
     if (label.isEmpty()) {
       return;
     }
-    // fix geneProductReference in Association not updated
     SBMLUtils.updateGeneProductReference(geneProduct);
     biggId.ifPresent(id -> {
       addAnnotations(id);
@@ -63,32 +75,39 @@ public class GeneProductAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Checks if {@link GeneProduct#getId()} returns a correct {@link BiGGId} and tries to retrieve a corresponding
-   * {@link BiGGId} based on annotations present.
+   * Validates the ID of a {@link GeneProduct} against the expected BiGG ID format and attempts to retrieve a
+   * corresponding {@link BiGGId} from existing annotations if the initial ID does not conform to the BiGG format.
+   * The method first checks if the gene product's ID matches the BiGG ID pattern. If it does not match, it then
+   * tries to find a valid BiGG ID from the gene product's annotations. If a valid BiGG ID is found among the annotations,
+   * it updates the ID; otherwise, it retains the original ID.
    *
-   * @return String representation of {@link BiGGId}
+   * @return An {@link Optional<BiGGId>} containing the validated or retrieved BiGG ID, or an empty Optional if no valid ID is found.
    */
   @Override
   public Optional<BiGGId> checkId() {
     String id = geneProduct.getId();
     boolean isBiGGid = id.matches("^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
     if (!isBiGGid) {
-      // Flatten all resources for all CVTerms into a list
+      // Collect all resources from CVTerms that qualify as BQB_IS into a list
       List<String> resources = geneProduct.getAnnotation().getListOfCVTerms().stream()
                                           .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                                          .flatMap(term -> term.getResources().stream()).collect(Collectors.toList());
-      if (!resources.isEmpty()) {
-        // update id if we found something
-        id = getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT).orElse(id);
-      }
+                                          .flatMap(term -> term.getResources().stream())
+                                          .collect(Collectors.toList());
+      // Attempt to update the ID with a valid BiGG ID from the resources, if available
+      id = getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT).orElse(id);
     }
+    // Create and return a BiGGId object based on the validated or updated ID
     return BiGGId.createGeneId(id);
   }
 
 
   /**
-   * @param biggId
-   * @return
+   * Retrieves the label for a gene product based on the provided BiGGId. If the gene product has a label set and it is not "None",
+   * that label is returned. If no label is set but the gene product has an ID, the BiGGId is converted to a string and returned.
+   * If neither condition is met, an empty string is returned.
+   *
+   * @param biggId An Optional containing the BiGGId of the gene product, which may be used to generate a label if the gene product's own label is not set.
+   * @return An Optional<String> containing the label of the gene product, or an empty string if no appropriate label is found.
    */
   public Optional<String> getLabel(Optional<BiGGId> biggId) {
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
@@ -100,54 +119,66 @@ public class GeneProductAnnotation extends CVTermAnnotation {
     }
   }
 
-
+  
   /**
-   * Set gene product label and, if possible, update or set the gene product name to the one obtained from BiGG by use
-   * of the label, which was either already set or corresponds to a {@link BiGGId} created from
-   * {@link GeneProduct#getId()}
+   * Updates the label of a gene product and sets its name based on the retrieved gene name from the BiGG database.
+   * If the current label is set to "None", it updates the label to the provided one. It then attempts to fetch
+   * the gene name corresponding to this label from the BiGG database. If a gene name is found, it checks if the
+   * current gene product name is different from the fetched name. If they differ, it logs a warning and updates
+   * the gene product name. If no gene name is found, it logs this as a fine-level message.
    *
-   * @param label
+   * @param label The label to set or use for fetching the gene name. This label should correspond to a {@link BiGGId}
+   *              or be derived from {@link GeneProduct#getId()}.
    */
   public void setGPLabelName(String label) {
-    // we successfully found information by using the id, so this needs to be the label
+    // Check if the current label is "None" and update it if so
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
     }
+    // Attempt to fetch the gene name from the BiGG database using the label
     BiGGDB.getGeneName(label).ifPresent(geneName -> {
+      // Log if no gene name is associated with the label
       if (geneName.isEmpty()) {
         logger.fine(format(MESSAGES.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
-      } else if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
-        logger.warning(format(MESSAGES.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
+      } else {
+        // Log a warning if the gene product name is set and differs from the fetched gene name
+        if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
+          logger.warning(format(MESSAGES.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
+        }
+        // Update the gene product name with the fetched gene name
+        geneProduct.setName(geneName);
       }
-      geneProduct.setName(geneName);
     });
   }
 
-
+  
   /**
-   * Add annotations for gene product based on {@link BiGGId}
+   * Adds annotations to a gene product based on a given {@link BiGGId}. This method differentiates between
+   * annotations that specify what the gene product 'is' and what it 'is encoded by'. Resources are fetched
+   * from the BiGG database using the abbreviation from the provided BiGGId. Each resource URL is checked and
+   * parsed to determine the appropriate category ('is' or 'is encoded by') based on predefined prefixes.
    *
-   * @param biggId:
-   *        {@link BiGGId} from species id
+   * @param biggId The {@link BiGGId} associated with the gene product, typically derived from a species ID.
    */
   @Override
   public void addAnnotations(BiGGId biggId) {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
-    // label is stored without "G_" prefix in BiGG
+    // Retrieve gene IDs from BiGG database and categorize them based on their prefix
     BiGGDB.getGeneIds(biggId.getAbbreviation()).forEach(
       resource -> Registry.checkResourceUrl(resource).map(Registry::getPartsFromIdentifiersURI)
-                          .filter(parts -> parts.size() > 0).map(parts -> parts.get(0)).ifPresent(prefix -> {
+                          .filter(parts -> !parts.isEmpty()).map(parts -> parts.get(0)).ifPresent(prefix -> {
                             switch (prefix) {
-                            case "interpro":
-                            case "pdb":
-                            case "uniprot":
-                              termIs.addResource(resource);
-                              break;
-                            default:
-                              termEncodedBy.addResource(resource);
+                              case "interpro":
+                              case "pdb":
+                              case "uniprot":
+                                termIs.addResource(resource);
+                                break;
+                              default:
+                                termEncodedBy.addResource(resource);
                             }
                           }));
+    // Add the CVTerm to the gene product if resources are present
     if (termIs.getResourceCount() > 0) {
       geneProduct.addCVTerm(termIs);
     }

@@ -69,6 +69,24 @@ import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
+ * The ModelPolisher class is the entry point of this application.
+ * It extends the Launcher class and provides functionality to polish SBML models.
+ * It handles command-line arguments to configure the polishing process, manages file input and output,
+ * and integrates various utilities for processing SBML, JSON, and MatLab files. The class supports
+ * operations such as reading, validating, and writing SBML documents, converting JSON and MatLab files
+ * to SBML, and annotating models with data from BiGG.
+ *
+ * The main functionalities include:
+ * - Command-line argument parsing and processing.
+ * - Batch processing of files and directories for model polishing.
+ * - File type detection and appropriate handling of SBML, JSON, and MatLab files.
+ * - HTML tag correction in SBML files.
+ * - SBML document validation and conversion.
+ * - Annotation of models using external databases.
+ * - Output management including file writing, COMBINE archive creation, and compression.
+ *
+ * This class also handles error logging and provides detailed logging of the processing steps.
+ * 
  * @author Andreas Dr&auml;ger
  */
 public class ModelPolisher extends Launcher {
@@ -180,38 +198,35 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Processes given input and output parameters and recurses, if input denotes a directory.
-   * Creates output directory, if not present
+   * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
+   * It ensures that the output directory exists before processing starts.
    *
-   * @param input:
-   *        Path to input file/directory to process, corresponds to {@link Parameters#input()} at top level
-   * @param output:
-   *        Path to output file/directory, corresponds to {@link Parameters#output()}
-   * @throws IOException
-   *         if input file is not found, or no file is present in the input directory
-   * @throws XMLStreamException
-   *         propagated from {@link ModelPolisher#processFile(File, File)}
+   * @param input  Path to the input file or directory to be processed. This should correspond to {@link Parameters#input()}.
+   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link Parameters#output()}.
+   * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
+   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisher#processFile(File, File)}.
    */
   private void batchProcess(File input, File output) throws IOException, XMLStreamException {
+    // Check if the input exists, throw an exception if it does not
     if (!input.exists()) {
       throw new IOException(format(MESSAGES.getString("READ_FILE_ERROR"), input.toString()));
     }
-    // Create output directory if output is a directory or create output file's directory if output is a file
+    // Ensure the output directory or file's parent directory exists
     checkCreateOutDir(output);
-    // Move down into the directory
+    // If the input is a directory, process each file within it
     if (input.isDirectory()) {
+      // If the output is not a directory but the input is, log an error and return
       if (!output.isDirectory()) {
-        // input == dir && output != dir -> should only happen if already inside a directory and trying to recurse,
-        // which is not supported
-        // Couldn't this be done in IOOptions using dependencies?
-        logger.info(
-          format(MESSAGES.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
+        logger.info(format(MESSAGES.getString("WRITE_DIR_TO_FILE_ERROR"), input.getAbsolutePath(), output.getAbsolutePath()));
         return;
       }
+      // List all files in the input directory
       File[] files = input.listFiles();
+      // If no files are found, throw an exception
       if (files == null || files.length < 1) {
         throw new IllegalArgumentException(MESSAGES.getString("NO_FILES_ERROR"));
       }
+      // Recursively process each file in the directory
       for (File file : files) {
         File target = getOutputFileName(file, output);
         batchProcess(file, target);
@@ -296,45 +311,46 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Preprocessing based on file type, i.e. setting correct output file extension and applying workaround for SBML files
-   * with top level namespace declarations
+   * Processes the input file by determining its type and applying necessary preprocessing steps.
+   * If the file type is unknown, it attempts to update SBML files with top-level namespace declarations,
+   * which might be present due to specific tools like CarveMe. If the file remains unknown after attempting
+   * to update, it logs a warning and returns without further processing.
+   * If the output path is a directory, it adjusts the output file name based on the input file's type and name.
+   * Finally, it calls the method to read and polish the file.
    *
-   * @param input:
-   *        input file
-   * @param output:
-   *        output file or directory
-   * @throws XMLStreamException
-   *         propagated from {@link #readAndPolish(File, File)}
-   * @throws IOException
-   *         propagated from {@link #readAndPolish(File, File)}
+   * @param input  The input file to be processed.
+   * @param output The output file or directory where the processed file should be saved.
+   * @throws XMLStreamException If an XML processing error occurs.
+   * @throws IOException If an I/O error occurs.
    */
   private void processFile(File input, File output) throws XMLStreamException, IOException {
-    // get fileType array and check if any value is true
+    // Determine the file type of the input file
     fileType = getFileType(input);
+    // Handle unknown file types by checking and updating HTML tags
     if (fileType.equals(FileType.UNKNOWN)) {
-      // do this for now to update SBML files with top level namespace declarations (Possibly from CarveMe)
-      // should skip invocation of most of the code later on as tags are already replaced
       checkHTMLTags(input);
-      fileType = getFileType(input);
-      // did not fix the issue, abort
+      fileType = getFileType(input); // Re-check file type after updating tags
+      // Abort processing if file type is still unknown
       if (fileType.equals(FileType.UNKNOWN)) {
         logger.warning(format(MESSAGES.getString("INPUT_UNKNOWN"), input.getPath()));
         return;
       }
     }
+    // Adjust output file name if the output is a directory
     if (output.isDirectory()) {
       output = getOutputFileName(input, output);
     }
+    // Read and polish the file
     readAndPolish(input, output);
   }
 
 
   /**
-   * Get file type from input file
+   * Determines the type of the input file based on its extension or content.
+   * This method checks if the file is an SBML, MatLab, or JSON file by utilizing the {@link SBFileFilter} class.
    *
-   * @param input
-   *        File used in {@link #batchProcess(File, File)}
-   * @return FileType of given file, only SBML, MatLab and JSON files are supported
+   * @param input The file whose type needs to be determined.
+   * @return FileType The type of the file, which can be SBML_FILE, MAT_FILE, JSON_FILE, or UNKNOWN if the type cannot be determined.
    */
   private FileType getFileType(File input) {
     if (SBFileFilter.isSBMLFile(input)) {
@@ -350,22 +366,25 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Read input file and dispatch polishing tasks for different possible file types
+   * This method reads an input file, determines its type (SBML, MAT, or JSON), and applies the appropriate
+   * parsing and polishing processes. The result is written to the specified output file in SBML format.
+   * 
+   * The method logs the start of the reading process, determines the file type, and uses the corresponding
+   * parser to convert the file into an SBMLDocument. If the file is an SBML file, it first checks and corrects
+   * HTML tags. After parsing, if the document is null (indicating a parsing failure), it logs an error and exits.
+   * Otherwise, it proceeds to polish the document and logs the time taken for the entire process upon completion.
    *
-   * @param input:
-   *        Input file in either SBML, MAT or JSON format
-   * @param output:
-   *        Output file in SBML format
-   * @throws XMLStreamException
-   *         propagated from {@link #polish(SBMLDocument, File)}
-   * @throws IOException
-   *         propagated from {@link #polish(SBMLDocument, File)}
+   * @param input  The input file which can be in SBML, MAT, or JSON format.
+   * @param output The output file where the polished SBML will be saved.
+   * @throws XMLStreamException If an error occurs during XML parsing or writing.
+   * @throws IOException If an I/O error occurs during file reading or writing.
    */
   private void readAndPolish(File input, File output) throws XMLStreamException, IOException {
-    long time = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     logger.info(format(MESSAGES.getString("READ_FILE_INFO"), input.getAbsolutePath()));
     SBMLDocument doc;
-    // reading or parsing input
+
+    // Determine the file type and parse accordingly
     if (fileType.equals(FileType.MAT_FILE)) {
       doc = COBRAParser.read(input);
     } else if (fileType.equals(FileType.JSON_FILE)) {
@@ -374,24 +393,32 @@ public class ModelPolisher extends Launcher {
       checkHTMLTags(input);
       doc = SBMLReader.read(input, new UpdateListener());
     }
+
+    // Check if the document was successfully parsed
     if (doc == null) {
       logger.severe(format(MESSAGES.getString("ALL_DOCS_PARSE_ERROR"), input.toString()));
       return;
     }
+
+    // Polish the document and write to output
     polish(doc, output);
-    // Clear map for next model
+
+    // Clear temporary data structures used during parsing
     SBMLUtils.clearGPRMap();
     GPRParser.clearAssociationMap();
-    time = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - time);
-    logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (time / 60), (time % 60)));
+
+    // Log the time taken to process the file
+    long timeTaken = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
+    logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
   }
 
 
   /**
-   * Replaces wrong html tags in a SBML model with body tags
+   * Replaces incorrect HTML tags in an SBML file with correct body tags and creates a backup of the original file.
+   * This method reads the input SBML file, checks for incorrect HTML tags, and replaces them with the correct tags.
+   * It also creates a backup of the original file before making any changes.
    *
-   * @param input:
-   *        SBML file
+   * @param input The SBML file to be checked and corrected.
    */
   private void checkHTMLTags(File input) {
     // Replace tags and replace file for processing
@@ -403,6 +430,7 @@ public class ModelPolisher extends Launcher {
         sb.append(line).append("\n");
       }
       String doc = sb.toString();
+      // Check if the document contains incorrect HTML tags
       if (!doc.contains("<html xmlns") && !doc.contains("sbml:") && !doc.contains("html:html")) {
         logger.fine(MESSAGES.getString("TAGS_FINE_INFO"));
         return;
@@ -413,10 +441,9 @@ public class ModelPolisher extends Launcher {
       // doc = doc.replaceAll("sbml:", "");
       // doc = doc.replaceAll("xmlns:sbml", "xmlns");
       doc = doc.replaceAll("html:html", "html:body");
-      // replace wrong tags
       doc = doc.replaceAll("<html xmlns", "<body xmlns");
       doc = doc.replaceAll("</html>", "</body>");
-      // Preserve a copy of the original.
+      // Create a backup of the original file before modifying it
       try {
         Path output = Paths.get(input.getAbsolutePath() + ".bak");
         Files.copy(input.toPath(), output, StandardCopyOption.REPLACE_EXISTING);
@@ -426,10 +453,11 @@ public class ModelPolisher extends Launcher {
         logger.info(MESSAGES.getString("SKIP_TAG_REPLACEMENT"));
         return;
       }
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)));
-      writer.write(doc);
-      logger.info(format(MESSAGES.getString("WROTE_CORRECT_HTML"), input.toPath()));
-      writer.close();
+      // Write the corrected document back to the original file
+      try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(input)))) {
+        writer.write(doc);
+        logger.info(format(MESSAGES.getString("WROTE_CORRECT_HTML"), input.toPath()));
+      }
     } catch (FileNotFoundException exc) {
       logger.severe(format(MESSAGES.getString("READ_FILE_ERROR"), input.toPath()));
     } catch (IOException e) {
@@ -439,28 +467,32 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Dispatch central tasks like polishing, annotation, combine archive creation, compression and validation
+   * This method orchestrates the polishing process of an SBML document, including annotation, JSON conversion, file writing, 
+   * COMBINE archive creation, and compression. It ensures the model exists within the document before proceeding with further tasks.
    *
-   * @param doc
-   * @param output
-   * @throws IOException
-   * @throws XMLStreamException
+   * @param doc    The SBMLDocument to be polished.
+   * @param output The file where the polished SBML document will be written.
+   * @throws IOException         If an I/O error occurs during file writing or archive creation.
+   * @throws XMLStreamException  If an error occurs during XML processing.
    */
   private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
     if (doc.getModel() == null) {
       logger.severe(MESSAGES.getString("MODEL_MISSING"));
       return;
     }
+    // Retrieve global parameters for the polishing process
     Parameters parameters = Parameters.get();
+    // Ensure the document is at the correct SBML level and version
     doc = checkLevelAndVersion(doc);
-    // Polishing
+    // Perform the polishing operations on the document
     SBMLPolisher polisher = new SBMLPolisher();
     doc = polisher.polish(doc);
-    // Annotation
+    // Annotate the document if the parameters specify
     if (parameters.annotateWithBiGG()) {
       BiGGAnnotation annotation = new BiGGAnnotation();
       doc = annotation.annotate(doc);
     }
+    // Convert and write the document to JSON if specified
     if (parameters.writeJSON()) {
       String out = output.getAbsolutePath().replaceAll("\\.xml", ".json");
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(out))) {
@@ -470,13 +502,12 @@ public class ModelPolisher extends Launcher {
     // writing polished model
     logger.info(format(MESSAGES.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
-    // produce COMBINE archive and delete output model and glossary
-    // TODO: do compression and combine output work together?
+    // Handle COMBINE archive creation if specified
     if (parameters.outputCOMBINE()) {
-      // producing & writing glossary
       CombineArchive combineArchive = new CombineArchive(doc, output);
       combineArchive.write();
     }
+    // Handle file compression based on the specified method
     if (parameters.compression() != Compression.NONE) {
       String fileExtension = parameters.compression().getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
@@ -491,9 +522,11 @@ public class ModelPolisher extends Launcher {
       default:
         break;
       }
+      // Delete the original output file if compression is successful
       if (!output.delete()) {
         logger.warning(format(MESSAGES.getString("REMOVE_ZIP_INPUT_FAIL"), output.getAbsolutePath()));
       }
+      // Perform SBML validation if specified
       if (parameters.SBMLValidation()) {
         // use offline validation
         validate(archive, false);
@@ -503,23 +536,33 @@ public class ModelPolisher extends Launcher {
 
 
   /**
-   * Make sure SBML Level and Version are 3.1, so that needed plugins work
+   * Ensures that the SBML document is set to Level 3 and Version 1, which are required for compatibility with necessary plugins.
+   * If the document is not already at this level and version, it updates the document to meet these specifications.
+   * After ensuring the document is at the correct level and version, it converts the document using the CobraToFbcV2Converter.
    * 
-   * @param doc:
-   *        SBMLDocument
+   * @param doc The SBMLDocument to be checked and potentially converted.
+   * @return The SBMLDocument after potentially updating its level and version and converting it.
    */
   private SBMLDocument checkLevelAndVersion(SBMLDocument doc) {
     if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
       logger.info(MESSAGES.getString("TRY_CONV_LVL3_V1"));
       SBMLtools.setLevelAndVersion(doc, 3, 1);
     }
+    // Initialize the converter for Cobra to FBC version 2
     CobraToFbcV2Converter converter = new CobraToFbcV2Converter();
+    // Convert the document and return the converted document
     return converter.convert(doc);
   }
 
 
   /**
-   * @param filename
+   * Validates an SBML file either online or offline based on the provided parameters.
+   * Online validation refers to checking the file against a remote service or database, using specific parameters for the validation process.
+   * Offline validation involves reading the file locally, handling different compression formats if necessary, and validating the SBML document against local constraints.
+   * Errors encountered during the validation process are logged for further analysis.
+   *
+   * @param filename The path to the SBML file to be validated.
+   * @param online   A boolean flag indicating whether to perform online (true) or offline (false) validation.
    */
   private void validate(String filename, boolean online) {
     if (online) {
@@ -529,7 +572,7 @@ public class ModelPolisher extends Launcher {
       Map<String, String> parameters = new HashMap<>();
       parameters.put("output", output);
       parameters.put("offcheck", offcheck);
-      logger.info("Validating  " + filename + "\n");
+      logger.info("Validating " + filename + "\n");
       SBMLErrorLog sbmlErrorLog = SBMLValidator.checkConsistency(filename, parameters);
       handleErrorLog(sbmlErrorLog, filename);
     } else {
@@ -726,7 +769,10 @@ public class ModelPolisher extends Launcher {
 
 
   /*
-   * (non-Javadoc)
+   * This method is inherited from the base class and is not utilized in this CLI application.
+   * The ModelPolisher application does not implement a graphical user interface.
+   * 
+   * @return Always returns false as no GUI is created.
    * @see de.zbit.Launcher#addCopyrightToSplashScreen()
    */
   @Override
@@ -736,7 +782,10 @@ public class ModelPolisher extends Launcher {
 
 
   /*
-   * (non-Javadoc)
+   * This method is inherited from the base class and is not utilized in this CLI application.
+   * The ModelPolisher application does not implement a graphical user interface.
+   * 
+   * @return Always returns false as no GUI is created.
    * @see de.zbit.Launcher#addVersionNumberToSplashScreen()
    */
   @Override
@@ -745,8 +794,12 @@ public class ModelPolisher extends Launcher {
   }
 
 
-  /*
-   * (non-Javadoc)
+  /**
+   * This method is inherited from the base class and is not utilized in this CLI application.
+   * The ModelPolisher application does not implement a graphical user interface.
+   * 
+   * @param appConf The application configuration settings, not used in this context.
+   * @return Always returns null as no GUI is created.
    * @see de.zbit.Launcher#initGUI(de.zbit.AppConf)
    */
   @Override

@@ -30,6 +30,12 @@ import java.util.logging.Logger;
 import static java.text.MessageFormat.format;
 
 /**
+ * This class provides functionality to polish an SBML (Systems Biology Markup Language) document.
+ * Polishing involves enhancing the document with additional annotations, setting appropriate SBO (Systems Biology Ontology) terms,
+ * and ensuring the document adheres to certain standards and conventions useful for computational models in systems biology.
+ * The class supports operations such as checking the document's structure, polishing individual model components,
+ * and processing external resources linked within the document.
+ * 
  * @author Andreas Dr&auml;ger
  */
 public class SBMLPolisher {
@@ -38,12 +44,14 @@ public class SBMLPolisher {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+
   /**
    * Bundle for ModelPolisher logger messages
    */
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+
   /**
-   *
+   * Progress bar to visually indicate the progress of the polishing process.
    */
   protected AbstractProgressBar progress;
 
@@ -55,77 +63,110 @@ public class SBMLPolisher {
 
 
   /**
-   * Entry point from #ModelPolisher class
+   * This method serves as the entry point from the ModelPolisher class to polish an SBML document.
+   * It ensures the document contains a model, performs a sanity check, polishes the model, sets the SBO term,
+   * marks the progress as finished if applicable, and processes any linked resources.
    * 
-   * @param doc:
-   *        SBMLDocument containing the model to polish
-   * @return SBMLDocument containing polished model
+   * @param doc The SBMLDocument containing the model to be polished.
+   * @return The polished SBMLDocument.
    */
   public SBMLDocument polish(SBMLDocument doc) {
+    // Check if the document has a model set, log severe error if not.
     if (!doc.isSetModel()) {
       logger.severe(MESSAGES.getString("NO_MODEL_FOUND"));
       return doc;
     }
+    // Retrieve the model from the document.
     Model model = doc.getModel();
+
+    // Polish the model.
     polish(model);
-    doc.setSBOTerm(624); // flux balance framework
+    // Set the SBO term for the document to indicate a flux balance framework.
+    doc.setSBOTerm(624);
+    // If a progress bar is set, mark the progress as finished.
     if (progress != null) {
       progress.finished();
     }
+    // Process any external resources linked in the document's annotations.
     Registry.processResources(doc.getAnnotation());
     return doc;
   }
 
 
   /**
-   * Main method delegating all polishing tasks
+   * This method orchestrates the polishing of an SBML model by delegating tasks to specific polishing methods
+   * for different components of the model. It initializes a progress bar to track and display the progress of
+   * the polishing process.
    * 
-   * @param model:
-   *        SBML Model to polish
+   * @param model The SBML Model to be polished.
    */
   public void polish(Model model) {
+    // Log the start of processing the model.
     logger.info(format(MESSAGES.getString("PROCESSING_MODEL"), model.getId()));
-    // initialize ProgressBar
-    int count = 1 // for model properties
-      + model.getUnitDefinitionCount() + model.getCompartmentCount() + model.getParameterCount()
-      + model.getReactionCount() + model.getSpeciesCount() + model.getInitialAssignmentCount();
+    
+    // Calculate the total number of tasks to initialize the progress bar.
+    int count = 1 // Account for model properties
+      + model.getUnitDefinitionCount() 
+      + model.getCompartmentCount() 
+      + model.getParameterCount()
+      + model.getReactionCount() 
+      + model.getSpeciesCount() 
+      + model.getInitialAssignmentCount();
+    
+    // Include tasks from FBC plugin if present.
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
     }
+    
+    // Initialize the progress bar with the total count of tasks.
     progress = new ProgressBar(count);
     progress.DisplayBar("Polishing Model (1/9)  ");
+    
+    // Delegate polishing tasks to specific methods.
     new UnitPolishing(model, progress).polishListOfUnitDefinitions();
     polishListOfCompartments(model);
     polishListOfSpecies(model);
     boolean strict = polishListOfReactions(model);
+    
+    // Perform final polishing adjustments based on the strictness of the reactions.
     ModelPolishing modelPolishing = new ModelPolishing(model, strict, progress);
     modelPolishing.polish();
   }
   
 
   /**
-   * @param model
+   * Polishes all compartments in the given SBML model. This method iterates through each compartment
+   * in the model, updates the progress display, and applies polishing operations defined in the
+   * CompartmentPolishing class.
+   * 
+   * @param model The SBML Model containing the compartments to be polished.
    */
   public void polishListOfCompartments(Model model) {
-    for (int i = 0; i < model.getCompartmentCount(); i++) {
+    for (Compartment compartment : model.getListOfCompartments()) {
       progress.DisplayBar("Polishing Compartments (3/9)  ");
-      CompartmentPolishing compartmentPolishing = new CompartmentPolishing(model.getCompartment(i));
+      CompartmentPolishing compartmentPolishing = new CompartmentPolishing(compartment);
       compartmentPolishing.polish();
     }
   }
 
 
   /**
-   * @param model
+   * Polishes the list of species in the given SBML model. This method iterates through each species,
+   * applies polishing operations, and collects species that need to be removed based on the polishing results.
+   * Removal is based on criteria defined in the SpeciesPolishing class.
+   * 
+   * @param model The SBML Model containing the species to be polished.
    */
   public void polishListOfSpecies(Model model) {
     List<Species> speciesToRemove = new ArrayList<>();
     for (Species species : model.getListOfSpecies()) {
-      progress.DisplayBar("Polishing Species (4/9)  "); // "Processing species " + species.getId());
+      progress.DisplayBar("Polishing Species (4/9)  "); // Update progress display for each species
       SpeciesPolishing speciesPolishing = new SpeciesPolishing(species);
+      // Polish each species and collect those that need to be removed
       speciesPolishing.polish().ifPresent(speciesToRemove::add);
     }
+    // Remove the collected species from the model
     for (Species species : speciesToRemove) {
       model.removeSpecies(species);
     }
@@ -133,8 +174,12 @@ public class SBMLPolisher {
 
 
   /**
-   * @param model
-   * @return
+   * Polishes all reactions in the given SBML model. This method iterates through each reaction,
+   * updates the progress display, and applies polishing operations defined in the ReactionPolishing class.
+   * It also aggregates a strictness flag that indicates if all reactions conform to strict FBC (Flux Balance Constraints) standards.
+   * 
+   * @param model The SBML Model containing the reactions to be polished.
+   * @return true if all reactions are strictly defined according to FBC standards, false otherwise.
    */
   public boolean polishListOfReactions(Model model) {
     boolean strict = true;

@@ -13,18 +13,40 @@ import edu.ucsd.sbrg.miriam.models.Miriam;
 import edu.ucsd.sbrg.miriam.models.Namespace;
 import edu.ucsd.sbrg.miriam.models.Root;
 
+/**
+ * The {@code RegistryParser} class is a singleton that provides functionality to parse the MIRIAM registry
+ * from a JSON file and convert it into a {@code Miriam} object. This class ensures that only one instance
+ * of the parser is created and used throughout the application.
+ */
 public class RegistryParser {
 
   private static final Logger logger = Logger.getLogger(RegistryParser.class.getName());
+
+  /**
+   * Singleton instance of {@code RegistryParser}.
+   */
   private static RegistryParser parser;
+
+  /**
+   * InputStream to read the MIRIAM registry JSON file.
+   */
   private static InputStream registry;
 
+  /**
+   * Private constructor to prevent instantiation from outside this class.
+   * Initializes the InputStream for the MIRIAM registry JSON file.
+   */
   private RegistryParser() {
     super();
     registry = RegistryParser.class.getResourceAsStream("IdentifiersOrg-Registry.json");
   }
 
-
+  /**
+   * Provides the singleton instance of {@code RegistryParser}.
+   * If the instance is not already created, it initializes a new one.
+   *
+   * @return The singleton instance of {@code RegistryParser}.
+   */
   public static RegistryParser getInstance() {
     if (parser == null) {
       parser = new RegistryParser();
@@ -32,7 +54,13 @@ public class RegistryParser {
     return parser;
   }
 
-
+  /**
+   * Parses the MIRIAM registry JSON file into a {@code Miriam} object.
+   * It reads the JSON structure, extracts namespaces, and maps them by their prefixes.
+   *
+   * @return A {@code Miriam} object initialized with the parsed namespaces.
+   * @throws IOException If there is an error reading the JSON file.
+   */
   Miriam parse() throws IOException {
     logger.fine("Parsing MIRIAM registry");
     ObjectMapper mapper = new ObjectMapper();

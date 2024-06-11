@@ -21,6 +21,13 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * This class provides functionality to annotate a reaction in an SBML model using BiGG database identifiers.
+ * It extends the {@link CVTermAnnotation} class, allowing it to manage controlled vocabulary (CV) terms
+ * associated with the reaction. The class handles various aspects of reaction annotation including setting
+ * the reaction's name, SBO term, and additional annotations. It also processes gene reaction rules and
+ * subsystem information associated with the reaction.
+ */
 public class ReactionAnnotation extends CVTermAnnotation {
 
   /**
@@ -46,37 +53,41 @@ public class ReactionAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Adds annotations to a reaction, parses associated gene reaction rules and creates missing gene products and
-   * converts subsystem information into corresponding groups
+   * Annotates a reaction by setting its name, SBO term, and additional annotations. It also processes gene reaction rules
+   * and subsystem information associated with the reaction. This method retrieves a BiGG ID for the reaction, either from
+   * the reaction's ID directly or through associated annotations. If a valid BiGG ID is found, it proceeds with the
+   * annotation and parsing processes.
    */
   @Override
   public void annotate() {
-    // This biggId corresponds to BiGGId calculated from getSpeciesBiGGIdFromUriList method, if not present as
-    // reaction.id
+    // Attempt to retrieve a BiGG ID for the reaction, either directly from the reaction ID or through associated annotations
     checkId().ifPresent(biggId -> {
-      setName(biggId);
-      setSBOTerm(biggId);
-      addAnnotations(biggId);
-      parseGeneReactionRules(biggId);
-      parseSubsystems(biggId);
+      setName(biggId); // Set the reaction's name based on the BiGG ID
+      setSBOTerm(biggId); // Assign the appropriate SBO term based on the BiGG ID
+      addAnnotations(biggId); // Add additional annotations related to the BiGG ID
+      parseGeneReactionRules(biggId); // Parse and process gene reaction rules associated with the BiGG ID
+      parseSubsystems(biggId); // Convert subsystem information into corresponding groups based on the BiGG ID
     });
   }
 
   /**
-   * Checks if {@link Species#getId()} returns a correct {@link BiGGId} and tries to retrieve a corresponding
-   * {@link BiGGId} based on annotations present.
+   * This method checks if the ID of the reaction is a valid BiGG ID and attempts to retrieve a corresponding
+   * BiGG ID based on existing annotations. It first checks if the reaction ID matches the expected BiGG ID format
+   * and verifies its existence in the database. If the ID does not match or is not found, it then attempts to
+   * extract a BiGG ID from the reaction's annotations. This involves parsing the CVTerms associated with the reaction,
+   * extracting URLs, validating them, and then querying the BiGG database for corresponding reaction IDs that match
+   * the reaction's compartment.
    *
-   * @return If creation was successful, internal ModelPolisher internal BiGGId representation wrapped in an Optional is
-   *         returned, else Optional.empty() is returned
+   * @return An {@link Optional} containing the BiGG ID if found or created successfully, otherwise {@link Optional#empty()}
    */
   @Override
   public Optional<BiGGId> checkId() {
     String id = reaction.getId();
-    // extracting BiGGId if not present for species
+    // Check if the reaction ID matches the expected BiGG ID format and exists in the database
     boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
             && QueryOnce.isReaction(id);
     if (!isBiGGid) {
-      // Flatten all resources for all CVTerms into a list
+      // Extract BiGG IDs from annotations if the direct ID check fails
       Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
               .stream()
               .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
@@ -93,6 +104,7 @@ public class ReactionAnnotation extends CVTermAnnotation {
               .filter(this::matchingCompartments)
               .map(fr -> fr.reactionId)
               .collect(Collectors.toSet());
+      // Select the first valid ID from the set, if available
       id = ids.stream()
               .findFirst()
               .orElse(id);
@@ -100,6 +112,18 @@ public class ReactionAnnotation extends CVTermAnnotation {
     return BiGGId.createReactionId(id);
   }
 
+  /**
+   * Determines if the reaction's compartment matches the compartment information of a foreign reaction from the BiGG database.
+   * 
+   * This method checks various conditions to ensure that the compartments are correctly matched:
+   * 1. If the reaction does not have a compartment set and the foreign reaction also lacks compartment details, it returns true.
+   * 2. If the reaction does not have a compartment set but the foreign reaction does, it returns false.
+   * 3. If the reaction has a compartment set, it checks if the compartment ID matches the foreign reaction's compartment ID.
+   * 4. If the reaction has a named compartment instance set, it checks if the name matches the foreign reaction's compartment name.
+   * 
+   * @param foreignReaction The foreign reaction object containing compartment details to compare against the reaction.
+   * @return true if the compartments match according to the conditions above, false otherwise.
+   */
   private boolean matchingCompartments(BiGGDB.ForeignReaction foreignReaction) {
     if (!reaction.isSetCompartment()
             && null == foreignReaction.compartmentId
@@ -120,9 +144,11 @@ public class ReactionAnnotation extends CVTermAnnotation {
       return false;
   }
 
-
   /**
-   * @param biggId
+   * Sets the name of the reaction based on the provided BiGGId. It retrieves the reaction name using the abbreviation
+   * from the BiGGId, polishes the name, and updates the reaction's name if the new name is different from the current name.
+   * 
+   * @param biggId The BiGGId object containing the abbreviation used to fetch and potentially update the reaction's name.
    */
   public void setName(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
@@ -132,9 +158,14 @@ public class ReactionAnnotation extends CVTermAnnotation {
             .ifPresent(reaction::setName);
   }
 
-
   /**
-   * @param biggId
+   * Sets the SBO term for a reaction based on the given BiGGId.
+   * If the reaction does not already have an SBO term set, it determines the appropriate SBO term
+   * based on whether the reaction is a pseudoreaction or a generic process. Pseudoreactions are assigned
+   * an SBO term of 631, while generic processes are assigned an SBO term of 375 unless the configuration
+   * specifies to omit generic terms.
+   *
+   * @param biggId The BiGGId object containing the abbreviation used to check if the reaction is a pseudoreaction.
    */
   public void setSBOTerm(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
@@ -150,36 +181,45 @@ public class ReactionAnnotation extends CVTermAnnotation {
 
 
   /**
-   * Add annotations for reaction based on {@link BiGGId}, update http to https for MIRIAM URIs and merge duplicates
+   * This method delegates the task of adding annotations to a reaction based on the provided {@link BiGGId}.
+   * It specifically focuses on updating MIRIAM URIs from http to https, merging duplicate annotations, and
+   * ensuring that the reaction is annotated with the correct identifiers from the BiGG database.
    *
-   * @param biggId:
-   *        {@link BiGGId} from reaction id
+   * @param biggId The {@link BiGGId} associated with the reaction, used to fetch and apply annotations.
    */
   @Override
   public void addAnnotations(BiGGId biggId) {
     addAnnotations(reaction, biggId);
   }
 
-
   /**
-   * @param biggId
+   * Parses gene reaction rules for a given reaction based on the BiGG database identifier.
+   * This method retrieves gene reaction rules associated with the reaction's abbreviation
+   * from the BiGG database and applies gene-protein-reaction (GPR) parsing to the reaction.
+   * It considers whether generic terms should be omitted based on the current parameters.
+   *
+   * @param biggId The BiGG database identifier for the reaction, used to fetch and parse gene reaction rules.
    */
   public void parseGeneReactionRules(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
     Parameters parameters = Parameters.get();
     List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
-    for (String geneRactionRule : geneReactionRules) {
-      GPRParser.parseGPR(reaction, geneRactionRule, parameters.omitGenericTerms());
+    for (String geneReactionRule : geneReactionRules) {
+      GPRParser.parseGPR(reaction, geneReactionRule, parameters.omitGenericTerms());
     }
   }
 
 
   /**
-   * Retrieve subsystem information from BiGG Knowledgebase and convert subsystem information to corresponding group
-   * using {@link GroupsModelPlugin} and link reaction to corresponding group
+   * Retrieves subsystem information from the BiGG Knowledgebase and converts it into corresponding groups using the
+   * {@link GroupsModelPlugin}. It then links the reaction to the appropriate group based on the subsystem information.
+   * If the model is not from BiGG, it logs a warning and uses a different method to fetch subsystems.
+   * It also ensures that subsystems are unique by converting them to lowercase and removing duplicates.
+   * If multiple subsystems are found for a non-BiGG model, the method returns early to avoid ambiguity.
+   * Each subsystem is then either fetched from a cache or a new group is created and added to the model.
+   * Finally, the reaction is linked to the group.
    *
-   * @param biggId:
-   *        {@link BiGGId} from reaction id
+   * @param biggId the {@link BiGGId} associated with the reaction, used to fetch subsystem information
    */
   private void parseSubsystems(BiGGId biggId) {
     Model model = reaction.getModel();
