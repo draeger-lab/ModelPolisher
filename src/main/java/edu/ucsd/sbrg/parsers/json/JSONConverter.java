@@ -6,8 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.sbml.jsbml.Annotation;
@@ -46,7 +44,6 @@ import edu.ucsd.sbrg.util.GPRParser;
 
 public class JSONConverter {
 
-  private static final Logger logger = Logger.getLogger(JSONConverter.class.getName());
   private static Map<String, String> compartments = new HashMap<>();
 
   /**
@@ -230,8 +227,8 @@ public class JSONConverter {
     // Set reaction subsystem to first member match
     // experimental: is this correct if multiple member objects and/or multiple matches could exist potentially?
     Object subsystem = r.getUserObject("SUBSYSTEM_LINK");
-    if (subsystem instanceof Set) {
-      for (Object member : (Set) subsystem) {
+    if (subsystem instanceof Set<?>) {
+      for (Object member : (Set<?>) subsystem) {
         if (member instanceof Member) {
           GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) r.getModel().getPlugin(GroupsConstants.shortLabel);
           for (Group group : groupsModelPlugin.getListOfGroups()) {

@@ -6,11 +6,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.sbml.jsbml.Model;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
 
 public class GPRParserTest {
 
@@ -30,26 +26,26 @@ public class GPRParserTest {
   }
 
 
-  private static void prepareFirstResult() {
-    GeneProductRef geneProductRef = new GeneProductRef(LEVEL, VERSION);
-    FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-    String identifier = "G_1591_AT1";
-    GeneProduct geneProduct = fbcPlug.createGeneProduct(identifier);
-    geneProduct.setLabel(identifier);
-    geneProductRef.setGeneProduct(identifier);
-    //return (GeneProductAssociation) geneProductRef;
-  }
+  // private static void prepareFirstResult() {
+  //   GeneProductRef geneProductRef = new GeneProductRef(LEVEL, VERSION);
+  //   FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+  //   String identifier = "G_1591_AT1";
+  //   GeneProduct geneProduct = fbcPlug.createGeneProduct(identifier);
+  //   geneProduct.setLabel(identifier);
+  //   geneProductRef.setGeneProduct(identifier);
+  //   //return (GeneProductAssociation) geneProductRef;
+  // }
 
 
-  private static GeneProductAssociation prepareSecondResult() {
-    GeneProductAssociation association = new GeneProductAssociation(LEVEL, VERSION);
-    GeneProductRef geneProductRef = new GeneProductRef(LEVEL, VERSION);
-    FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-    String identifier = "G_1591_AT1";
-    GeneProduct gp = fbcPlug.createGeneProduct(identifier);
-    gp.setLabel(identifier);
-    return association;
-  }
+  // private static GeneProductAssociation prepareSecondResult() {
+  //   GeneProductAssociation association = new GeneProductAssociation(LEVEL, VERSION);
+  //   GeneProductRef geneProductRef = new GeneProductRef(LEVEL, VERSION);
+  //   FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+  //   String identifier = "G_1591_AT1";
+  //   GeneProduct gp = fbcPlug.createGeneProduct(identifier);
+  //   gp.setLabel(identifier);
+  //   return association;
+  // }
 
 
   public final void test() {

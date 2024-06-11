@@ -5,12 +5,9 @@ import static java.text.MessageFormat.format;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import de.zbit.util.ResourceManager;
 
 /**
  * Corresponds to a child of a MIRIAM namespace
@@ -21,10 +18,7 @@ class Resource implements Node {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(Resource.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+
   private final Namespace parent;
   private final CompactResource resource;
   private final String pattern;

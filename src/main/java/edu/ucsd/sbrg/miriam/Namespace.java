@@ -16,12 +16,10 @@ import java.util.regex.Pattern;
  */
 class Namespace implements Node {
 
-  private final Entries.Root parent;
   private final CompactEntry entry;
   private final List<Resource> children;
 
   Namespace(Entries.Root parent, CompactEntry entry) {
-    this.parent = parent;
     this.entry = entry;
     children = new ArrayList<>();
     for (CompactResource resource : entry.getResources()) {

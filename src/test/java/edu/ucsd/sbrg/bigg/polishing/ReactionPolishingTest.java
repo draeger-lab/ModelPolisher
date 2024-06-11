@@ -462,7 +462,7 @@ public class ReactionPolishingTest {
         var kl = r.createKineticLaw();
         var p1 = kl.createLocalParameter("LOWER_BOUND");
         p1.setValue(1000);
-        var p2 = kl.createLocalParameter("UPPER_BOUND");
+        kl.createLocalParameter("UPPER_BOUND");
 
         var pModel = model.createParameter("some_reaction_UPPER_BOUND");
 

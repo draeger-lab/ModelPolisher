@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * A collection of helpful functions for dealing with SBML data structures.
@@ -30,10 +29,6 @@ import java.util.logging.Logger;
  */
 public class SBMLUtils {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(SBMLUtils.class.getName());
   /**
    * Key to link from {@link Reaction} directly to {@link Member}s referencing
    * that reaction.

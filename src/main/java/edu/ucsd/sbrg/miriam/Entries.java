@@ -29,10 +29,7 @@ public class Entries {
    * A {@link Logger} for this class.
    */
   private static final transient Logger logger = Logger.getLogger(Entries.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+
   private static final Map<String, String> COLLECTION_FOR_PROVIDER = new HashMap<>();
   private static final Map<String, String> PATTERN_FOR_COLLECTION = new HashMap<>();
   private static final Map<String, String> PROVIDER_FOR_COLLECTION = new HashMap<>();

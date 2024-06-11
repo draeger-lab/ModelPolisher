@@ -160,7 +160,7 @@ public interface ModelPolisherOptions extends KeyProvider {
     new Option<>("OUTPUT_COMBINE", Boolean.class, MESSAGES.getString("OUTPUT_COMBINE"), Boolean.FALSE);
   /**
    * If true, the created SBML file will be validated through the online
-   * validator service at {@link "http://sbml.org"}. This option is only used
+   * validator service at <a href="http://sbml.org">http://sbml.org</a>. This option is only used
    * if the output is GZIP compressed.
    */
   @SuppressWarnings("unchecked")

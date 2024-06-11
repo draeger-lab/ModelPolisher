@@ -22,7 +22,6 @@ import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
-import org.sbml.jsbml.util.filters.NameFilter;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -47,8 +46,8 @@ import java.util.regex.Pattern;
  * and are used in fact. This class can become a collection of repair functions
  * for invalid SBML models.
  * 
+ * Date: 2016-02-19
  * @author Andreas Dr&auml;ger
- * @date 2016-02-19
  */
 public class SBMLFix {
 
@@ -68,8 +67,6 @@ public class SBMLFix {
   /**
    * @param input
    * @param output
-   * @throws XMLStreamException
-   * @throws IOException
    */
   public static void batchProcess(File input, File output) {
     if (!output.exists() && !output.isFile() && !(input.isFile() && input.getName().equals(output.getName()))) {

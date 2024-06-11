@@ -50,21 +50,22 @@ public class CombineArchiveTest {
         File caFile = new File(modelLocation.substring(0, modelLocation.lastIndexOf('.')) + ".zip");
         assertTrue(caFile.exists());
 
-        CombineArchive ca = new CombineArchive(caFile, true);
-        boolean hasModel = false;
-        boolean hasGlossary = false;
+        try (CombineArchive ca = new CombineArchive(caFile, true)) {
+            boolean hasModel = false;
+            boolean hasGlossary = false;
 
-        for (ArchiveEntry archiveEntry : ca.getEntries()) {
-            if (!hasModel) {
-                hasModel = archiveEntry.getFileName().equals("model.xml");
+            for (ArchiveEntry archiveEntry : ca.getEntries()) {
+                if (!hasModel) {
+                    hasModel = archiveEntry.getFileName().equals("model.xml");
+                }
+                if (!hasGlossary) {
+                    hasGlossary = archiveEntry.getFileName().equals("glossary.rdf");
+                }
             }
-            if (!hasGlossary) {
-                hasGlossary = archiveEntry.getFileName().equals("glossary.rdf");
-            }
+
+            assertTrue(hasModel);
+            assertTrue(hasGlossary);
         }
-
-        assertTrue(hasModel);
-        assertTrue(hasGlossary);
     }
 
     @AfterAll

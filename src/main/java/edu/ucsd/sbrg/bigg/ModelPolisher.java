@@ -15,6 +15,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -712,8 +714,8 @@ public class ModelPolisher extends Launcher {
   @Override
   public URL getURLlicenseFile() {
     try {
-      return new URL(baseBundle.getString("LICENSE"));
-    } catch (MalformedURLException exc) {
+      return new URI(baseBundle.getString("LICENSE")).toURL();
+    } catch (MalformedURLException | URISyntaxException exc) {
       return null;
     }
   }

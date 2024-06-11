@@ -3,6 +3,12 @@ package edu.ucsd.sbrg.parsers.cobra;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.Species;
+import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.FluxObjective;
+import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
 
 /**
  * For more information about COBRA model fields, see the following
@@ -17,7 +23,7 @@ public enum ModelField {
   /**
    * Matrix of constraints, form <i>&mu; &sdot; A &sdot; v + B &sdot; v =
    * 0</i> or g(<i>&mu;</i>) &sdot; <i>A &sdot; v + B &sdot; v = 0</i> with
-   * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu</i>;
+   * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu;</i>;
    * 
    * @see #B
    */
@@ -46,7 +52,7 @@ public enum ModelField {
   /**
    * Matrix of constraints, form <i>&mu; &sdot; A &sdot; v + B &sdot; v =
    * 0</i> or g(<i>&mu;</i>) &sdot; <i>A &sdot; v + B &sdot; v = 0</i> with
-   * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu</i>;
+   * g(<i>&mu;</i>) being some continuous nonlinear function of <i>&mu;</i>;
    * 
    * @see #A
    */
@@ -139,7 +145,7 @@ public enum ModelField {
   /**
    * Value of charge for corresponding metabolite.
    * Must have same dimension as {@link #mets}. Data type: double array.
-   * For SBML Level < 3, it corresponds to {@link Species#getCharge()}. Since
+   * For SBML Level &lt; 3, it corresponds to {@link Species#getCharge()}. Since
    * Level 3, it corresponds to {@link FBCSpeciesPlugin#getCharge()}.
    */
   metCharge,
@@ -152,10 +158,7 @@ public enum ModelField {
   /**
    * Elemental formula for each metabolite. This must have same dimension as
    * {@link #mets}. Datatype: cell array of strings. Corresponds to
-   * {@link FBCSpeciesPlugin#getChemicalFormula()}.import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-   * import org.sbml.jsbml.ext.fbc.FluxObjective;
-   * import org.sbml.jsbml.ext.fbc.GeneProduct;
-   * import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
+   * {@link FBCSpeciesPlugin#getChemicalFormula()}.
    */
   metFormulas,
   /**
@@ -240,7 +243,7 @@ public enum ModelField {
    */
   rxnConfidenceEcoIDA,
   /**
-   * @see #confidenceScores.
+   * {@see #confidenceScores}.
    */
   rxnConfidenceScores,
   /**

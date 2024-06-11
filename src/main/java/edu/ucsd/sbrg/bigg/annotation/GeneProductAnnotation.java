@@ -107,7 +107,7 @@ public class GeneProductAnnotation extends CVTermAnnotation {
    * If neither condition is met, an empty string is returned.
    *
    * @param biggId An Optional containing the BiGGId of the gene product, which may be used to generate a label if the gene product's own label is not set.
-   * @return An Optional<String> containing the label of the gene product, or an empty string if no appropriate label is found.
+   * @return An {@code Optional<String>} containing the label of the gene product, or an empty string if no appropriate label is found.
    */
   public Optional<String> getLabel(Optional<BiGGId> biggId) {
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {

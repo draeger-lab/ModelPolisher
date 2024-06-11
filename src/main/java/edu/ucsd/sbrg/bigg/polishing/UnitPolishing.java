@@ -22,10 +22,6 @@ import java.util.logging.Logger;
  */
 public class UnitPolishing {
 
-    private static final transient Logger logger = Logger.getLogger(UnitPolishing.class.getName());
-
-    private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-
     public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, Registry.createURI("pubmed", 7986045));
     public static final String GROWTH_UNIT_ID = "mmol_per_gDW_per_hr";
     public static final String GROWTH_UNIT_NAME = "Millimoles per gram (dry weight) per hour";

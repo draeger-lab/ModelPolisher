@@ -33,6 +33,8 @@ import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 
 /**
+ * This class provides a connection to the BiGG database.
+ * 
  * @author Andreas Dr&auml;ger
  */
 public class BiGGDB {
@@ -398,7 +400,7 @@ public class BiGGDB {
    * Retrieves formatted gene reaction rules for a specific reaction and model from the database.
    * This method constructs a SQL query to fetch and format the gene reaction rules associated with
    * the given reaction ID and model ID. The formatting includes replacing logical operators 'or' and 'and'
-   * with '||' and '&&', respectively, and substituting certain characters to comply with SBML standards.
+   * with {@code ||} and {@code &&}, respectively, and substituting certain characters to comply with SBML standards.
    *
    * @param reactionId The ID of the reaction for which gene reaction rules are to be retrieved.
    * @param modelId The ID of the model associated with the reaction.

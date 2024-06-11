@@ -4,6 +4,8 @@ import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
 
 /**
+ * This interface provides options for connecting to the ADB database.
+ * 
  * @author Kaustubh Trivedi
  */
 public interface ADBOptions extends KeyProvider {

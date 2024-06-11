@@ -1,21 +1,10 @@
 package edu.ucsd.sbrg.miriam;
 
-import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.miriam.models.Miriam;
 
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 public class RegistryTest {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final transient Logger logger = Logger.getLogger(RegistryTest.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   Miriam miriam = RegistryProvider.getInstance().getMiriam();
 
 //  @Test
