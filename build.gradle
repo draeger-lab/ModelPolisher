@@ -241,7 +241,6 @@ task javadocs(type: Javadoc) {
 if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
     task bumpVersionMP() {
         replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
-        replaceVersion(rootProject.projectDir.toString() + "/.travis.yml")
         replaceVersion(rootProject.projectDir.toString() + "/README.md")
         replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
     }
@@ -250,13 +249,13 @@ if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
 
 def replaceVersion(path) {
     ArrayList<String> content = new ArrayList<>()
-    File travisFile = new File(path)
+    File file = new File(path)
     String MPVersion = /ModelPolisher-(.*?)\d{1,2}(.\d{1,2}){1,2}(-beta)?.jar/
-    travisFile.eachLine {
+    file.eachLine {
         line ->
             content.add(line.replaceAll(MPVersion, "ModelPolisher-" + "${version}.jar"))
     }
-    BufferedWriter writer = new BufferedWriter(new FileWriter(travisFile))
+    BufferedWriter writer = new BufferedWriter(new FileWriter(file))
     content.each {
         line -> writer.writeLine(line)
     }
