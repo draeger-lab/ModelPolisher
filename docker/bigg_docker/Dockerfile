@@ -1,18 +1,23 @@
-FROM postgres:9.6.2
+FROM postgres:latest AS builder
 
-# Set the maintainer label to the email of the responsible party
-LABEL maintainer="zajac.thomas1992@gmail.com"
+LABEL maintainer="dario.eltzner@student.uni-tuebingen.de"
 
-# Update the package lists, install curl, create a directory for the database dump,
-# download the database dump, and clean up the package lists directory
-RUN apt-get update && \
-    apt-get install curl -y && \
-    # Create directory '/bigg_database_dump/' and download bigg_database dump as 'database.dump'
-    mkdir /bigg_database_dump && \
-    curl -Lo /bigg_database_dump/database.dump https://www.dropbox.com/sh/ye05djxrpxy37da/AAB-rhgcEv9p8gcMpkYuowu8a/v1.6/database.dump?dl=0 && \    
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get upgrade -y
+COPY ./bigg_database.dump /bigg_database.dump
+COPY ./restore_biggdb.sh /docker-entrypoint-initdb.d/restore_biggdb.sh
 
-COPY ./scripts/restore_biggdb.sh /docker-entrypoint-initdb.d/restore_biggdb.sh
+RUN mkdir -p /var/lib/postgresql-static/data
+ENV PGDATA=/var/lib/postgresql-static/data
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
+
+RUN ["/usr/local/bin/docker-entrypoint.sh", "postgres"]
+
+FROM postgres:latest
+
+COPY --from=builder /var/lib/postgresql-static/data $PGDATA
 
 EXPOSE 5432
 

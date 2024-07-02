@@ -115,7 +115,8 @@ dependencies {
     implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
     // JDBC connection pool
     implementation "com.zaxxer:HikariCP:5.1.0"
-
+    
+    implementation 'com.opentable.components:otj-pg-embedded:1.0.1'
     // Test implementation dependencies
     // API for writing tests with JUnit 5
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
@@ -159,17 +160,17 @@ tasks.withType(JavaCompile) {
 tasks.withType(Test) {
     useJUnitPlatform()
     testLogging {
-	// showStandardStreams = true
-	// events "passed", "skipped", "failed"
-	// exceptionFormat TestExceptionFormat.FULL
-	// showCauses true
-	// showExceptions true
-	// showStackTraces true
-	showStandardStreams = false
-	events "failed"
-	showCauses false
-	showExceptions false
-	showStackTraces false
+	showStandardStreams = true
+	events "passed", "skipped", "failed"
+	exceptionFormat TestExceptionFormat.FULL
+	showCauses true
+	showExceptions true
+	showStackTraces true
+	// showStandardStreams = false
+	// events "failed"
+	// showCauses false
+	// showExceptions false
+	// showStackTraces false
     }
 }
 

@@ -1,0 +1,30 @@
+networks:
+  modelpolisher:
+    driver: bridge
+services:
+  biggdb:
+    image: schmirgel/bigg_db:1.6
+    container_name: modelpolisher_pgadmin_biggdb
+    networks:
+      - modelpolisher
+  adb:
+    image: schmirgel/annotatedb:0.1.1
+    container_name: modelpolisher_pgadmin_adb
+    networks:
+      - modelpolisher
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: modelpolisher_pgadmin
+    depends_on:
+      - biggdb
+      - adb
+    environment:
+      - PGADMIN_DEFAULT_USER=admin
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+    networks:
+      - modelpolisher
+    ports:
+      - "127.0.0.1:5050:80"

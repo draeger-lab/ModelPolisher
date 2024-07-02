@@ -1,14 +1,11 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
-import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
 
 import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 /**
  * This class is responsible for ensuring that all necessary {@link UnitDefinition}s and {@link Unit}s are correctly

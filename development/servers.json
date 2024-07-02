@@ -1,0 +1,22 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "BiGG DB",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "postgres",
+            "Host": "modelpolisher_pgadmin_biggdb",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres"
+        },
+        "2": {
+            "Name": "Annotate DB",
+            "Group": "Servers",
+            "Host": "modelpolisher_pgadmin_adb",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "SSLMode": "prefer"
+        }
+    }
+}

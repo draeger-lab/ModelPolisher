@@ -24,12 +24,12 @@ public class BiGGAnnotationTest extends BiGGDBContainerTest {
         var sbml = new SBMLDocument(3, 2);
         var m = new Model("iJO1366", 3, 2);
         sbml.setModel(m);
-        var annotater = new BiGGAnnotation();
+        var annotator = new BiGGAnnotation();
 
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());
 
-        annotater.annotate(sbml);
+        annotator.annotate(sbml);
 
         assertTrue(m.isSetMetaId());
         assertCVTermIsPresent(m,

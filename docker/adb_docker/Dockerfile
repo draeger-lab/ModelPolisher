@@ -1,19 +1,23 @@
-FROM postgres:11.4
+FROM postgres:latest AS builder
 
-# Set the maintainer label to the email of the responsible party
-LABEL maintainer="ktrivedi@cs.iitr.ac.in"
+LABEL maintainer="dario.eltzner@student.uni-tuebingen.de"
 
-# Add a new user 'adb' with no password and no additional info
-RUN adduser --disabled-password --gecos '' adb
+RUN apt-get update && apt-get upgrade -y
+COPY ./adb-v0.1.1.dump /adb.dump
+COPY ./restore_adb.sh /docker-entrypoint-initdb.d/restore_adb.sh
 
-RUN apt-get update && \
-    apt-get install curl -y && \
-    # Create directory '/adb_dump/' and download adb-v0.1.1 dump as 'adb-v0.1.1.dump'
-    mkdir /adb_dump && \
-    curl -Lo /adb_dump/adb-v0.1.1.dump https://www.dropbox.com/s/qjiey8y88gt4h0l/adb-v0.1.1.dump?dl=0 && \
-    rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /var/lib/postgresql-static/data
+ENV PGDATA=/var/lib/postgresql-static/data
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
 
-COPY ./scripts/restore_adb.sh /docker-entrypoint-initdb.d/restore_adb.sh
+RUN ["sed", "-i", "s/exec \"$@\"/echo \"skipping...\"/", "/usr/local/bin/docker-entrypoint.sh"]
+
+RUN ["/usr/local/bin/docker-entrypoint.sh", "postgres"]
+
+FROM postgres:latest
+
+COPY --from=builder /var/lib/postgresql-static/data $PGDATA
 
 EXPOSE 5432
 
