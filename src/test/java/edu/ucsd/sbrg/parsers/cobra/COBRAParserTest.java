@@ -9,7 +9,7 @@ import java.io.IOException;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class COBRAParserTest {
+    public class COBRAParserTest {
 
     /**
      * This is here to call the static initializer code of the Registry class,

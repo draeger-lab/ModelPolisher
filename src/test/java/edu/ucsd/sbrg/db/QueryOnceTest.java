@@ -1,12 +1,13 @@
 package edu.ucsd.sbrg.db;
 
+import edu.ucsd.sbrg.bigg.annotation.BiGGDBContainerTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class QueryOnceTest extends BiGGDBTest {
+public class QueryOnceTest extends BiGGDBContainerTest {
 
     /**
      * This test serves primarily as documentation and to to raise awareness for

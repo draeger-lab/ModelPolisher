@@ -16,16 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 public class BiGGDBTest extends BiGGDBContainerTest {
 
-    @BeforeEach
-    public void setup() {
-        BiGGDB.init(bigg.getHost(), bigg.getFirstMappedPort().toString(), "postgres", "postgres", "bigg");
-    }
-
-    @Container
-    public GenericContainer bigg = new GenericContainer(DockerImageName.parse("schmirgel/bigg_db:1.6"))
-            .withExposedPorts(5432)
-            .withEnv("POSTGRES_PASSWORD", "postgres")
-            .withStartupTimeout(Duration.ofMinutes(5));
 
     @Test
     public void getSubsystems() {
