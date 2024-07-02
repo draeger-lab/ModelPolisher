@@ -17,5 +17,4 @@ jsbml.log
 /src/test/resources/edu/ucsd/sbrg/bigg/e_coli_core.zip
 *.class
 /bin
-/gradle/wrapper
 /.vscode/
