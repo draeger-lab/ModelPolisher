@@ -3,7 +3,7 @@ package edu.ucsd.sbrg.bigg.polishing;
 import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.bigg.Parameters;
+import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import org.sbml.jsbml.*;
@@ -197,7 +197,7 @@ public class ReactionPolishing {
     boolean strict = false;
     if (reaction.getModel() != null) {
       // Convert gene associations to FBCv2 format and set flux objectives from local parameters
-      GPRParser.convertAssociationsToFBCV2(reaction, Parameters.get().omitGenericTerms());
+      GPRParser.convertAssociationsToFBCV2(reaction, BatchModeParameters.get().omitGenericTerms());
       fluxObjectiveFromLocalParameter();
       associationFromNotes();
       strict = checkBounds();
@@ -242,7 +242,7 @@ public class ReactionPolishing {
   private Optional<String> polish(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
     // Assign default SBO terms and constant values to species references
     for (SpeciesReference sr : speciesReferences) {
-      if (!sr.isSetSBOTerm() && !Parameters.get().omitGenericTerms()) {
+      if (!sr.isSetSBOTerm() && !BatchModeParameters.get().omitGenericTerms()) {
         sr.setSBOTerm(defaultSBOterm);
       }
       if (!sr.isSetConstant()) {
@@ -297,7 +297,7 @@ public class ReactionPolishing {
       }
     }
     // Check mass balance if enabled in parameters and reaction is not a special type
-    if (Parameters.get().checkMassBalance()
+    if (BatchModeParameters.get().checkMassBalance()
             && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
       // Perform atom balance check
       AtomCheckResult<Reaction> defects = AtomBalanceCheck.checkAtomBalance(reaction, 1);
@@ -380,7 +380,7 @@ public class ReactionPolishing {
                 String association = splits[1];
                 if (!association.isEmpty()) {
                   // Parse the gene product association and apply it to the reaction.
-                  GPRParser.parseGPR(reaction, association, Parameters.get().omitGenericTerms());
+                  GPRParser.parseGPR(reaction, association, BatchModeParameters.get().omitGenericTerms());
                 }
               }
             }

@@ -171,7 +171,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(org.sbml.jsbml.ext.fbc.GeneProduct)">
 <h3>GeneProductAnnotation</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GeneProductAnnotation</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GeneProductAnnotation</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span></div>
 <div class="block">Constructs a new <a href="GeneProductAnnotation.html" title="class in edu.ucsd.sbrg.bigg.annotation"><code>GeneProductAnnotation</code></a> instance for a given <code>GeneProduct</code>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -216,7 +216,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getLabel(java.util.Optional)">
 <h3>getLabel</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getLabel</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&gt;&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getLabel</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&gt;&nbsp;biggId)</span></div>
 <div class="block">Retrieves the label for a gene product based on the provided BiGGId. If the gene product has a label set and it is not "None",
  that label is returned. If no label is set but the gene product has an ID, the BiGGId is converted to a string and returned.
  If neither condition is met, an empty string is returned.</div>
@@ -231,7 +231,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setGPLabelName(java.lang.String)">
 <h3>setGPLabelName</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setGPLabelName</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;label)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setGPLabelName</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;label)</span></div>
 <div class="block">Updates the label of a gene product and sets its name based on the retrieved gene name from the BiGG database.
  If the current label is set to "None", it updates the label to the provided one. It then attempts to fetch
  the gene name corresponding to this label from the BiGG database. If a gene name is found, it checks if the
@@ -247,7 +247,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="addAnnotations(edu.ucsd.sbrg.bigg.BiGGId)">
 <h3>addAnnotations</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addAnnotations</span><wbr><span class="parameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addAnnotations</span><wbr><span class="batchModeParameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
 <div class="block">Adds annotations to a gene product based on a given <a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg"><code>BiGGId</code></a>. This method differentiates between
  annotations that specify what the gene product 'is' and what it 'is encoded by'. Resources are fetched
  from the BiGG database using the abbreviation from the provided BiGGId. Each resource URL is checked and

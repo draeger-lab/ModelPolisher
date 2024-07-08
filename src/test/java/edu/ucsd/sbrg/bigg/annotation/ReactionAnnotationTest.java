@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
+import edu.ucsd.sbrg.ModelPolisherOptions;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;

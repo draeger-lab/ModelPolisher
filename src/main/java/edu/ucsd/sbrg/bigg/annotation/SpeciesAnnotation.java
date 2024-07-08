@@ -3,7 +3,7 @@ package edu.ucsd.sbrg.bigg.annotation;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.bigg.Parameters;
+import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
@@ -121,12 +121,12 @@ public class SpeciesAnnotation extends CVTermAnnotation {
    * Assigns the SBO term to a species based on its component type as determined from the BiGG database.
    * The component type can be a metabolite, protein, or a generic material entity. If the component type is not explicitly
    * identified in the BiGG database, the species is annotated as a generic material entity unless the configuration
-   * explicitly omits such generic terms (controlled by {@link Parameters#omitGenericTerms()}).
+   * explicitly omits such generic terms (controlled by {@link BatchModeParameters#omitGenericTerms()}).
    *
    * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
   private void setSBOTerm(BiGGId biggId) {
-    Parameters parameters = Parameters.get();
+    BatchModeParameters batchModeParameters = BatchModeParameters.get();
     BiGGDB.getComponentType(biggId).ifPresentOrElse(type -> {
       switch (type) {
       case "metabolite":
@@ -136,13 +136,13 @@ public class SpeciesAnnotation extends CVTermAnnotation {
         species.setSBOTerm(SBO.getProtein()); // Assign SBO term for proteins.
         break;
       default:
-        if (!parameters.omitGenericTerms()) {
+        if (!batchModeParameters.omitGenericTerms()) {
           species.setSBOTerm(SBO.getMaterialEntity()); // Assign SBO term for generic material entities.
         }
         break;
       }
     }, () -> {
-      if (!parameters.omitGenericTerms()) {
+      if (!batchModeParameters.omitGenericTerms()) {
         species.setSBOTerm(SBO.getMaterialEntity()); // Default SBO term assignment when no specific type is found.
       }
     });

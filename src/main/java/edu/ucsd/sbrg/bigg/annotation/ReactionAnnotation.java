@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.bigg.annotation;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.bigg.Parameters;
 import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
@@ -168,11 +168,11 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   public void setSBOTerm(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    Parameters parameters = Parameters.get();
+    BatchModeParameters batchModeParameters = BatchModeParameters.get();
     if (!reaction.isSetSBOTerm()) {
       if (BiGGDB.isPseudoreaction(abbreviation)) {
         reaction.setSBOTerm(631);
-      } else if (!parameters.omitGenericTerms()) {
+      } else if (!batchModeParameters.omitGenericTerms()) {
         reaction.setSBOTerm(375); // generic process
       }
     }
@@ -201,10 +201,10 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   public void parseGeneReactionRules(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    Parameters parameters = Parameters.get();
+    BatchModeParameters batchModeParameters = BatchModeParameters.get();
     List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
-      GPRParser.parseGPR(reaction, geneReactionRule, parameters.omitGenericTerms());
+      GPRParser.parseGPR(reaction, geneReactionRule, batchModeParameters.omitGenericTerms());
     }
   }
 

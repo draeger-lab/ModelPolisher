@@ -8,7 +8,7 @@ import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
-import edu.ucsd.sbrg.bigg.ModelPolisher;
+import edu.ucsd.sbrg.ModelPolisherLauncher;
 import edu.ucsd.sbrg.bigg.polishing.ReactionPolishing;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * the target directory.
  * <p>
  * This program became necessary as a temporary solution for invalid SBML models
- * in BiGG database before a new version of {@link ModelPolisher} could be
+ * in BiGG database before a new version of {@link ModelPolisherLauncher} could be
  * released.
  * <p>
  * The methods in this class can also be used in other parts of ModelPolisher,
@@ -249,7 +249,7 @@ public class SBMLFix {
     fixGroups(model);
     fixObjective(in.getAbsolutePath(), model);
     logger.info(MessageFormat.format(MESSAGES.getString("WRITE_FILE_INFO"), out.getAbsolutePath()));
-    TidySBMLWriter.write(doc, out, ModelPolisher.class.getName(), "1.1", ' ', (short) 2);
+    TidySBMLWriter.write(doc, out, ModelPolisherLauncher.class.getName(), "1.1", ' ', (short) 2);
     String archive = out.getAbsolutePath() + ".gz";
     logger.info(MessageFormat.format("ARCHIVE", archive));
     ZIPUtils.GZip(out.getAbsolutePath(), archive);

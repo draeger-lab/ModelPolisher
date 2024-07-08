@@ -209,7 +209,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="parseGPR(org.sbml.jsbml.Reaction,java.lang.String,boolean)">
 <h3>parseGPR</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">parseGPR</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;r,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">parseGPR</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Reaction&nbsp;r,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;geneReactionRule,
  boolean&nbsp;omitGenericTerms)</span></div>
 <div class="block">Parses the gene product association (GPR) from a gene reaction rule string and associates it with a given reaction.
@@ -227,7 +227,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="convertToAssociation(org.sbml.jsbml.ASTNode,java.lang.String,org.sbml.jsbml.Model,boolean)">
 <h3>convertToAssociation</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">org.sbml.jsbml.ext.fbc.Association</span>&nbsp;<span class="element-name">convertToAssociation</span><wbr><span class="parameters">(org.sbml.jsbml.ASTNode&nbsp;ast,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">org.sbml.jsbml.ext.fbc.Association</span>&nbsp;<span class="element-name">convertToAssociation</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ASTNode&nbsp;ast,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;reactionId,
  org.sbml.jsbml.Model&nbsp;model,
  boolean&nbsp;omitGenericTerms)</span></div>
@@ -249,7 +249,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="createGPR(java.lang.String,java.lang.String,org.sbml.jsbml.Model)">
 <h3>createGPR</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">org.sbml.jsbml.ext.fbc.GeneProductRef</span>&nbsp;<span class="element-name">createGPR</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;identifier,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">org.sbml.jsbml.ext.fbc.GeneProductRef</span>&nbsp;<span class="element-name">createGPR</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;identifier,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;reactionId,
  org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Creates a GeneProductRef instance for a given identifier within a specific reaction context in the model.
@@ -269,7 +269,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="stringify(org.sbml.jsbml.ext.fbc.Association)">
 <h3>stringify</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">stringify</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.Association&nbsp;association)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">stringify</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.Association&nbsp;association)</span></div>
 <div class="block">Converts an Association object into a human-readable string representation.
  This method handles different types of associations including GeneProductRef, And, and Or.
  For And and Or associations, it recursively calls itself to handle nested associations.</div>
@@ -284,7 +284,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="convertAssociationsToFBCV2(org.sbml.jsbml.Reaction,boolean)">
 <h3>convertAssociationsToFBCV2</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">convertAssociationsToFBCV2</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">convertAssociationsToFBCV2</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Reaction&nbsp;reaction,
  boolean&nbsp;omitGenericTerms)</span></div>
 <div class="block">Converts gene product associations from a given reaction to the FBC v2 format.
  This method processes the non-RDF annotations of the reaction's model to update or create

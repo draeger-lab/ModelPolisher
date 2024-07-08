@@ -188,7 +188,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(org.sbml.jsbml.Reaction)">
 <h3>ReactionPolishing</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ReactionPolishing</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ReactionPolishing</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
 <div class="block">Constructs a new <code>ReactionPolishing</code> instance for the specified reaction.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -220,7 +220,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishFluxBound(org.sbml.jsbml.Parameter)">
 <h3>polishFluxBound</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">polishFluxBound</span><wbr><span class="parameters">(org.sbml.jsbml.Parameter&nbsp;bound)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">polishFluxBound</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Parameter&nbsp;bound)</span></div>
 <div class="block">Polishes the SBO term of a flux bound parameter based on its ID.
  If the parameter's ID matches the default flux bound pattern, it sets the SBO term to 626.
  Otherwise, it sets the SBO term to 625.</div>
@@ -235,7 +235,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="checkBound(org.sbml.jsbml.Parameter)">
 <h3>checkBound</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">checkBound</span><wbr><span class="parameters">(org.sbml.jsbml.Parameter&nbsp;bound)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">checkBound</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Parameter&nbsp;bound)</span></div>
 <div class="block">Evaluates whether a <code>Parameter</code> instance meets the criteria to be considered a valid strict flux bound.
  A strict flux bound parameter must:
  <ul>
@@ -243,7 +243,7 @@ loadScripts(document, 'script');</script>
  <li>Be constant</li>
  <li>Have a defined value that is not <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Double.html#NaN" title="class or interface in java.lang" class="external-link"><code>Double.NaN</code></a></li>
  </ul>
- This method is used to ensure parameters can be reliably used in strict FBC (Flux Balance Constraints) models.</div>
+ This method is used to ensure batchModeParameters can be reliably used in strict FBC (Flux Balance Constraints) models.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>bound</code> - The <code>Parameter</code> to check.</dd>
@@ -255,7 +255,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="checkSpeciesReferences(org.sbml.jsbml.ListOf)">
 <h3>checkSpeciesReferences</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">checkSpeciesReferences</span><wbr><span class="parameters">(org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.SpeciesReference&gt;&nbsp;listOfSpeciesReference)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">checkSpeciesReferences</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.SpeciesReference&gt;&nbsp;listOfSpeciesReference)</span></div>
 <div class="block">Checks if all species references in a list meet certain criteria.
  Each species reference must:
  - Be constant.

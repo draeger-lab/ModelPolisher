@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg;
 
 import java.io.File;
 import java.util.ResourceBundle;
@@ -13,7 +13,7 @@ import de.zbit.util.prefs.SBProperties;
  *
  * @author Andreas Dr&auml;ger
  */
-public class Parameters {
+public class BatchModeParameters {
 
   /**
    * Bundle for ModelPolisher logger messages
@@ -22,7 +22,7 @@ public class Parameters {
   /**
    * Singleton for ModelPolisher parameters
    */
-  static Parameters parameters;
+  static BatchModeParameters batchModeParameters;
   /**
    * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
    */
@@ -100,7 +100,7 @@ public class Parameters {
   /**
    * Default constructor for testing purposes
    */
-  private Parameters() {
+  private BatchModeParameters() {
     super();
   }
 
@@ -109,11 +109,11 @@ public class Parameters {
    * Constructor for non testing code path
    * 
    * @param args
-   *        SBProperties from {@link Parameters#init(SBProperties)}
+   *        SBProperties from {@link BatchModeParameters#init(SBProperties)}
    * @throws IllegalArgumentException
-   *         propagated from {@link Parameters#initParameters(SBProperties)}
+   *         propagated from {@link BatchModeParameters#initParameters(SBProperties)}
    */
-  private Parameters(SBProperties args) throws IllegalArgumentException {
+  private BatchModeParameters(SBProperties args) throws IllegalArgumentException {
     super();
     initParameters(args);
   }
@@ -122,31 +122,31 @@ public class Parameters {
   /**
    * Initializes parameters from commandline arguments, if they are not yet present, else simply returns the initialized
    * instance.
-   * Prefer {@link Parameters#get()} to get an initialized instance
+   * Prefer {@link BatchModeParameters#get()} to get an initialized instance
    *
    * @param args
    *        {@link SBProperties} file with commandline arguments stored
-   * @return Initialized {@link Parameters}
+   * @return Initialized {@link BatchModeParameters}
    * @throws IllegalArgumentException
-   *         propagated from {@link Parameters(SBProperties)}
+   *         propagated from {@link BatchModeParameters (SBProperties)}
    */
-  static Parameters init(SBProperties args) throws IllegalArgumentException {
-    if (parameters == null) {
-      parameters = new Parameters(args);
+  static BatchModeParameters init(SBProperties args) throws IllegalArgumentException {
+    if (batchModeParameters == null) {
+      batchModeParameters = new BatchModeParameters(args);
     }
-    return parameters;
+    return batchModeParameters;
   }
 
 
   /**
-   * Returns initialized {@link Parameters} instance. Throws {@link IllegalStateException} if Parameters have not been
+   * Returns initialized {@link BatchModeParameters} instance. Throws {@link IllegalStateException} if Parameters have not been
    * initialized
    *
-   * @return Initialized {@link Parameters} instance
+   * @return Initialized {@link BatchModeParameters} instance
    */
-  public static Parameters get() {
-    if (parameters != null) {
-      return parameters;
+  public static BatchModeParameters get() {
+    if (batchModeParameters != null) {
+      return batchModeParameters;
     } else {
       // this should not happen, abort
       throw new IllegalStateException(MESSAGES.getString("PARAM_STATE_INVALID"));
@@ -157,13 +157,13 @@ public class Parameters {
   /**
    * @return Parameter set usable for testing, initialized with defaults, all {@link File}s are {@code null}
    */
-  public static Parameters initDefaults() {
-    return new Parameters();
+  public static BatchModeParameters initDefaults() {
+    return new BatchModeParameters();
   }
 
 
   /**
-   * Converts {@link SBProperties} holding commandline arguments into usable {@link Parameters}
+   * Converts {@link SBProperties} holding commandline arguments into usable {@link BatchModeParameters}
    *
    * @param args:
    *        Arguments from commandline

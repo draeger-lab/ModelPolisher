@@ -65,7 +65,7 @@ version:
   The object code form of an Application may incorporate material from
 a header file that is part of the Library.  You may convey such object
 code under terms of your choice, provided that, if the incorporated
-material is not limited to numerical parameters, data structure
+material is not limited to numerical batchModeParameters, data structure
 layouts and accessors, or small macros, inline functions and templates
 (ten or fewer lines in length), you do both of the following:
 

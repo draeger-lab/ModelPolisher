@@ -163,7 +163,7 @@
     <entry key="REACTION_MISSING_ID_NAME">Removing reaction with missing id and name. Check your Model for reaction without id and name.</entry>
     <entry key="REMOVE_ZIP_INPUT_FAIL">Failed to delete output file {0} after compression.</entry>
     <entry key="ROOT_EMPTY_ERROR">Root node is empty, model could not be parsed.</entry>
-    <entry key="RST_NOT_UNIQUE">Result obtained for {0} and parameters {1} and {2} not unique, omitting.</entry>
+    <entry key="RST_NOT_UNIQUE">Result obtained for {0} and batchModeParameters {1} and {2} not unique, omitting.</entry>
     <entry key="SBML_VAL_DESC">If true, the created SBML file will be validated through the online validator service at http://sbml.org.</entry>
     <entry key="SET_ABREV_FAILED">Could not set abbreviation: {0}</entry>
     <entry key="SET_COMPART_CODE_FAILED">Failed to set CompartmentCode: {0}</entry>

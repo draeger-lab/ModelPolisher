@@ -93,7 +93,7 @@ loadScripts(document, 'script');</script>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
 <div class="block">This class provides methods to polish an SBML model to conform to specific standards and conventions.
  It handles tasks such as processing annotations, setting meta identifiers, and polishing various model components
- like initial assignments, objectives, gene products, and parameters. The class operates on an SBML <code>Model</code>
+ like initial assignments, objectives, gene products, and batchModeParameters. The class operates on an SBML <code>Model</code>
  object and modifies it to enhance its structure and metadata based on the provided configurations.
  
  Progress of the polishing process can be visually tracked using an <code>AbstractProgressBar</code> which is updated
@@ -170,7 +170,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#polishListOfParameters(org.sbml.jsbml.Model)" class="member-name-link">polishListOfParameters</a><wbr>(org.sbml.jsbml.Model&nbsp;model)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Iterates over all parameters in the model and polishes each one.</div>
+<div class="block">Iterates over all batchModeParameters in the model and polishes each one.</div>
 </div>
 </div>
 </div>
@@ -206,7 +206,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(org.sbml.jsbml.Model,boolean,de.zbit.util.progressbar.AbstractProgressBar)">
 <h3>ModelPolishing</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelPolishing</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelPolishing</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model,
  boolean&nbsp;strict,
  de.zbit.util.progressbar.AbstractProgressBar&nbsp;progress)</span></div>
 </section>
@@ -225,7 +225,7 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span>()</div>
 <div class="block">Polishes the SBML model by processing annotations, setting meta identifiers, and polishing various components.
  This method processes the model's annotations, sets the model's meta identifier if not already set and CV terms are present.
- It conditionally polishes lists of initial assignments, objectives, gene products, and parameters based on the model's configuration.</div>
+ It conditionally polishes lists of initial assignments, objectives, gene products, and batchModeParameters based on the model's configuration.</div>
 </section>
 </li>
 <li>
@@ -241,7 +241,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfObjectives(org.sbml.jsbml.ext.fbc.FBCModelPlugin)">
 <h3>polishListOfObjectives</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfObjectives</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;modelPlug)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfObjectives</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;modelPlug)</span></div>
 <div class="block">Polishes the list of objectives in the given FBC model plugin.
  This method checks for the presence of objectives and processes each one.
  If no objectives are present, a warning is logged.
@@ -256,7 +256,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfFluxObjectives(org.sbml.jsbml.ext.fbc.Objective)">
 <h3>polishListOfFluxObjectives</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfFluxObjectives</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.Objective&nbsp;objective)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfFluxObjectives</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.Objective&nbsp;objective)</span></div>
 <div class="block">Polishes the list of flux objectives within a given objective.
  This method checks for the presence and validity of flux objectives and logs warnings if:
  - No flux objectives are present.
@@ -271,7 +271,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfGeneProducts(org.sbml.jsbml.ext.fbc.FBCModelPlugin)">
 <h3>polishListOfGeneProducts</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfGeneProducts</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcModelPlug)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfGeneProducts</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcModelPlug)</span></div>
 <div class="block">Polishes the list of gene products in the given FBC model plugin.
  This method iterates through each gene product, displays the progress,
  and applies the polishing process to each gene product.</div>
@@ -284,12 +284,12 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfParameters(org.sbml.jsbml.Model)">
 <h3>polishListOfParameters</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfParameters</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
-<div class="block">Iterates over all parameters in the model and polishes each one.
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfParameters</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="block">Iterates over all batchModeParameters in the model and polishes each one.
  Displays progress for each parameter polished.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>model</code> - The model containing the parameters to be polished.</dd>
+<dd><code>model</code> - The model containing the batchModeParameters to be polished.</dd>
 </dl>
 </section>
 </li>

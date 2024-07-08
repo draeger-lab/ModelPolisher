@@ -1,9 +1,6 @@
 package edu.ucsd.sbrg;
 
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.bigg.IOOptions;
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions;
-import edu.ucsd.sbrg.bigg.Parameters;
 import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
@@ -38,10 +35,10 @@ public class TestUtils {
             props.setProperty(pair.getKey(), pair.getValue());
         }
         try {
-            var parameters = Parameters.class.getDeclaredField("parameters");
+            var parameters = BatchModeParameters.class.getDeclaredField("batchModeParameters");
             parameters.setAccessible(true);
             parameters.set(null, null);
-            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
+            var init = BatchModeParameters.class.getDeclaredMethod("init", SBProperties.class);
             init.setAccessible(true);
             init.invoke(null, props);
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {

@@ -94,7 +94,7 @@ loadScripts(document, 'script');</script>
 <div class="block">This class provides configuration and initialization methods for database connections.
  It supports operations for two specific databases: ADB and BiGG.
  It includes methods to initialize these databases based on command line arguments
- and to check if the necessary parameters are provided before establishing connections.</div>
+ and to check if the necessary batchModeParameters are provided before establishing connections.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -168,7 +168,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="initADB(de.zbit.util.prefs.SBProperties,boolean)">
 <h3>initADB</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initADB</span><wbr><span class="parameters">(de.zbit.util.prefs.SBProperties&nbsp;args,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initADB</span><wbr><span class="batchModeParameters">(de.zbit.util.prefs.SBProperties&nbsp;args,
  boolean&nbsp;annotateWithADB)</span></div>
 <div class="block">Initializes the ADB database if the conditions are met.
  It checks if annotation with ADB is required and if ADB is not already in use.</div>
@@ -182,7 +182,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="initBiGG(de.zbit.util.prefs.SBProperties,boolean)">
 <h3>initBiGG</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initBiGG</span><wbr><span class="parameters">(de.zbit.util.prefs.SBProperties&nbsp;args,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initBiGG</span><wbr><span class="batchModeParameters">(de.zbit.util.prefs.SBProperties&nbsp;args,
  boolean&nbsp;annotateWithBiGG)</span></div>
 <div class="block">Initializes the BiGG database if the conditions are met.
  It checks if annotation with BiGG is required and if BiGG is not already in use.</div>

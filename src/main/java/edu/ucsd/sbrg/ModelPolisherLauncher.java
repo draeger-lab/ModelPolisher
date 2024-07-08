@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg;
 
 import static java.text.MessageFormat.format;
 
@@ -54,7 +54,7 @@ import de.zbit.util.Utils;
 import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.bigg.ModelPolisherOptions.Compression;
+import edu.ucsd.sbrg.ModelPolisherOptions.Compression;
 import edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation;
 import edu.ucsd.sbrg.bigg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.db.ADBOptions;
@@ -91,7 +91,7 @@ import edu.ucsd.sbrg.util.UpdateListener;
  * 
  * @author Andreas Dr&auml;ger
  */
-public class ModelPolisher extends Launcher {
+public class ModelPolisherLauncher extends Launcher {
 
   /**
    * Type of current input file
@@ -108,7 +108,7 @@ public class ModelPolisher extends Launcher {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
+  private static final transient Logger logger = Logger.getLogger(ModelPolisherLauncher.class.getName());
   /**
    * Generated serial version identifier.
    */
@@ -138,24 +138,24 @@ public class ModelPolisher extends Launcher {
       System.setProperty("java.util.prefs.systemRoot", ".java");
       System.setProperty("java.util.prefs.userRoot", ".java/.userPrefs");
     }
-    new ModelPolisher(args);
+    new ModelPolisherLauncher(args);
   }
 
 
   /**
    * Initializes super class with Commandline arguments, which are converted into {@link AppConf} and passsed to
-   * {@link ModelPolisher#commandLineMode(AppConf)}, which runs the rest of the program
+   * {@link ModelPolisherLauncher#commandLineMode(AppConf)}, which runs the rest of the program
    *
    * @param args
    *        Commandline arguments
    */
-  public ModelPolisher(String... args) {
+  public ModelPolisherLauncher(String... args) {
     super(args);
   }
 
 
   /**
-   * Starts ModelPolisher with given commandline arguments and initializes {@link Parameters} and database connections
+   * Starts ModelPolisher with given commandline arguments and initializes {@link BatchModeParameters} and database connections
    *
    * @param appConf
    *        from super class initialization, holds commandline arguments
@@ -166,7 +166,7 @@ public class ModelPolisher extends Launcher {
     SBProperties args = appConf.getCmdArgs();
     initParameters(args);
     try {
-      batchProcess(Parameters.get().input(), Parameters.get().output());
+      batchProcess(BatchModeParameters.get().input(), BatchModeParameters.get().output());
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
     }
@@ -190,12 +190,12 @@ public class ModelPolisher extends Launcher {
    */
   private void initParameters(SBProperties args) {
     try {
-      Parameters.init(args);
+      BatchModeParameters.init(args);
     } catch (IllegalArgumentException exc) {
       throw new IllegalArgumentException(exc.getLocalizedMessage());
     }
-    DBConfig.initBiGG(args, Parameters.get().annotateWithBiGG());
-    DBConfig.initADB(args, Parameters.get().addADBAnnotations());
+    DBConfig.initBiGG(args, BatchModeParameters.get().annotateWithBiGG());
+    DBConfig.initADB(args, BatchModeParameters.get().addADBAnnotations());
   }
 
 
@@ -203,10 +203,10 @@ public class ModelPolisher extends Launcher {
    * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
    * It ensures that the output directory exists before processing starts.
    *
-   * @param input  Path to the input file or directory to be processed. This should correspond to {@link Parameters#input()}.
-   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link Parameters#output()}.
+   * @param input  Path to the input file or directory to be processed. This should correspond to {@link BatchModeParameters#input()}.
+   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link BatchModeParameters#output()}.
    * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
-   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisher#processFile(File, File)}.
+   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherLauncher#processFile(File, File)}.
    */
   private void batchProcess(File input, File output) throws IOException, XMLStreamException {
     // Check if the input exists, throw an exception if it does not
@@ -483,19 +483,19 @@ public class ModelPolisher extends Launcher {
       return;
     }
     // Retrieve global parameters for the polishing process
-    Parameters parameters = Parameters.get();
+    BatchModeParameters batchModeParameters = BatchModeParameters.get();
     // Ensure the document is at the correct SBML level and version
     doc = checkLevelAndVersion(doc);
     // Perform the polishing operations on the document
     SBMLPolisher polisher = new SBMLPolisher();
     doc = polisher.polish(doc);
     // Annotate the document if the parameters specify
-    if (parameters.annotateWithBiGG()) {
+    if (batchModeParameters.annotateWithBiGG()) {
       BiGGAnnotation annotation = new BiGGAnnotation();
       doc = annotation.annotate(doc);
     }
     // Convert and write the document to JSON if specified
-    if (parameters.writeJSON()) {
+    if (batchModeParameters.writeJSON()) {
       String out = output.getAbsolutePath().replaceAll("\\.xml", ".json");
       try (BufferedWriter writer = new BufferedWriter(new FileWriter(out))) {
         writer.write(JSONConverter.getJSONDocument(doc));
@@ -505,16 +505,16 @@ public class ModelPolisher extends Launcher {
     logger.info(format(MESSAGES.getString("WRITE_FILE_INFO"), output.getAbsolutePath()));
     TidySBMLWriter.write(doc, output, getClass().getSimpleName(), getVersionNumber(), ' ', (short) 2);
     // Handle COMBINE archive creation if specified
-    if (parameters.outputCOMBINE()) {
+    if (batchModeParameters.outputCOMBINE()) {
       CombineArchive combineArchive = new CombineArchive(doc, output);
       combineArchive.write();
     }
     // Handle file compression based on the specified method
-    if (parameters.compression() != Compression.NONE) {
-      String fileExtension = parameters.compression().getFileExtension();
+    if (batchModeParameters.compression() != Compression.NONE) {
+      String fileExtension = batchModeParameters.compression().getFileExtension();
       String archive = output.getAbsolutePath() + "." + fileExtension;
       logger.info(format(MESSAGES.getString("ARCHIVE"), archive));
-      switch (parameters.compression()) {
+      switch (batchModeParameters.compression()) {
       case ZIP:
         ZIPUtils.ZIPcompress(new String[] {output.getAbsolutePath()}, archive, "SBML Archive", true);
         break;
@@ -529,7 +529,7 @@ public class ModelPolisher extends Launcher {
         logger.warning(format(MESSAGES.getString("REMOVE_ZIP_INPUT_FAIL"), output.getAbsolutePath()));
       }
       // Perform SBML validation if specified
-      if (parameters.SBMLValidation()) {
+      if (batchModeParameters.SBMLValidation()) {
         // use offline validation
         validate(archive, false);
       }

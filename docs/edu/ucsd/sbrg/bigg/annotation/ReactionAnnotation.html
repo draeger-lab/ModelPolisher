@@ -176,7 +176,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(org.sbml.jsbml.Reaction)">
 <h3>ReactionAnnotation</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ReactionAnnotation</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ReactionAnnotation</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>reaction</code> - </dd>
@@ -220,7 +220,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setName(edu.ucsd.sbrg.bigg.BiGGId)">
 <h3>setName</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setName</span><wbr><span class="parameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setName</span><wbr><span class="batchModeParameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
 <div class="block">Sets the name of the reaction based on the provided BiGGId. It retrieves the reaction name using the abbreviation
  from the BiGGId, polishes the name, and updates the reaction's name if the new name is different from the current name.</div>
 <dl class="notes">
@@ -232,7 +232,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setSBOTerm(edu.ucsd.sbrg.bigg.BiGGId)">
 <h3>setSBOTerm</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setSBOTerm</span><wbr><span class="parameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setSBOTerm</span><wbr><span class="batchModeParameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
 <div class="block">Sets the SBO term for a reaction based on the given BiGGId.
  If the reaction does not already have an SBO term set, it determines the appropriate SBO term
  based on whether the reaction is a pseudoreaction or a generic process. Pseudoreactions are assigned
@@ -247,7 +247,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="addAnnotations(edu.ucsd.sbrg.bigg.BiGGId)">
 <h3>addAnnotations</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addAnnotations</span><wbr><span class="parameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addAnnotations</span><wbr><span class="batchModeParameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
 <div class="block">This method delegates the task of adding annotations to a reaction based on the provided <a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg"><code>BiGGId</code></a>.
  It specifically focuses on updating MIRIAM URIs from http to https, merging duplicate annotations, and
  ensuring that the reaction is annotated with the correct identifiers from the BiGG database.</div>
@@ -260,11 +260,11 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="parseGeneReactionRules(edu.ucsd.sbrg.bigg.BiGGId)">
 <h3>parseGeneReactionRules</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">parseGeneReactionRules</span><wbr><span class="parameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">parseGeneReactionRules</span><wbr><span class="batchModeParameters">(<a href="../BiGGId.html" title="class in edu.ucsd.sbrg.bigg">BiGGId</a>&nbsp;biggId)</span></div>
 <div class="block">Parses gene reaction rules for a given reaction based on the BiGG database identifier.
  This method retrieves gene reaction rules associated with the reaction's abbreviation
  from the BiGG database and applies gene-protein-reaction (GPR) parsing to the reaction.
- It considers whether generic terms should be omitted based on the current parameters.</div>
+ It considers whether generic terms should be omitted based on the current batchModeParameters.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>biggId</code> - The BiGG database identifier for the reaction, used to fetch and parse gene reaction rules.</dd>

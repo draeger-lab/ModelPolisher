@@ -1,7 +1,7 @@
 /*
  * 
  */
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg;
 
 import de.zbit.io.filefilter.MultipleFileFilter;
 import de.zbit.io.filefilter.SBFileFilter;

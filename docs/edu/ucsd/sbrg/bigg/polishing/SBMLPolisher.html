@@ -215,7 +215,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polish(org.sbml.jsbml.SBMLDocument)">
 <h3>polish</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.sbml.jsbml.SBMLDocument</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(org.sbml.jsbml.SBMLDocument&nbsp;doc)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.sbml.jsbml.SBMLDocument</span>&nbsp;<span class="element-name">polish</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.SBMLDocument&nbsp;doc)</span></div>
 <div class="block">This method serves as the entry point from the ModelPolisher class to polish an SBML document.
  It ensures the document contains a model, performs a sanity check, polishes the model, sets the SBO term,
  marks the progress as finished if applicable, and processes any linked resources.</div>
@@ -230,7 +230,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polish(org.sbml.jsbml.Model)">
 <h3>polish</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">This method orchestrates the polishing of an SBML model by delegating tasks to specific polishing methods
  for different components of the model. It initializes a progress bar to track and display the progress of
  the polishing process.</div>
@@ -243,7 +243,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfCompartments(org.sbml.jsbml.Model)">
 <h3>polishListOfCompartments</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfCompartments</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfCompartments</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Polishes all compartments in the given SBML model. This method iterates through each compartment
  in the model, updates the progress display, and applies polishing operations defined in the
  CompartmentPolishing class.</div>
@@ -256,7 +256,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfSpecies(org.sbml.jsbml.Model)">
 <h3>polishListOfSpecies</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfSpecies</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polishListOfSpecies</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Polishes the list of species in the given SBML model. This method iterates through each species,
  applies polishing operations, and collects species that need to be removed based on the polishing results.
  Removal is based on criteria defined in the SpeciesPolishing class.</div>
@@ -269,7 +269,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="polishListOfReactions(org.sbml.jsbml.Model)">
 <h3>polishListOfReactions</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">polishListOfReactions</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">polishListOfReactions</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Polishes all reactions in the given SBML model. This method iterates through each reaction,
  updates the progress display, and applies polishing operations defined in the ReactionPolishing class.
  It also aggregates a strictness flag that indicates if all reactions conform to strict FBC (Flux Balance Constraints) standards.</div>

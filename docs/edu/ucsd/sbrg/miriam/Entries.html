@@ -175,7 +175,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="initFromList(java.util.List)">
 <h3>initFromList</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initFromList</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="CompactEntry.html" title="class in edu.ucsd.sbrg.miriam">CompactEntry</a>&gt;&nbsp;entries)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">initFromList</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="CompactEntry.html" title="class in edu.ucsd.sbrg.miriam">CompactEntry</a>&gt;&nbsp;entries)</span></div>
 <div class="block">Builds namespace tree from reduced representation entries and returns an instance to query respective MIRIAM
  namespaces/resources</div>
 <dl class="notes">
@@ -198,7 +198,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getCollection(java.lang.String)">
 <h3>getCollection</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Node.html" title="interface in edu.ucsd.sbrg.miriam">Node</a></span>&nbsp;<span class="element-name">getCollection</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Node.html" title="interface in edu.ucsd.sbrg.miriam">Node</a></span>&nbsp;<span class="element-name">getCollection</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url)</span></div>
 <div class="block">Retrieves collection name for a given annotation url, if uniquely resolvable</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -211,7 +211,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getCollectionForProvider(java.lang.String)">
 <h3>getCollectionForProvider</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getCollectionForProvider</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;provider)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getCollectionForProvider</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;provider)</span></div>
 <div class="block">Retrieve collection name based on provider code</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -234,7 +234,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getMatchForUrl(java.lang.String)">
 <h3>getMatchForUrl</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Node.html" title="interface in edu.ucsd.sbrg.miriam">Node</a>&gt;</span>&nbsp;<span class="element-name">getMatchForUrl</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;query)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="Node.html" title="interface in edu.ucsd.sbrg.miriam">Node</a>&gt;</span>&nbsp;<span class="element-name">getMatchForUrl</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;query)</span></div>
 <div class="block">Attempts to find a unique match for a given URL within the MIRIAM collections by comparing against namespace
  and resource URL patterns. This method is used to determine the correct MIRIAM collection for additional annotation.</div>
 <dl class="notes">
@@ -249,7 +249,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getProviderForCollection(java.lang.String)">
 <h3>getProviderForCollection</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getProviderForCollection</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;collection)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getProviderForCollection</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;collection)</span></div>
 <div class="block">Retrieves the provider code associated with a given collection name from the <code>PROVIDER_FOR_COLLECTION</code> map.
  In the context of MIRIAM, a provider refers to an entity
  or database that supplies the data for a specific collection. This method returns the provider code, which is a unique
@@ -266,7 +266,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getPattern(java.lang.String)">
 <h3>getPattern</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getPattern</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;collection)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getPattern</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;collection)</span></div>
 <div class="block">Retrieves the regex pattern associated with a given collection name.
  If the collection name does not have an associated pattern, an empty string is returned.</div>
 <dl class="notes">

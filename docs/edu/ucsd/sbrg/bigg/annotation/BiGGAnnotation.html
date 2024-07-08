@@ -165,7 +165,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="annotate(org.sbml.jsbml.SBMLDocument)">
 <h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.sbml.jsbml.SBMLDocument</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(org.sbml.jsbml.SBMLDocument&nbsp;doc)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.sbml.jsbml.SBMLDocument</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.SBMLDocument&nbsp;doc)</span></div>
 <div class="block">Annotates an SBMLDocument using data from the BiGG Knowledgebase. This method processes various components of the
  SBML model such as compartments, species, reactions, and gene products by adding relevant annotations from BiGG.
  It also handles the addition of publications and notes related to the model.</div>
@@ -180,7 +180,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getBiGGIdFromResources(java.util.List,java.lang.String)">
 <h3>getBiGGIdFromResources</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getBiGGIdFromResources</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;resources,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getBiGGIdFromResources</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;resources,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;type)</span></div>
 <div class="block">Attempts to extract a BiGG ID that conforms to the BiGG ID specification from the BiGG knowledgebase. This method
  processes annotations for biological entities such as <code>Species</code>, <code>Reaction</code>, or <code>GeneProduct</code>.

@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.bigg.polishing;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
-import edu.ucsd.sbrg.bigg.Parameters;
+import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
 import org.sbml.jsbml.InitialAssignment;
@@ -132,7 +132,7 @@ public class ModelPolishing {
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug,
-            Parameters.get().fluxCoefficients(), Parameters.get().fluxObjectives());
+            BatchModeParameters.get().fluxCoefficients(), BatchModeParameters.get().fluxObjectives());
         }
         if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().size() == 0) {
           polishListOfFluxObjectives(objective);

@@ -86,7 +86,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
 <div class="inheritance">de.zbit.Launcher
-<div class="inheritance">edu.ucsd.sbrg.bigg.ModelPolisher</div>
+<div class="inheritance">edu.ucsd.sbrg.ModelPolisherLauncher</div>
 </div>
 </div>
 <section class="class-description" id="class-description">
@@ -118,7 +118,7 @@ loadScripts(document, 'script');</script>
 <dt>See Also:</dt>
 <dd>
 <ul class="tag-list">
-<li><a href="../../../../serialized-form.html#edu.ucsd.sbrg.bigg.ModelPolisher">Serialized Form</a></li>
+<li><a href="../../../../serialized-form.html#edu.ucsd.sbrg.ModelPolisherLauncher">Serialized Form</a></li>
 </ul>
 </dd>
 </dl>
@@ -232,7 +232,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="&lt;init&gt;(java.lang.String...)">
 <h3>ModelPolisher</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelPolisher</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;args)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelPolisher</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;args)</span></div>
 <div class="block">Initializes super class with Commandline arguments, which are converted into <code>AppConf</code> and passsed to
  <a href="#commandLineMode(de.zbit.AppConf)"><code>commandLineMode(AppConf)</code></a>, which runs the rest of the program</div>
 <dl class="notes">
@@ -252,7 +252,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="main(java.lang.String[])">
 <h3>main</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">main</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">main</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
 <div class="block">Entry point</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -263,7 +263,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="commandLineMode(de.zbit.AppConf)">
 <h3>commandLineMode</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">commandLineMode</span><wbr><span class="parameters">(de.zbit.AppConf&nbsp;appConf)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">commandLineMode</span><wbr><span class="batchModeParameters">(de.zbit.AppConf&nbsp;appConf)</span></div>
 <div class="block">Starts ModelPolisher with given commandline arguments and initializes <a href="Parameters.html" title="class in edu.ucsd.sbrg.bigg"><code>Parameters</code></a> and database connections</div>
 <dl class="notes">
 <dt>Specified by:</dt>
@@ -282,7 +282,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getCitation(boolean)">
 <h3>getCitation</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getCitation</span><wbr><span class="parameters">(boolean&nbsp;HTMLstyle)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getCitation</span><wbr><span class="batchModeParameters">(boolean&nbsp;HTMLstyle)</span></div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code>getCitation</code>&nbsp;in class&nbsp;<code>de.zbit.Launcher</code></dd>
@@ -422,7 +422,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="initGUI(de.zbit.AppConf)">
 <h3>initGUI</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/Window.html" title="class or interface in java.awt" class="external-link">Window</a></span>&nbsp;<span class="element-name">initGUI</span><wbr><span class="parameters">(de.zbit.AppConf&nbsp;appConf)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/java/awt/Window.html" title="class or interface in java.awt" class="external-link">Window</a></span>&nbsp;<span class="element-name">initGUI</span><wbr><span class="batchModeParameters">(de.zbit.AppConf&nbsp;appConf)</span></div>
 <div class="block">This method is inherited from the base class and is not utilized in this CLI application.
  The ModelPolisher application does not implement a graphical user interface.</div>
 <dl class="notes">
