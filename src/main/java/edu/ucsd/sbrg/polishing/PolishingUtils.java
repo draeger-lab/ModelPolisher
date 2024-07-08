@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
 
@@ -9,7 +9,7 @@ import static java.text.MessageFormat.format;
 
 public class PolishingUtils {
 
-    private static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+    private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
 
     private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 

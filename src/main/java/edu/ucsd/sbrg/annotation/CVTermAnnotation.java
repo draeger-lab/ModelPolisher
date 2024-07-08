@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.annotation;
+package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.bigg.BiGGId;

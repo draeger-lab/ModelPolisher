@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;

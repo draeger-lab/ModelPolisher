@@ -146,7 +146,7 @@ tasks.withType(Jar) {
 	    "Specification-Title": "ModelPolisher",
 	    "Implementation-Vendor-Id": "edu.ucsd.sbrg",
 	    "Implementation-Vendor": "University of California, San Diego",
-	    "Main-Class": "edu.ucsd.sbrg.bigg.ModelPolisher"
+	    "Main-Class": "edu.ucsd.sbrg.ModelPolisherCLILauncher"
 	)
     }
 }

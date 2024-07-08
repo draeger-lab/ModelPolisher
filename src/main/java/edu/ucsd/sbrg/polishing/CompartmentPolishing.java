@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import static java.text.MessageFormat.format;
 

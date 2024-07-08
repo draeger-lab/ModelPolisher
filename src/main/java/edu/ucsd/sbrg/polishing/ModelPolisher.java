@@ -12,15 +12,19 @@
  * <http://www.gnu.org/licenses/lgpl-3.0-standalone.html>.
  * ---------------------------------------------------------------------
  */
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
-import de.zbit.util.progressbar.AbstractProgressBar;
-import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.util.ProgressInitialization;
+import edu.ucsd.sbrg.util.ProgressObserver;
+import edu.ucsd.sbrg.util.ProgressUpdate;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
+import org.sbml.jsbml.util.SBMLtools;
+import org.sbml.jsbml.util.ValuePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +42,12 @@ import static java.text.MessageFormat.format;
  * 
  * @author Andreas Dr&auml;ger
  */
-public class SBMLPolisher {
+public class ModelPolisher {
 
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+  private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
 
   /**
    * Bundle for ModelPolisher logger messages
@@ -51,15 +55,33 @@ public class SBMLPolisher {
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   /**
-   * Progress bar to visually indicate the progress of the polishing process.
-   */
-  protected AbstractProgressBar progress;
-
-  /**
    *
    */
-  public SBMLPolisher() {
+  public ModelPolisher() {
   }
+
+  private final List<ProgressObserver> observers = new ArrayList<>();
+
+
+  /**
+   * Ensures that the SBML document is set to Level 3 and Version 1, which are required for compatibility with necessary plugins.
+   * If the document is not already at this level and version, it updates the document to meet these specifications.
+   * After ensuring the document is at the correct level and version, it converts the document using the CobraToFbcV2Converter.
+   *
+   * @param doc The SBMLDocument to be checked and potentially converted.
+   * @return The SBMLDocument after potentially updating its level and version and converting it.
+   */
+  private SBMLDocument checkLevelAndVersion(SBMLDocument doc) {
+    if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+      logger.info(MESSAGES.getString("TRY_CONV_LVL3_V1"));
+      SBMLtools.setLevelAndVersion(doc, 3, 1);
+    }
+    // Initialize the converter for Cobra to FBC version 2
+    CobraToFbcV2Converter converter = new CobraToFbcV2Converter();
+    // Convert the document and return the converted document
+    return converter.convert(doc);
+  }
+
 
 
   /**
@@ -71,22 +93,30 @@ public class SBMLPolisher {
    * @return The polished SBMLDocument.
    */
   public SBMLDocument polish(SBMLDocument doc) {
-    // Check if the document has a model set, log severe error if not.
-    if (!doc.isSetModel()) {
-      logger.severe(MESSAGES.getString("NO_MODEL_FOUND"));
-      return doc;
+    if (doc.getModel() == null) {
+      logger.severe(MESSAGES.getString("MODEL_MISSING"));
+      // TODO: handle this better
+      throw new RuntimeException();
     }
+    // Ensure the document is at the correct SBML level and version
+    doc = checkLevelAndVersion(doc);
     // Retrieve the model from the document.
     Model model = doc.getModel();
+
+    int count = taskCount(model);
+    for (var o : observers) {
+      o.initialize(new ProgressInitialization(count));
+    }
 
     // Polish the model.
     polish(model);
     // Set the SBO term for the document to indicate a flux balance framework.
     doc.setSBOTerm(624);
-    // If a progress bar is set, mark the progress as finished.
-    if (progress != null) {
-      progress.finished();
+
+    for (var o : observers) {
+      o.finish(null);
     }
+
     // Process any external resources linked in the document's annotations.
     Registry.processResources(doc.getAnnotation());
     return doc;
@@ -103,37 +133,45 @@ public class SBMLPolisher {
   public void polish(Model model) {
     // Log the start of processing the model.
     logger.info(format(MESSAGES.getString("PROCESSING_MODEL"), model.getId()));
-    
-    // Calculate the total number of tasks to initialize the progress bar.
-    int count = 1 // Account for model properties
-      + model.getUnitDefinitionCount() 
-      + model.getCompartmentCount() 
-      + model.getParameterCount()
-      + model.getReactionCount() 
-      + model.getSpeciesCount() 
-      + model.getInitialAssignmentCount();
-    
-    // Include tasks from FBC plugin if present.
-    if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-      count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
-    }
-    
-    // Initialize the progress bar with the total count of tasks.
-    progress = new ProgressBar(count);
-    progress.DisplayBar("Polishing Model (1/9)  ");
-    
+
+    updateProgressObservers("Polishing Model (1/9)  ", model);
     // Delegate polishing tasks to specific methods.
-    new UnitPolishing(model, progress).polishListOfUnitDefinitions();
+    new UnitPolishing(model, observers).polishListOfUnitDefinitions();
     polishListOfCompartments(model);
     polishListOfSpecies(model);
     boolean strict = polishListOfReactions(model);
     
     // Perform final polishing adjustments based on the strictness of the reactions.
-    ModelPolishing modelPolishing = new ModelPolishing(model, strict, progress);
+    var modelPolishing = new MiscPolishing(model, strict, observers);
     modelPolishing.polish();
   }
-  
+
+  private void updateProgressObservers(String text, AbstractSBase obj) {
+    for (var o : observers) {
+      o.update(new ProgressUpdate(text, obj));
+    }
+  }
+
+  private int taskCount(Model model) {
+    // Calculate the total number of tasks to initialize the progress bar.
+    int count = 1 // Account for model properties
+      // + model.getUnitDefinitionCount()
+    // TODO: siehe UnitPolishing TODO, weshalb UnitDefinitionCount durch 1 ersetzt wird
+      + 1
+      + model.getCompartmentCount()
+      + model.getParameterCount()
+      + model.getReactionCount()
+      + model.getSpeciesCount()
+      + model.getInitialAssignmentCount();
+
+    // Include tasks from FBC plugin if present.
+    if (model.isSetPlugin(FBCConstants.shortLabel)) {
+      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
+    }
+    return count;
+  }
+
 
   /**
    * Polishes all compartments in the given SBML model. This method iterates through each compartment
@@ -144,7 +182,7 @@ public class SBMLPolisher {
    */
   public void polishListOfCompartments(Model model) {
     for (Compartment compartment : model.getListOfCompartments()) {
-      progress.DisplayBar("Polishing Compartments (3/9)  ");
+      updateProgressObservers("Polishing Compartments (3/9)  ", compartment);
       CompartmentPolishing compartmentPolishing = new CompartmentPolishing(compartment);
       compartmentPolishing.polish();
     }
@@ -161,7 +199,7 @@ public class SBMLPolisher {
   public void polishListOfSpecies(Model model) {
     List<Species> speciesToRemove = new ArrayList<>();
     for (Species species : model.getListOfSpecies()) {
-      progress.DisplayBar("Polishing Species (4/9)  "); // Update progress display for each species
+      updateProgressObservers("Polishing Species (4/9)  ", species); // Update progress display for each species
       SpeciesPolishing speciesPolishing = new SpeciesPolishing(species);
       // Polish each species and collect those that need to be removed
       speciesPolishing.polish().ifPresent(speciesToRemove::add);
@@ -183,12 +221,19 @@ public class SBMLPolisher {
    */
   public boolean polishListOfReactions(Model model) {
     boolean strict = true;
-    for (int i = 0; i < model.getReactionCount(); i++) {
-      progress.DisplayBar("Polishing Reactions (5/9)  ");
-      ReactionPolishing reactionPolishing = new ReactionPolishing(model.getReaction(i));
+    for (var reaction : model.getListOfReactions()) {
+      updateProgressObservers("Polishing Reactions (5/9)  ", reaction);
+      var reactionPolishing = new ReactionPolishing(reaction);
       strict &= reactionPolishing.polish();
     }
     return strict;
   }
 
+  public List<ProgressObserver> getObservers() {
+    return observers;
+  }
+
+  public void addObserver(ProgressObserver o) {
+    observers.add(o);
+  }
 }

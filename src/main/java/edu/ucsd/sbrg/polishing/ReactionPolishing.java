@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;

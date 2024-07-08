@@ -1,9 +1,9 @@
-package edu.ucsd.sbrg.bigg.annotation;
+package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.bigg.polishing.PolishingUtils;
+import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
 import edu.ucsd.sbrg.miriam.Registry;

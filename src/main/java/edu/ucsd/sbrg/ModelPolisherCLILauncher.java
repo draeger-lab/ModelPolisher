@@ -33,14 +33,16 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.annotation.ModelAnnotator;
+import edu.ucsd.sbrg.polishing.ModelPolisher;
+import edu.ucsd.sbrg.util.*;
+import org.jetbrains.annotations.Nullable;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLErrorLog;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.TidySBMLWriter;
-import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
-import org.sbml.jsbml.util.SBMLtools;
-import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.validator.SBMLValidator;
 import org.sbml.jsbml.validator.offline.LoggingValidationContext;
 
@@ -55,8 +57,6 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.ModelPolisherOptions.Compression;
-import edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation;
-import edu.ucsd.sbrg.bigg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.db.ADBOptions;
 import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
@@ -65,10 +65,6 @@ import edu.ucsd.sbrg.db.DBConfig;
 import edu.ucsd.sbrg.parsers.cobra.COBRAParser;
 import edu.ucsd.sbrg.parsers.json.JSONConverter;
 import edu.ucsd.sbrg.parsers.json.JSONParser;
-import edu.ucsd.sbrg.util.CombineArchive;
-import edu.ucsd.sbrg.util.GPRParser;
-import edu.ucsd.sbrg.util.SBMLUtils;
-import edu.ucsd.sbrg.util.UpdateListener;
 
 /**
  * The ModelPolisher class is the entry point of this application.
@@ -77,7 +73,7 @@ import edu.ucsd.sbrg.util.UpdateListener;
  * and integrates various utilities for processing SBML, JSON, and MatLab files. The class supports
  * operations such as reading, validating, and writing SBML documents, converting JSON and MatLab files
  * to SBML, and annotating models with data from BiGG.
- *
+ * <p>
  * The main functionalities include:
  * - Command-line argument parsing and processing.
  * - Batch processing of files and directories for model polishing.
@@ -86,12 +82,12 @@ import edu.ucsd.sbrg.util.UpdateListener;
  * - SBML document validation and conversion.
  * - Annotation of models using external databases.
  * - Output management including file writing, COMBINE archive creation, and compression.
- *
+ * <p>
  * This class also handles error logging and provides detailed logging of the processing steps.
  * 
  * @author Andreas Dr&auml;ger
  */
-public class ModelPolisherLauncher extends Launcher {
+public class ModelPolisherCLILauncher extends Launcher {
 
   /**
    * Type of current input file
@@ -108,7 +104,7 @@ public class ModelPolisherLauncher extends Launcher {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(ModelPolisherLauncher.class.getName());
+  private static final transient Logger logger = Logger.getLogger(ModelPolisherCLILauncher.class.getName());
   /**
    * Generated serial version identifier.
    */
@@ -138,18 +134,18 @@ public class ModelPolisherLauncher extends Launcher {
       System.setProperty("java.util.prefs.systemRoot", ".java");
       System.setProperty("java.util.prefs.userRoot", ".java/.userPrefs");
     }
-    new ModelPolisherLauncher(args);
+    new ModelPolisherCLILauncher(args);
   }
 
 
   /**
    * Initializes super class with Commandline arguments, which are converted into {@link AppConf} and passsed to
-   * {@link ModelPolisherLauncher#commandLineMode(AppConf)}, which runs the rest of the program
+   * {@link ModelPolisherCLILauncher#commandLineMode(AppConf)}, which runs the rest of the program
    *
    * @param args
    *        Commandline arguments
    */
-  public ModelPolisherLauncher(String... args) {
+  public ModelPolisherCLILauncher(String... args) {
     super(args);
   }
 
@@ -206,7 +202,7 @@ public class ModelPolisherLauncher extends Launcher {
    * @param input  Path to the input file or directory to be processed. This should correspond to {@link BatchModeParameters#input()}.
    * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link BatchModeParameters#output()}.
    * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
-   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherLauncher#processFile(File, File)}.
+   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherCLILauncher#processFile(File, File)}.
    */
   private void batchProcess(File input, File output) throws IOException, XMLStreamException {
     // Check if the input exists, throw an exception if it does not
@@ -235,7 +231,9 @@ public class ModelPolisherLauncher extends Launcher {
       }
     } else {
       // NOTE: input is a single file, but output can be a file or a directory
-      processFile(input, output);
+      // Adjust output file name if the output is a directory
+      var newOutput = output.isDirectory() ? getOutputFileName(input, output) : output;
+      processFile(input, newOutput);
     }
   }
 
@@ -299,8 +297,6 @@ public class ModelPolisherLauncher extends Launcher {
   /**
    * Check if file is directory by calling {@link File#isDirectory()} on an existing file or check presence of '.' in
    * output.getName(), if this is not the case
-   *
-   * @param file
    */
   private boolean isDirectory(File file) {
     // file = d1/d2/d3 is taken as a file by method file.isDirectory()
@@ -312,38 +308,20 @@ public class ModelPolisherLauncher extends Launcher {
   }
 
 
-  /**
-   * Processes the input file by determining its type and applying necessary preprocessing steps.
-   * If the file type is unknown, it attempts to update SBML files with top-level namespace declarations,
-   * which might be present due to specific tools like CarveMe. If the file remains unknown after attempting
-   * to update, it logs a warning and returns without further processing.
-   * If the output path is a directory, it adjusts the output file name based on the input file's type and name.
-   * Finally, it calls the method to read and polish the file.
-   *
-   * @param input  The input file to be processed.
-   * @param output The output file or directory where the processed file should be saved.
-   * @throws XMLStreamException If an XML processing error occurs.
-   * @throws IOException If an I/O error occurs.
-   */
   private void processFile(File input, File output) throws XMLStreamException, IOException {
-    // Determine the file type of the input file
-    fileType = getFileType(input);
-    // Handle unknown file types by checking and updating HTML tags
-    if (fileType.equals(FileType.UNKNOWN)) {
-      checkHTMLTags(input);
-      fileType = getFileType(input); // Re-check file type after updating tags
-      // Abort processing if file type is still unknown
-      if (fileType.equals(FileType.UNKNOWN)) {
-        logger.warning(format(MESSAGES.getString("INPUT_UNKNOWN"), input.getPath()));
-        return;
-      }
-    }
-    // Adjust output file name if the output is a directory
-    if (output.isDirectory()) {
-      output = getOutputFileName(input, output);
-    }
-    // Read and polish the file
-    readAndPolish(input, output);
+    long startTime = System.currentTimeMillis();
+
+    SBMLDocument doc = read(input);
+    if (doc == null) return;
+
+    // Polish and annotate
+    processDocument(doc);
+
+    write(doc, output);
+
+    // Log the time taken to process the file
+    long timeTaken = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
+    logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
   }
 
 
@@ -367,23 +345,38 @@ public class ModelPolisherLauncher extends Launcher {
   }
 
 
-  /**
-   * This method reads an input file, determines its type (SBML, MAT, or JSON), and applies the appropriate
-   * parsing and polishing processes. The result is written to the specified output file in SBML format.
-   * 
-   * The method logs the start of the reading process, determines the file type, and uses the corresponding
-   * parser to convert the file into an SBMLDocument. If the file is an SBML file, it first checks and corrects
-   * HTML tags. After parsing, if the document is null (indicating a parsing failure), it logs an error and exits.
-   * Otherwise, it proceeds to polish the document and logs the time taken for the entire process upon completion.
-   *
-   * @param input  The input file which can be in SBML, MAT, or JSON format.
-   * @param output The output file where the polished SBML will be saved.
-   * @throws XMLStreamException If an error occurs during XML parsing or writing.
-   * @throws IOException If an I/O error occurs during file reading or writing.
-   */
-  private void readAndPolish(File input, File output) throws XMLStreamException, IOException {
-    long startTime = System.currentTimeMillis();
+  private void processDocument(SBMLDocument doc) throws XMLStreamException, IOException {
+    var mp = new ModelPolisher();
+    mp.addObserver(new PolisherProgressBar());
+    // Polish the document and write to output
+    mp.polish(doc);
+
+    var ma = new ModelAnnotator();
+    ma.annotate(doc);
+
+    // TODO: this should not be static
+    // Clear temporary data structures used during parsing
+    SBMLUtils.clearGPRMap();
+    GPRParser.clearAssociationMap();
+
+  }
+
+  private @Nullable SBMLDocument read(File input) throws IOException, XMLStreamException {
     logger.info(format(MESSAGES.getString("READ_FILE_INFO"), input.getAbsolutePath()));
+    // Determine the file type of the input file
+    fileType = getFileType(input);
+    // Handle unknown file types by checking and updating HTML tags
+    if (fileType.equals(FileType.UNKNOWN)) {
+      checkHTMLTags(input);
+      fileType = getFileType(input); // Re-check file type after updating tags
+      // Abort processing if file type is still unknown
+      if (fileType.equals(FileType.UNKNOWN)) {
+        logger.warning(format(MESSAGES.getString("INPUT_UNKNOWN"), input.getPath()));
+        // TODO: this is not graceful
+        throw new IllegalArgumentException();
+      }
+    }
+
     SBMLDocument doc;
 
     // Determine the file type and parse accordingly
@@ -399,19 +392,9 @@ public class ModelPolisherLauncher extends Launcher {
     // Check if the document was successfully parsed
     if (doc == null) {
       logger.severe(format(MESSAGES.getString("ALL_DOCS_PARSE_ERROR"), input.toString()));
-      return;
+      return null;
     }
-
-    // Polish the document and write to output
-    polish(doc, output);
-
-    // Clear temporary data structures used during parsing
-    SBMLUtils.clearGPRMap();
-    GPRParser.clearAssociationMap();
-
-    // Log the time taken to process the file
-    long timeTaken = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
-    logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
+    return doc;
   }
 
 
@@ -468,32 +451,9 @@ public class ModelPolisherLauncher extends Launcher {
   }
 
 
-  /**
-   * This method orchestrates the polishing process of an SBML document, including annotation, JSON conversion, file writing, 
-   * COMBINE archive creation, and compression. It ensures the model exists within the document before proceeding with further tasks.
-   *
-   * @param doc    The SBMLDocument to be polished.
-   * @param output The file where the polished SBML document will be written.
-   * @throws IOException         If an I/O error occurs during file writing or archive creation.
-   * @throws XMLStreamException  If an error occurs during XML processing.
-   */
-  private void polish(SBMLDocument doc, File output) throws IOException, XMLStreamException {
-    if (doc.getModel() == null) {
-      logger.severe(MESSAGES.getString("MODEL_MISSING"));
-      return;
-    }
+  private void write(SBMLDocument doc, File output) throws IOException, XMLStreamException {
     // Retrieve global parameters for the polishing process
     BatchModeParameters batchModeParameters = BatchModeParameters.get();
-    // Ensure the document is at the correct SBML level and version
-    doc = checkLevelAndVersion(doc);
-    // Perform the polishing operations on the document
-    SBMLPolisher polisher = new SBMLPolisher();
-    doc = polisher.polish(doc);
-    // Annotate the document if the parameters specify
-    if (batchModeParameters.annotateWithBiGG()) {
-      BiGGAnnotation annotation = new BiGGAnnotation();
-      doc = annotation.annotate(doc);
-    }
     // Convert and write the document to JSON if specified
     if (batchModeParameters.writeJSON()) {
       String out = output.getAbsolutePath().replaceAll("\\.xml", ".json");
@@ -536,25 +496,6 @@ public class ModelPolisherLauncher extends Launcher {
     }
   }
 
-
-  /**
-   * Ensures that the SBML document is set to Level 3 and Version 1, which are required for compatibility with necessary plugins.
-   * If the document is not already at this level and version, it updates the document to meet these specifications.
-   * After ensuring the document is at the correct level and version, it converts the document using the CobraToFbcV2Converter.
-   * 
-   * @param doc The SBMLDocument to be checked and potentially converted.
-   * @return The SBMLDocument after potentially updating its level and version and converting it.
-   */
-  private SBMLDocument checkLevelAndVersion(SBMLDocument doc) {
-    if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-      logger.info(MESSAGES.getString("TRY_CONV_LVL3_V1"));
-      SBMLtools.setLevelAndVersion(doc, 3, 1);
-    }
-    // Initialize the converter for Cobra to FBC version 2
-    CobraToFbcV2Converter converter = new CobraToFbcV2Converter();
-    // Convert the document and return the converted document
-    return converter.convert(doc);
-  }
 
 
   /**
@@ -605,11 +546,6 @@ public class ModelPolisherLauncher extends Launcher {
     }
   }
 
-
-  /**
-   * @param sbmlErrorLog
-   * @param filename
-   */
   private void handleErrorLog(SBMLErrorLog sbmlErrorLog, String filename) {
     if (sbmlErrorLog != null) {
       logger.info(format(MESSAGES.getString("VAL_ERR_COUNT"), sbmlErrorLog.getErrorCount(), filename));

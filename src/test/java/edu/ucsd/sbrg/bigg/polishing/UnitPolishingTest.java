@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
 import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.polishing.UnitPolishing;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -70,7 +71,7 @@ public class UnitPolishingTest {
     @Test
     public void modelWithNoUnitDefinitions() {
         var m = new Model(3, 2);
-        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        var polisher = new UnitPolishing(m);
         polisher.polishListOfUnitDefinitions();
 
         assertEquals(3, m.getListOfUnitDefinitions().getChildCount());
@@ -129,7 +130,7 @@ public class UnitPolishingTest {
         someUnit.setId("some");
         growth.addUnit(someUnit);
 
-        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        var polisher = new UnitPolishing(m);
         polisher.polishListOfUnitDefinitions();
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "mmol_per_gDW_per_hr__preexisting",
@@ -169,7 +170,7 @@ public class UnitPolishingTest {
         m.addUnitDefinition(time);
         m.setTimeUnits("test_time");
 
-        var polisher = new UnitPolishing(m, new ProgressBar(0));
+        var polisher = new UnitPolishing(m);
         polisher.polishListOfUnitDefinitions();
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "test_time", "test_substance"),

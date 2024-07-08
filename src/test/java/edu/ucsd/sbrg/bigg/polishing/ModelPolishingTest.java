@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
-import de.zbit.util.progressbar.ProgressBar;
+import edu.ucsd.sbrg.polishing.MiscPolishing;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -37,7 +37,7 @@ public class ModelPolishingTest {
 
         initParameters(Map.of("FLUX_OBJECTIVES", " objective_reaction1 "));
 
-        var polishing = new ModelPolishing(m, false, new ProgressBar(0));
+        var polishing = new MiscPolishing(m, false);
         polishing.polish();
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
@@ -67,7 +67,7 @@ public class ModelPolishingTest {
         initParameters(Map.of("FLUX_OBJECTIVES",
                 " objective_reaction1:objective_reaction2 "));
 
-        var polishing = new ModelPolishing(m, false, new ProgressBar(0));
+        var polishing = new MiscPolishing(m, false);
         polishing.polish();
 
         assertEquals("obj3", fbcPlugin.getActiveObjective());
@@ -106,7 +106,7 @@ public class ModelPolishingTest {
 
         initParameters();
 
-        var polishing = new ModelPolishing(m, false, new ProgressBar(0));
+        var polishing = new MiscPolishing(m, false);
         polishing.polish();
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
@@ -135,7 +135,7 @@ public class ModelPolishingTest {
         fbcPlugin.setActiveObjective(o1);
         // o1.setListOfFluxObjectives(new ListOf<>());
 
-        var polishing = new ModelPolishing(m, false, new ProgressBar(0));
+        var polishing = new MiscPolishing(m, false);
         polishing.polish();
 
         assertEquals(0, fbcPlugin.getObjectiveCount());

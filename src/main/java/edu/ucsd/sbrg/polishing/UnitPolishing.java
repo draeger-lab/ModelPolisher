@@ -1,10 +1,13 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
-import de.zbit.util.progressbar.AbstractProgressBar;
+import edu.ucsd.sbrg.util.ProgressObserver;
+import edu.ucsd.sbrg.util.ProgressUpdate;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,14 +35,16 @@ public class UnitPolishing {
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000010"));
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000013"));
 
-    AbstractProgressBar progress;
-    Model model;
+    private List<ProgressObserver> observers = new ArrayList<>();
+    private final Model model;
 
-    public UnitPolishing(Model model, AbstractProgressBar progress) {
+    public UnitPolishing(Model model, List<ProgressObserver> observers) {
         this.model = model;
-        this.progress = progress;
+        this.observers = observers;
     }
-
+    public UnitPolishing(Model model) {
+        this.model = model;
+    }
     /**
      * Ensures that all necessary {@link UnitDefinition}s and {@link Unit}s are present in the model.
      * If any are missing, they are created and added to the model. This method also sets the model's
@@ -47,7 +52,7 @@ public class UnitPolishing {
      */
     public void polishListOfUnitDefinitions() {
         // Update progress bar to indicate the current process stage
-        progress.DisplayBar("Polishing Unit Definitions (2/9)   ");
+        updateProgressObservers("Polishing Unit Definitions (2/9)   ", null);
 
         // Retrieve the total number of unit definitions in the model
         int udCount = model.getUnitDefinitionCount();
@@ -70,10 +75,11 @@ public class UnitPolishing {
         if (!model.isSetSubstanceUnits())
             model.setSubstanceUnits(substanceUnits.getId());
 
+        // TODO: ich bin mir ziemlich sicher, dass dieser Code hier nonsense ist
         // Continue updating the progress bar until all unit definitions are processed
-        while (progress.getCallNumber() < udCount) {
-            progress.DisplayBar("Polishing Unit Definitions (2/9)   ");
-        }
+//        while (progress.getCallNumber() < udCount) {
+//            progress.DisplayBar("Polishing Unit Definitions (2/9)   ");
+//        }
     }
 
     /**
@@ -303,4 +309,9 @@ public class UnitPolishing {
         return sb;
     }
 
+    private void updateProgressObservers(String text, AbstractSBase obj) {
+        for (var o : observers) {
+            o.update(new ProgressUpdate(text, obj));
+        }
+    }
 }

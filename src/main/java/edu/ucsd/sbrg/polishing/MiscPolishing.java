@@ -1,27 +1,25 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import edu.ucsd.sbrg.BatchModeParameters;
+import edu.ucsd.sbrg.util.ProgressObserver;
+import edu.ucsd.sbrg.util.ProgressUpdate;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
-import org.sbml.jsbml.InitialAssignment;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Parameter;
-import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.SpeciesReference;
-import org.sbml.jsbml.Variable;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.ext.fbc.Objective;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -34,23 +32,29 @@ import static java.text.MessageFormat.format;
  * Progress of the polishing process can be visually tracked using an {@link AbstractProgressBar} which is updated
  * throughout the various stages of the polishing process.
  */
-public class ModelPolishing {
+public class MiscPolishing {
 
-  private static final transient Logger logger = Logger.getLogger(ModelPolishing.class.getName());
+  private static final transient Logger logger = Logger.getLogger(MiscPolishing.class.getName());
 
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  protected AbstractProgressBar progress;
+  private List<ProgressObserver> observers = new ArrayList<>();
 
   private final Model model;
 
   private boolean strict;
 
-  public ModelPolishing(Model model, boolean strict, AbstractProgressBar progress) {
+  public MiscPolishing(Model model, boolean strict, List<ProgressObserver> observers) {
     this.model = model;
     this.strict = strict;
-    this.progress = progress;
+    this.observers = observers;
   }
+
+  public MiscPolishing(Model model, boolean strict) {
+    this.model = model;
+    this.strict = strict;
+  }
+
 
   /**
    * Polishes the SBML model by processing annotations, setting meta identifiers, and polishing various components.
@@ -95,7 +99,7 @@ public class ModelPolishing {
   public void polishListOfInitialAssignments() {
     for (InitialAssignment ia : model.getListOfInitialAssignments()) {
       // Update progress display
-      progress.DisplayBar("Polishing Initial Assignments (6/9)  ");
+      updateProgressObservers("Polishing Initial Assignments (6/9)  ", ia);
       // Retrieve the variable associated with the initial assignment
       Variable variable = ia.getVariableInstance();
       if (variable != null) {
@@ -127,14 +131,14 @@ public class ModelPolishing {
       // Note: the strict attribute does not require the presence of any Objectives in the model.
       logger.warning(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
     } else {
-      for (Objective objective : modelPlug.getListOfObjectives()) {
-        progress.DisplayBar("Polishing Objectives (7/9)  "); // "Processing objective " + objective.getId());
+      for (var objective : modelPlug.getListOfObjectives()) {
+        updateProgressObservers("Polishing Objectives (7/9)  ", objective); // "Processing objective " + objective.getId());
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug,
             BatchModeParameters.get().fluxCoefficients(), BatchModeParameters.get().fluxObjectives());
         }
-        if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().size() == 0) {
+        if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().isEmpty()) {
           polishListOfFluxObjectives(objective);
         }
       }
@@ -142,8 +146,8 @@ public class ModelPolishing {
       Collection<Objective> removals = modelPlug.getListOfObjectives()
               .stream()
               .filter(Predicate.not(Objective::isSetListOfFluxObjectives)
-              .or(o -> o.getListOfFluxObjectives().size() == 0))
-              .collect(Collectors.toList());
+              .or(o -> o.getListOfFluxObjectives().isEmpty()))
+              .toList();
       modelPlug.getListOfObjectives().removeAll(removals);
     }
   }
@@ -183,7 +187,7 @@ public class ModelPolishing {
    */
   public void polishListOfGeneProducts(FBCModelPlugin fbcModelPlug) {
     for (GeneProduct geneProduct : fbcModelPlug.getListOfGeneProducts()) {
-      progress.DisplayBar("Polishing Gene Products (8/9)  ");
+      updateProgressObservers("Polishing Gene Products (8/9)  ", geneProduct);
       new GeneProductPolishing(geneProduct).polish();
     }
   }
@@ -196,7 +200,7 @@ public class ModelPolishing {
    */
   public void polishListOfParameters(Model model) {
     for (Parameter parameter : model.getListOfParameters()) {
-      progress.DisplayBar("Polishing Parameters (9/9)  ");
+      updateProgressObservers("Polishing Parameters (9/9)  ", parameter);
       polish(parameter);
     }
   }
@@ -214,4 +218,11 @@ public class ModelPolishing {
       p.setName(PolishingUtils.polishName(p.getId()));
     }
   }
+
+  private void updateProgressObservers(String text, AbstractSBase obj) {
+    for (var o : observers) {
+      o.update(new ProgressUpdate(text, obj));
+    }
+  }
+
 }

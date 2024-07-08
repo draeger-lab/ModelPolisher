@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.annotation;
+package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.bigg.BiGGId;
@@ -15,7 +15,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.bigg.annotation.BiGGAnnotation.getBiGGIdFromResources;
 import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
 import static java.text.MessageFormat.format;
 
@@ -94,7 +93,7 @@ public class GeneProductAnnotation extends CVTermAnnotation {
                                           .flatMap(term -> term.getResources().stream())
                                           .collect(Collectors.toList());
       // Attempt to update the ID with a valid BiGG ID from the resources, if available
-      id = getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT).orElse(id);
+      id = BiGGAnnotation.getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT).orElse(id);
     }
     // Create and return a BiGGId object based on the validated or updated ID
     return BiGGId.createGeneId(id);

@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.bigg.polishing;
 
+import edu.ucsd.sbrg.polishing.ReactionPolishing;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
