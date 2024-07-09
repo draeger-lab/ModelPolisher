@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -41,7 +42,6 @@ import org.sbml.jsbml.util.Pair;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
-import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.BiGGDBContract;
 import edu.ucsd.sbrg.db.QueryOnce;
@@ -144,9 +144,9 @@ public class BiGGAnnotation {
     // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
     String organism = BiGGDB.getOrganism(id).orElse("");
     // Access the current parameters instance
-    BatchModeParameters batchModeParameters = BatchModeParameters.get();
+    Parameters parameters = Parameters.get();
     // Retrieve and process the document title pattern by replacing placeholders
-    String name = batchModeParameters.documentTitlePattern();
+    String name = parameters.documentTitlePattern();
     name = name.replace("[biggId]", id);
     name = name.replace("[organism]", organism);
     // Initialize a map to hold the replacement values
@@ -175,21 +175,21 @@ public class BiGGAnnotation {
    * @throws XMLStreamException If there is an error processing the XML content of the notes.
    */
   private void appendNotes(SBMLDocument doc, Map<String, String> replacements) throws IOException, XMLStreamException {
-    BatchModeParameters batchModeParameters = BatchModeParameters.get();
+    Parameters parameters = Parameters.get();
     String modelNotesFile = "ModelNotes.html";
     String documentNotesFile = "SBMLDocumentNotes.html";
     
     // Determine the files to use for model and document notes based on user settings
-    if (batchModeParameters.noModelNotes()) {
+    if (parameters.noModelNotes()) {
       modelNotesFile = null;
       documentNotesFile = null;
     } else {
-      if (batchModeParameters.modelNotesFile() != null) {
-        File modelNotes = batchModeParameters.modelNotesFile();
+      if (parameters.modelNotesFile() != null) {
+        File modelNotes = parameters.modelNotesFile();
         modelNotesFile = modelNotes != null ? modelNotes.getAbsolutePath() : null;
       }
-      if (batchModeParameters.documentNotesFile() != null) {
-        File documentNotes = batchModeParameters.documentNotesFile();
+      if (parameters.documentNotesFile() != null) {
+        File documentNotes = parameters.documentNotesFile();
         documentNotesFile = documentNotes != null ? documentNotes.getAbsolutePath() : null;
       }
     }

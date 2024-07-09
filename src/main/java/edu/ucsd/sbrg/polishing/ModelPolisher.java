@@ -15,6 +15,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.util.ProgressInitialization;
 import edu.ucsd.sbrg.util.ProgressObserver;
 import edu.ucsd.sbrg.util.ProgressUpdate;
@@ -47,23 +48,22 @@ public class ModelPolisher {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
+  private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
 
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private final Parameters params;
 
-  /**
-   *
-   */
   public ModelPolisher() {
+      this.params = Parameters.get();
   }
 
   private final List<ProgressObserver> observers = new ArrayList<>();
 
 
-  /**
+    /**
    * Ensures that the SBML document is set to Level 3 and Version 1, which are required for compatibility with necessary plugins.
    * If the document is not already at this level and version, it updates the document to meet these specifications.
    * After ensuring the document is at the correct level and version, it converts the document using the CobraToFbcV2Converter.
@@ -156,7 +156,7 @@ public class ModelPolisher {
     // Calculate the total number of tasks to initialize the progress bar.
     int count = 1 // Account for model properties
       // + model.getUnitDefinitionCount()
-    // TODO: siehe UnitPolishing TODO, weshalb UnitDefinitionCount durch 1 ersetzt wird
+    // TODO: see UnitPolishing TODO, why UnitDefinitionCount is replaced by 1
       + 1
       + model.getCompartmentCount()
       + model.getParameterCount()
@@ -227,10 +227,6 @@ public class ModelPolisher {
       strict &= reactionPolishing.polish();
     }
     return strict;
-  }
-
-  public List<ProgressObserver> getObservers() {
-    return observers;
   }
 
   public void addObserver(ProgressObserver o) {

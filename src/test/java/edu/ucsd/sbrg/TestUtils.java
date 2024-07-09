@@ -35,10 +35,10 @@ public class TestUtils {
             props.setProperty(pair.getKey(), pair.getValue());
         }
         try {
-            var parameters = BatchModeParameters.class.getDeclaredField("batchModeParameters");
+            var parameters = Parameters.class.getDeclaredField("parameters");
             parameters.setAccessible(true);
             parameters.set(null, null);
-            var init = BatchModeParameters.class.getDeclaredMethod("init", SBProperties.class);
+            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
             init.setAccessible(true);
             init.invoke(null, props);
         } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {

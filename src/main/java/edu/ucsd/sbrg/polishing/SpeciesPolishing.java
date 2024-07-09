@@ -21,9 +21,9 @@ import static java.text.MessageFormat.format;
  */
 public class SpeciesPolishing {
 
-  private static final transient Logger logger = Logger.getLogger(SpeciesPolishing.class.getName());
+  private static final Logger logger = Logger.getLogger(SpeciesPolishing.class.getName());
 
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final Species species;
 

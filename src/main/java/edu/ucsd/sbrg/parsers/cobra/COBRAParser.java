@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.parsers.cobra;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.BatchModeParameters;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.util.UpdateListener;
@@ -245,7 +245,7 @@ public class COBRAParser {
         if (model.getReaction(i) == null) {
           logger.severe(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
-          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, BatchModeParameters.get().omitGenericTerms());
+          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, Parameters.get().omitGenericTerms());
         }
       }
     });

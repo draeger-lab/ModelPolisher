@@ -9,9 +9,9 @@ import static java.text.MessageFormat.format;
 
 public class PolishingUtils {
 
-    private static final transient Logger logger = Logger.getLogger(ModelPolisher.class.getName());
+    private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
 
-    private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     /**
      * Processes and polishes a given identifier name by applying a series of string transformations

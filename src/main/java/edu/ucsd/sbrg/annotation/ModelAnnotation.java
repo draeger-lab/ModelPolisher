@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation;
 
-import edu.ucsd.sbrg.BatchModeParameters;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
 import edu.ucsd.sbrg.miriam.Registry;
@@ -59,7 +59,7 @@ public class ModelAnnotation {
    * This method first adds a MIRIAM annotation indicating the model's identity within BiGG.
    * It then attempts to annotate the model with its genomic accession number, which could be a RefSeq or a genome assembly accession.
    * If the accession matches a RefSeq pattern, it is annotated directly using a RefSeq URI.
-   * If the accession matches a genome assembly pattern and non-MIRIAM URIs are allowed (controlled by {@link BatchModeParameters#includeAnyURI()}),
+   * If the accession matches a genome assembly pattern and non-MIRIAM URIs are allowed (controlled by {@link Parameters#includeAnyURI()}),
    * it is annotated using a direct link to the NCBI assembly resource. Otherwise, it uses a direct link to the NCBI nucleotide resource.
    * Annotations are only added if they are successfully created and contain at least one resource.
    */
@@ -82,7 +82,7 @@ public class ModelAnnotation {
       term.addResource(Registry.createShortURI("refseq:" + accession));
     } else {
       // Check if non-MIRIAM URIs are allowed
-      if (BatchModeParameters.get().includeAnyURI()) {
+      if (Parameters.get().includeAnyURI()) {
         // Prepare a pattern matcher for genome assembly accession numbers
         Matcher genomeAssemblyMatcher = Pattern.compile("^GC[AF]_[0-9]{9}\\.[0-9]+$").matcher(accession);
         if (genomeAssemblyMatcher.matches()) {

@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
-import edu.ucsd.sbrg.BatchModeParameters;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.util.ProgressObserver;
 import edu.ucsd.sbrg.util.ProgressUpdate;
 import edu.ucsd.sbrg.miriam.Registry;
@@ -136,7 +136,7 @@ public class MiscPolishing {
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug,
-            BatchModeParameters.get().fluxCoefficients(), BatchModeParameters.get().fluxObjectives());
+            Parameters.get().fluxCoefficients(), Parameters.get().fluxObjectives());
         }
         if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().isEmpty()) {
           polishListOfFluxObjectives(objective);

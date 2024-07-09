@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.BatchModeParameters;
 import edu.ucsd.sbrg.db.AnnotateDB;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.db.QueryOnce;
@@ -89,7 +89,7 @@ public abstract class CVTermAnnotation {
       cvTerm = new CVTerm(Qualifier.BQB_IS);
     }
     Set<String> annotations = new HashSet<>();
-    BatchModeParameters batchModeParameters = BatchModeParameters.get();
+    Parameters parameters = Parameters.get();
     boolean isReaction = node instanceof Reaction;
     if (isReaction) {
       boolean isBiGGReaction = QueryOnce.isReaction(biggId.getAbbreviation());
@@ -97,10 +97,10 @@ public abstract class CVTermAnnotation {
       if (isBiGGReaction) {
         annotations.add(Registry.createURI("bigg.reaction", biggId));
       }
-      Set<String> biggAnnotations = BiGGDB.getResources(biggId, batchModeParameters.includeAnyURI(), true);
+      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), true);
       annotations.addAll(biggAnnotations);
       // using AnnotateDB
-      if (batchModeParameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGReaction) {
+      if (parameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGReaction) {
         Set<String> adbAnnotations = AnnotateDB.getAnnotations(BIGG_REACTION, biggId.toBiGGId());
         annotations.addAll(adbAnnotations);
       }
@@ -110,10 +110,10 @@ public abstract class CVTermAnnotation {
       if (isBiGGMetabolite) {
         annotations.add(Registry.createURI("bigg.metabolite", biggId));
       }
-      Set<String> biggAnnotations = BiGGDB.getResources(biggId, batchModeParameters.includeAnyURI(), false);
+      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), false);
       annotations.addAll(biggAnnotations);
       // using AnnotateDB
-      if (batchModeParameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGMetabolite) {
+      if (parameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGMetabolite) {
         Set<String> adb_annotations = AnnotateDB.getAnnotations(BIGG_METABOLITE, biggId.toBiGGId());
         annotations.addAll(adb_annotations);
       }
