@@ -5,22 +5,21 @@ import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestUtils {
 
-    public static void initParameters() {
-        initParameters(Map.of());
+    public static Parameters initParameters() {
+        return initParameters(Map.of());
     }
 
-    public static void initParameters(Map<String, String> params) {
+    public static Parameters initParameters(Map<String, String> params) {
         var props = new SBProperties();
         props.setProperty(IOOptions.INPUT.getOptionName(),
                 "bla");
@@ -34,17 +33,7 @@ public class TestUtils {
         for (var pair : params.entrySet()) {
             props.setProperty(pair.getKey(), pair.getValue());
         }
-        try {
-            var parameters = Parameters.class.getDeclaredField("parameters");
-            parameters.setAccessible(true);
-            parameters.set(null, null);
-            var init = Parameters.class.getDeclaredMethod("init", SBProperties.class);
-            init.setAccessible(true);
-            init.invoke(null, props);
-        } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException | NoSuchFieldException e) {
-            e.printStackTrace();
-            assertTrue(false, "Reflection on parameters failed. Sorry");
-        }
+        return new Parameters(props);
     }
 
 
@@ -82,7 +71,7 @@ public class TestUtils {
                 }
             }
         }
-        assertTrue(false, message);
+        fail(message);
     }
 
     public static void assertCVTermsArePresent(AbstractSBase entity,
@@ -95,7 +84,7 @@ public class TestUtils {
             // this is just an awkward way to implement set difference, sorry bout that
             Collection<String> us = null;
             if(null != uris) {
-                us = new HashSet<>(uris.stream().collect(Collectors.toSet()));
+                us = new HashSet<>(new HashSet<>(uris));
                 us.removeAll(term.getResources());
             }
             // <- until here
@@ -107,8 +96,7 @@ public class TestUtils {
                 return;
             }
         }
-        assertTrue(false, message
-                + "Instead: " + entity.getCVTerms().toString());
+        fail(message + "Instead: " + entity.getCVTerms().toString());
     }
 
     /**
@@ -116,27 +104,26 @@ public class TestUtils {
      * of which CV Terms are present on an entity to ease writing assertions.
      */
     public static String printCVTerm(CVTerm c) {
-        var newline = System.getProperty("line.separator");
-        return Stream.of(c.getQualifierType().toString(),
-                 c.getQualifier().toString(),
-                 c.getResources().stream().collect(Collectors.joining(", ")))
-                .collect(Collectors.joining(newline));
+        var newline = System.lineSeparator();
+        return String.join(newline, c.getQualifierType().toString(),
+                c.getQualifier().toString(),
+                String.join(", ", c.getResources()));
     }
 
     /**
      * This is a development-time utility, which serves to quickly print assertions.
      */
     public static String printCVTermAssertion(CVTerm c) {
-        var newline = System.getProperty("line.separator");
+        var newline = System.lineSeparator();
         return "assertCVTermIsPresent(__," + newline
                 + "CVTerm.Type." + c.getQualifierType().toString() + "," + newline
                 + "CVTerm.Qualifier." + c.getQualifier().toString() + "," + newline
-                + "\"" + c.getResources().stream().collect(Collectors.joining("\", \""))
+                + "\"" + String.join("\", \"", c.getResources())
                 + "\");";
     }
 
     public static String printAllCVTerms(AbstractNamedSBase entity) {
-        var newline = System.getProperty("line.separator");
+        var newline = System.lineSeparator();
         return entity.getCVTerms().stream().map(TestUtils::printCVTermAssertion).collect(Collectors.joining(newline));
     }
 

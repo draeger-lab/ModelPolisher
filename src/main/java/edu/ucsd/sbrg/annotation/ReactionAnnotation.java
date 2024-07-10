@@ -42,12 +42,13 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   private final Reaction reaction;
   private static boolean triggeredSubsystemWarning = false;
+  private final Parameters parameters;
 
-  /**
-   * @param reaction
-   */
-  public ReactionAnnotation(Reaction reaction) {
+
+  public ReactionAnnotation(Reaction reaction, Parameters parameters) {
+    super(parameters);
     this.reaction = reaction;
+    this.parameters = parameters;
   }
 
 
@@ -168,7 +169,6 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   public void setSBOTerm(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    Parameters parameters = Parameters.get();
     if (!reaction.isSetSBOTerm()) {
       if (BiGGDB.isPseudoreaction(abbreviation)) {
         reaction.setSBOTerm(631);
@@ -201,7 +201,6 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   public void parseGeneReactionRules(BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    Parameters parameters = Parameters.get();
     List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
       GPRParser.parseGPR(reaction, geneReactionRule, parameters.omitGenericTerms());

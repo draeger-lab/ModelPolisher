@@ -30,6 +30,11 @@ public class ModelValidator {
      * A {@link Logger} for this class.
      */
     private static final Logger logger = Logger.getLogger(ModelValidator.class.getName());
+    private final Parameters parameters;
+
+    public ModelValidator(Parameters parameters) {
+        this.parameters = parameters;
+    }
 
     /**
      * Validates an SBML file either online or offline based on the provided parameters.
@@ -41,10 +46,7 @@ public class ModelValidator {
      * @param online   A boolean flag indicating whether to perform online (true) or offline (false) validation.
      */
     public void validate(File outputFile, boolean online) {
-        // Retrieve global parameters for the polishing process
-        Parameters params = Parameters.get();
-
-        String fileExtension = params.compression().getFileExtension();
+        String fileExtension = parameters.compression().getFileExtension();
         String filename = outputFile.getAbsolutePath() + "." + fileExtension;
 
         if (online) {

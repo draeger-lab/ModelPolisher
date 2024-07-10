@@ -40,7 +40,8 @@ public class ReactionPolishing {
   private static final ResourceBundle MESSAGES =
     de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Reaction reaction;
-  private GeneProductAssociationsPolisher gpaPolisher;
+  private final GeneProductAssociationsPolisher gpaPolisher;
+  private final Parameters parameters;
 
   /**
    * Defines an enumeration for regex patterns that are used to categorize reactions based on their ID strings.
@@ -113,9 +114,10 @@ public class ReactionPolishing {
    *
    * @param reaction The reaction to be polished.
    */
-  public ReactionPolishing(Reaction reaction, GeneProductAssociationsPolisher gpaPolisher) {
+  public ReactionPolishing(Reaction reaction, GeneProductAssociationsPolisher gpaPolisher, Parameters parameters) {
     this.reaction = reaction;
     this.gpaPolisher = gpaPolisher;
+    this.parameters = parameters;
   }
 
 
@@ -124,7 +126,6 @@ public class ReactionPolishing {
    * the expected standards and conventions. This includes setting SBO terms, checking compartments,
    * and ensuring proper setup of reactants and products.
    *
-   * @return {@code true} if the reaction qualifies for strict FBC after polishing, {@code false} otherwise.
    */
   @SuppressWarnings("deprecated")
   public void polish() {
@@ -142,7 +143,7 @@ public class ReactionPolishing {
       // check mass balance of the reaction - no-op
       checkBalance(reaction);
       // Convert gene associations to FBCv2 format and set flux objectives from local parameters
-      gpaPolisher.convertAssociationsToFBCV2(reaction, Parameters.get().omitGenericTerms());
+      gpaPolisher.convertAssociationsToFBCV2(reaction, parameters.omitGenericTerms());
 
       fluxObjectiveFromLocalParameter();
 
@@ -240,7 +241,7 @@ public class ReactionPolishing {
   private Optional<String> polishSpeciesReferences(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
     // Assign default SBO terms and constant values to species references
     for (SpeciesReference sr : speciesReferences) {
-      if (!sr.isSetSBOTerm() && !Parameters.get().omitGenericTerms()) {
+      if (!sr.isSetSBOTerm() && !parameters.omitGenericTerms()) {
         sr.setSBOTerm(defaultSBOterm);
       }
       if (!sr.isSetConstant()) {
@@ -271,7 +272,7 @@ public class ReactionPolishing {
   private void checkBalance(Reaction reaction) {
     // TODO: logging this information is nonsense, this should be available as output
     // Check mass balance if enabled in parameters and reaction is not a special type
-    if (Parameters.get().checkMassBalance()
+    if (parameters.checkMassBalance()
             && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
       // Perform atom balance check
       AtomCheckResult<Reaction> defects = AtomBalanceCheck.checkAtomBalance(reaction, 1);
@@ -382,7 +383,7 @@ public class ReactionPolishing {
                 String association = splits[1];
                 if (!association.isEmpty()) {
                   // Parse the gene product association and apply it to the reaction.
-                  GPRParser.parseGPR(reaction, association, Parameters.get().omitGenericTerms());
+                  GPRParser.parseGPR(reaction, association, parameters.omitGenericTerms());
                 }
               }
             }

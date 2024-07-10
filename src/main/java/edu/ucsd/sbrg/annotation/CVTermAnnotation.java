@@ -38,8 +38,13 @@ public abstract class CVTermAnnotation {
    * Localization support.
    */
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private final Parameters parameters;
 
-  /**
+    protected CVTermAnnotation(Parameters parameters) {
+        this.parameters = parameters;
+    }
+
+    /**
    * Abstract method to annotate an SBML element. Implementations should define specific annotation logic.
    */
   abstract void annotate();
@@ -89,7 +94,6 @@ public abstract class CVTermAnnotation {
       cvTerm = new CVTerm(Qualifier.BQB_IS);
     }
     Set<String> annotations = new HashSet<>();
-    Parameters parameters = Parameters.get();
     boolean isReaction = node instanceof Reaction;
     if (isReaction) {
       boolean isBiGGReaction = QueryOnce.isReaction(biggId.getAbbreviation());

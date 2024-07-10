@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.miriam.Registry;
@@ -32,8 +33,9 @@ public class GeneProductAnnotation extends CVTermAnnotation {
   /**
    * Localization support.
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+
+    /**
    * Instance of gene product to annotate
    */
   private final GeneProduct geneProduct;
@@ -43,9 +45,9 @@ public class GeneProductAnnotation extends CVTermAnnotation {
    * Constructs a new {@link GeneProductAnnotation} instance for a given {@link GeneProduct}.
    *
    * @param geneProduct  The {@link GeneProduct} to be annotated.
-   * @param gprAnnotator
    */
-  public GeneProductAnnotation(GeneProduct geneProduct, GeneProductReferencesAnnotator gprAnnotator) {
+  public GeneProductAnnotation(GeneProduct geneProduct, GeneProductReferencesAnnotator gprAnnotator, Parameters parameters) {
+    super(parameters);
     this.geneProduct = geneProduct;
     this.gprAnnotator = gprAnnotator;
   }

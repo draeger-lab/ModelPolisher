@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.polishing.MiscPolishing;
+import edu.ucsd.sbrg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -13,13 +13,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.TestUtils.initParameters;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class ModelPolishingTest {
 
+    private final Parameters parameters = initParameters();
+
     /**
-     * Test that if an objective is set and it has flux objectives too, it won't be overwritten.
+     * Test that if an objective is set, and it has flux objectives too, it won't be overwritten.
      */
     @Test
     public void activeObjectiveRemainsUnchangedIfItHasFluxObjective() {
@@ -35,9 +37,9 @@ public class ModelPolishingTest {
         m.createReaction("objective_reaction1");
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters(Map.of("FLUX_OBJECTIVES", " objective_reaction1 "));
+        var parameters = initParameters(Map.of("FLUX_OBJECTIVES", " objective_reaction1 "));
 
-        var polishing = new MiscPolishing(m, false);
+        var polishing = new MiscPolishing(m, false, parameters);
         polishing.polish();
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
@@ -64,10 +66,10 @@ public class ModelPolishingTest {
         m.createReaction("objective_reaction2");
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters(Map.of("FLUX_OBJECTIVES",
+        var parameters = initParameters(Map.of("FLUX_OBJECTIVES",
                 " objective_reaction1:objective_reaction2 "));
 
-        var polishing = new MiscPolishing(m, false);
+        var polishing = new MiscPolishing(m, false, parameters);
         polishing.polish();
 
         assertEquals("obj3", fbcPlugin.getActiveObjective());
@@ -104,9 +106,7 @@ public class ModelPolishingTest {
 
         m.createReaction("yadda_Biomass_yadda");
 
-        initParameters();
-
-        var polishing = new MiscPolishing(m, false);
+        var polishing = new MiscPolishing(m, false, parameters);
         polishing.polish();
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
@@ -129,13 +129,11 @@ public class ModelPolishingTest {
         var m = new Model(3,2);
         var fbcPlugin = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
 
-        initParameters();
-
         var o1 = fbcPlugin.createObjective("obj1");
         fbcPlugin.setActiveObjective(o1);
         // o1.setListOfFluxObjectives(new ListOf<>());
 
-        var polishing = new MiscPolishing(m, false);
+        var polishing = new MiscPolishing(m, false, parameters);
         polishing.polish();
 
         assertEquals(0, fbcPlugin.getObjectiveCount());

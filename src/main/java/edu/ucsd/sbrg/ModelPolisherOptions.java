@@ -105,7 +105,7 @@ public interface ModelPolisherOptions extends KeyProvider {
     new Option<>("DOCUMENT_NOTES_FILE", File.class, MESSAGES.getString("DOC_NOTES_DESC"));
   /**
    * This option allows you to define the title of the SBML document's
-   * description and hence the head line when the file is displayed in a web
+   * description and hence the headline when the file is displayed in a web
    * browser.
    */
   @SuppressWarnings("unchecked")

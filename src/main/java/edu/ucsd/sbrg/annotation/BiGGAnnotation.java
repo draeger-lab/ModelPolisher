@@ -73,8 +73,10 @@ public class BiGGAnnotation {
    * Variable tracking gene product count for progress bar, as it changes dynamically during processing
    */
   private int initialGeneProducts;
+  private final Parameters parameters;
 
-  public BiGGAnnotation() {
+  public BiGGAnnotation(Parameters parameters) {
+      this.parameters = parameters;
   }
   
 
@@ -106,7 +108,7 @@ public class BiGGAnnotation {
     // Process replacements for placeholders in the model notes
     Map<String, String> replacements = processReplacements(model);
     // Annotate the model with general information
-    ModelAnnotation modelAnnotation = new ModelAnnotation(model);
+    ModelAnnotation modelAnnotation = new ModelAnnotation(model, parameters);
     modelAnnotation.annotate();
     // Annotate various components of the model
     annotatePublications(model);
@@ -144,8 +146,6 @@ public class BiGGAnnotation {
     String id = model.getId();
     // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
     String organism = BiGGDB.getOrganism(id).orElse("");
-    // Access the current parameters instance
-    Parameters parameters = Parameters.get();
     // Retrieve and process the document title pattern by replacing placeholders
     String name = parameters.documentTitlePattern();
     name = name.replace("[biggId]", id);
@@ -176,7 +176,6 @@ public class BiGGAnnotation {
    * @throws XMLStreamException If there is an error processing the XML content of the notes.
    */
   private void appendNotes(SBMLDocument doc, Map<String, String> replacements) throws IOException, XMLStreamException {
-    Parameters parameters = Parameters.get();
     String modelNotesFile = "ModelNotes.html";
     String documentNotesFile = "SBMLDocumentNotes.html";
     
@@ -326,7 +325,7 @@ public class BiGGAnnotation {
   private void annotateListOfSpecies(Model model) {
     for (Species species : model.getListOfSpecies()) {
       progress.DisplayBar("Annotating Species (3/5)  ");
-      SpeciesAnnotation speciesAnnotation = new SpeciesAnnotation(species);
+      SpeciesAnnotation speciesAnnotation = new SpeciesAnnotation(species, parameters);
       speciesAnnotation.annotate();
     }
   }
@@ -388,7 +387,7 @@ public class BiGGAnnotation {
   private void annotateListOfReactions(Model model) {
     for (Reaction reaction : model.getListOfReactions()) {
       progress.DisplayBar("Annotating Reactions (4/5)  ");
-      ReactionAnnotation reactionAnnotation = new ReactionAnnotation(reaction);
+      ReactionAnnotation reactionAnnotation = new ReactionAnnotation(reaction, parameters);
       reactionAnnotation.annotate();
     }
   }
@@ -420,7 +419,7 @@ public class BiGGAnnotation {
       // Iterate over each gene product and annotate it
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
         progress.DisplayBar("Annotating Gene Products (5/5)  ");
-        GeneProductAnnotation geneProductAnnotation = new GeneProductAnnotation(geneProduct, gprAnnotator);
+        GeneProductAnnotation geneProductAnnotation = new GeneProductAnnotation(geneProduct, gprAnnotator, parameters);
         geneProductAnnotation.annotate();
       }
     }

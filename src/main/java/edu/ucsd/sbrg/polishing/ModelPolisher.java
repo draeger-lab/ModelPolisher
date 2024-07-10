@@ -29,7 +29,6 @@ import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -56,8 +55,11 @@ public class ModelPolisher {
    * Bundle for ModelPolisher logger messages
    */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private final Parameters parameters;
 
-  public ModelPolisher() {}
+  public ModelPolisher(Parameters parameters) {
+      this.parameters = parameters;
+  }
 
   private final List<ProgressObserver> observers = new ArrayList<>();
 
@@ -142,7 +144,7 @@ public class ModelPolisher {
     boolean strict = polishListOfReactions(model);
     
     // Perform final polishing adjustments based on the strictness of the reactions.
-    var modelPolishing = new MiscPolishing(model, strict, observers);
+    var modelPolishing = new MiscPolishing(model, strict, observers, parameters);
     modelPolishing.polish();
   }
 
@@ -239,7 +241,7 @@ public class ModelPolisher {
         }
         iterator.remove();
       } else {
-        var reactionPolishing = new ReactionPolishing(reaction, gpaPolisher);
+        var reactionPolishing = new ReactionPolishing(reaction, gpaPolisher, parameters);
         reactionPolishing.polish();
         // TODO: das hier sollte nicht in
         strict &= reactionPolishing.checkReactionStrictness();

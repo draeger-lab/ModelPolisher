@@ -5,16 +5,16 @@ import org.sbml.jsbml.SBMLDocument;
 
 public class ModelAnnotator {
 
-    private final Parameters params;
+    private final Parameters parameters;
 
-    public ModelAnnotator() {
-        this.params = Parameters.get();
+    public ModelAnnotator(Parameters parameters) {
+        this.parameters = parameters;
     }
 
     public void annotate(SBMLDocument doc) {
         // Annotate the document if the parameters specify
-        if (params.annotateWithBiGG()) {
-            BiGGAnnotation annotation = new BiGGAnnotation();
+        if (parameters.annotateWithBiGG()) {
+            BiGGAnnotation annotation = new BiGGAnnotation(parameters);
             annotation.annotate(doc);
         }
     }

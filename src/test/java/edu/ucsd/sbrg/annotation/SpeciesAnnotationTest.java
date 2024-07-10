@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.annotation;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,11 @@ import java.util.Set;
 
 import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class SpeciesAnnotationTest extends BiGGDBContainerTest {
+
+    private final Parameters parameters = initParameters();
 
     @BeforeEach
     public void init() {
@@ -26,7 +30,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
         var s = m.createSpecies("atp");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        var annotator = new SpeciesAnnotation(s);
+        var annotator = new SpeciesAnnotation(s, parameters);
         annotator.annotate();
 
         assertEquals("atp", s.getId());
@@ -36,7 +40,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
                 "https://identifiers.org/bigg.metabolite/atp");
-        assertEquals(null, sFbcPlugin.getChemicalFormula());
+        assertNull(sFbcPlugin.getChemicalFormula());
     }
 
     @Test
@@ -44,7 +48,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
         var m = new Model(3, 2);
         var s = m.createSpecies("atp_c");
 
-        var annotator = new SpeciesAnnotation(s);
+        var annotator = new SpeciesAnnotation(s, parameters);
         annotator.annotate();
 
         assertEquals("atp_c", s.getId());
@@ -67,7 +71,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
         cvTerm.addResource("http://identifiers.org/reactome.compound/113592");
         s.addCVTerm(cvTerm);
 
-        var annotator = new SpeciesAnnotation(s);
+        var annotator = new SpeciesAnnotation(s, parameters);
         annotator.annotate();
 
         assertEquals("big_chungus", s.getId());
@@ -86,7 +90,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
                 "Expected uris are not present.");
     }
 
-    private static Set<String> expectedATPAnnotations = Set.of(
+    private static final Set<String> expectedATPAnnotations = Set.of(
             "https://identifiers.org/bigg.metabolite/atp",
             "https://identifiers.org/biocyc/META:ATP",
             "https://identifiers.org/chebi/CHEBI:10789",
@@ -119,8 +123,8 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
 
     /**
      * Note this serves to document the behaviour discussed in
-     * https://github.com/draeger-lab/ModelPolisher/issues/89
-     *
+     * <a href="https://github.com/draeger-lab/ModelPolisher/issues/89">...</a>
+     * <p>
      * The annotations as are should likely not be considered correct.
      */
     @Test
@@ -129,13 +133,13 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
         var s = m.createSpecies("h2o");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        var annotator = new SpeciesAnnotation(s);
+        var annotator = new SpeciesAnnotation(s, parameters);
         annotator.annotate();
 
         assertEquals("h2o", s.getId());
         assertEquals("H2O H2O", s.getName());
         assertEquals("SBO:0000240", s.getSBOTermID());
-        assertEquals(null, sFbcPlugin.getChemicalFormula());
+        assertNull(sFbcPlugin.getChemicalFormula());
         assertCVTermsArePresent(s,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
@@ -216,7 +220,7 @@ public class SpeciesAnnotationTest extends BiGGDBContainerTest {
 
 
         // new SpeciesAnnotation(s1).annotate();
-        new SpeciesAnnotation(s2).annotate();
+        new SpeciesAnnotation(s2, parameters).annotate();
 //
 //        assertEquals(1, s1.getCVTermCount());
 //        assertEquals(29, s1.getCVTerm(0).getNumResources());

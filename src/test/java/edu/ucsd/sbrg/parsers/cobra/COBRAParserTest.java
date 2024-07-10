@@ -23,10 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
     @Test
     public void parsingDoesNotThrowErrors() {
-        initParameters();
+        var parameters = initParameters();
         var recon = new File(COBRAParserTest.class.getResource("Recon3D.mat").getFile());
         try {
-            COBRAParser.read(recon);
+            new COBRAParser(parameters).read(recon);
             assertTrue(true);
         } catch (IOException e) {
             e.printStackTrace();

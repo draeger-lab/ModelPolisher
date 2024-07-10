@@ -43,16 +43,19 @@ public class MiscPolishing {
   private final Model model;
 
   private boolean strict;
+  private final Parameters parameters;
 
-  public MiscPolishing(Model model, boolean strict, List<ProgressObserver> observers) {
+  public MiscPolishing(Model model, boolean strict, List<ProgressObserver> observers, Parameters parameters) {
     this.model = model;
     this.strict = strict;
     this.observers = observers;
+    this.parameters = parameters;
   }
 
-  public MiscPolishing(Model model, boolean strict) {
+  public MiscPolishing(Model model, boolean strict, Parameters parameters) {
     this.model = model;
     this.strict = strict;
+    this.parameters = parameters;
   }
 
 
@@ -136,7 +139,7 @@ public class MiscPolishing {
         if (!objective.isSetListOfFluxObjectives()) {
           Model model = modelPlug.getParent();
           strict &= SBMLFix.fixObjective(model.getId(), model.getListOfReactions(), modelPlug,
-            Parameters.get().fluxCoefficients(), Parameters.get().fluxObjectives());
+            parameters.fluxCoefficients(), parameters.fluxObjectives());
         }
         if (objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().isEmpty()) {
           polishListOfFluxObjectives(objective);

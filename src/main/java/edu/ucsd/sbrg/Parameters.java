@@ -18,11 +18,8 @@ public class Parameters {
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
-   * Singleton for ModelPolisher parameters
-   */
-  static Parameters parameters;
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+
   /**
    * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
    */
@@ -106,59 +103,14 @@ public class Parameters {
 
 
   /**
-   * Constructor for non testing code path
-   * 
-   * @param args
-   *        SBProperties from {@link Parameters#init(SBProperties)}
+   * Constructor for non-testing code path
+   *
    * @throws IllegalArgumentException
    *         propagated from {@link Parameters#initParameters(SBProperties)}
    */
-  private Parameters(SBProperties args) throws IllegalArgumentException {
+  public Parameters(SBProperties args) throws IllegalArgumentException {
     super();
     initParameters(args);
-  }
-
-
-  /**
-   * Initializes parameters from commandline arguments, if they are not yet present, else simply returns the initialized
-   * instance.
-   * Prefer {@link Parameters#get()} to get an initialized instance
-   *
-   * @param args
-   *        {@link SBProperties} file with commandline arguments stored
-   * @return Initialized {@link Parameters}
-   * @throws IllegalArgumentException
-   *         propagated from {@link Parameters (SBProperties)}
-   */
-  static Parameters init(SBProperties args) throws IllegalArgumentException {
-    if (parameters == null) {
-      parameters = new Parameters(args);
-    }
-    return parameters;
-  }
-
-
-  /**
-   * Returns initialized {@link Parameters} instance. Throws {@link IllegalStateException} if Parameters have not been
-   * initialized
-   *
-   * @return Initialized {@link Parameters} instance
-   */
-  public static Parameters get() {
-    if (parameters != null) {
-      return parameters;
-    } else {
-      // this should not happen, abort
-      throw new IllegalStateException(MESSAGES.getString("PARAM_STATE_INVALID"));
-    }
-  }
-
-
-  /**
-   * @return Parameter set usable for testing, initialized with defaults, all {@link File}s are {@code null}
-   */
-  public static Parameters initDefaults() {
-    return new Parameters();
   }
 
 

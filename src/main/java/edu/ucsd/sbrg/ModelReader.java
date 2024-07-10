@@ -28,6 +28,11 @@ public class ModelReader {
      * A {@link Logger} for this class.
      */
     private static final Logger logger = Logger.getLogger(ModelReader.class.getName());
+    private final Parameters parameters;
+
+    public ModelReader(Parameters parameters) {
+        this.parameters = parameters;
+    }
 
 
     public SBMLDocument read(File input) throws IOException, XMLStreamException {
@@ -50,7 +55,7 @@ public class ModelReader {
 
         // Determine the file type and parse accordingly
         if (fileType.equals(SBMLFileUtils.FileType.MAT_FILE)) {
-            doc = COBRAParser.read(input);
+            doc = new COBRAParser(parameters).read(input);
         } else if (fileType.equals(SBMLFileUtils.FileType.JSON_FILE)) {
             doc = JSONParser.read(input);
         } else {

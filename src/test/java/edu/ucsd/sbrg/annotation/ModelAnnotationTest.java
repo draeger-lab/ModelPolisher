@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -13,13 +14,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ModelAnnotationTest extends BiGGDBContainerTest {
 
+    private final Parameters parameters = initParameters();
+
     @Test
     public void basicModelAnnotation() {
         initParameters(Map.of(
                 ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
                 "true"));
         var m = new Model("iJO1366", 3,2);
-        var annotater = new ModelAnnotation(m);
+        var annotater = new ModelAnnotation(m, parameters);
 
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());

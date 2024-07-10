@@ -52,12 +52,14 @@ public class COBRAParser {
    */
   private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private static MatlabFields matlabFields;
+  private final Parameters parameters;
 
   /**
    *
    */
-  private COBRAParser() {
+  public COBRAParser(Parameters parameters) {
     super();
+    this.parameters = parameters;
   }
 
 
@@ -66,8 +68,8 @@ public class COBRAParser {
    * @return
    * @throws IOException
    */
-  public static SBMLDocument read(File matFile) throws IOException {
-    COBRAParser parser = new COBRAParser();
+  public SBMLDocument read(File matFile) throws IOException {
+    COBRAParser parser = new COBRAParser(parameters);
     return parser.parse(matFile);
   }
 
@@ -245,7 +247,7 @@ public class COBRAParser {
         if (model.getReaction(i) == null) {
           logger.severe(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
-          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, Parameters.get().omitGenericTerms());
+          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, parameters.omitGenericTerms());
         }
       }
     });

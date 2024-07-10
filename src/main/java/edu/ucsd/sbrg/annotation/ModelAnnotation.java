@@ -23,9 +23,11 @@ import java.util.regex.Pattern;
 public class ModelAnnotation {
 
   private final Model model;
+  private final Parameters parameters;
 
-  public ModelAnnotation(Model model) {
+  public ModelAnnotation(Model model, Parameters parameters) {
     this.model = model;
+    this.parameters = parameters;
   }
 
 
@@ -82,7 +84,7 @@ public class ModelAnnotation {
       term.addResource(Registry.createShortURI("refseq:" + accession));
     } else {
       // Check if non-MIRIAM URIs are allowed
-      if (Parameters.get().includeAnyURI()) {
+      if (parameters.includeAnyURI()) {
         // Prepare a pattern matcher for genome assembly accession numbers
         Matcher genomeAssemblyMatcher = Pattern.compile("^GC[AF]_[0-9]{9}\\.[0-9]+$").matcher(accession);
         if (genomeAssemblyMatcher.matches()) {

@@ -36,18 +36,21 @@ public class SpeciesAnnotation extends CVTermAnnotation {
   /**
    * A {@link Logger} for this class.
    */
-  static final transient Logger logger = Logger.getLogger(SpeciesAnnotation.class.getName());
+  static final Logger logger = Logger.getLogger(SpeciesAnnotation.class.getName());
   /**
    * Localization support.
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * Instance of chemical species to annotate
    */
   private final Species species;
+  private final Parameters parameters;
 
-  public SpeciesAnnotation(Species species) {
+  public SpeciesAnnotation(Species species, Parameters parameters) {
+    super(parameters);
     this.species = species;
+    this.parameters = parameters;
   }
 
 
@@ -57,7 +60,7 @@ public class SpeciesAnnotation extends CVTermAnnotation {
    * 2. Assigns an SBO (Systems Biology Ontology) term to the species based on the BiGGId.
    * 3. Adds additional annotations to the species, such as database cross-references.
    * 4. Sets the chemical formula and charge for the species using FBC (Flux Balance Constraints) extensions.
-   *
+   * <p>
    * The BiGGId used for these operations is either derived from the species' URI list or directly from its ID if available.
    */
   @Override
@@ -126,7 +129,6 @@ public class SpeciesAnnotation extends CVTermAnnotation {
    * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
   private void setSBOTerm(BiGGId biggId) {
-    Parameters parameters = Parameters.get();
     BiGGDB.getComponentType(biggId).ifPresentOrElse(type -> {
       switch (type) {
       case "metabolite":
@@ -178,7 +180,7 @@ public class SpeciesAnnotation extends CVTermAnnotation {
 
     String compartmentCode = biggId.getCompartmentCode();
     FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-    boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.equals("");
+    boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.isEmpty();
     if (!fbcSpecPlug.isSetChemicalFormula()) {
       Optional<String> chemicalFormula = Optional.empty();
       if (isBiGGModel) {

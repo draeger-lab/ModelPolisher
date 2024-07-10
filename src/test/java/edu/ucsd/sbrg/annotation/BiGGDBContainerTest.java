@@ -26,7 +26,7 @@ public abstract class BiGGDBContainerTest {
     @AfterClass
     public static void tearDown() {
         if (bigg != null) {
-                bigg.close();
+            bigg.close();
         }
     }
 }

@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -14,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class BiGGAnnotationTest extends BiGGDBContainerTest {
 
+    private final Parameters parameters = initParameters();
+
     @Test
     public void annotatePublication() {
         initParameters(Map.of(
@@ -24,7 +27,7 @@ public class BiGGAnnotationTest extends BiGGDBContainerTest {
         var sbml = new SBMLDocument(3, 2);
         var m = new Model("iJO1366", 3, 2);
         sbml.setModel(m);
-        var annotator = new BiGGAnnotation();
+        var annotator = new BiGGAnnotation(parameters);
 
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());

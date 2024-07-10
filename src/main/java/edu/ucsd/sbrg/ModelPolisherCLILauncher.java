@@ -70,6 +70,8 @@ public class ModelPolisherCLILauncher extends Launcher {
    */
   private static final Logger logger = Logger.getLogger(ModelPolisherCLILauncher.class.getName());
 
+  private Parameters parameters;
+
   /**
    * Entry point
    *
@@ -111,11 +113,17 @@ public class ModelPolisherCLILauncher extends Launcher {
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
 
-    initParameters(args);
+    try {
+        parameters = new Parameters(args);
+    } catch (IllegalArgumentException exc1) {
+      throw new IllegalArgumentException(exc1.getLocalizedMessage());
+    }
+    DBConfig.initBiGG(args, parameters.annotateWithBiGG());
+    DBConfig.initADB(args, parameters.addADBAnnotations());
 
     try {
-      var input = Parameters.get().input();
-      var output = Parameters.get().output();
+      var input = parameters.input();
+      var output = parameters.output();
 
       // Check if the input exists, throw an exception if it does not
       if (!input.exists()) {
@@ -133,7 +141,7 @@ public class ModelPolisherCLILauncher extends Launcher {
       // Ensure the output directory or file's parent directory exists
       SBMLFileUtils.checkCreateOutDir(output);
 
-      batchProcess(input, Parameters.get().output());
+      batchProcess(input, parameters.output());
 
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
@@ -147,22 +155,6 @@ public class ModelPolisherCLILauncher extends Launcher {
         AnnotateDB.close();
       }
     }
-  }
-
-  /**
-   * Initializes parameters and database connections
-   *
-   * @param args
-   *        Commandline arguments
-   */
-  private void initParameters(SBProperties args) {
-    try {
-      Parameters.init(args);
-    } catch (IllegalArgumentException exc) {
-      throw new IllegalArgumentException(exc.getLocalizedMessage());
-    }
-    DBConfig.initBiGG(args, Parameters.get().annotateWithBiGG());
-    DBConfig.initADB(args, Parameters.get().addADBAnnotations());
   }
 
 
@@ -201,23 +193,22 @@ public class ModelPolisherCLILauncher extends Launcher {
   private void processFile(File input, File output) throws XMLStreamException, IOException {
     long startTime = System.currentTimeMillis();
 
-    SBMLDocument doc = new ModelReader().read(input);
+    SBMLDocument doc = new ModelReader(parameters).read(input);
     if (doc == null) return;
 
     // Polish and annotate
-    var mp = new ModelPolisher();
+    var mp = new ModelPolisher(parameters);
     mp.addObserver(new PolisherProgressBar());
     // Polish the document
     mp.polish(doc);
 
-    var ma = new ModelAnnotator();
+    var ma = new ModelAnnotator(parameters);
     ma.annotate(doc);
 
-    new ModelWriter().write(doc, output, getVersionNumber());
+    new ModelWriter(parameters).write(doc, output, getVersionNumber());
 
-    Parameters params = Parameters.get();
-    if (params.SBMLValidation()) {
-      var mv = new ModelValidator();
+    if (parameters.SBMLValidation()) {
+      var mv = new ModelValidator(parameters);
       // use offline validation
       mv.validate(output, false);
     }

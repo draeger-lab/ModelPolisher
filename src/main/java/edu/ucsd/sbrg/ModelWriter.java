@@ -27,11 +27,14 @@ public class ModelWriter {
      * A {@link Logger} for this class.
      */
     private static final Logger logger = Logger.getLogger(ModelWriter.class.getName());
+    private final Parameters parameters;
+
+    public ModelWriter(Parameters parameters) {
+        this.parameters = parameters;
+    }
 
 
     public void write(SBMLDocument doc, File output, String modelPolisherVersion) throws IOException, XMLStreamException {
-        // Retrieve global parameters for the polishing process
-        Parameters parameters = Parameters.get();
         // Convert and write the document to JSON if specified
         if (parameters.writeJSON()) {
             String out = output.getAbsolutePath().replaceAll("\\.xml", ".json");
