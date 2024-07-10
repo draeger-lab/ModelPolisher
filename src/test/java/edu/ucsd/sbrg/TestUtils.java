@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg;
 
 import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.io.IOOptions;
 import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;

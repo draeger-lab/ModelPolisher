@@ -1,6 +1,7 @@
-package edu.ucsd.sbrg;
+package edu.ucsd.sbrg.io;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.parsers.cobra.COBRAParser;
 import edu.ucsd.sbrg.parsers.json.JSONParser;
 import edu.ucsd.sbrg.util.SBMLFileUtils;

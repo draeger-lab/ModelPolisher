@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.parsers.json.models.Compartments;
 import edu.ucsd.sbrg.parsers.json.models.Gene;
 import edu.ucsd.sbrg.parsers.json.models.Metabolite;

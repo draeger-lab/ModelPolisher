@@ -1,7 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;

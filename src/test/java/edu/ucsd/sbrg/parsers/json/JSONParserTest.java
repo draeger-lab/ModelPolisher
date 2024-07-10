@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.parsers.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.parsers.json.models.Compartments;
 import edu.ucsd.sbrg.parsers.json.models.Metabolite;
 import edu.ucsd.sbrg.parsers.json.models.Reaction;

@@ -2,10 +2,10 @@ package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.db.AnnotateDB;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.db.adb.AnnotateDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -22,8 +22,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_METABOLITE;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_REACTION;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_METABOLITE;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_REACTION;
 import static java.text.MessageFormat.format;
 
 /**
@@ -96,7 +96,7 @@ public abstract class CVTermAnnotation {
     Set<String> annotations = new HashSet<>();
     boolean isReaction = node instanceof Reaction;
     if (isReaction) {
-      boolean isBiGGReaction = QueryOnce.isReaction(biggId.getAbbreviation());
+      boolean isBiGGReaction = MemorizedQuery.isReaction(biggId.getAbbreviation());
       // using BiGG Database
       if (isBiGGReaction) {
         annotations.add(Registry.createURI("bigg.reaction", biggId));
@@ -109,7 +109,7 @@ public abstract class CVTermAnnotation {
         annotations.addAll(adbAnnotations);
       }
     } else {
-      boolean isBiGGMetabolite = QueryOnce.isMetabolite(biggId.getAbbreviation());
+      boolean isBiGGMetabolite = MemorizedQuery.isMetabolite(biggId.getAbbreviation());
       // using BiGG Database
       if (isBiGGMetabolite) {
         annotations.add(Registry.createURI("bigg.metabolite", biggId));

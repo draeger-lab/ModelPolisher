@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.db;
 
 import edu.ucsd.sbrg.annotation.BiGGDBContainerTest;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.db;
+package edu.ucsd.sbrg.db.adb;
 
 public final class AnnotateDBContract {
 

@@ -18,6 +18,9 @@ import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 
 import edu.ucsd.sbrg.annotation.ModelAnnotator;
+import edu.ucsd.sbrg.io.IOOptions;
+import edu.ucsd.sbrg.io.ModelReader;
+import edu.ucsd.sbrg.io.ModelWriter;
 import edu.ucsd.sbrg.polishing.ModelPolisher;
 import edu.ucsd.sbrg.util.*;
 import org.sbml.jsbml.SBMLDocument;
@@ -28,10 +31,10 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.db.ADBOptions;
-import edu.ucsd.sbrg.db.AnnotateDB;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.BiGGDBOptions;
+import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
+import edu.ucsd.sbrg.db.adb.AnnotateDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
 
 /**
@@ -241,7 +244,7 @@ public class ModelPolisherCLILauncher extends Launcher {
     List<Class<? extends KeyProvider>> options = new LinkedList<>();
     options.add(LogOptions.class);
     options.add(BiGGDBOptions.class);
-    options.add(ADBOptions.class);
+    options.add(AnnotateDBOptions.class);
     options.add(ModelPolisherOptions.class);
     options.add(IOOptions.class);
     return options;
@@ -266,7 +269,7 @@ public class ModelPolisherCLILauncher extends Launcher {
   public List<Class<? extends KeyProvider>> getInteractiveOptions() {
     List<Class<? extends KeyProvider>> options = new LinkedList<>();
     options.add(BiGGDBOptions.class);
-    options.add(ADBOptions.class);
+    options.add(AnnotateDBOptions.class);
     options.add(ModelPolisherOptions.class);
     return options;
   }

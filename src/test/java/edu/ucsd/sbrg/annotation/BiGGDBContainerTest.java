@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation;
 
-import edu.ucsd.sbrg.db.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 
 import org.junit.AfterClass;
 import org.testcontainers.containers.GenericContainer;

@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
@@ -47,7 +47,7 @@ public class ModelAnnotation {
     BiGGDB.getTaxonId(id).ifPresent(
       taxonId -> model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON, Registry.createURI("taxonomy", taxonId))));
     // Check if the model is recognized in the database and add specific annotations
-    if (QueryOnce.isModel(id)) {
+    if (MemorizedQuery.isModel(id)) {
       addBiGGModelAnnotations();
     }
     // Set the model's MetaId to its ID if MetaId is not set and there are existing CVTerms

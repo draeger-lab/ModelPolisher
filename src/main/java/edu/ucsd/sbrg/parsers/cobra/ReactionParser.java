@@ -25,7 +25,7 @@ import org.sbml.jsbml.util.ModelBuilder;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.Cell;
 import us.hebi.matlab.mat.types.Matrix;

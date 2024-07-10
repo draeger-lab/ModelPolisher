@@ -5,9 +5,9 @@ import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.SBO;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 
 /**
  * This class is responsible for annotating a specific compartment within an SBML model using data from the BiGG database.
@@ -37,7 +37,7 @@ public class CompartmentAnnotation {
    */
   public void annotate() {
     BiGGId biggId = new BiGGId(compartment.getId());
-    if (QueryOnce.isCompartment(biggId.getAbbreviation())) {
+    if (MemorizedQuery.isCompartment(biggId.getAbbreviation())) {
       compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("bigg.compartment", biggId)));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {

@@ -11,7 +11,7 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Unit;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 
 /**
  * This class is responsible for polishing the properties of a compartment in an SBML model to ensure

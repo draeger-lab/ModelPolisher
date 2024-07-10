@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg;
+package edu.ucsd.sbrg.db.bigg;
 
 import static java.text.MessageFormat.format;
 

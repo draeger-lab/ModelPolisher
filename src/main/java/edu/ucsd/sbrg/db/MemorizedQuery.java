@@ -1,9 +1,11 @@
 package edu.ucsd.sbrg.db;
 
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class QueryOnce {
+public class MemorizedQuery {
 
   private static Set<String> BiGGDBCompartments = new LinkedHashSet<>();
   private static Set<String> BiGGDBDataSources = new LinkedHashSet<>();

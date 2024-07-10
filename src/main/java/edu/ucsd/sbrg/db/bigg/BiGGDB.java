@@ -12,11 +12,11 @@
  * <http://www.gnu.org/licenses/lgpl-3.0-standalone.html>.
  * ---------------------------------------------------------------------
  */
-package edu.ucsd.sbrg.db;
+package edu.ucsd.sbrg.db.bigg;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.PostgreSQLConnector;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.util.Pair;
 
@@ -26,9 +26,9 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Column.*;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.*;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.Table.*;
+import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.Column.*;
+import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.*;
+import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.Table.*;
 import static java.text.MessageFormat.format;
 import static org.sbml.jsbml.util.Pair.pairOf;
 

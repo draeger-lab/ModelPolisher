@@ -3,10 +3,10 @@ package edu.ucsd.sbrg.annotation;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.SBO;
 import org.sbml.jsbml.Species;
@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.annotation.BiGGAnnotation.getBiGGIdFromResources;
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_SPECIES;
+import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.TYPE_SPECIES;
 import static java.text.MessageFormat.format;
 
 /**
@@ -88,7 +88,7 @@ public class SpeciesAnnotation extends CVTermAnnotation {
     Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
     // Check if the created BiGGId is valid, if not, try to find a BiGGId from annotations
     Optional<String> id = metaboliteId.flatMap(biggId -> {
-      boolean isBiGGid = QueryOnce.isMetabolite(biggId.getAbbreviation());
+      boolean isBiGGid = MemorizedQuery.isMetabolite(biggId.getAbbreviation());
       List<String> resources = new ArrayList<>();
       if (!isBiGGid) {
         // Collect all resources from CVTerms that qualify as BQB_IS
@@ -176,7 +176,7 @@ public class SpeciesAnnotation extends CVTermAnnotation {
    */
   @SuppressWarnings("deprecation")
   private void FBCSetFormulaCharge(BiGGId biggId) {
-    boolean isBiGGModel = species.getModel() !=null && QueryOnce.isModel(species.getModel().getId());
+    boolean isBiGGModel = species.getModel() !=null && MemorizedQuery.isModel(species.getModel().getId());
 
     String compartmentCode = biggId.getCompartmentCode();
     FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);

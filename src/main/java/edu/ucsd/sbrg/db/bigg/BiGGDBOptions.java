@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.db;
+package edu.ucsd.sbrg.db.bigg;
 
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;

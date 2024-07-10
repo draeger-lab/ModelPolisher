@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.parsers.cobra;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import us.hebi.matlab.mat.types.Cell;

@@ -2,10 +2,10 @@ package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
@@ -85,7 +85,7 @@ public class ReactionAnnotation extends CVTermAnnotation {
     String id = reaction.getId();
     // Check if the reaction ID matches the expected BiGG ID format and exists in the database
     boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
-            && QueryOnce.isReaction(id);
+            && MemorizedQuery.isReaction(id);
     if (!isBiGGid) {
       // Extract BiGG IDs from annotations if the direct ID check fails
       Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
@@ -221,7 +221,7 @@ public class ReactionAnnotation extends CVTermAnnotation {
    */
   private void parseSubsystems(BiGGId biggId) {
     Model model = reaction.getModel();
-    boolean isBiGGModel = QueryOnce.isModel(model.getId());
+    boolean isBiGGModel = MemorizedQuery.isModel(model.getId());
     List<String> subsystems;
     if (isBiGGModel) {
       subsystems = BiGGDB.getSubsystems(model.getId(), biggId.getAbbreviation());

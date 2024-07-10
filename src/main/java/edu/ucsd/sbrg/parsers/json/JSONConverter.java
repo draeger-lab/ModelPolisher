@@ -34,7 +34,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.parsers.json.models.Compartments;
 import edu.ucsd.sbrg.parsers.json.models.Gene;
 import edu.ucsd.sbrg.parsers.json.models.Metabolite;

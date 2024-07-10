@@ -2,8 +2,8 @@ package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.bigg.BiGGId;
-import edu.ucsd.sbrg.db.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GeneProductReferencesAnnotator;
 import org.sbml.jsbml.CVTerm;
@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.db.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
+import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
 import static java.text.MessageFormat.format;
 
 /**

@@ -17,7 +17,7 @@ import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.CVTerm;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.miriam.models.Miriam;
 
 /**

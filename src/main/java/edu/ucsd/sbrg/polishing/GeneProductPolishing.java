@@ -3,7 +3,7 @@ package edu.ucsd.sbrg.polishing;
 import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 
 /**
  * This class is responsible for polishing GeneProduct instances by processing their annotations and adjusting their identifiers and names.

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.db;
+package edu.ucsd.sbrg.db.adb;
 
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
@@ -8,7 +8,7 @@ import de.zbit.util.prefs.Option;
  * 
  * @author Kaustubh Trivedi
  */
-public interface ADBOptions extends KeyProvider {
+public interface AnnotateDBOptions extends KeyProvider {
 
   /**
    *

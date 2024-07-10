@@ -1,6 +1,10 @@
 package edu.ucsd.sbrg.db;
 
 import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
+import edu.ucsd.sbrg.db.adb.AnnotateDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 
 
 /**
@@ -31,11 +35,11 @@ public class DBConfig {
    * @param args Command line arguments containing database connection parameters.
    */
   private static void initADB(SBProperties args) {
-    String name = args.getProperty(ADBOptions.DBNAME);
-    String host = args.getProperty(ADBOptions.HOST);
-    String passwd = args.getProperty(ADBOptions.PASSWD);
-    String port = args.getProperty(ADBOptions.PORT);
-    String user = args.getProperty(ADBOptions.USER);
+    String name = args.getProperty(AnnotateDBOptions.DBNAME);
+    String host = args.getProperty(AnnotateDBOptions.HOST);
+    String passwd = args.getProperty(AnnotateDBOptions.PASSWD);
+    String port = args.getProperty(AnnotateDBOptions.PORT);
+    String user = args.getProperty(AnnotateDBOptions.USER);
     boolean run = iStrNotNullOrEmpty(name);
     run &= iStrNotNullOrEmpty(host);
     run &= iStrNotNullOrEmpty(port);

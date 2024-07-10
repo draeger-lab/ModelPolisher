@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation;
 
-import edu.ucsd.sbrg.db.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;

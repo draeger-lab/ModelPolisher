@@ -24,7 +24,7 @@ import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import edu.ucsd.sbrg.bigg.BiGGId;
+import edu.ucsd.sbrg.db.bigg.BiGGId;
 
 /**
  * The {@code GPRParser} class provides methods to parse gene product associations (GPRs) from gene reaction rules

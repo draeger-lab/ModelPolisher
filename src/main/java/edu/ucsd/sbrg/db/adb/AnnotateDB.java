@@ -1,6 +1,7 @@
-package edu.ucsd.sbrg.db;
+package edu.ucsd.sbrg.db.adb;
 
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.db.PostgreSQLConnector;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,18 +11,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_METABOLITE;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.BIGG_REACTION;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.NAMESPACE;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.SOURCE_NAMESPACE;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.SOURCE_TERM;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.TARGET_NAMESPACE;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.TARGET_TERM;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Column.URLPATTERN;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.METABOLITE_PREFIX;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.REACTION_PREFIX;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Table.ADB_COLLECTION;
-import static edu.ucsd.sbrg.db.AnnotateDBContract.Constants.Table.MAPPING_VIEW;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_METABOLITE;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_REACTION;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.NAMESPACE;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.SOURCE_NAMESPACE;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.SOURCE_TERM;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.TARGET_NAMESPACE;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.TARGET_TERM;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Column.URLPATTERN;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.METABOLITE_PREFIX;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.REACTION_PREFIX;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Table.ADB_COLLECTION;
+import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Table.MAPPING_VIEW;
 
 /**
  * @author Kaustubh Trivedi

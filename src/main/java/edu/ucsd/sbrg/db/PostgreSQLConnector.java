@@ -14,7 +14,7 @@ import static java.text.MessageFormat.format;
 /**
  * Created by mephenor on 05.05.17.
  */
-class PostgreSQLConnector {
+public class PostgreSQLConnector {
 
   /**
    * A {@link Logger} for this class.
@@ -50,7 +50,7 @@ class PostgreSQLConnector {
    * @param password
    * @param dbName
    */
-  PostgreSQLConnector(String host, int port, String user, String password, String dbName) {
+  public PostgreSQLConnector(String host, int port, String user, String password, String dbName) {
     password = password == null ? "" : password;
     Properties properties = new Properties();
     properties.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");

@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.io.IOOptions;
 
 /**
  * Helper class to store all parameters for running ModelPolisher in batch

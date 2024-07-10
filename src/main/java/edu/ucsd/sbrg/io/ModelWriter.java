@@ -1,7 +1,9 @@
-package edu.ucsd.sbrg;
+package edu.ucsd.sbrg.io;
 
 import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.parsers.json.JSONConverter;
 import edu.ucsd.sbrg.util.CombineArchive;
 import org.sbml.jsbml.SBMLDocument;

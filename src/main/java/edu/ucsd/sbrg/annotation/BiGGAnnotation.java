@@ -25,6 +25,7 @@ import javax.swing.tree.TreeNode;
 import javax.xml.stream.XMLStreamException;
 
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GeneProductReferencesAnnotator;
 import org.sbml.jsbml.CVTerm;
@@ -43,9 +44,8 @@ import org.sbml.jsbml.util.Pair;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.progressbar.AbstractProgressBar;
 import de.zbit.util.progressbar.ProgressBar;
-import edu.ucsd.sbrg.db.BiGGDB;
-import edu.ucsd.sbrg.db.BiGGDBContract;
-import edu.ucsd.sbrg.db.QueryOnce;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDBContract;
 
 
 /**
@@ -284,7 +284,7 @@ public class BiGGAnnotation {
   private void annotatePublications(Model model) {
     progress.DisplayBar("Annotating Publications (1/5)  ");
     String id = model.getId();
-    if (!QueryOnce.isModel(id)) {
+    if (!MemorizedQuery.isModel(id)) {
       return;
     }
     List<Pair<String, String>> publications = BiGGDB.getPublications(id);
@@ -367,7 +367,7 @@ public class BiGGAnnotation {
   private static Optional<String> getBiggIdFromParts(List<String> parts, String type) {
     String prefix = parts.get(0);
     String synonymId = parts.get(1);
-    if (QueryOnce.isDataSource(prefix)) {
+    if (MemorizedQuery.isDataSource(prefix)) {
       Optional<String> id = BiGGDB.getBiggIdFromSynonym(prefix, synonymId, type);
       if (id.isPresent()) {
         return id;
