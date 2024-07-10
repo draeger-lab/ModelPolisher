@@ -98,7 +98,7 @@ loadScripts(document, 'script');</script>
  the target directory.
  <p>
  This program became necessary as a temporary solution for invalid SBML models
- in BiGG database before a new version of <a href="../bigg/ModelPolisher.html" title="class in edu.ucsd.sbrg.bigg"><code>ModelPolisher</code></a> could be
+ in BiGG database before a new version of <a href="../ModelPolisherCLILauncher.html" title="class in edu.ucsd.sbrg"><code>ModelPolisherCLILauncher</code></a> could be
  released.
  <p>
  The methods in this class can also be used in other parts of ModelPolisher,
@@ -201,7 +201,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="batchProcess(java.io.File,java.io.File)">
 <h3>batchProcess</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">batchProcess</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;input,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">batchProcess</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;input,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;output)</span></div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -213,7 +213,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="fixGroups(org.sbml.jsbml.Model)">
 <h3>fixGroups</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixGroups</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixGroups</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Set group kind where required</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -224,7 +224,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.Model)">
 <h3>fixObjective</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Check for missing objective function.</div>
 <dl class="notes">
@@ -238,7 +238,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin)">
 <h3>fixObjective</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug)</span></div>
 <dl class="notes">
@@ -256,7 +256,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin,double[],java.lang.String[])">
 <h3>fixObjective</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug,
  double[]&nbsp;fluxCoefficients,
@@ -275,7 +275,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="fixSBML(java.io.File,java.io.File)">
 <h3>fixSBML</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixSBML</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;in,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixSBML</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;in,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;out)</span>
                     throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.xml/javax/xml/stream/XMLStreamException.html" title="class or interface in javax.xml.stream" class="external-link">XMLStreamException</a>,
 <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></span></div>
@@ -292,7 +292,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="main(java.lang.String[])">
 <h3>main</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">main</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">main</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>args</code> - </dd>

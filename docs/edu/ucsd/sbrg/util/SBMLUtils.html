@@ -138,27 +138,10 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#clearGPRMap()" class="member-name-link">clearGPRMap</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Clears the geneProductReferences map, removing all entries.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createSubsystemLink(org.sbml.jsbml.Reaction,org.sbml.jsbml.ext.groups.Member)" class="member-name-link">createSubsystemLink</a><wbr>(org.sbml.jsbml.Reaction&nbsp;r,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createSubsystemLink(org.sbml.jsbml.Reaction,org.sbml.jsbml.ext.groups.Member)" class="member-name-link">createSubsystemLink</a><wbr>(org.sbml.jsbml.Reaction&nbsp;r,
  org.sbml.jsbml.ext.groups.Member&nbsp;member)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Establishes a link between a reaction and a subsystem member by setting the member's reference to the reaction.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#updateGeneProductReference(org.sbml.jsbml.ext.fbc.GeneProduct)" class="member-name-link">updateGeneProductReference</a><wbr>(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;gp)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Updates the reference of a gene product in the geneProductReferences map using the gene product's ID.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#updateReactionRef(java.lang.String,java.lang.String,org.sbml.jsbml.ext.fbc.FBCModelPlugin)" class="member-name-link">updateReactionRef</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;oldId,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;newId,
- org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcModelPlug)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Updates the reaction reference ID from an old ID to a new ID within the FluxObjectives of a given FBCModelPlugin.</div>
+<div class="block">Establishes a link between a reaction and a subsystem member by setting the member's reference to the reaction.</div>
 </div>
 </div>
 </div>
@@ -216,46 +199,9 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="updateGeneProductReference(org.sbml.jsbml.ext.fbc.GeneProduct)">
-<h3>updateGeneProductReference</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">updateGeneProductReference</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;gp)</span></div>
-<div class="block">Updates the reference of a gene product in the geneProductReferences map using the gene product's ID.
- If the gene product ID starts with "G_", it strips this prefix before updating.
- If the map is initially empty, it initializes the map with the current model's reactions.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>gp</code> - The GeneProduct whose reference needs to be updated.</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="clearGPRMap()">
-<h3>clearGPRMap</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">clearGPRMap</span>()</div>
-<div class="block">Clears the geneProductReferences map, removing all entries.</div>
-</section>
-</li>
-<li>
-<section class="detail" id="updateReactionRef(java.lang.String,java.lang.String,org.sbml.jsbml.ext.fbc.FBCModelPlugin)">
-<h3>updateReactionRef</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">updateReactionRef</span><wbr><span class="batchModeParameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;oldId,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;newId,
- org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcModelPlug)</span></div>
-<div class="block">Updates the reaction reference ID from an old ID to a new ID within the FluxObjectives of a given FBCModelPlugin.
- This method iterates through all objectives and their associated flux objectives in the model plugin,
- replacing the old reaction ID with the new one wherever found.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>oldId</code> - The old reaction ID to be replaced.</dd>
-<dd><code>newId</code> - The new reaction ID to replace the old one.</dd>
-<dd><code>fbcModelPlug</code> - The FBCModelPlugin containing the objectives and flux objectives to be updated.</dd>
-</dl>
-</section>
-</li>
-<li>
 <section class="detail" id="createSubsystemLink(org.sbml.jsbml.Reaction,org.sbml.jsbml.ext.groups.Member)">
 <h3>createSubsystemLink</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">createSubsystemLink</span><wbr><span class="batchModeParameters">(org.sbml.jsbml.Reaction&nbsp;r,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">createSubsystemLink</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;r,
  org.sbml.jsbml.ext.groups.Member&nbsp;member)</span></div>
 <div class="block">Establishes a link between a reaction and a subsystem member by setting the member's reference to the reaction.
  Additionally, it ensures that the reaction maintains a set of all members linked to it. If the set does not exist,
