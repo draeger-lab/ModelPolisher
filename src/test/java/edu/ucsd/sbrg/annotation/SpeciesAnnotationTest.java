@@ -1,7 +1,6 @@
-package edu.ucsd.sbrg.bigg.annotation;
+package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.TestUtils;
-import edu.ucsd.sbrg.annotation.SpeciesAnnotation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;

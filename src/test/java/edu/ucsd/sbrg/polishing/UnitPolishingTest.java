@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.progressbar.ProgressBar;
 import edu.ucsd.sbrg.polishing.UnitPolishing;

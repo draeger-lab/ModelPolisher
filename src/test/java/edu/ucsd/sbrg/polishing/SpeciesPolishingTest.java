@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.polishing.SpeciesPolishing;
 import org.junit.jupiter.api.Test;

@@ -16,6 +16,7 @@ package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.util.GeneProductAssociationsPolisher;
 import edu.ucsd.sbrg.util.ProgressInitialization;
 import edu.ucsd.sbrg.util.ProgressObserver;
 import edu.ucsd.sbrg.util.ProgressUpdate;
@@ -28,6 +29,7 @@ import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -54,11 +56,8 @@ public class ModelPolisher {
    * Bundle for ModelPolisher logger messages
    */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  private final Parameters params;
 
-  public ModelPolisher() {
-      this.params = Parameters.get();
-  }
+  public ModelPolisher() {}
 
   private final List<ProgressObserver> observers = new ArrayList<>();
 
@@ -139,6 +138,7 @@ public class ModelPolisher {
     new UnitPolishing(model, observers).polishListOfUnitDefinitions();
     polishListOfCompartments(model);
     polishListOfSpecies(model);
+    // TODO: strictness sollte losgelöst von dem Polishing bestimmt werden
     boolean strict = polishListOfReactions(model);
     
     // Perform final polishing adjustments based on the strictness of the reactions.
@@ -156,7 +156,7 @@ public class ModelPolisher {
     // Calculate the total number of tasks to initialize the progress bar.
     int count = 1 // Account for model properties
       // + model.getUnitDefinitionCount()
-    // TODO: see UnitPolishing TODO, why UnitDefinitionCount is replaced by 1
+      // TODO: see UnitPolishing TODO, why UnitDefinitionCount is replaced by 1
       + 1
       + model.getCompartmentCount()
       + model.getParameterCount()
@@ -215,16 +215,37 @@ public class ModelPolisher {
    * Polishes all reactions in the given SBML model. This method iterates through each reaction,
    * updates the progress display, and applies polishing operations defined in the ReactionPolishing class.
    * It also aggregates a strictness flag that indicates if all reactions conform to strict FBC (Flux Balance Constraints) standards.
-   * 
+   *
    * @param model The SBML Model containing the reactions to be polished.
    * @return true if all reactions are strictly defined according to FBC standards, false otherwise.
    */
   public boolean polishListOfReactions(Model model) {
     boolean strict = true;
-    for (var reaction : model.getListOfReactions()) {
+
+    var gpaPolisher = new GeneProductAssociationsPolisher();
+
+    var iterator = model.getListOfReactions().iterator();
+    while (iterator.hasNext()) {
+      var reaction = iterator.next();
       updateProgressObservers("Polishing Reactions (5/9)  ", reaction);
-      var reactionPolishing = new ReactionPolishing(reaction);
-      strict &= reactionPolishing.polish();
+
+      // remove reaction if ID is missing
+      String id = reaction.getId();
+      if (id.isEmpty()) {
+        if (reaction.isSetName()) {
+          logger.severe(format(MESSAGES.getString("REACTION_MISSING_ID"), reaction.getName()));
+        } else {
+          logger.severe(MESSAGES.getString("REACTION_MISSING_ID_NAME"));
+        }
+        iterator.remove();
+      } else {
+        var reactionPolishing = new ReactionPolishing(reaction, gpaPolisher);
+        reactionPolishing.polish();
+        // TODO: das hier sollte nicht in
+        strict &= reactionPolishing.checkReactionStrictness();
+      }
+
+
     }
     return strict;
   }

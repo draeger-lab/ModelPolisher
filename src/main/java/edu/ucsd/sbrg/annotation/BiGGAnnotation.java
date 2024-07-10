@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamException;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.util.GeneProductReferencesAnnotator;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
@@ -414,11 +415,12 @@ public class BiGGAnnotation {
         progress.setNumberOfTotalCalls(progress.getNumberOfTotalCalls() + changed - 50);
         progress.setCallNr(current);
       }
-      
+
+      var gprAnnotator = new GeneProductReferencesAnnotator();
       // Iterate over each gene product and annotate it
       for (GeneProduct geneProduct : fbcModelPlugin.getListOfGeneProducts()) {
         progress.DisplayBar("Annotating Gene Products (5/5)  ");
-        GeneProductAnnotation geneProductAnnotation = new GeneProductAnnotation(geneProduct);
+        GeneProductAnnotation geneProductAnnotation = new GeneProductAnnotation(geneProduct, gprAnnotator);
         geneProductAnnotation.annotate();
       }
     }

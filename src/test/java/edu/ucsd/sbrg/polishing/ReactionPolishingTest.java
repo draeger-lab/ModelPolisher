@@ -1,6 +1,7 @@
-package edu.ucsd.sbrg.bigg.polishing;
+package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.polishing.ReactionPolishing;
+import edu.ucsd.sbrg.util.GeneProductAssociationsPolisher;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
@@ -23,16 +24,22 @@ public class ReactionPolishingTest {
         var model = new Model(3, 2);
         var r = model.createReaction();
 
-        assertEquals(false, r.isSetId());
-        assertEquals(false, r.isSetName());
+        assertFalse(r.isSetId());
+        assertFalse(r.isSetName());
         assertEquals(1, model.getReactionCount());
 
-        var polishing = new ReactionPolishing(r);
-        boolean strict = polishing.polish();
+        var polisher = new ModelPolisher();
+        polisher.polishListOfReactions(model);
 
-        assertEquals(false, strict);
-        assertEquals(false, r.isSetId());
-        assertEquals(false, r.isSetName());
+        var gpaPolisher = new GeneProductAssociationsPolisher();
+        boolean strict = model.getListOfReactions()
+                .stream()
+                .allMatch(reaction ->
+                        new ReactionPolishing(reaction, gpaPolisher).checkReactionStrictness());
+
+        assertTrue(strict);
+        assertFalse(r.isSetId());
+        assertFalse(r.isSetName());
         assertEquals(0, model.getReactionCount());
     }
 
@@ -47,18 +54,19 @@ public class ReactionPolishingTest {
         initParameters();
         var r = model.createReaction("some_reaction");
 
-        assertEquals(false, r.isSetName());
-        assertEquals(false, r.isSetFast());
-        assertEquals(false, r.isSetReversible());
+        assertFalse(r.isSetName());
+        assertFalse(r.isSetFast());
+        assertFalse(r.isSetReversible());
         assertEquals(1, model.getReactionCount());
 
-        var polishing = new ReactionPolishing(r);
-        boolean strict = polishing.polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
+        boolean strict = polishing.checkReactionStrictness();
 
-        assertEquals(false, strict);
-        assertEquals(false, r.isSetName());
-        assertEquals(true, r.isSetFast());
-        assertEquals(true, r.isSetReversible());
+        assertFalse(strict);
+        assertFalse(r.isSetName());
+        assertTrue(r.isSetFast());
+        assertTrue(r.isSetReversible());
         assertEquals(1, model.getReactionCount());
     }
 
@@ -71,11 +79,12 @@ public class ReactionPolishingTest {
         initParameters();
         var r = model.createReaction("some_reaction");
 
-        assertEquals(false, r.isSetFast());
+        assertFalse(r.isSetFast());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
-        assertEquals(false, r.isSetFast());
+        assertFalse(r.isSetFast());
     }
 
     @Test
@@ -90,7 +99,8 @@ public class ReactionPolishingTest {
 
         assertNull(r.getCompartmentInstance());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(cytosol, r.getCompartmentInstance());
     }
@@ -111,7 +121,8 @@ public class ReactionPolishingTest {
 
         assertEquals("", r.getCompartment());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, r.getReactantCount());
         assertEquals(1, r.getProductCount());
@@ -133,7 +144,8 @@ public class ReactionPolishingTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, r.getReactantCount());
         assertEquals(extracellular, r.getCompartmentInstance());
@@ -152,10 +164,11 @@ public class ReactionPolishingTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, r.getProductCount());
-        assertEquals(null, r.getCompartmentInstance());
+        assertNull(r.getCompartmentInstance());
     }
 
     @Test
@@ -176,14 +189,15 @@ public class ReactionPolishingTest {
 
         assertEquals(cytosol, r.getCompartmentInstance());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(2, r.getListOfProducts().size());
         assertEquals(Set.of(cytosol, extracellular), r.getListOfProducts().stream()
                 .map(SpeciesReference::getSpeciesInstance)
                 .map(Species::getCompartmentInstance)
                 .collect(Collectors.toSet()));
-        assertEquals(null, r.getCompartmentInstance());
+        assertNull(r.getCompartmentInstance());
     }
 
     @Test
@@ -198,7 +212,8 @@ public class ReactionPolishingTest {
         r.createReactant();
         r.createReactant();
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(2, r.getListOfReactants().size());
         assertEquals(cytosol, r.getCompartmentInstance());
@@ -219,10 +234,11 @@ public class ReactionPolishingTest {
         r.createProduct();
         r.createProduct();
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(2, r.getListOfProducts().size());
-        assertEquals(null, r.getCompartmentInstance());
+        assertNull(r.getCompartmentInstance());
     }
 
     @Test
@@ -242,7 +258,8 @@ public class ReactionPolishingTest {
         assertFalse(react1.isSetConstant());
         assertFalse(product1.isSetConstant());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, r.getListOfReactants().size());
         assertEquals(1, r.getListOfProducts().size());
@@ -255,7 +272,7 @@ public class ReactionPolishingTest {
 
     /**
      * Note: this test documents
-     * https://github.com/draeger-lab/ModelPolisher/issues/122
+     * <a href="https://github.com/draeger-lab/ModelPolisher/issues/122">...</a>
      */
     @Test
     public void defaultsAreSetEvenIfCompartmentsAreInconsistent() {
@@ -281,7 +298,8 @@ public class ReactionPolishingTest {
         assertFalse(product2.isSetConstant());
         assertFalse(product3.isSetConstant());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(3, r.getListOfProducts().size());
         assertEquals("SBO:0000011", product1.getSBOTermID());
@@ -312,7 +330,8 @@ public class ReactionPolishingTest {
         assertEquals(1, model.getReactionCount());
         assertEquals(0, fbcPlugin.getObjectiveCount());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, model.getReactionCount());
         assertEquals(1, fbcPlugin.getObjectiveCount());
@@ -343,7 +362,8 @@ public class ReactionPolishingTest {
         assertEquals(0, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -379,7 +399,8 @@ public class ReactionPolishingTest {
         assertEquals(1, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -409,7 +430,8 @@ public class ReactionPolishingTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("some_reaction_LOWER_BOUND", lb.getId());
@@ -440,7 +462,8 @@ public class ReactionPolishingTest {
         var p2 = model.createParameter("other_blubb");
         rFbcPlugin.setUpperFluxBound(p2);
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("default_blubb", lb.getId());
@@ -470,7 +493,8 @@ public class ReactionPolishingTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("DEFAULT_UPPER_BOUND", lb.getId());
@@ -483,7 +507,6 @@ public class ReactionPolishingTest {
      * Note: this apparently shows a bug in the GPRParser::areEqual method.
      * That is, hopefully, once that bug is fixed, this should fail.
      *
-     * @throws XMLStreamException
      */
     @Test
     public void notesToGPRs() throws XMLStreamException {
@@ -501,13 +524,13 @@ public class ReactionPolishingTest {
         body.addChild(p2);
         r.setNotes(body);
 
-        new ReactionPolishing(r).polish();
+        var polishing = new ReactionPolishing(r, new GeneProductAssociationsPolisher());
+        polishing.polish();
 
-        assertTrue(rFbcPlugin.getGeneProductAssociation()
-                .getAssociation() instanceof GeneProductRef,
-                "The result is expected to be " +
-                        "(wrongly, happy fixing should this fail for you!) " +
-                        "a single gene association, not an AND or OR.");
+        assertInstanceOf(GeneProductRef.class, rFbcPlugin.getGeneProductAssociation()
+                .getAssociation(), "The result is expected to be " +
+                "(wrongly, happy fixing should this fail for you!) " +
+                "a single gene association, not an AND or OR.");
         assertEquals("G_some_assoc",
                 ((GeneProductRef) rFbcPlugin.getGeneProductAssociation()
                         .getAssociation()).getGeneProduct());

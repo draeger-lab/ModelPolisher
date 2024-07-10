@@ -213,11 +213,6 @@ public class ModelPolisherCLILauncher extends Launcher {
     var ma = new ModelAnnotator();
     ma.annotate(doc);
 
-    // TODO: this should not be static
-    // Clear temporary data structures used during parsing
-    SBMLUtils.clearGPRMap();
-    GPRParser.clearAssociationMap();
-
     new ModelWriter().write(doc, output, getVersionNumber());
 
     Parameters params = Parameters.get();

@@ -4,7 +4,7 @@ import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.db.BiGGDB;
 import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.GeneProductReferencesAnnotator;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
@@ -37,14 +37,17 @@ public class GeneProductAnnotation extends CVTermAnnotation {
    * Instance of gene product to annotate
    */
   private final GeneProduct geneProduct;
+  private final GeneProductReferencesAnnotator gprAnnotator;
 
   /**
    * Constructs a new {@link GeneProductAnnotation} instance for a given {@link GeneProduct}.
    *
-   * @param geneProduct The {@link GeneProduct} to be annotated.
+   * @param geneProduct  The {@link GeneProduct} to be annotated.
+   * @param gprAnnotator
    */
-  public GeneProductAnnotation(GeneProduct geneProduct) {
+  public GeneProductAnnotation(GeneProduct geneProduct, GeneProductReferencesAnnotator gprAnnotator) {
     this.geneProduct = geneProduct;
+    this.gprAnnotator = gprAnnotator;
   }
 
 
@@ -62,7 +65,7 @@ public class GeneProductAnnotation extends CVTermAnnotation {
     if (label.isEmpty()) {
       return;
     }
-    SBMLUtils.updateGeneProductReference(geneProduct);
+    gprAnnotator.update(geneProduct);
     biggId.ifPresent(id -> {
       addAnnotations(id);
       if (geneProduct.getCVTermCount() > 0) {

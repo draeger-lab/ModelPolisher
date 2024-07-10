@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.bigg.annotation;
+package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.db.BiGGDB;
 

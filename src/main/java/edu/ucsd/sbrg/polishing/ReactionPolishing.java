@@ -6,9 +6,10 @@ import edu.ucsd.sbrg.bigg.BiGGId;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.miriam.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
+import edu.ucsd.sbrg.util.GeneProductAssociationsPolisher;
+import org.jetbrains.annotations.Nullable;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.*;
-import org.sbml.jsbml.util.ResourceManager;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.xml.XMLNode;
 
@@ -39,6 +40,7 @@ public class ReactionPolishing {
   private static final ResourceBundle MESSAGES =
     de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Reaction reaction;
+  private GeneProductAssociationsPolisher gpaPolisher;
 
   /**
    * Defines an enumeration for regex patterns that are used to categorize reactions based on their ID strings.
@@ -108,110 +110,106 @@ public class ReactionPolishing {
 
   /**
    * Constructs a new {@code ReactionPolishing} instance for the specified reaction.
-   * 
+   *
    * @param reaction The reaction to be polished.
    */
-  public ReactionPolishing(Reaction reaction) {
+  public ReactionPolishing(Reaction reaction, GeneProductAssociationsPolisher gpaPolisher) {
     this.reaction = reaction;
+    this.gpaPolisher = gpaPolisher;
   }
+
 
   /**
    * Polishes the reaction by applying various checks and modifications to ensure it conforms to
    * the expected standards and conventions. This includes setting SBO terms, checking compartments,
    * and ensuring proper setup of reactants and products.
-   * 
+   *
    * @return {@code true} if the reaction qualifies for strict FBC after polishing, {@code false} otherwise.
    */
   @SuppressWarnings("deprecated")
-  public boolean polish() {
-    // Process any external resources linked via annotations in the reaction
-    Registry.processResources(reaction.getAnnotation());
-    
-    // Retrieve and check the reaction ID
-    String id = reaction.getId();
-    if (id.isEmpty()) {
-      // Log severe error and remove reaction if ID is missing
-      if (reaction.isSetName()) {
-        logger.severe(format(MESSAGES.getString("REACTION_MISSING_ID"), reaction.getName()));
-      } else {
-        logger.severe(MESSAGES.getString("REACTION_MISSING_ID_NAME"));
+  public void polish() {
+      // Process any external resources linked via annotations in the reaction
+      Registry.processResources(reaction.getAnnotation());
+      // Check and set the compartment of the reaction based on its reactants and products
+      polishCompartments(reaction);
+      // Set meta ID if not set and CV terms are present
+      setMetaId(reaction);
+      // Remove '_copy' suffix from reaction name if present
+      removeCopySuffix(reaction);
+      // Ensure reaction properties are set according to SBML Level and Version
+      setFastProperty(reaction);
+      setReversibleProperty(reaction);
+      // check mass balance of the reaction - no-op
+      checkBalance(reaction);
+      // Convert gene associations to FBCv2 format and set flux objectives from local parameters
+      gpaPolisher.convertAssociationsToFBCV2(reaction, Parameters.get().omitGenericTerms());
+
+      fluxObjectiveFromLocalParameter();
+
+      associationFromNotes();
+
+      setSBOTerm(reaction);
+
+      polishBounds(reaction);
+  }
+
+  private void polishCompartments(Reaction reaction) {
+      String compartmentId = reaction.isSetCompartment() ? reaction.getCompartment() : null;
+      boolean conflict = false;
+      if (reaction.isSetListOfReactants()) {
+          Optional<String> cIdFromReactants = polishSpeciesReferences(reaction.getListOfReactants(), SBO.getReactant());
+          conflict = cIdFromReactants.isEmpty();
+          if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromReactants.get()))) {
+              reaction.setCompartment(cIdFromReactants.get());
+          }
       }
-      reaction.getModel().removeReaction(reaction);
-      return false;
-    }
-    
-    // Set the SBO term based on the reaction ID pattern
-    BiGGId.createReactionId(id).ifPresent(this::setSBOTermFromPattern);
-    
-    // Check and set the compartment of the reaction based on its reactants and products
-    String compartmentId = reaction.isSetCompartment() ? reaction.getCompartment() : null;
-    boolean conflict = false;
-    if (reaction.isSetListOfReactants()) {
-      Optional<String> cIdFromReactants = polish(reaction.getListOfReactants(), SBO.getReactant());
-      conflict = cIdFromReactants.isEmpty();
-      if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromReactants.get()))) {
-        reaction.setCompartment(cIdFromReactants.get());
+      if (reaction.isSetListOfProducts()) {
+          Optional<String> cIdFromProducts = polishSpeciesReferences(reaction.getListOfProducts(), SBO.getProduct());
+          conflict |= cIdFromProducts.isEmpty();
+          if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromProducts.get()))) {
+              reaction.setCompartment(cIdFromProducts.get());
+          } else {
+              reaction.unsetCompartment();
+          }
       }
+  }
+
+  public boolean checkReactionStrictness() {
+      return checkBoundStrictness(reaction) && checkSpeciesReferencesStrictness(reaction);
+  }
+
+  private void setReversibleProperty(Reaction reaction) {
+    if (!reaction.isSetReversible()) {
+      reaction.setReversible(false);
     }
-    if (reaction.isSetListOfProducts()) {
-      Optional<String> cIdFromProducts = polish(reaction.getListOfProducts(), SBO.getProduct());
-      conflict |= cIdFromProducts.isEmpty();
-      if (!conflict && (compartmentId == null || compartmentId.equals(cIdFromProducts.get()))) {
-        reaction.setCompartment(cIdFromProducts.get());
-      } else {
-        reaction.unsetCompartment();
-      }
-    }
-    
-    // Set meta ID if not set and CV terms are present
-    if (!reaction.isSetMetaId() && (reaction.getCVTermCount() > 0)) {
-      reaction.setMetaId(reaction.getId());
-    }
-    
-    // Remove '_copy' suffix from reaction name if present
-    String rName = reaction.getName();
-    if (rName.matches(".*_copy\\d*")) {
-      rName = rName.substring(0, rName.lastIndexOf('_'));
-      reaction.setName(rName);
-    }
-    
-    // Ensure reaction properties are set according to SBML Level and Version
+  }
+
+  private void setFastProperty(Reaction reaction) {
     if ((!reaction.isSetLevelAndVersion()
             || reaction.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) <= 0)
             && !reaction.isSetFast()) {
       reaction.setFast(false);
     }
-    if (!reaction.isSetReversible()) {
-      reaction.setReversible(false);
+  }
+
+  private void removeCopySuffix(Reaction reaction) {
+    String rName = reaction.getName();
+    if (rName.matches(".*_copy\\d*")) {
+      rName = rName.substring(0, rName.lastIndexOf('_'));
+      reaction.setName(rName);
     }
-    
-    // Check for reactions without reactants or products and log severe error if found
-    if ((reaction.getReactantCount() == 0) && (reaction.getProductCount() == 0)) {
-      ResourceBundle bundle = ResourceManager.getBundle("org.sbml.jsbml.resources.cfg.Messages");
-      logger.severe(format(bundle.getString("SBMLCoreParser.reactionWithoutParticipantsError"), reaction.getId()));
-    } else {
-      checkBalance();
+  }
+
+  private void setMetaId(Reaction reaction) {
+    if (!reaction.isSetMetaId() && (reaction.getCVTermCount() > 0)) {
+      reaction.setMetaId(reaction.getId());
     }
-    
-    // Initialize strict mode flag
-    boolean strict = false;
-    if (reaction.getModel() != null) {
-      // Convert gene associations to FBCv2 format and set flux objectives from local parameters
-      GPRParser.convertAssociationsToFBCV2(reaction, Parameters.get().omitGenericTerms());
-      fluxObjectiveFromLocalParameter();
-      associationFromNotes();
-      strict = checkBounds();
-    }
-    
-    // Check validity of reactants and products and update strict mode flag
-    strict = checkReactantsProducts(strict);
-    return strict;
   }
 
   /**
    * Sets the Systems Biology Ontology (SBO) term for a reaction based on the abbreviation of its BiGG ID.
    * The method matches the abbreviation against predefined patterns to determine the appropriate SBO term.
-   * 
+   *
    * @param id The BiGGId object containing the abbreviation to be checked.
    */
   private void setSBOTermFromPattern(BiGGId id) {
@@ -239,7 +237,7 @@ public class ReactionPolishing {
    * @param defaultSBOterm The default Systems Biology Ontology (SBO) term to assign to species references if not already set.
    * @return An {@link Optional<String>} containing the compartment code if it can be unambiguously determined; otherwise, {@link Optional#empty()}.
    */
-  private Optional<String> polish(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
+  private Optional<String> polishSpeciesReferences(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
     // Assign default SBO terms and constant values to species references
     for (SpeciesReference sr : speciesReferences) {
       if (!sr.isSetSBOTerm() && !Parameters.get().omitGenericTerms()) {
@@ -270,32 +268,8 @@ public class ReactionPolishing {
    * It sets the SBO term for demand reactions if not already set and checks the atom balance
    * for reactions not identified as biomass production, demand, exchange, or ATP maintenance.
    */
-  private void checkBalance() {
-    // Check if the reaction SBO term is not set
-    if (!reaction.isSetSBOTerm()) {
-      // Check if there are no reactants
-      if (reaction.getReactantCount() == 0) {
-        // Handle reversible reactions differently
-        if (reaction.isReversible()) {
-          // Placeholder for handling sink reactions
-          // TODO: Implement sink reaction handling
-        } else if (reaction.getSBOTerm() != 628) {
-          // Log and set SBO term for demand reaction if not already set
-          // logger.info(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), reaction.getId()));
-          reaction.setSBOTerm(628); // Set as demand reaction
-        }
-      } else if (reaction.getProductCount() == 0) {
-        // Handle reversible reactions differently
-        if (reaction.isReversible()) {
-          // Placeholder for handling source reactions
-          // TODO: Implement source reaction handling
-        } else {
-          // Log and set SBO term for demand reaction if not already set
-          // logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), reaction.getId()));
-          reaction.setSBOTerm(628); // Set as demand reaction
-        }
-      }
-    }
+  private void checkBalance(Reaction reaction) {
+    // TODO: logging this information is nonsense, this should be available as output
     // Check mass balance if enabled in parameters and reaction is not a special type
     if (Parameters.get().checkMassBalance()
             && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
@@ -310,6 +284,34 @@ public class ReactionPolishing {
       } else {
         // Log successful atom balance check
         logger.fine(format(MESSAGES.getString("ATOMS_OK"), reaction.getId()));
+      }
+    }
+  }
+
+  private void setSBOTerm(Reaction reaction) {
+    String id = reaction.getId();
+    // Set the SBO term based on the reaction ID pattern
+    BiGGId.createReactionId(id).ifPresent(this::setSBOTermFromPattern);
+
+    if (!reaction.isSetSBOTerm()) {
+      if (reaction.getReactantCount() == 0) {
+        if (reaction.isReversible()) {
+          // Placeholder for handling sink reactions
+          // TODO: Implement sink reaction handling
+        } else {
+          // Log and set SBO term for demand reaction if not already set
+          // logger.info(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), reaction.getId()));
+          reaction.setSBOTerm(628); // Set as demand reaction
+        }
+      } else if (reaction.getProductCount() == 0) {
+        if (reaction.isReversible()) {
+          // Placeholder for handling source reactions
+          // TODO: Implement source reaction handling
+        } else {
+          // Log and set SBO term for demand reaction if not already set
+          // logger.warning(format(mpMessageBundle.getString("REACTION_DM_NOT_IN_ID"), reaction.getId()));
+          reaction.setSBOTerm(628); // Set as demand reaction
+        }
       }
     }
   }
@@ -350,7 +352,7 @@ public class ReactionPolishing {
       }
     }
   }
-  
+
   /**
    * This method extracts gene associations from the notes of a reaction and converts them into
    * the FBCv2 GeneProductAssociation format. It specifically looks for notes tagged with "GENE_ASSOCIATION:"
@@ -359,22 +361,22 @@ public class ReactionPolishing {
   private void associationFromNotes() {
     // Obtain the FBC plugin for the reaction to handle FBC-specific features.
     FBCReactionPlugin reactionPlugin = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
-    
+
     // Check if the gene product association is not already set and if the reaction has notes.
     if (!reactionPlugin.isSetGeneProductAssociation() && reaction.isSetNotes()) {
       // Retrieve the 'body' element from the reaction notes.
       XMLNode body = reaction.getNotes().getChildElement("body", null);
-      
+
       // Process each paragraph within the body that contains exactly one child node.
       if (body != null) {
         for (XMLNode p : body.getChildElements("p", null)) {
           if (p.getChildCount() == 1) {
             String associationCandidate = p.getChildAt(0).getCharacters();
-            
+
             // Check if the text starts with the expected gene association tag.
             if (associationCandidate.startsWith("GENE_ASSOCIATION: ")) {
               String[] splits = associationCandidate.split("GENE_ASSOCIATION: ");
-              
+
               // Ensure the string was split into exactly two parts and the second part is not empty.
               if (splits.length == 2) {
                 String association = splits[1];
@@ -390,60 +392,80 @@ public class ReactionPolishing {
     }
   }
 
-
   /**
    * Checks if the existing FBC flux bounds are strictly defined and attempts to infer missing bounds from the reaction's kinetic law.
    * If bounds are not set, it creates and assigns new global parameters as flux bounds according to the FBC specification.
-   *
-   * @return true if both lower and upper flux bounds exist and are strictly defined, false otherwise.
    */
-  private boolean checkBounds() {
+  private void polishBounds(Reaction reaction) {
+    // TODO: this code does multiple unrelated things at once; check for strictness should be its own function
     FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+
     Parameter lb = rPlug.getLowerFluxBoundInstance();
     Parameter ub = rPlug.getUpperFluxBoundInstance();
-    boolean lbExists = polishFluxBound(lb);
+
+    // try to set bounds if none exist yet
+    if (lb == null) {
+      lb = ensureBound("LOWER_BOUND");
+    }
+    if (ub == null) {
+      ub = ensureBound("UPPER_BOUND");
+    }
+
+    // set appropriate SBO terms for bounds
+    if (lb != null) {
+      setFluxBoundSBOTerm(rPlug.getLowerFluxBoundInstance());
+    }
+    if (ub != null) {
+      setFluxBoundSBOTerm(rPlug.getUpperFluxBoundInstance());
+    }
+  }
+
+  private boolean checkBoundStrictness(Reaction reaction) {
+    FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+
+    Parameter lb = rPlug.getLowerFluxBoundInstance();
+    Parameter ub = rPlug.getUpperFluxBoundInstance();
+
+    var strict = isBoundSet(lb)
+            && lb.isConstant()
+            && lb.getValue() < Double.POSITIVE_INFINITY
+            && isBoundSet(ub)
+            && ub.isConstant()
+            && ub.getValue() > Double.NEGATIVE_INFINITY
+            && lb.getValue() <= ub.getValue();
+    if (!strict) {
+      // TODO: das hier ist eine falsche Log-Nachricht
+      logger.warning(format(MESSAGES.getString("FLUX_BOUND_ERROR"), reaction.getId()));
+    }
+
+    return strict;
+  }
+
+  private @Nullable Parameter ensureBound(String boundType) {
     // set bounds from KineticLaw, if they are not set in FBC, create global Parameter,
     // as required by specification
-    if (!lbExists) {
-      LocalParameter bound = getBoundFromLocal(reaction, "LOWER_BOUND");
-      if (bound != null) {
-        lb = new Parameter(bound);
-        Parameter existingParameter = getParameterVariant(reaction, lb, bound.getValue());
-        if (existingParameter != null) {
-          rPlug.setLowerFluxBound(existingParameter);
-        } else {
-          reaction.getModel().addParameter(lb);
-          rPlug.setLowerFluxBound(lb);
-        }
-        lbExists = polishFluxBound(rPlug.getLowerFluxBoundInstance());
+    Parameter bound = getBoundFromKineticLawParameters(reaction, boundType);
+
+    if (bound != null) {
+      setBoundId(reaction, bound, bound.getValue());
+      var preexistingParameter = reaction.getModel().getParameter(bound.getId());
+      if (preexistingParameter == null) {
+        reaction.getModel().addParameter(bound);
+        updateReactionPlugin(boundType, bound);
+      } else {
+        updateReactionPlugin(boundType, preexistingParameter);
       }
     }
-    boolean ubExists = polishFluxBound(ub);
-    if (!ubExists) {
-      LocalParameter bound = getBoundFromLocal(reaction, "UPPER_BOUND");
-      if (bound != null) {
-        ub = new Parameter(bound);
-        Parameter existingParameter = getParameterVariant(reaction, ub, bound.getValue());
-        if (existingParameter != null) {
-          rPlug.setUpperFluxBound(existingParameter);
-        } else {
-          reaction.getModel().addParameter(ub);
-          rPlug.setUpperFluxBound(ub);
-        }
-        ubExists = polishFluxBound(rPlug.getUpperFluxBoundInstance());
-      }
+    return bound;
+  }
+
+  private void updateReactionPlugin(String boundType, Parameter parameter) {
+    FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
+    if (boundType.equals("LOWER_BOUND")) {
+      rPlug.setLowerFluxBound(parameter);
+    } else if (boundType.equals("UPPER_BOUND")) {
+      rPlug.setUpperFluxBound(parameter);
     }
-    boolean strict = lbExists && ubExists;
-    if (strict) {
-      strict = checkBound(lb) && lb.getValue() < Double.POSITIVE_INFINITY && checkBound(ub)
-        && ub.getValue() > Double.NEGATIVE_INFINITY && lb.getValue() <= ub.getValue();
-      if (!strict) {
-        logger.warning(format(MESSAGES.getString("FLUX_BOUND_ERROR"), reaction.getId()));
-      }
-    } else {
-      logger.warning(format(MESSAGES.getString("FLUX_BOUNDS_MISSING"), reaction.getId()));
-    }
-    return strict;
   }
 
 
@@ -453,18 +475,13 @@ public class ReactionPolishing {
    * Otherwise, it sets the SBO term to 625.
    *
    * @param bound The parameter representing a flux bound.
-   * @return {@code true} if the parameter is not null and was successfully updated; {@code false} if the parameter is null.
    */
-  public boolean polishFluxBound(Parameter bound) {
-    if (bound == null) {
-      return false;
-    }
+  public void setFluxBoundSBOTerm(Parameter bound) {
     if (Patterns.DEFAULT_FLUX_BOUND.getPattern().matcher(bound.getId()).matches()) {
       bound.setSBOTerm(626); // default flux bound
     } else {
       bound.setSBOTerm(625); // flux bound
     }
-    return true;
   }
 
   /**
@@ -475,12 +492,11 @@ public class ReactionPolishing {
    * @param parameterName The name of the parameter to retrieve, expected to be either "LOWER_BOUND" or "UPPER_BOUND".
    * @return The local parameter if found, or {@code null} if the kinetic law is not defined or the parameter does not exist.
    */
-  private LocalParameter getBoundFromLocal(Reaction r, String parameterName) {
-    KineticLaw kl = r.getKineticLaw();
-    if (kl != null) {
-      return kl.getLocalParameter(parameterName);
-    }
-    return null;
+  private Parameter getBoundFromKineticLawParameters(Reaction r, String parameterName) {
+    return Optional.ofNullable(r.getKineticLaw())
+            .map(kl -> kl.getLocalParameter(parameterName))
+            .map(Parameter::new)
+            .orElse(null);
   }
 
 
@@ -493,9 +509,8 @@ public class ReactionPolishing {
    * @param r The {@link Reaction} instance from which the model and parameter are derived.
    * @param bound The {@link Parameter} instance representing either a lower or upper bound.
    * @param boundValue The numeric value of the bound, which determines how the {@link Parameter}'s ID is set.
-   * @return The {@link Parameter} with its ID modified based on the bound value.
    */
-  private Parameter getParameterVariant(Reaction r, Parameter bound, double boundValue) {
+  private void setBoundId(Reaction r, Parameter bound, double boundValue) {
     if (boundValue == -1000d) {
       bound.setId("DEFAULT_LOWER_BOUND");
     } else if (boundValue == 0d) {
@@ -505,7 +520,6 @@ public class ReactionPolishing {
     } else {
       bound.setId(r.getId() + "_" + bound.getId());
     }
-    return r.getModel().getParameter(bound.getId());
   }
 
   /**
@@ -521,37 +535,32 @@ public class ReactionPolishing {
    * @param bound The {@link Parameter} to check.
    * @return {@code true} if the parameter qualifies as a strict flux bound, {@code false} otherwise.
    */
-  public boolean checkBound(Parameter bound) {
-    return (bound != null) && bound.isConstant()
+  public boolean isBoundSet(Parameter bound) {
+    return (bound != null)
             && bound.isSetValue()
             && !Double.isNaN(bound.getValue());
   }
 
 
   /**
-   * Checks the validity of reactants and products in a reaction based on specified criteria.
-   * This method evaluates whether all reactants and products meet the criteria defined in {@link #checkSpeciesReferences(ListOf)}.
+   * Checks the strictness of reactants and products in a reaction.
+   * This method evaluates whether all reactants and products meet the criteria
+   * defined in {@link #checkSpeciesReferencesStrictness(ListOf)}.
    * If any reactant or product does not meet the criteria, a warning is logged.
    *
-   * @param strict A boolean flag indicating whether the check should be strictly enforced.
-   * @return {@code true} if all reactants and products meet the criteria when strict is {@code true}, {@code false} otherwise.
+   * @return {@code true} if all reactants and products meet the criteria, {@code false} otherwise.
    */
-  private boolean checkReactantsProducts(boolean strict) {
-    if (strict && reaction.isSetListOfReactants()) {
-      strict = checkSpeciesReferences(reaction.getListOfReactants());
-      if (!strict) {
-        logger.warning(format(MESSAGES.getString("ILLEGAL_STOICH_REACT"), reaction.getId()));
-      }
+  private boolean checkSpeciesReferencesStrictness(Reaction reaction) {
+    if (reaction.isSetListOfReactants() && reaction.isSetListOfProducts()) {
+      return checkSpeciesReferencesStrictness(reaction.getListOfReactants())
+              && checkSpeciesReferencesStrictness(reaction.getListOfProducts());
     }
-    if (strict && reaction.isSetListOfProducts()) {
-      strict = checkSpeciesReferences(reaction.getListOfProducts());
-      if (!strict) {
-        logger.warning(format(MESSAGES.getString("ILLEGAL_STOICH_PROD"), reaction.getId()));
-      }
-    }
-    return strict;
+    return false;
+    // TODO: das war falsches logging, aber wir sollten die Information darüber, warum etwas nicht strict ist geben
+    // logger.warning(format(MESSAGES.getString("ILLEGAL_STOICH_REACT"), reaction.getId()));
+
   }
-  
+
   /**
    * Checks if all species references in a list meet certain criteria.
    * Each species reference must:
@@ -563,14 +572,13 @@ public class ReactionPolishing {
    * @param listOfSpeciesReference The list of {@link SpeciesReference} objects to check.
    * @return {@code true} if all species references in the list meet the criteria, {@code false} otherwise.
    */
-  public boolean checkSpeciesReferences(ListOf<SpeciesReference> listOfSpeciesReference) {
+  public boolean checkSpeciesReferencesStrictness(ListOf<SpeciesReference> listOfSpeciesReference) {
     boolean strict = true;
     for (SpeciesReference sr : listOfSpeciesReference) {
-      strict &=
-        sr.isConstant()
-                && sr.isSetStoichiometry()
-                && !Double.isNaN(sr.getValue())
-                && Double.isFinite(sr.getValue());
+      strict &= sr.isConstant()
+              && sr.isSetStoichiometry()
+              && !Double.isNaN(sr.getValue())
+              && Double.isFinite(sr.getValue());
     }
     return strict;
   }

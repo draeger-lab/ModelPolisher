@@ -4,10 +4,7 @@ import de.zbit.util.ResourceManager;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
+import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.util.TreeNodeChangeEvent;
 import org.sbml.jsbml.util.TreeNodeChangeListener;
@@ -86,7 +83,7 @@ public class UpdateListener implements TreeNodeChangeListener {
           Model model = r.getModel();
           FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
           // Update reaction references in the FBC model plugin.
-          SBMLUtils.updateReactionRef(oldId, newId, fbcModelPlug);
+          updateReactionRef(oldId, newId, fbcModelPlug);
           // Update subsystem references if any.
           Set<Member> subsystems = (Set<Member>) r.getUserObject(SBMLUtils.SUBSYSTEM_LINK);
           if (subsystems != null) {
@@ -109,6 +106,30 @@ public class UpdateListener implements TreeNodeChangeListener {
         else {
           logger.severe(
             MessageFormat.format(MESSAGES.getString("ID_CHANGE_WARNING"), nsb.getElementName(), oldId, newId));
+        }
+      }
+    }
+  }
+
+  /**
+   * Updates the reaction reference ID from an old ID to a new ID within the FluxObjectives of a given FBCModelPlugin.
+   * This method iterates through all objectives and their associated flux objectives in the model plugin,
+   * replacing the old reaction ID with the new one wherever found.
+   *
+   * @param oldId The old reaction ID to be replaced.
+   * @param newId The new reaction ID to replace the old one.
+   * @param fbcModelPlug The FBCModelPlugin containing the objectives and flux objectives to be updated.
+   */
+  private void updateReactionRef(String oldId, String newId, FBCModelPlugin fbcModelPlug) {
+    if ((fbcModelPlug != null) && fbcModelPlug.isSetListOfObjectives()) {
+      ListOfObjectives loo = fbcModelPlug.getListOfObjectives();
+      for (Objective objective : loo) {
+        if (objective.isSetListOfFluxObjectives()) {
+          for (FluxObjective fo : objective.getListOfFluxObjectives()) {
+            if (fo.getReaction().equals(oldId)) {
+              fo.setReaction(newId);
+            }
+          }
         }
       }
     }
