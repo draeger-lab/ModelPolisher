@@ -9,7 +9,7 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
 import edu.ucsd.sbrg.ModelPolisherCLILauncher;
-import edu.ucsd.sbrg.polishing.ReactionPolishing;
+import edu.ucsd.sbrg.polishing.ReactionNamePatterns;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -136,25 +136,13 @@ public class SBMLFix {
    * @param modelDescriptor
    *        some descriptive String for the model, e.g., its id, the path to the
    *        file, or any other meaningful information for users.
-   * @param listOfReactions
-   * @param fbcPlug
-   * @return {@code true} if this operation was successful and {@code false} if
-   *         the problem could not be fixed.
    */
-  public static boolean fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug) {
-    return fixObjective(modelDescriptor, listOfReactions, fbcPlug, null, null);
+  public static void fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug) {
+    fixObjective(modelDescriptor, listOfReactions, fbcPlug, null, null);
   }
 
 
-  /**
-   * @param modelDescriptor
-   * @param listOfReactions
-   * @param fbcPlug
-   * @param fluxCoefficients
-   * @param fluxObjectives
-   * @return
-   */
-  public static boolean fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug,
+  public static void fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug,
     double[] fluxCoefficients, String[] fluxObjectives) {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
@@ -176,7 +164,6 @@ public class SBMLFix {
              * An array of target reactions is provided. We want to use this as
              * flux objectives.
              */
-            boolean strict = false;
             for (int i = 0; i < fluxObjectives.length; i++) {
               final String id = fluxObjectives[i];
               Reaction r = listOfReactions.firstHit((obj) -> {
@@ -184,26 +171,21 @@ public class SBMLFix {
               });
               if (r != null) {
                 createFluxObjective(modelDescriptor, r, fluxCoefficients, activeObjective, i);
-                // if at least one flux objective exists, the model qualifies as
-                // strict model.
-                strict = true;
               } else {
                 logger.severe(MessageFormat.format(MESSAGES.getString("REACTION_UNKNOWN_ERROR"), id, modelDescriptor));
               }
             }
-            return strict;
           } else {
             /*
              * Search for biomass reaction in the model and use this as
              * objective.
              */
-            final Pattern pattern = ReactionPolishing.Patterns.BIOMASS_CASE_INSENSITIVE.getPattern();
+            final Pattern pattern = ReactionNamePatterns.BIOMASS_CASE_INSENSITIVE.getPattern();
             Reaction rBiomass = listOfReactions.firstHit((obj) -> {
               return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
             });
             if (rBiomass != null) {
               createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, activeObjective, 0);
-              return true;
             } else {
               logger.severe(MESSAGES.getString("REACTION_BIOMASS_UNKNOWN_ERROR"));
             }
@@ -213,7 +195,6 @@ public class SBMLFix {
         }
       }
     }
-    return false;
   }
 
 

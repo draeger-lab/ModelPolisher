@@ -21,8 +21,13 @@ import edu.ucsd.sbrg.annotation.ModelAnnotator;
 import edu.ucsd.sbrg.io.IOOptions;
 import edu.ucsd.sbrg.io.ModelReader;
 import edu.ucsd.sbrg.io.ModelWriter;
+import edu.ucsd.sbrg.io.SBMLFileUtils;
 import edu.ucsd.sbrg.polishing.ModelPolisher;
-import edu.ucsd.sbrg.util.*;
+import edu.ucsd.sbrg.polishing.SBMLPolisher;
+import edu.ucsd.sbrg.reporting.PolisherProgressBar;
+import edu.ucsd.sbrg.reporting.ProgressInitialization;
+import edu.ucsd.sbrg.reporting.ProgressObserver;
+import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
 import de.zbit.AppConf;
@@ -36,6 +41,8 @@ import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 import edu.ucsd.sbrg.db.DBConfig;
+import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 
 /**
  * The ModelPolisher class is the entry point of this application.
@@ -197,16 +204,28 @@ public class ModelPolisherCLILauncher extends Launcher {
     long startTime = System.currentTimeMillis();
 
     SBMLDocument doc = new ModelReader(parameters).read(input);
+    // TODO: we should be doing better sanity checking here; e.g.: just validate the SBML
     if (doc == null) return;
+    if (doc.getModel() == null) {
+      logger.severe(MESSAGES.getString("MODEL_MISSING"));
+      // TODO: handle this better
+      throw new RuntimeException();
+    }
 
-    // Polish and annotate
-    var mp = new ModelPolisher(parameters);
-    mp.addObserver(new PolisherProgressBar());
-    // Polish the document
-    mp.polish(doc);
+    List<ProgressObserver> observers = List.of(new PolisherProgressBar());
+    int count = taskCount(doc.getModel());
+    for (var o : observers) {
+      o.initialize(new ProgressInitialization(count));
+    }
+
+    new SBMLPolisher(parameters, observers).polish(doc);
 
     var ma = new ModelAnnotator(parameters);
     ma.annotate(doc);
+
+    for (var o : observers) {
+      o.finish(null);
+    }
 
     new ModelWriter(parameters).write(doc, output, getVersionNumber());
 
@@ -221,6 +240,25 @@ public class ModelPolisherCLILauncher extends Launcher {
     logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
   }
 
+  private int taskCount(Model model) {
+    // Calculate the total number of tasks to initialize the progress bar.
+    int count = 1 // Account for model properties
+            // + model.getUnitDefinitionCount()
+            // TODO: see UnitPolisher TODO for why UnitDefinitionCount is replaced by 1
+            + 1
+            + model.getCompartmentCount()
+            + model.getParameterCount()
+            + model.getReactionCount()
+            + model.getSpeciesCount()
+            + model.getInitialAssignmentCount();
+
+    // Include tasks from FBC plugin if present.
+    if (model.isSetPlugin(FBCConstants.shortLabel)) {
+      FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      count += fbcModelPlug.getObjectiveCount() + fbcModelPlug.getGeneProductCount();
+    }
+    return count;
+  }
 
   /*
    * (non-Javadoc)

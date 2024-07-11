@@ -4,8 +4,7 @@ import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.parsers.json.JSONConverter;
-import edu.ucsd.sbrg.util.CombineArchive;
+import edu.ucsd.sbrg.io.parsers.json.JSONConverter;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.TidySBMLWriter;
 

@@ -2,10 +2,8 @@ package edu.ucsd.sbrg.io;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.parsers.cobra.COBRAParser;
-import edu.ucsd.sbrg.parsers.json.JSONParser;
-import edu.ucsd.sbrg.util.SBMLFileUtils;
-import edu.ucsd.sbrg.util.UpdateListener;
+import edu.ucsd.sbrg.io.parsers.cobra.COBRAParser;
+import edu.ucsd.sbrg.io.parsers.json.JSONParser;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 

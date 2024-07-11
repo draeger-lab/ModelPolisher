@@ -27,7 +27,6 @@ import javax.xml.stream.XMLStreamException;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.util.GeneProductReferencesAnnotator;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Compartment;
