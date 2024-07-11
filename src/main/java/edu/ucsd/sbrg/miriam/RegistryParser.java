@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.ucsd.sbrg.miriam.models.Miriam;
@@ -35,6 +36,7 @@ public class RegistryParser {
   Miriam parse() throws IOException {
     logger.fine("Parsing MIRIAM registry");
     ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     Root root =  mapper.readValue(registry, Root.class);
     List<Namespace> namespaces = root.getPayload().get("namespaces");
     HashMap<String, Namespace> prefixIndexedNamespaces = new HashMap<>();
