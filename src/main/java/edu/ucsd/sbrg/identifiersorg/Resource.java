@@ -17,7 +17,7 @@ class Resource implements Node {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(Resource.class.getName());
+  private static final Logger logger = Logger.getLogger(Resource.class.getName());
 
   private final Namespace parent;
   private final CompactResource resource;

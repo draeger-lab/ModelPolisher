@@ -23,11 +23,11 @@ public class SpeciesParser {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SpeciesParser.class.getName());
+  private static final Logger logger = Logger.getLogger(SpeciesParser.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  public static transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  public static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Model model;
   private final int index;
   private static MatlabFields matlabFields;

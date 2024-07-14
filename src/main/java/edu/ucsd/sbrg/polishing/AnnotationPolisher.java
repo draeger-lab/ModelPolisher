@@ -1,7 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.annotation.AbstractAnnotator;
 import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Annotation;

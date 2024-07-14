@@ -44,7 +44,7 @@ public class XHTMLBuilder {
       }
       sb.append("</tr>\n");
     }
-    if ((data != null) && (data.length > 0)) {
+    if (data != null) {
       for (Object[] row : data) {
         if ((row != null) && (row.length > 0)) {
           sb.append("<tr>");
@@ -77,7 +77,7 @@ public class XHTMLBuilder {
    * @param value
    */
   public static void appendAttribute(StringBuilder sb, String key, String value) {
-    if ((sb.length() > 0) && (sb.charAt(sb.length() - 1) != ' ')) {
+    if ((!sb.isEmpty()) && (sb.charAt(sb.length() - 1) != ' ')) {
       sb.append(' ');
     }
     sb.append(key);
@@ -92,10 +92,9 @@ public class XHTMLBuilder {
    * @return
    */
   public static String p(String content) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("<p>\n");
-    sb.append(content);
-    sb.append("\n</p>\n");
-    return sb.toString();
+      String sb = "<p>\n" +
+              content +
+              "\n</p>\n";
+    return sb;
   }
 }

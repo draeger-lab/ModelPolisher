@@ -19,7 +19,7 @@ public class PostgreSQLConnector {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(PostgreSQLConnector.class.getName());
+  private static final Logger logger = Logger.getLogger(PostgreSQLConnector.class.getName());
   /**
    * 
    */

@@ -3,23 +3,10 @@
  */
 package edu.ucsd.sbrg.util;
 
-import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Reaction;
-import org.sbml.jsbml.ext.fbc.Association;
-import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
-import org.sbml.jsbml.ext.fbc.GeneProduct;
-import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
-import org.sbml.jsbml.ext.fbc.GeneProductRef;
-import org.sbml.jsbml.ext.fbc.ListOfObjectives;
-import org.sbml.jsbml.ext.fbc.LogicalOperator;
-import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Member;
 
-import javax.swing.tree.TreeNode;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**

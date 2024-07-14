@@ -51,11 +51,11 @@ public class CombineArchive {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(CombineArchive.class.getName());
+  private static final Logger logger = Logger.getLogger(CombineArchive.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * {@link SBMLDocument} to write glossary for
    */

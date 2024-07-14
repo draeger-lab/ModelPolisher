@@ -32,19 +32,6 @@ public class IdentifiersOrgRegistry {
   }
 
   /**
-   * Provides the singleton instance of {@code IdentifiersOrgRegistry}.
-   * 
-   * @return The singleton instance of {@code IdentifiersOrgRegistry}.
-   * @throws IllegalStateException if the singleton instance has not been initialized.
-   */
-  public IdentifiersOrgRegistry getInstance() {
-    if (IDENTIFIERS_ORG_REGISTRY == null) {
-      throw new IllegalStateException("Instance not initialized.");
-    }
-    return IDENTIFIERS_ORG_REGISTRY;
-  }
-
-  /**
    * Retrieves the map of namespaces.
    * 
    * @return A map of namespace prefixes to their corresponding {@code Namespace} objects.

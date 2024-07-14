@@ -3,11 +3,9 @@ package edu.ucsd.sbrg.polishing;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -145,14 +143,10 @@ public class UnitPolisher extends AbstractPolisher<Model>{
         
         // Annotate the 'mole' unit based on its scale.
         getUnitByKind(growth, Unit.Kind.MOLE).ifPresent(u -> {
-            switch (u.getScale()) {
-                case -3: 
-                    // If the scale is -3, it's millimoles.
-                    u.addCVTerm(CV_TERM_IS_UO_MMOL); 
-                    break;
-                default:
-                    // For other scales, use a generic annotation.
-                    u.addCVTerm(this.genericUnitAnnotation(u));
+            if (u.getScale() == -3) {// If the scale is -3, it's millimoles.
+                u.addCVTerm(CV_TERM_IS_UO_MMOL);
+            } else {// For other scales, use a generic annotation.
+                u.addCVTerm(this.genericUnitAnnotation(u));
             }
         });
 

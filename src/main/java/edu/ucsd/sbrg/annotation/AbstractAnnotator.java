@@ -26,7 +26,7 @@ public abstract class AbstractAnnotator<SBMLElement> {
 
     public void annotate(List<SBMLElement> elementsToAnnotate) {
         throw new UnsupportedOperationException();
-    };
+    }
 
     abstract public void annotate(SBMLElement elementToAnnotate);
 

@@ -26,7 +26,7 @@ public class Entries {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(Entries.class.getName());
+  private static final Logger logger = Logger.getLogger(Entries.class.getName());
 
   private static final Map<String, String> COLLECTION_FOR_PROVIDER = new HashMap<>();
   private static final Map<String, String> PATTERN_FOR_COLLECTION = new HashMap<>();
@@ -143,12 +143,12 @@ public class Entries {
     }
     List<Node> matches = new ArrayList<>();
     // Iterate over all namespaces to find matches
-    for (Node namespace : root.children) {
+    for (Namespace namespace : root.children) {
       if (namespace.isMatch(query)) {
         matches.add(namespace);
       }
       // Iterate over all resources within the namespace to find matches
-      for (Node resource : ((Namespace) namespace).getLeaves()) {
+      for (Node resource : namespace.getLeaves()) {
         if (resource.isMatch(query)) {
           matches.add(resource);
         }

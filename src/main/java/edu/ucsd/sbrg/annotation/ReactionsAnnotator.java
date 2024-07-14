@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
  */
 public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
 
-  static final transient Logger logger = Logger.getLogger(ReactionsAnnotator.class.getName());
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  static final Logger logger = Logger.getLogger(ReactionsAnnotator.class.getName());
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private static boolean triggeredSubsystemWarning = false;
 
@@ -225,7 +225,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
       }
       subsystems = BiGGDB.getSubsystemsForReaction(biggId.getAbbreviation());
     }
-    if (subsystems.size() < 1) {
+    if (subsystems.isEmpty()) {
       return;
     } else {
       // filter out duplicates only differing in case - relevant for #getSubsystemsForReaction results

@@ -2,13 +2,8 @@ package edu.ucsd.sbrg;
 
 import java.io.File;
 import java.util.Map;
-import java.util.ResourceBundle;
 
-import de.zbit.util.ResourceManager;
-import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.io.IOOptions;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper class to store all parameters for running ModelPolisher in batch

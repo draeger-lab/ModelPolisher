@@ -331,7 +331,7 @@ public enum ModelField {
                                        .collect(Collectors.toList());
     if (normalVariant.size() != 1) {
       return Arrays.stream(ModelField.values()).map(Enum::name)
-                   .filter(name -> name.toLowerCase().equals(query.toLowerCase())).collect(Collectors.toList());
+                   .filter(name -> name.equalsIgnoreCase(query)).collect(Collectors.toList());
     } else {
       return normalVariant;
     }

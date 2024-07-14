@@ -62,11 +62,11 @@ public class JSONParser {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(JSONParser.class.getName());
+  private static final Logger logger = Logger.getLogger(JSONParser.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   /**
    * 
@@ -164,7 +164,7 @@ public class JSONParser {
     } else {
       logger.severe(format(MESSAGES.getString("OPEN_ISSUE_ANNOTATION"), annotation.getClass().getName()));
     }
-    if (annotations.size() > 0) {
+    if (!annotations.isEmpty()) {
       CVTerm term = new CVTerm();
       term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
       term.setBiologicalQualifierType(CVTerm.Qualifier.BQB_IS);
@@ -228,10 +228,10 @@ public class JSONParser {
       }
       StringBuilder notesContent = new StringBuilder();
       content = content.stream().filter(item -> !item.isEmpty()).collect(Collectors.toSet());
-      if (content.size() > 0) {
+      if (!content.isEmpty()) {
         content.forEach(line -> notesContent.append("<p>").append(line).append("</p>\n"));
       }
-      if (notesContent.length() > 0) {
+      if (!notesContent.isEmpty()) {
         try {
           node.appendNotes(SBMLtools.toNotesString(notesContent.toString()));
         } catch (XMLStreamException e) {
@@ -264,7 +264,7 @@ public class JSONParser {
     } else if (value instanceof ArrayList) {
       StringJoiner items = new StringJoiner(",", "[", "]");
       ((List<String>) value).forEach(items::add);
-      note = key + ":" + items.toString();
+      note = key + ":" + items;
     } else {
       logger.severe(format(MESSAGES.getString("OPEN_ISSUE_NOTES_CONTENT"), value.getClass().getName()));
     }

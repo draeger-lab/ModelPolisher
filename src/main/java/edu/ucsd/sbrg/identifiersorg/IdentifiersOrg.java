@@ -28,8 +28,8 @@ public class IdentifiersOrg {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(IdentifiersOrg.class.getName());
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final Logger logger = Logger.getLogger(IdentifiersOrg.class.getName());
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /*
    * Static initializer block for the IdentifiersOrg class.
    * This block is executed once when the Registry class is loaded.
@@ -131,7 +131,7 @@ public class IdentifiersOrg {
    * @return The URL with the corrected Reactome ID, or the original URL if no correction was needed.
    */
   private static String fixReactomeId(String resource) {
-    String identifier = "";
+    String identifier;
     if (resource.contains("R-ALL-REACT_")) {
       String[] splits = resource.split("R-ALL-REACT_");
       if(splits.length != 2){

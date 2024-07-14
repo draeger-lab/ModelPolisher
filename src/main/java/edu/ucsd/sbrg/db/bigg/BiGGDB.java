@@ -35,16 +35,17 @@ import static java.text.MessageFormat.format;
  * 
  * @author Andreas Dr&auml;ger
  */
+@SuppressWarnings("ALL")
 public class BiGGDB {
 
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(BiGGDB.class.getName());
+  private static final Logger logger = Logger.getLogger(BiGGDB.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * The connection to the database.
    */

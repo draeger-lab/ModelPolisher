@@ -4,13 +4,10 @@ import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.AnnotationPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

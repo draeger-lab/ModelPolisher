@@ -40,11 +40,11 @@ public class UpdateListener implements TreeNodeChangeListener {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(UpdateListener.class.getName());
+  private static final Logger logger = Logger.getLogger(UpdateListener.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * A map that maintains associations between gene identifiers and sets of {@link GeneProductRef} objects.
    * This map is used to track which gene products are associated with specific gene identifiers throughout the model.
@@ -79,9 +79,8 @@ public class UpdateListener implements TreeNodeChangeListener {
         String newId = (String) evt.getNewValue();
         NamedSBase nsb = (NamedSBase) evt.getSource();
         // Handle the ID change for reactions.
-        if (nsb instanceof Reaction) {
-          Reaction r = (Reaction) nsb;
-          Model model = r.getModel();
+        if (nsb instanceof Reaction r) {
+            Model model = r.getModel();
           FBCModelPlugin fbcModelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
           // Update reaction references in the FBC model plugin.
           updateReactionRef(oldId, newId, fbcModelPlug);
@@ -149,15 +148,10 @@ public class UpdateListener implements TreeNodeChangeListener {
   public void nodeAdded(TreeNode node) {
     // Memorize link from GeneProduct to Associations when this association is
     // being added.
-    if (node instanceof GeneProductRef) {
-      GeneProductRef gpr = (GeneProductRef) node;
-      // Retrieve or create a set of GeneProductRefs associated with the gene product ID.
-      Set<GeneProductRef> geneRefs = geneIdToAssociation.get(gpr.getGeneProduct());
-      if (geneRefs == null) {
-        geneRefs = new HashSet<>();
-        geneIdToAssociation.put(gpr.getGeneProduct(), geneRefs);
-      }
-      geneRefs.add(gpr);
+    if (node instanceof GeneProductRef gpr) {
+        // Retrieve or create a set of GeneProductRefs associated with the gene product ID.
+        Set<GeneProductRef> geneRefs = geneIdToAssociation.computeIfAbsent(gpr.getGeneProduct(), k -> new HashSet<>());
+        geneRefs.add(gpr);
       // The following commented code would link the gene product instance directly to its associations.
       // GeneProduct gene = gpr.getGeneProductInstance();
       // if (gene != null) {

@@ -34,11 +34,11 @@ class MatlabFields {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(MatlabFields.class.getName());
+  private static final Logger logger = Logger.getLogger(MatlabFields.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Map<String, Array> fields;
   private static MatlabFields instance;
 
@@ -63,7 +63,7 @@ class MatlabFields {
    *
    */
   private void initializeFields(Struct struct) {
-    List<String> knownFields = Arrays.stream(ModelField.values()).map(Enum::name).collect(Collectors.toList());
+    List<String> knownFields = Arrays.stream(ModelField.values()).map(Enum::name).toList();
     List<String> fieldsFound = struct.getFieldNames();
     logger.info(format(MESSAGES.getString("KNOWN_FIELDS_MISSING"),
       knownFields.parallelStream().filter(Predicate.not(fieldsFound::contains)).collect(Collectors.toSet())));

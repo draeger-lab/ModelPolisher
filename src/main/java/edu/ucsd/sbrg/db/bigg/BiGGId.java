@@ -39,11 +39,11 @@ public class BiGGId {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(BiGGId.class.getName());
+  private static final Logger logger = Logger.getLogger(BiGGId.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * First part of BiGG ID, either R, M or G
    */
@@ -655,21 +655,21 @@ public class BiGGId {
     }
     // Append abbreviation if set, prefixed by an underscore if not the first element
     if (isSetAbbreviation()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(getAbbreviation());
     }
     // Append compartment code if set, prefixed by an underscore if not the first element
     if (isSetCompartmentCode()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(getCompartmentCode());
     }
     // Append tissue code if set, prefixed by an underscore if not the first element
     if (isSetTissueCode()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(getTissueCode());
@@ -694,19 +694,19 @@ public class BiGGId {
       sb.append(prefix);
     }
     if (abbreviation != null && !abbreviation.isEmpty()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(abbreviation);
     }
     if (compartmentCode != null && !compartmentCode.isEmpty()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(compartmentCode);
     }
     if (tissueCode != null && !tissueCode.isEmpty()) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
 	sb.append('_');
       }
       sb.append(tissueCode);

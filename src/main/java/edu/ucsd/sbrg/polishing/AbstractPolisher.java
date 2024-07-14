@@ -26,7 +26,7 @@ public abstract class AbstractPolisher<SBMLElement> {
 
     public void polish(List<SBMLElement> elementsToPolish) {
         throw new UnsupportedOperationException();
-    };
+    }
 
     abstract public void polish(SBMLElement elementToPolish);
 

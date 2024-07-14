@@ -35,11 +35,11 @@ public class ReactionParser {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(ReactionParser.class.getName());
+  private static final Logger logger = Logger.getLogger(ReactionParser.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final ModelBuilder builder;
   private final int index;
   private static MatlabFields matlabFields;
@@ -127,7 +127,6 @@ public class ReactionParser {
                   ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
                 }
               });
-            } else {
             }
           } catch (IllegalArgumentException exc) {
             logger.warning(format(MESSAGES.getString("REACT_PARTIC_INVALID"), Utils.getMessage(exc)));
@@ -332,19 +331,19 @@ public class ReactionParser {
       String ref = st.nextElement().toString().trim();
       if (!addResource(ref, term, "pubmed")) {
         if (!addResource(ref, term, "doi")) {
-          if (otherCitation.length() > 0) {
+          if (!otherCitation.isEmpty()) {
             otherCitation.append(", ");
           }
           otherCitation.append(ref);
         }
       }
     }
-    if (otherCitation.length() > 0) {
+    if (!otherCitation.isEmpty()) {
       try {
         if (reaction.isSetNotes()) {
           reaction.appendNotes("\n\nReference: " + otherCitation);
         } else {
-          reaction.appendNotes(SBMLtools.toNotesString("<p>Reference: " + otherCitation.toString() + "</p>"));
+          reaction.appendNotes(SBMLtools.toNotesString("<p>Reference: " + otherCitation + "</p>"));
         }
       } catch (XMLStreamException exc) {
         COBRAUtils.logException(exc);
@@ -412,7 +411,7 @@ public class ReactionParser {
     Entries entries = Entries.getInstance();
     String pattern = entries.getPattern(entries.getCollectionForProvider(prefix));
     boolean validId = false;
-    if (!pattern.equals("")) {
+    if (!pattern.isEmpty()) {
       validId = IdentifiersOrg.checkPattern(id, pattern);
       if (!validId) {
         logger.warning(format(MESSAGES.getString("PATTERN_MISMATCH"), id, pattern));

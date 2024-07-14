@@ -54,11 +54,11 @@ public class SBMLFix {
   /**
    * A {@link Logger} for this class.
    */
-  private static final transient Logger logger = Logger.getLogger(SBMLFix.class.getName());
+  private static final Logger logger = Logger.getLogger(SBMLFix.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final transient ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * 
    */
@@ -166,9 +166,8 @@ public class SBMLFix {
              */
             for (int i = 0; i < fluxObjectives.length; i++) {
               final String id = fluxObjectives[i];
-              Reaction r = listOfReactions.firstHit((obj) -> {
-                return (obj instanceof Reaction) && id.equals(((Reaction) obj).getId());
-              });
+              Reaction r = listOfReactions.firstHit((obj) ->
+                      (obj instanceof Reaction) && id.equals(((Reaction) obj).getId()));
               if (r != null) {
                 createFluxObjective(modelDescriptor, r, fluxCoefficients, activeObjective, i);
               } else {
@@ -181,9 +180,8 @@ public class SBMLFix {
              * objective.
              */
             final Pattern pattern = ReactionNamePatterns.BIOMASS_CASE_INSENSITIVE.getPattern();
-            Reaction rBiomass = listOfReactions.firstHit((obj) -> {
-              return (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches();
-            });
+            Reaction rBiomass = listOfReactions.firstHit((obj) ->
+                    (obj instanceof Reaction) && pattern.matcher(((Reaction) obj).getId()).matches());
             if (rBiomass != null) {
               createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, activeObjective, 0);
             } else {

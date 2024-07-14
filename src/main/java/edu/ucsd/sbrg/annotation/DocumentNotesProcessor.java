@@ -122,7 +122,7 @@ public class DocumentNotesProcessor {
     private String parseNotes(String location, Map<String, String> replacements) throws IOException {
         StringBuilder sb = new StringBuilder();
         try (InputStream is = getClass().getResourceAsStream(location);
-             InputStreamReader isReader = new InputStreamReader((is != null) ? is : new FileInputStream(new File(location)));
+             InputStreamReader isReader = new InputStreamReader((is != null) ? is : new FileInputStream(location));
              BufferedReader br = new BufferedReader(isReader)) {
             String line;
             boolean start = false;

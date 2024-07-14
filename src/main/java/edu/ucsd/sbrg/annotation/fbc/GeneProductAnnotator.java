@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.annotation.fbc;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.annotation.AnnotationUtils;
-import edu.ucsd.sbrg.annotation.BiGGAnnotator;
 import edu.ucsd.sbrg.annotation.CVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
@@ -69,7 +68,8 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
   @Override
   public void annotate(GeneProduct geneProduct) {
     Optional<BiGGId> biggId = checkId(geneProduct);
-    Optional<String> label = getLabel(geneProduct, biggId);
+
+    Optional<String> label = biggId.map(id -> getLabel(geneProduct, id));
     if (label.isEmpty()) {
       return;
     }
@@ -120,13 +120,13 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
    * @param biggId An Optional containing the BiGGId of the gene product, which may be used to generate a label if the gene product's own label is not set.
    * @return An {@code Optional<String>} containing the label of the gene product, or an empty string if no appropriate label is found.
    */
-  public Optional<String> getLabel(GeneProduct geneProduct, Optional<BiGGId> biggId) {
+  public String getLabel(GeneProduct geneProduct, BiGGId biggId) {
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
-      return Optional.of(geneProduct.getLabel());
+      return geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
-      return biggId.map(BiGGId::toBiGGId);
+      return biggId.toBiGGId();
     } else {
-      return Optional.of("");
+      return "";
     }
   }
 
