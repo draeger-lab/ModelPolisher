@@ -1,8 +1,9 @@
 package edu.ucsd.sbrg.polishing;
 
+import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.miriam.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
 
@@ -20,50 +21,47 @@ import java.util.Optional;
  * This ensures that all these components adhere uniformly to the correct unit specifications, 
  * maintaining consistency and accuracy throughout the model's unit definitions.
  */
-public class UnitPolisher {
+public class UnitPolisher extends AbstractPolisher<Model>{
 
-    public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, Registry.createURI("pubmed", 7986045));
+    public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, IdentifiersOrg.createURI("pubmed", 7986045));
     public static final String GROWTH_UNIT_ID = "mmol_per_gDW_per_hr";
     public static final String GROWTH_UNIT_NAME = "Millimoles per gram (dry weight) per hour";
-    public static final CVTerm CV_TERM_IS_SUBSTANCE_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000006"));
-    public static final CVTerm CV_TERM_IS_TIME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000003"));
-    public static final CVTerm CV_TERM_IS_VOLUME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000095"));
-    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000010"));
-    public static final CVTerm CV_TERM_IS_UO_HOUR = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000032"));
-    public static final CVTerm CV_TERM_IS_UO_MMOL = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000040"));
-    public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, Registry.createURI("unit", "UO:0000021"));
-    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000010"));
-    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, Registry.createURI("unit", "UO:0000013"));
+    public static final CVTerm CV_TERM_IS_SUBSTANCE_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000006"));
+    public static final CVTerm CV_TERM_IS_TIME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000003"));
+    public static final CVTerm CV_TERM_IS_VOLUME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000095"));
+    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000010"));
+    public static final CVTerm CV_TERM_IS_UO_HOUR = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000032"));
+    public static final CVTerm CV_TERM_IS_UO_MMOL = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000040"));
+    public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000021"));
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, IdentifiersOrg.createURI("unit", "UO:0000010"));
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, IdentifiersOrg.createURI("unit", "UO:0000013"));
 
-    private List<ProgressObserver> observers = new ArrayList<>();
-    private final Model model;
+    public UnitPolisher(Parameters parameters) {
+        super(parameters);
+    }
+    public UnitPolisher(Parameters parameters, List<ProgressObserver> observers) {
+        super(parameters, observers);
+    }
 
-    public UnitPolisher(Model model, List<ProgressObserver> observers) {
-        this.model = model;
-        this.observers = observers;
-    }
-    public UnitPolisher(Model model) {
-        this.model = model;
-    }
     /**
      * Ensures that all necessary {@link UnitDefinition}s and {@link Unit}s are present in the model.
      * If any are missing, they are created and added to the model. This method also sets the model's
      * extent and substance units if they are not already set.
      */
-    public void polishListOfUnitDefinitions() {
+    public void polish(Model model) {
         // Update progress bar to indicate the current process stage
         updateProgressObservers("Polishing Unit Definitions (2/9)   ", null);
 
-        // Retrieve the total number of unit definitions in the model
-        int udCount = model.getUnitDefinitionCount();
+//        int udCount = model.getUnitDefinitionCount();
+
         // Fetch all unit definitions from the model
         var unitDefinitions = model.getListOfUnitDefinitions();
 
         // Create or retrieve a growth unit definition
-        var growth = createGrowthUnitDefinition();
+        var growth = createGrowthUnitDefinition(model);
 
         // Assign the growth unit definition to the model
-        setModelUnits(growth, unitDefinitions);
+        setModelUnits(model, growth, unitDefinitions);
 
         // Get the instance of substance units from the model
         UnitDefinition substanceUnits = model.getSubstanceUnitsInstance();
@@ -93,7 +91,7 @@ public class UnitPolisher {
     /**
      * This unit will be created if no other growth unit can be extracted from the model.
      */
-    private UnitDefinition defaultGrowthUnitDefinition() {
+    private UnitDefinition defaultGrowthUnitDefinition(Model model) {
         var growth = new UnitDefinition(model.getLevel(), model.getVersion());
         growth.setId(GROWTH_UNIT_ID);
         growth.setName(GROWTH_UNIT_NAME);
@@ -110,9 +108,9 @@ public class UnitPolisher {
      *
      * @return The newly created or modified growth unit definition.
      */
-    private UnitDefinition createGrowthUnitDefinition() {
+    private UnitDefinition createGrowthUnitDefinition(Model model) {
         // Create a default growth unit definition.
-        var growth = defaultGrowthUnitDefinition();
+        var growth = defaultGrowthUnitDefinition(model);
         // Check if an equivalent growth unit already exists in the model.
         var otherGrowth = findGrowthUnit(model.getListOfUnitDefinitions(), growth).orElse(growth);
         // Set the meta ID of the growth unit if it is not already set.
@@ -186,14 +184,14 @@ public class UnitPolisher {
      * @param growth The UnitDefinition instance representing the growth unit.
      * @param unitDefinitions A ListOf<UnitDefinition> containing predefined unit definitions for substance, time, and volume.
      */
-    private void setModelUnits(UnitDefinition growth, ListOf<UnitDefinition> unitDefinitions) {
+    private void setModelUnits(Model model, UnitDefinition growth, ListOf<UnitDefinition> unitDefinitions) {
         // Handle setting of substance units
         var substanceUnits = model.getSubstanceUnitsInstance();
         if (substanceUnits == null) {
             if (unitDefinitions.get(UnitDefinition.SUBSTANCE) != null) {
                 model.setSubstanceUnits(UnitDefinition.SUBSTANCE);
             } else {
-                model.setSubstanceUnits(createSubstanceUnit(growth));
+                model.setSubstanceUnits(createSubstanceUnit(model, growth));
             }
         }
         model.getSubstanceUnitsInstance().addCVTerm(CV_TERM_IS_SUBSTANCE_UNIT);
@@ -204,7 +202,7 @@ public class UnitPolisher {
             if (unitDefinitions.get(UnitDefinition.TIME) != null) {
                 model.setTimeUnits(UnitDefinition.TIME);
             } else {
-                model.setTimeUnits(createTimeUnit(growth));
+                model.setTimeUnits(createTimeUnit(model, growth));
             }
         }
         model.getTimeUnitsInstance().addCVTerm(CV_TERM_IS_TIME_UNIT);
@@ -227,7 +225,7 @@ public class UnitPolisher {
      * @param growth The UnitDefinition instance representing the growth unit.
      * @return The newly created UnitDefinition with appropriate substance units.
      */
-    private UnitDefinition createSubstanceUnit(UnitDefinition growth) {
+    private UnitDefinition createSubstanceUnit(Model model, UnitDefinition growth) {
         final var substanceUnits = model.createUnitDefinition(UnitDefinition.SUBSTANCE);
         
         // Handle GRAM units: clone if present, otherwise create default GRAM unit
@@ -264,7 +262,7 @@ public class UnitPolisher {
      * @param growth The UnitDefinition instance representing the growth unit.
      * @return The newly created UnitDefinition with appropriate time units.
      */
-    private UnitDefinition createTimeUnit(UnitDefinition growth) {
+    private UnitDefinition createTimeUnit(Model model, UnitDefinition growth) {
         final var timeUnitDefinition = model.createUnitDefinition(UnitDefinition.TIME);
         getUnitByKind(growth, Unit.Kind.SECOND).ifPresentOrElse(
                 unit -> {
@@ -309,9 +307,4 @@ public class UnitPolisher {
         return sb;
     }
 
-    private void updateProgressObservers(String text, AbstractSBase obj) {
-        for (var o : observers) {
-            o.update(new ProgressUpdate(text, obj));
-        }
-    }
 }

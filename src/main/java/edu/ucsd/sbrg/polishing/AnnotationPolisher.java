@@ -1,14 +1,26 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.annotation.AbstractAnnotator;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.CVTerm;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class AnnotationPolisher {
+public class AnnotationPolisher extends AbstractPolisher<Annotation> {
+
+    public AnnotationPolisher(Parameters parameters) {
+        super(parameters);
+    }
+
+    public AnnotationPolisher(Parameters parameters, List<ProgressObserver> observers) {
+        super(parameters, observers);
+    }
 
     /**
      * Processes the annotations of an SBML entity to potentially correct identifiers
@@ -24,7 +36,7 @@ public class AnnotationPolisher {
         for (CVTerm term : annotation.getListOfCVTerms()) {
             Set<String> resources = new HashSet<>();
             for (String resource : term.getResources()) {
-                Optional<String> checkedResource = Registry.checkResourceUrl(resource);
+                Optional<String> checkedResource = IdentifiersOrg.checkResourceUrl(resource);
                 if (checkedResource.isEmpty()) {
                     // The resource URL could not be verified, so it is retained as is.
                     resources.add(resource);

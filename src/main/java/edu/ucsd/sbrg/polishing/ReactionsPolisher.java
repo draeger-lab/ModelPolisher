@@ -35,31 +35,19 @@ import static java.text.MessageFormat.format;
 public class ReactionsPolisher extends AbstractPolisher<Reaction> {
 
   private final static Logger logger = Logger.getLogger(ReactionsPolisher.class.getName());
+  private static final ResourceBundle MESSAGES = de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  private static final ResourceBundle MESSAGES =
-    de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  private final Parameters parameters;
-  private final GeneProductAssociationsPolisher gpaPolisher;
+  private final GeneProductAssociationsProcessor gpaPolisher;
 
   public ReactionsPolisher(Parameters parameters) {
-    this.parameters = parameters;
-    this.gpaPolisher = new GeneProductAssociationsPolisher();
+      super(parameters);
+      this.gpaPolisher = new GeneProductAssociationsProcessor();
   }
 
   public ReactionsPolisher(Parameters parameters, List<ProgressObserver> observers) {
-    super(observers);
-    this.parameters = parameters;
-    this.gpaPolisher = new GeneProductAssociationsPolisher();
+    super(parameters, observers);
+    this.gpaPolisher = new GeneProductAssociationsProcessor();
   }
-
-  public ReactionsPolisher(GeneProductAssociationsPolisher gpaPolisher,
-                           Parameters parameters,
-                           List<ProgressObserver> observers) {
-    super(observers);
-    this.parameters = parameters;
-    this.gpaPolisher = gpaPolisher;
-  }
-
 
   /**
    * Polishes all reactions in the given SBML model. This method iterates through each reaction,
@@ -97,7 +85,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
   @SuppressWarnings("deprecated")
   public void polish(Reaction reaction) {
       // Process any external resources linked via annotations in the reaction
-      new AnnotationPolisher().polish(reaction.getAnnotation());
+      new AnnotationPolisher(parameters).polish(reaction.getAnnotation());
       // Check and set the compartment of the reaction based on its reactants and products
       polishCompartments(reaction);
       // Set meta ID if not set and CV terms are present

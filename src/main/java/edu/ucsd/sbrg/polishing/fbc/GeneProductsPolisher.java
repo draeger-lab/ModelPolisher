@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.AnnotationPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -17,10 +18,8 @@ import java.util.List;
  */
 public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
 
-  private List<ProgressObserver> observers;
-
-  public GeneProductsPolisher(List<ProgressObserver> observers) {
-    this.observers = observers;
+  public GeneProductsPolisher(Parameters parameters, List<ProgressObserver> observers) {
+      super(parameters, observers);
   }
 
 
@@ -48,7 +47,7 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   @Override
   public void polish(GeneProduct geneProduct) {
     // Process the annotations associated with the gene product
-    new AnnotationPolisher().polish(geneProduct.getAnnotation());
+    new AnnotationPolisher(parameters).polish(geneProduct.getAnnotation());
     
     // Initialize label variable
     String label = null;
@@ -83,12 +82,6 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
     // Set the gene product's name if it is not set or is "None"
     if (!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None")) {
       geneProduct.setName(label);
-    }
-  }
-
-  protected void updateProgressObservers(String text, AbstractSBase obj) {
-    for (var o : observers) {
-      o.update(new ProgressUpdate(text, obj));
     }
   }
 

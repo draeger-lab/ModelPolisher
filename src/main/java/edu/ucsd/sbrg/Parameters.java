@@ -1,12 +1,14 @@
 package edu.ucsd.sbrg;
 
 import java.io.File;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.io.IOOptions;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper class to store all parameters for running ModelPolisher in batch
@@ -17,170 +19,111 @@ import edu.ucsd.sbrg.io.IOOptions;
 public class Parameters {
 
   /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-
-  /**
    * @see ModelPolisherOptions#ADD_ADB_ANNOTATIONS
    */
-  private boolean addADBAnnotations = ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
+  protected boolean addADBAnnotations = ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
   /**
    * @see ModelPolisherOptions#ANNOTATE_WITH_BIGG
    */
-  private boolean annotateWithBiGG = ModelPolisherOptions.ANNOTATE_WITH_BIGG.getDefaultValue();
+  protected boolean annotateWithBiGG = ModelPolisherOptions.ANNOTATE_WITH_BIGG.getDefaultValue();
   /**
    * @see ModelPolisherOptions#CHECK_MASS_BALANCE
    */
-  private boolean checkMassBalance = ModelPolisherOptions.CHECK_MASS_BALANCE.getDefaultValue();
+  protected boolean checkMassBalance = ModelPolisherOptions.CHECK_MASS_BALANCE.getDefaultValue();
   /**
    * @see ModelPolisherOptions#COMPRESSION_TYPE
    */
-  private ModelPolisherOptions.Compression compression = ModelPolisherOptions.Compression.NONE;
-  /**
-   * Can be {@code null}
-   *
-   * @see ModelPolisherOptions#DOCUMENT_NOTES_FILE
-   */
-  private File documentNotesFile = null;
+  protected ModelPolisherOptions.Compression compression = ModelPolisherOptions.Compression.NONE;
   /**
    * @see ModelPolisherOptions#DOCUMENT_TITLE_PATTERN
    */
-  private String documentTitlePattern = ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue();
+  protected String documentTitlePattern = ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue();
   /**
    * @see ModelPolisherOptions#FLUX_COEFFICIENTS
    */
   // default is a boxed value, i.e. easier to just set it explicitly here to the same default value
-  double[] fluxCoefficients = new double[0];
+  protected double[] fluxCoefficients = new double[0];
   /**
    * @see ModelPolisherOptions#FLUX_OBJECTIVES
    */
-  private String[] fluxObjectives = ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue();
+  protected String[] fluxObjectives = ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue();
   /**
    * @see ModelPolisherOptions#INCLUDE_ANY_URI
    */
-  private boolean includeAnyURI = ModelPolisherOptions.INCLUDE_ANY_URI.getDefaultValue();
-  /**
-   * Can be {@code null}
-   *
-   * @see ModelPolisherOptions#MODEL_NOTES_FILE
-   */
-  private File modelNotesFile = null;
+  protected boolean includeAnyURI = ModelPolisherOptions.INCLUDE_ANY_URI.getDefaultValue();
   /**
    * @see ModelPolisherOptions#NO_MODEL_NOTES
    */
-  private boolean noModelNotes = ModelPolisherOptions.NO_MODEL_NOTES.getDefaultValue();
+  protected boolean noModelNotes = ModelPolisherOptions.NO_MODEL_NOTES.getDefaultValue();
   /**
    * @see ModelPolisherOptions#OMIT_GENERIC_TERMS
    */
-  private boolean omitGenericTerms = ModelPolisherOptions.OMIT_GENERIC_TERMS.getDefaultValue();
+  protected boolean omitGenericTerms = ModelPolisherOptions.OMIT_GENERIC_TERMS.getDefaultValue();
   /**
    * @see ModelPolisherOptions#OUTPUT_COMBINE
    */
-  private boolean outputCOMBINE = ModelPolisherOptions.OUTPUT_COMBINE.getDefaultValue();
+  protected boolean outputCOMBINE = ModelPolisherOptions.OUTPUT_COMBINE.getDefaultValue();
   /**
    * @see ModelPolisherOptions#SBML_VALIDATION
    */
-  private boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
+  protected boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
   /**
    * @see ModelPolisherOptions#WRITE_JSON
    */
-  private boolean writeJSON = ModelPolisherOptions.WRITE_JSON.getDefaultValue();
-  /**
-   * @see IOOptions#INPUT
-   */
-  private File input = null;
-  /**
-   * @see IOOptions#OUTPUT
-   */
-  private File output = null;
+  protected boolean writeJSON = ModelPolisherOptions.WRITE_JSON.getDefaultValue();
 
   /**
-   * Default constructor for testing purposes
+   * @see ModelPolisherOptions#MODEL_NOTES_FILE
    */
-  private Parameters() {
-    super();
-  }
-
+  protected File modelNotesFile = null;
 
   /**
-   * Constructor for non-testing code path
-   *
-   * @throws IllegalArgumentException
-   *         propagated from {@link Parameters#initParameters(SBProperties)}
+   * @see ModelPolisherOptions#DOCUMENT_NOTES_FILE
    */
+  protected File documentNotesFile = null;
+
   public Parameters(SBProperties args) throws IllegalArgumentException {
     super();
-    initParameters(args);
   }
 
 
-  /**
-   * Converts {@link SBProperties} holding commandline arguments into usable {@link Parameters}
-   *
-   * @param args:
-   *        Arguments from commandline
-   * @throws IllegalArgumentException
-   *         if either input or output file are not provided, as program execution makes no sense if either is missing
-   */
-  private void initParameters(SBProperties args) throws IllegalArgumentException {
-    String inPath = args.getProperty(IOOptions.INPUT);
-    if (inPath == null) {
-      throw new IllegalArgumentException(MESSAGES.getString("PARAM_INPUT_MISSING"));
-    }
-    input = new File(inPath);
-    String outPath = args.getProperty(IOOptions.OUTPUT);
-    if (outPath == null) {
-      throw new IllegalArgumentException(MESSAGES.getString("PARAM_OUTPUT_MISSING"));
-    }
-    output = new File(outPath);
-    documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
-    if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
-      String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
-      String[] coeff = c.substring(1, c.length() - 1).split(",");
+  public Parameters(Map<String, Object> params) {
+    documentTitlePattern = (String) params.getOrDefault("documentTitlePattern",
+            ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue());
+    if (params.containsKey("fluxCoefficients")) {
+      String c = (String) params.get("fluxCoefficients");
+
+      String[] coeff = c.trim().split(",");
       fluxCoefficients = new double[coeff.length];
       for (int i = 0; i < coeff.length; i++) {
         fluxCoefficients[i] = Double.parseDouble(coeff[i].trim());
       }
     }
-    if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
-      String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
-      fluxObjectives = fObjectives.substring(1, fObjectives.length() - 1).split(":");
+    if (params.containsKey("fluxObjectives")) {
+      String fObjectives = (String) params.get("fluxObjectives");
+      fluxObjectives = fObjectives.trim().split(":");
     }
-    annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
-    outputCOMBINE = args.getBooleanProperty(ModelPolisherOptions.OUTPUT_COMBINE);
-    addADBAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
-    checkMassBalance = args.getBooleanProperty(ModelPolisherOptions.CHECK_MASS_BALANCE);
-    noModelNotes = args.getBooleanProperty(ModelPolisherOptions.NO_MODEL_NOTES);
-    compression = ModelPolisherOptions.Compression.valueOf(args.getProperty(ModelPolisherOptions.COMPRESSION_TYPE));
-    documentNotesFile = parseFileOption(args, ModelPolisherOptions.DOCUMENT_NOTES_FILE);
-    includeAnyURI = args.getBooleanProperty(ModelPolisherOptions.INCLUDE_ANY_URI);
-    modelNotesFile = parseFileOption(args, ModelPolisherOptions.MODEL_NOTES_FILE);
-    omitGenericTerms = args.getBooleanProperty(ModelPolisherOptions.OMIT_GENERIC_TERMS);
-    sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-    writeJSON = args.getBooleanProperty(ModelPolisherOptions.WRITE_JSON);
-  }
-
-
-  /**
-   * Scans the given command-line options for a specific file option and
-   * returns the corresponding file if it exists, {@code null} otherwise.
-   *
-   * @param args
-   *        command-line options.
-   * @param option
-   *        a specific file option to look for.
-   * @return a {@link File} object that corresponds to a desired command-line
-   *         option, or {@code null} if it does not exist.
-   */
-  private File parseFileOption(SBProperties args, Option<File> option) {
-    if (args.containsKey(option)) {
-      File notesFile = new File(args.getProperty(option));
-      if (notesFile.exists() && notesFile.canRead()) {
-        return notesFile;
-      }
-    }
-    return null;
+    annotateWithBiGG = (boolean) params.getOrDefault("annotateWithBiGG",
+            ModelPolisherOptions.ANNOTATE_WITH_BIGG.getDefaultValue());
+    outputCOMBINE = (boolean) params.getOrDefault("outputCOMBINE",
+            ModelPolisherOptions.OUTPUT_COMBINE.getDefaultValue());
+    addADBAnnotations = (boolean) params.getOrDefault("addADBAnnotations",
+            ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue());
+    checkMassBalance = (boolean) params.getOrDefault("checkMassBalance",
+            ModelPolisherOptions.CHECK_MASS_BALANCE.getDefaultValue());
+    noModelNotes = (boolean) params.getOrDefault("noModelNotes",
+            ModelPolisherOptions.NO_MODEL_NOTES.getDefaultValue());
+    compression = ModelPolisherOptions.Compression.valueOf(
+            (String) params.getOrDefault("compressionType",
+                    ModelPolisherOptions.COMPRESSION_TYPE.getDefaultValue()));
+    includeAnyURI = (boolean) params.getOrDefault("includeAnyURI",
+            ModelPolisherOptions.INCLUDE_ANY_URI.getDefaultValue());
+    omitGenericTerms = (boolean) params.getOrDefault("omitGenericTerms",
+            ModelPolisherOptions.OMIT_GENERIC_TERMS.getDefaultValue());
+    sbmlValidation = (boolean) params.getOrDefault("sbmlValidation",
+            ModelPolisherOptions.SBML_VALIDATION.getDefaultValue());
+    writeJSON = (boolean) params.getOrDefault("writeJSON",
+            ModelPolisherOptions.WRITE_JSON.getDefaultValue());
   }
 
 
@@ -219,11 +162,6 @@ public class Parameters {
   }
 
 
-  public File documentNotesFile() {
-    return documentNotesFile;
-  }
-
-
   public String documentTitlePattern() {
     return documentTitlePattern;
   }
@@ -236,11 +174,6 @@ public class Parameters {
 
   public String[] fluxObjectives() {
     return fluxObjectives;
-  }
-
-
-  public File modelNotesFile() {
-    return modelNotesFile;
   }
 
 
@@ -258,13 +191,12 @@ public class Parameters {
     return writeJSON;
   }
 
-
-  public File input() {
-    return input;
+  public File documentNotesFile() {
+    return documentNotesFile;
   }
 
 
-  public File output() {
-    return output;
+  public File modelNotesFile() {
+    return modelNotesFile;
   }
 }

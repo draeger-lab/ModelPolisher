@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.List;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -24,8 +25,8 @@ public class CompartmentPolisher extends AbstractPolisher<Compartment> {
   private final static Logger logger = Logger.getLogger(CompartmentPolisher.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  public CompartmentPolisher(List<ProgressObserver> observers) {
-      super(observers);
+  public CompartmentPolisher(Parameters parameters, List<ProgressObserver> observers) {
+    super(parameters, observers);
   }
 
 
@@ -51,7 +52,7 @@ public class CompartmentPolisher extends AbstractPolisher<Compartment> {
   @Override
   public void polish(Compartment compartment) {
     // Process any external resources linked via annotations in the compartment
-    new AnnotationPolisher().polish(compartment.getAnnotation());
+    new AnnotationPolisher(parameters).polish(compartment.getAnnotation());
 
     // Set a default ID if not already set, otherwise clean up the ID according to BiGG specifications
     if (!compartment.isSetId()) {

@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
+import edu.ucsd.sbrg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -11,9 +12,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.TestUtils.assertCVTermsArePresent;
+import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UnitPolisherTest {
+
+    private final Parameters parameters = initParameters();
 
     public static Set<String> setOfUnitDefinitions(Model m) {
         return m.getListOfUnitDefinitions()
@@ -69,8 +73,8 @@ public class UnitPolisherTest {
     @Test
     public void modelWithNoUnitDefinitions() {
         var m = new Model(3, 2);
-        var polisher = new UnitPolisher(m);
-        polisher.polishListOfUnitDefinitions();
+
+        new UnitPolisher(parameters).polish(m);
 
         assertEquals(3, m.getListOfUnitDefinitions().getChildCount());
         assertEquals(Set.of("mmol_per_gDW_per_hr", "substance", "time"),
@@ -128,8 +132,7 @@ public class UnitPolisherTest {
         someUnit.setId("some");
         growth.addUnit(someUnit);
 
-        var polisher = new UnitPolisher(m);
-        polisher.polishListOfUnitDefinitions();
+        new UnitPolisher(parameters).polish(m);
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "mmol_per_gDW_per_hr__preexisting",
                 "substance", "time"),
@@ -168,8 +171,7 @@ public class UnitPolisherTest {
         m.addUnitDefinition(time);
         m.setTimeUnits("test_time");
 
-        var polisher = new UnitPolisher(m);
-        polisher.polishListOfUnitDefinitions();
+        new UnitPolisher(parameters).polish(m);
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "test_time", "test_substance"),
                 setOfUnitDefinitions(m));

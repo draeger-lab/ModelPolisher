@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -206,9 +206,9 @@ public class JSONParser {
     if (id.startsWith("http")) {
       resource = id;
     } else {
-      resource = Registry.createURI(providerCode, id);
+      resource = IdentifiersOrg.createURI(providerCode, id);
     }
-    return Registry.checkResourceUrl(resource);
+    return IdentifiersOrg.checkResourceUrl(resource);
   }
 
 

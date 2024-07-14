@@ -194,7 +194,7 @@ tasks.javadoc {
 task downloadMIRIAM {
     doLast {
 	def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
-	def parentDir = file('src/main/resources/edu/ucsd/sbrg/miriam')
+	def parentDir = file('src/main/resources/edu/ucsd/sbrg/identifiersorg')
 	def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
 
 	if (!parentDir.exists()) {

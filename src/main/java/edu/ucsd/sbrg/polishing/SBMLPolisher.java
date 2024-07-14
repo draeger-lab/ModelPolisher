@@ -15,21 +15,12 @@ import java.util.logging.Logger;
 
 public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
 
-    /**
-     * A {@link Logger} for this class.
-     */
     private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
-
-    /**
-     * Bundle for ModelPolisher logger messages
-     */
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-    private final Parameters parameters;
 
     public SBMLPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(observers);
-        this.parameters = parameters;
+        super(parameters, observers);
     }
 
     /**
@@ -56,7 +47,7 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
         new ModelPolisher(parameters, getObservers()).polish(model);
 
         // Process any external resources linked in the document's annotations.
-        new AnnotationPolisher().polish(doc.getAnnotation());
+        new AnnotationPolisher(parameters).polish(doc.getAnnotation());
     }
 
 }

@@ -17,8 +17,7 @@ package edu.ucsd.sbrg.db.bigg;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.db.PostgreSQLConnector;
-import edu.ucsd.sbrg.miriam.Registry;
-import org.sbml.jsbml.util.Pair;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 
 import java.sql.Date;
 import java.sql.*;
@@ -30,7 +29,6 @@ import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.Column.*;
 import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.*;
 import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.Table.*;
 import static java.text.MessageFormat.format;
-import static org.sbml.jsbml.util.Pair.pairOf;
 
 /**
  * This class provides a connection to the BiGG database.
@@ -367,7 +365,7 @@ public class BiGGDB {
           logger.warning(format(MESSAGES.getString("IDENTIFIER_NULL_GENE"), collection));
           continue;
         }
-        Registry.checkResourceUrl(resource).map(results::add);
+        IdentifiersOrg.checkResourceUrl(resource).map(results::add);
       }
       pStatement.close();
       connection.close();
@@ -469,8 +467,8 @@ public class BiGGDB {
    * @param abbreviation The abbreviation of the model for which the publications are to be retrieved.
    * @return A list of pairs where each pair consists of a publication type and its corresponding ID.
    */
-  public static List<Pair<String, String>> getPublications(String abbreviation) {
-    List<Pair<String, String>> results = new LinkedList<>();
+  public static List<Publication> getPublications(String abbreviation) {
+    List<Publication> results = new ArrayList<>();
     String query = "SELECT p." + REFERENCE_TYPE + ", p." + REFERENCE_ID + " FROM  " + PUBLICATION + " p, "
       + PUBLICATION_MODEL + " pm, " + MODEL + " m WHERE p." + ID + " = pm." + PUBLICATION_ID + " AND pm." + MODEL_ID
       + " = m." + ID + " AND m." + BIGG_ID + " = ?";
@@ -481,7 +479,7 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         String key = resultSet.getString(1);
-        results.add(pairOf(key.equals("pmid") ? "pubmed" : key, resultSet.getString(2)));
+        results.add(new Publication(key.equals("pmid") ? "pubmed" : key, resultSet.getString(2)));
       }
       pStatement.close();
       connection.close();
@@ -531,7 +529,7 @@ public class BiGGDB {
       ResultSet resultSet = pStatement.executeQuery();
       while (resultSet.next()) {
         String result = resultSet.getString(1);
-        Optional<String> url = Registry.checkResourceUrl(result);
+        Optional<String> url = IdentifiersOrg.checkResourceUrl(result);
         if (!result.contains("identifiers.org") && url.isPresent() && url.get().contains("identifiers.org")) {
           // add original resource
           resources.add(result);

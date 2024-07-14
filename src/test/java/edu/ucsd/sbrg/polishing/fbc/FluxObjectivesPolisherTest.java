@@ -1,8 +1,6 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.miriam.Registry;
-import edu.ucsd.sbrg.polishing.ParametersPolisher;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -15,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.TestUtils.initParameters;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class FluxObjectivesPolisherTest {
@@ -63,12 +61,13 @@ public class FluxObjectivesPolisherTest {
         fbcPlugin.createObjective("obj2");
         var o3 = fbcPlugin.createObjective("obj3");
         fbcPlugin.setActiveObjective(o3);
+        assertNotNull(fbcPlugin.getActiveObjectiveInstance());
 
         m.createReaction("objective_reaction1");
         m.createReaction("objective_reaction2");
         m.createReaction("yadda_Biomass_yadda");
 
-        var parameters = initParameters(Map.of("FLUX_OBJECTIVES",
+        var parameters = initParameters(Map.of("fluxObjectives",
                 " objective_reaction1:objective_reaction2 "));
 
         new FluxObjectivesPolisher(fbcPlugin, parameters).polish(fbcPlugin.getListOfObjectives());

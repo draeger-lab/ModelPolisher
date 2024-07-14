@@ -7,6 +7,7 @@ import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,21 +21,14 @@ public class TestUtils {
         return initParameters(Map.of());
     }
 
-    public static Parameters initParameters(Map<String, String> params) {
-        var props = new SBProperties();
-        props.setProperty(IOOptions.INPUT.getOptionName(),
-                "bla");
-        props.setProperty(IOOptions.OUTPUT.getOptionName(),
-                "bla");
-        props.setProperty(ModelPolisherOptions.COMPRESSION_TYPE.getOptionName(),
-                ModelPolisherOptions.Compression.NONE.name());
-        props.setProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getOptionName(),
-                "");
+    public static Parameters initParameters(Map<String, Object> params) {
+//        props.setProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getOptionName(),
+//                "");
 
-        for (var pair : params.entrySet()) {
-            props.setProperty(pair.getKey(), pair.getValue());
-        }
-        return new Parameters(props);
+        var map = new HashMap<>(params);
+        map.putIfAbsent("compressionType", ModelPolisherOptions.Compression.NONE.name());
+
+        return new Parameters(map);
     }
 
 

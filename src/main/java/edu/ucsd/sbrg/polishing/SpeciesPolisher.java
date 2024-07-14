@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
@@ -26,11 +27,12 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
 
   private final List<Species> speciesToRemove = new ArrayList<>();
 
-  public SpeciesPolisher() {
+  public SpeciesPolisher(Parameters parameters) {
+      super(parameters);
   }
 
-  public SpeciesPolisher(List<ProgressObserver> observers) {
-      super(observers);
+  public SpeciesPolisher(Parameters parameters, List<ProgressObserver> observers) {
+      super(parameters, observers);
   }
 
 
@@ -56,7 +58,7 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
    */
   public void polish(Species species) {
     // Process any external resources linked via annotations in the species
-    new AnnotationPolisher().polish(species.getAnnotation());
+    new AnnotationPolisher(parameters).polish(species.getAnnotation());
     String id = species.getId();
     
     // Check if the species ID is missing and log an error if so
@@ -144,12 +146,12 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
     SBase candidate = model.findUniqueNamedSBase(cId);
     // If the found SBase is a Compartment, polish it
     if (candidate instanceof Compartment) {
-      var compartmentPolisher = new CompartmentPolisher(getObservers());
+      var compartmentPolisher = new CompartmentPolisher(parameters, getObservers());
       compartmentPolisher.polish((Compartment) candidate);
     } else if (candidate == null) {
       // If no compartment is found, log a warning and create a new compartment
       logger.warning(format(MESSAGES.getString("CREATE_MISSING_COMP"), cId, species.getId(), species.getElementName()));
-      var compartmentPolisher = new CompartmentPolisher(getObservers());
+      var compartmentPolisher = new CompartmentPolisher(parameters, getObservers());
       compartmentPolisher.polish(model.createCompartment(cId));
     }
   }

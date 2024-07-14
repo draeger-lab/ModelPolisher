@@ -2,8 +2,8 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.miriam.Entries;
-import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.identifiersorg.Entries;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
@@ -137,10 +137,10 @@ public class SpeciesParser {
           if (id.startsWith("http")) {
             resource = id;
           } else {
-            resource = Registry.createURI(prefix, id);
+            resource = IdentifiersOrg.createURI(prefix, id);
           }
           String finalId = id;
-          success = Registry.checkResourceUrl(resource).map(res -> {
+          success = IdentifiersOrg.checkResourceUrl(resource).map(res -> {
             term.addResource(res);
             logger.finest(format(MESSAGES.getString("ADDED_URI_COBRA"), res));
             return true;

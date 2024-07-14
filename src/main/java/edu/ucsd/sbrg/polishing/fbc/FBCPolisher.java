@@ -17,20 +17,11 @@ import static java.text.MessageFormat.format;
 
 public class FBCPolisher extends AbstractPolisher<Model> {
 
-    /**
-     * A {@link Logger} for this class.
-     */
     private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
-
-    /**
-     * Bundle for ModelPolisher logger messages
-     */
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-    private final Parameters parameters;
 
     public FBCPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(observers);
-        this.parameters = parameters;
+        super(parameters, observers);
     }
 
     @Override
@@ -51,7 +42,7 @@ public class FBCPolisher extends AbstractPolisher<Model> {
         }
         // Polish the list of gene products if set
         if (modelPlug.isSetListOfGeneProducts()) {
-            new GeneProductsPolisher(getObservers()).polish(modelPlug.getListOfGeneProducts());
+            new GeneProductsPolisher(parameters, getObservers()).polish(modelPlug.getListOfGeneProducts());
         }
 
         boolean strict = new StrictnessPredicate().test(model);

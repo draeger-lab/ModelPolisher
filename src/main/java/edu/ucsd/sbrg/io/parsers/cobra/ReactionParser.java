@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.miriam.Entries;
-import edu.ucsd.sbrg.miriam.Registry;
+import edu.ucsd.sbrg.identifiersorg.Entries;
+import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -227,7 +227,7 @@ public class ReactionParser {
     while (st.hasMoreElements()) {
       String ecCode = st.nextElement().toString().trim();
       if (!ecCode.isEmpty() && validId("ec-code", ecCode)) {
-        String resource = Registry.createURI("ec-code", ecCode);
+        String resource = IdentifiersOrg.createURI("ec-code", ecCode);
         if (!term.getResources().contains(resource)) {
           match = term.addResource(resource);
         }
@@ -256,8 +256,8 @@ public class ReactionParser {
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
-      if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
-        term.addResource(Registry.createURI(prefix, kId));
+      if (!kId.isEmpty() && IdentifiersOrg.checkPattern(kId, pattern)) {
+        term.addResource(IdentifiersOrg.createURI(prefix, kId));
       }
     }
     if (term.getResourceCount() == 0) {
@@ -307,8 +307,8 @@ public class ReactionParser {
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
-      if (!kId.isEmpty() && Registry.checkPattern(kId, pattern)) {
-        term.addResource(Registry.createURI(catalog, kId));
+      if (!kId.isEmpty() && IdentifiersOrg.checkPattern(kId, pattern)) {
+        term.addResource(IdentifiersOrg.createURI(catalog, kId));
       }
     }
     if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
@@ -385,7 +385,7 @@ public class ReactionParser {
           if (st.countTokens() > 1) {
             logger.warning(format(MESSAGES.getString("SKIP_COMMENT"), resource, r, prefix));
           }
-          resource = Registry.createURI(prefix, r);
+          resource = IdentifiersOrg.createURI(prefix, r);
           logger.finest(format(MESSAGES.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }
@@ -413,7 +413,7 @@ public class ReactionParser {
     String pattern = entries.getPattern(entries.getCollectionForProvider(prefix));
     boolean validId = false;
     if (!pattern.equals("")) {
-      validId = Registry.checkPattern(id, pattern);
+      validId = IdentifiersOrg.checkPattern(id, pattern);
       if (!validId) {
         logger.warning(format(MESSAGES.getString("PATTERN_MISMATCH"), id, pattern));
       }

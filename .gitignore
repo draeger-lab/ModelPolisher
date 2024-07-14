@@ -5,7 +5,7 @@
 .project
 /build/
 /target/
-src/main/resources/edu/ucsd/sbrg/miriam/IdentifiersOrg-Registry.json
+src/main/resources/edu/ucsd/sbrg/identifiersOrgRegistry/IdentifiersOrg-Registry.json
 /src/scripts/ModelPolisherTemplate.*
 ModelPolisher.iml
 jsbml.log
@@ -18,3 +18,4 @@ jsbml.log
 *.class
 /bin
 /.vscode/
+*.dump

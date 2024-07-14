@@ -17,12 +17,11 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.annotation.ModelAnnotator;
+import edu.ucsd.sbrg.annotation.BiGGAnnotator;
 import edu.ucsd.sbrg.io.IOOptions;
 import edu.ucsd.sbrg.io.ModelReader;
 import edu.ucsd.sbrg.io.ModelWriter;
 import edu.ucsd.sbrg.io.SBMLFileUtils;
-import edu.ucsd.sbrg.polishing.ModelPolisher;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.PolisherProgressBar;
 import edu.ucsd.sbrg.reporting.ProgressInitialization;
@@ -67,20 +66,11 @@ import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
  */
 public class ModelPolisherCLILauncher extends Launcher {
 
-  /**
-   * Localization support.
-   */
   private static final ResourceBundle baseBundle = ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
-   * A {@link Logger} for this class.
-   */
   private static final Logger logger = Logger.getLogger(ModelPolisherCLILauncher.class.getName());
 
-  private Parameters parameters;
+  private CommandLineParameters parameters;
 
   /**
    * Entry point
@@ -124,10 +114,11 @@ public class ModelPolisherCLILauncher extends Launcher {
     SBProperties args = appConf.getCmdArgs();
 
     try {
-        parameters = new Parameters(args);
+        parameters = new CommandLineParameters(args);
     } catch (IllegalArgumentException exc1) {
       throw new IllegalArgumentException(exc1.getLocalizedMessage());
     }
+
     DBConfig.initBiGG(args, parameters.annotateWithBiGG());
     DBConfig.initADB(args, parameters.addADBAnnotations());
 
@@ -171,8 +162,8 @@ public class ModelPolisherCLILauncher extends Launcher {
   /**
    * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
    *
-   * @param input  Path to the input file or directory to be processed. This should correspond to {@link Parameters#input()}.
-   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link Parameters#output()}.
+   * @param input  Path to the input file or directory to be processed. This should correspond to {@link CommandLineParameters#input()}.
+   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link CommandLineParameters#output()}.
    * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
    * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherCLILauncher#processFile(File, File)}.
    */
@@ -206,24 +197,36 @@ public class ModelPolisherCLILauncher extends Launcher {
     SBMLDocument doc = new ModelReader(parameters).read(input);
     // TODO: we should be doing better sanity checking here; e.g.: just validate the SBML
     if (doc == null) return;
-    if (doc.getModel() == null) {
+    Model model = doc.getModel();
+    if (model == null) {
       logger.severe(MESSAGES.getString("MODEL_MISSING"));
       // TODO: handle this better
       throw new RuntimeException();
     }
 
-    List<ProgressObserver> observers = List.of(new PolisherProgressBar());
-    int count = taskCount(doc.getModel());
-    for (var o : observers) {
+    List<ProgressObserver> polishingObservers = List.of(new PolisherProgressBar());
+    int count = getPolishingTaskCount(model);
+    for (var o : polishingObservers) {
       o.initialize(new ProgressInitialization(count));
     }
 
-    new SBMLPolisher(parameters, observers).polish(doc);
+    new SBMLPolisher(parameters, polishingObservers).polish(doc);
 
-    var ma = new ModelAnnotator(parameters);
-    ma.annotate(doc);
+    for (var o : polishingObservers) {
+      o.finish(null);
+    }
 
-    for (var o : observers) {
+    List<ProgressObserver> annotationObservers = List.of(new PolisherProgressBar());
+    int annotationTaskCount = getAnnotationTaskCount(model);
+    for (var o : annotationObservers) {
+      o.initialize(new ProgressInitialization(annotationTaskCount));
+    }
+    // Annotate the document if the parameters specify
+    if (parameters.annotateWithBiGG()) {
+        new BiGGAnnotator(parameters, annotationObservers).annotate(doc);
+    }
+
+    for (var o : annotationObservers) {
       o.finish(null);
     }
 
@@ -240,7 +243,7 @@ public class ModelPolisherCLILauncher extends Launcher {
     logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
   }
 
-  private int taskCount(Model model) {
+  private int getPolishingTaskCount(Model model) {
     // Calculate the total number of tasks to initialize the progress bar.
     int count = 1 // Account for model properties
             // + model.getUnitDefinitionCount()
@@ -259,6 +262,16 @@ public class ModelPolisherCLILauncher extends Launcher {
     }
     return count;
   }
+
+  private int getAnnotationTaskCount(Model model) {
+    int annotationTaskCount = model.getCompartmentCount() + model.getSpeciesCount() + model.getReactionCount() + 50;
+    if (model.isSetPlugin(FBCConstants.shortLabel)) {
+      FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      annotationTaskCount += fbcModelPlugin.getGeneProductCount();
+    }
+    return annotationTaskCount;
+  }
+
 
   /*
    * (non-Javadoc)

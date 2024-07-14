@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import org.sbml.jsbml.AbstractSBase;
@@ -7,16 +8,19 @@ import org.sbml.jsbml.AbstractSBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractPolisher<SBMLElement extends AbstractSBase> {
+public abstract class AbstractPolisher<SBMLElement> {
 
+    protected final Parameters parameters;
 
     private final List<ProgressObserver> observers;
 
-    public AbstractPolisher() {
+    public AbstractPolisher(Parameters parameters) {
+        this.parameters = parameters;
         observers = new ArrayList<>();
     }
 
-    public AbstractPolisher(List<ProgressObserver> observers) {
+    public AbstractPolisher(Parameters parameters, List<ProgressObserver> observers) {
+        this.parameters = parameters;
         this.observers = observers;
     }
 

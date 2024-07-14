@@ -1,11 +1,15 @@
 package edu.ucsd.sbrg.polishing;
 
+import edu.ucsd.sbrg.Parameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 
+import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SpeciesPolisherTest {
+
+    private final Parameters parameters = initParameters();
 
     @Test
     public void noIdNoChanges() {
@@ -18,7 +22,7 @@ public class SpeciesPolisherTest {
         assertFalse(s.isSetHasOnlySubstanceUnits());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher().polish(m.getListOfSpecies());
+        new SpeciesPolisher(parameters).polish(m.getListOfSpecies());
 
         assertEquals(0, m.getCompartmentCount());
         assertFalse(s.isSetMetaId());
@@ -43,7 +47,7 @@ public class SpeciesPolisherTest {
         assertFalse(s.isSetHasOnlySubstanceUnits());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher().polish(s);
+        new SpeciesPolisher(parameters).polish(s);
 
         assertEquals("c", s.getCompartment());
         assertEquals("stuff_c", s.getId());
@@ -72,7 +76,7 @@ public class SpeciesPolisherTest {
         assertEquals(0, m.getCompartmentCount());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher().polish(s);
+        new SpeciesPolisher(parameters).polish(s);
 
         assertEquals("c", s.getCompartment());
         assertEquals("stuff_c", s.getId());
@@ -94,7 +98,7 @@ public class SpeciesPolisherTest {
 
         assertEquals(0, m.getCompartmentCount());
 
-        new SpeciesPolisher().polish(s);
+        new SpeciesPolisher(parameters).polish(s);
 
         assertEquals("e", s.getCompartment());
         assertEquals("stuff", s.getId());

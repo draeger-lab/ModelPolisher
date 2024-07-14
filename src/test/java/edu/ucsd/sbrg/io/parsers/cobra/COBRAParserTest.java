@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
      */
     @BeforeAll
     public static void setUp() throws ClassNotFoundException {
-        Class.forName("edu.ucsd.sbrg.miriam.Registry");
+        Class.forName("edu.ucsd.sbrg.identifiersorg.IdentifiersOrg");
     }
 
     @Test

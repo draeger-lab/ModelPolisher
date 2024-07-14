@@ -38,25 +38,16 @@ import static java.text.MessageFormat.format;
  */
 public class ModelPolisher extends AbstractPolisher<Model> {
 
-  /**
-   * A {@link Logger} for this class.
-   */
   private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
-
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  private final Parameters parameters;
 
   public ModelPolisher(Parameters parameters) {
-    this.parameters = parameters;
+      super(parameters);
   }
 
   public ModelPolisher(Parameters parameters, List<ProgressObserver> observers) {
-      super(observers);
-      this.parameters = parameters;
+      super(parameters, observers);
   }
 
   /**
@@ -73,22 +64,19 @@ public class ModelPolisher extends AbstractPolisher<Model> {
 
     updateProgressObservers("Polishing Model (1/9)  ", model);
 
-    // Delegate polishing tasks to specific methods.
-    new UnitPolisher(model, getObservers()).polishListOfUnitDefinitions();
+    // Delegate polishing tasks
+    new UnitPolisher(parameters, getObservers()).polish(model);
 
-    new CompartmentPolisher(getObservers()).polish(model.getListOfCompartments());
+    new CompartmentPolisher(parameters, getObservers()).polish(model.getListOfCompartments());
 
-    new SpeciesPolisher(getObservers()).polish(model.getListOfSpecies());
+    new SpeciesPolisher(parameters, getObservers()).polish(model.getListOfSpecies());
 
-    // Polish the list of parameters in the model
-    new ParametersPolisher(getObservers()).polish(model.getListOfParameters());
+    new ParametersPolisher(parameters, getObservers()).polish(model.getListOfParameters());
 
-    // Process the annotations in the model
-    new AnnotationPolisher().polish(model.getAnnotation());
+    new AnnotationPolisher(parameters, getObservers()).polish(model.getAnnotation());
 
     new ReactionsPolisher(parameters, getObservers()).polish(model.getListOfReactions());
 
-    // Check if the FBC plugin is set and proceed with polishing specific FBC components
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
       new FBCPolisher(parameters, getObservers()).polish(model);
     }

@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
+import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Parameter;
 
@@ -7,8 +8,8 @@ import java.util.List;
 
 public class ParametersPolisher extends AbstractPolisher<Parameter> {
 
-    public ParametersPolisher(List<ProgressObserver> observers) {
-        super(observers);
+    public ParametersPolisher(Parameters parameters, List<ProgressObserver> observers) {
+        super(parameters, observers);
     }
 
     /**

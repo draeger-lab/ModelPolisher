@@ -1,6 +1,5 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
-import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -10,30 +9,19 @@ import org.sbml.jsbml.ext.fbc.Objective;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 
 public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
 
-    private static final Logger logger = Logger.getLogger(FluxObjectivesPolisher.class.getName());
-
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-
-    private final List<ProgressObserver> observers;
     private final FBCModelPlugin modelPlug;
-    private final Parameters parameters;
 
     public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters) {
+        super(parameters);
         this.modelPlug = modelPlug;
-        this.parameters = parameters;
-        this.observers = List.of();
     }
-
     public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, List<ProgressObserver>  observers) {
-        this.observers = observers;
+        super(parameters, observers);
         this.modelPlug = modelPlug;
-        this.parameters = parameters;
     }
 
     /**
