@@ -18,6 +18,9 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
     private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
+    public SBMLPolisher(Parameters parameters) {
+        super(parameters);
+    }
 
     public SBMLPolisher(Parameters parameters, List<ProgressObserver> observers) {
         super(parameters, observers);

@@ -13,20 +13,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class ModelReader {
-    /**
-     * Bundle for ModelPolisher logger messages
-     */
+
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-    /**
-     * A {@link Logger} for this class.
-     */
     private static final Logger logger = Logger.getLogger(ModelReader.class.getName());
+
     private final Parameters parameters;
 
     public ModelReader(Parameters parameters) {
@@ -120,5 +117,25 @@ public class ModelReader {
         } catch (IOException e) {
             logger.severe(MESSAGES.getString("READ_HTML_ERROR"));
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ModelReader{" +
+                "parameters=" + parameters +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ModelReader that = (ModelReader) o;
+        return Objects.equals(parameters, that.parameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(parameters);
     }
 }

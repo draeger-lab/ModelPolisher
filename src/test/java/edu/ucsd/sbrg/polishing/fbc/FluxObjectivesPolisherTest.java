@@ -68,7 +68,7 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var parameters = initParameters(Map.of("fluxObjectives",
-                " objective_reaction1:objective_reaction2 "));
+                List.of("objective_reaction1", "objective_reaction2")));
 
         new FluxObjectivesPolisher(fbcPlugin, parameters).polish(fbcPlugin.getListOfObjectives());
 

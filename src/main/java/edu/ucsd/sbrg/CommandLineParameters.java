@@ -6,7 +6,7 @@ import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.io.IOOptions;
 
 import java.io.File;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class CommandLineParameters extends Parameters{
 
@@ -26,7 +26,7 @@ public class CommandLineParameters extends Parameters{
 
 
     public CommandLineParameters(SBProperties args) throws IllegalArgumentException {
-        super(args);
+        super();
         initParameters(args);
     }
 
@@ -46,15 +46,15 @@ public class CommandLineParameters extends Parameters{
         documentTitlePattern = args.getProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN);
         if (args.containsKey(ModelPolisherOptions.FLUX_COEFFICIENTS)) {
             String c = args.getProperty(ModelPolisherOptions.FLUX_COEFFICIENTS);
-            String[] coeff = c.substring(1, c.length() - 1).split(",");
-            fluxCoefficients = new double[coeff.length];
-            for (int i = 0; i < coeff.length; i++) {
-                fluxCoefficients[i] = Double.parseDouble(coeff[i].trim());
+            String[] coeff = c.trim().split(",");
+            fluxCoefficients = new ArrayList<>();
+            for (String s : coeff) {
+                fluxCoefficients.add(Double.parseDouble(s.trim()));
             }
         }
         if (args.containsKey(ModelPolisherOptions.FLUX_OBJECTIVES)) {
             String fObjectives = args.getProperty(ModelPolisherOptions.FLUX_OBJECTIVES);
-            fluxObjectives = fObjectives.substring(1, fObjectives.length() - 1).split(":");
+            fluxObjectives = List.of(fObjectives.trim().split(":"));
         }
         annotateWithBiGG = args.getBooleanProperty(ModelPolisherOptions.ANNOTATE_WITH_BIGG);
         outputCOMBINE = args.getBooleanProperty(ModelPolisherOptions.OUTPUT_COMBINE);
@@ -100,4 +100,40 @@ public class CommandLineParameters extends Parameters{
         return output;
     }
 
+    @Override
+    public String toString() {
+        return "CommandLineParameters{" +
+                "input=" + input +
+                ", output=" + output +
+                ", addADBAnnotations=" + addADBAnnotations +
+                ", annotateWithBiGG=" + annotateWithBiGG +
+                ", checkMassBalance=" + checkMassBalance +
+                ", compression=" + compression +
+                ", documentTitlePattern='" + documentTitlePattern + '\'' +
+                ", fluxCoefficients=" + fluxCoefficients +
+                ", fluxObjectives=" + fluxObjectives +
+                ", includeAnyURI=" + includeAnyURI +
+                ", noModelNotes=" + noModelNotes +
+                ", omitGenericTerms=" + omitGenericTerms +
+                ", outputCOMBINE=" + outputCOMBINE +
+                ", sbmlValidation=" + sbmlValidation +
+                ", writeJSON=" + writeJSON +
+                ", modelNotesFile=" + modelNotesFile +
+                ", documentNotesFile=" + documentNotesFile +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        CommandLineParameters that = (CommandLineParameters) o;
+        return Objects.equals(input, that.input) && Objects.equals(output, that.output);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), input, output);
+    }
 }

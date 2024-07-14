@@ -86,4 +86,12 @@ public class ModelPolisher extends AbstractPolisher<Model> {
       model.setMetaId(model.getId());
     }
   }
+
+  @Override
+  public String toString() {
+    return "ModelPolisher{" +
+            "parameters=" + parameters +
+            '}';
+  }
+
 }

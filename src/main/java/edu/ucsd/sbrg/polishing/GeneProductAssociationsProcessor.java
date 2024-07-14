@@ -24,7 +24,6 @@ public class GeneProductAssociationsProcessor {
     private Map<String, XMLNode> oldGeneAssociations;
 
 
-
     /**
      * Converts gene product associations from a given reaction to the FBC v2 format.
      * This method processes the non-RDF annotations of the reaction's model to update or create

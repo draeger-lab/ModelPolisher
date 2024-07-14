@@ -1,9 +1,10 @@
 package edu.ucsd.sbrg;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-
-import de.zbit.util.prefs.SBProperties;
+import java.util.Objects;
 
 /**
  * Helper class to store all parameters for running ModelPolisher in batch
@@ -36,12 +37,11 @@ public class Parameters {
   /**
    * @see ModelPolisherOptions#FLUX_COEFFICIENTS
    */
-  // default is a boxed value, i.e. easier to just set it explicitly here to the same default value
-  protected double[] fluxCoefficients = new double[0];
+  protected List<Double> fluxCoefficients = List.of((double) 0);
   /**
    * @see ModelPolisherOptions#FLUX_OBJECTIVES
    */
-  protected String[] fluxObjectives = ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue();
+  protected List<String> fluxObjectives = List.of(ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue());
   /**
    * @see ModelPolisherOptions#INCLUDE_ANY_URI
    */
@@ -77,27 +77,14 @@ public class Parameters {
    */
   protected File documentNotesFile = null;
 
-  public Parameters(SBProperties args) throws IllegalArgumentException {
-    super();
-  }
-
 
   public Parameters(Map<String, Object> params) {
     documentTitlePattern = (String) params.getOrDefault("documentTitlePattern",
             ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue());
-    if (params.containsKey("fluxCoefficients")) {
-      String c = (String) params.get("fluxCoefficients");
-
-      String[] coeff = c.trim().split(",");
-      fluxCoefficients = new double[coeff.length];
-      for (int i = 0; i < coeff.length; i++) {
-        fluxCoefficients[i] = Double.parseDouble(coeff[i].trim());
-      }
-    }
-    if (params.containsKey("fluxObjectives")) {
-      String fObjectives = (String) params.get("fluxObjectives");
-      fluxObjectives = fObjectives.trim().split(":");
-    }
+    fluxCoefficients = (List<Double>) params.getOrDefault("fluxCoefficients",
+            List.of(ModelPolisherOptions.FLUX_COEFFICIENTS.getDefaultValue()));
+    fluxObjectives = (List<String>) params.getOrDefault("fluxObjectives",
+            List.of(ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue()));
     annotateWithBiGG = (boolean) params.getOrDefault("annotateWithBiGG",
             ModelPolisherOptions.ANNOTATE_WITH_BIGG.getDefaultValue());
     outputCOMBINE = (boolean) params.getOrDefault("outputCOMBINE",
@@ -110,7 +97,7 @@ public class Parameters {
             ModelPolisherOptions.NO_MODEL_NOTES.getDefaultValue());
     compression = ModelPolisherOptions.Compression.valueOf(
             (String) params.getOrDefault("compressionType",
-                    ModelPolisherOptions.COMPRESSION_TYPE.getDefaultValue()));
+                    ModelPolisherOptions.COMPRESSION_TYPE.getDefaultValue().toString()));
     includeAnyURI = (boolean) params.getOrDefault("includeAnyURI",
             ModelPolisherOptions.INCLUDE_ANY_URI.getDefaultValue());
     omitGenericTerms = (boolean) params.getOrDefault("omitGenericTerms",
@@ -119,6 +106,9 @@ public class Parameters {
             ModelPolisherOptions.SBML_VALIDATION.getDefaultValue());
     writeJSON = (boolean) params.getOrDefault("writeJSON",
             ModelPolisherOptions.WRITE_JSON.getDefaultValue());
+  }
+
+  public Parameters() {
   }
 
 
@@ -162,12 +152,12 @@ public class Parameters {
   }
 
 
-  public double[] fluxCoefficients() {
+  public List<Double> fluxCoefficients() {
     return fluxCoefficients;
   }
 
 
-  public String[] fluxObjectives() {
+  public List<String> fluxObjectives() {
     return fluxObjectives;
   }
 
@@ -193,5 +183,39 @@ public class Parameters {
 
   public File modelNotesFile() {
     return modelNotesFile;
+  }
+
+  @Override
+  public String toString() {
+    return "Parameters{" +
+            "addADBAnnotations=" + addADBAnnotations +
+            ", annotateWithBiGG=" + annotateWithBiGG +
+            ", checkMassBalance=" + checkMassBalance +
+            ", compression=" + compression +
+            ", documentTitlePattern='" + documentTitlePattern + '\'' +
+            ", fluxCoefficients=" + fluxCoefficients +
+            ", fluxObjectives=" + fluxObjectives +
+            ", includeAnyURI=" + includeAnyURI +
+            ", noModelNotes=" + noModelNotes +
+            ", omitGenericTerms=" + omitGenericTerms +
+            ", outputCOMBINE=" + outputCOMBINE +
+            ", sbmlValidation=" + sbmlValidation +
+            ", writeJSON=" + writeJSON +
+            ", modelNotesFile=" + modelNotesFile +
+            ", documentNotesFile=" + documentNotesFile +
+            '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Parameters that = (Parameters) o;
+    return addADBAnnotations == that.addADBAnnotations && annotateWithBiGG == that.annotateWithBiGG && checkMassBalance == that.checkMassBalance && includeAnyURI == that.includeAnyURI && noModelNotes == that.noModelNotes && omitGenericTerms == that.omitGenericTerms && outputCOMBINE == that.outputCOMBINE && sbmlValidation == that.sbmlValidation && writeJSON == that.writeJSON && compression == that.compression && Objects.equals(documentTitlePattern, that.documentTitlePattern) && Objects.equals(fluxCoefficients, that.fluxCoefficients) && Objects.equals(fluxObjectives, that.fluxObjectives) && Objects.equals(modelNotesFile, that.modelNotesFile) && Objects.equals(documentNotesFile, that.documentNotesFile);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(addADBAnnotations, annotateWithBiGG, checkMassBalance, compression, documentTitlePattern, fluxCoefficients, fluxObjectives, includeAnyURI, noModelNotes, omitGenericTerms, outputCOMBINE, sbmlValidation, writeJSON, modelNotesFile, documentNotesFile);
   }
 }

@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -143,7 +144,7 @@ public class SBMLFix {
 
 
   public static void fixObjective(String modelDescriptor, ListOf<Reaction> listOfReactions, FBCModelPlugin fbcPlug,
-    double[] fluxCoefficients, String[] fluxObjectives) {
+                                  List<Double> fluxCoefficients, List<String> fluxObjectives) {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
       logger.severe(MessageFormat.format(MESSAGES.getString("OBJ_NOT_DEFINED"), modelDescriptor));
@@ -159,13 +160,13 @@ public class SBMLFix {
       if (!activeObjective.isSetListOfFluxObjectives()) {
         logger.severe(MessageFormat.format(MESSAGES.getString("TRY_GUESS_MISSING_FLUX_OBJ"), modelDescriptor));
         if (listOfReactions != null) {
-          if (fluxObjectives != null && fluxObjectives.length != 0) {
+          if (fluxObjectives != null && !fluxObjectives.isEmpty()) {
             /*
              * An array of target reactions is provided. We want to use this as
              * flux objectives.
              */
-            for (int i = 0; i < fluxObjectives.length; i++) {
-              final String id = fluxObjectives[i];
+            for (int i = 0; i < fluxObjectives.size(); i++) {
+              final String id = fluxObjectives.get(i);
               Reaction r = listOfReactions.firstHit((obj) ->
                       (obj instanceof Reaction) && id.equals(((Reaction) obj).getId()));
               if (r != null) {
@@ -196,30 +197,17 @@ public class SBMLFix {
   }
 
 
-  /**
-   * @param modelDescriptor
-   * @param r
-   * @param fluxCoefficients
-   * @param o
-   * @param i
-   */
-  private static void createFluxObjective(String modelDescriptor, Reaction r, double[] fluxCoefficients, Objective o,
+  private static void createFluxObjective(String modelDescriptor, Reaction r, List<Double> fluxCoefficients, Objective o,
     int i) {
     double coeff = DEFAULT_COEFFICIENT;
-    if ((fluxCoefficients != null) && (fluxCoefficients.length > i)) {
-      coeff = fluxCoefficients[i];
+    if ((fluxCoefficients != null) && (fluxCoefficients.size() > i)) {
+      coeff = fluxCoefficients.get(i);
     }
     logger.info(MessageFormat.format(MESSAGES.getString("ADDED_FLUX_OBJ"), r.getId(), coeff, modelDescriptor));
     o.createFluxObjective(null, null, coeff, r);
   }
 
 
-  /**
-   * @param in
-   * @param out
-   * @throws XMLStreamException
-   * @throws IOException
-   */
   public static void fixSBML(File in, File out) throws XMLStreamException, IOException {
     long time = System.currentTimeMillis();
     logger.info(MessageFormat.format(MESSAGES.getString("READ_FILE_INFO"), in.getAbsolutePath()));
