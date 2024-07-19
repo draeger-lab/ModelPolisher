@@ -1,7 +1,5 @@
 package edu.ucsd.sbrg.util;
 
-import static java.text.MessageFormat.format;
-
 import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +23,8 @@ import org.sbml.jsbml.text.parser.CobraFormulaParser;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+
+import static java.text.MessageFormat.format;
 
 /**
  * The {@code GPRParser} class provides methods to parse gene product associations (GPRs) from gene reaction rules
@@ -290,7 +290,7 @@ public class GPRParser {
           String geneProduct = ((GeneProductRef) current).getGeneProduct();
           if (gprs.contains(geneProduct)) {
             if (!or.removeAssociation(current)) {
-              logger.warning(format("Failed to unset duplicate GeneProductReference '{0}' for reaction '{1}'",
+              logger.warning(format("Failed to unset duplicate GeneProductReference {0} for reaction {1}",
                 geneProduct, r.getId()));
             }
           } else {

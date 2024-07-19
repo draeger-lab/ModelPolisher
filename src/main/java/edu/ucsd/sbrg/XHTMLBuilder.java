@@ -15,11 +15,6 @@ public class XHTMLBuilder {
 
 
   /**
-   * @param header
-   * @param data
-   * @param caption
-   * @param attributes
-   * @return
    */
   public static String table(Object[] header, Object[][] data, String caption, Map<String, String> attributes) {
     StringBuilder sb = new StringBuilder();
@@ -63,8 +58,6 @@ public class XHTMLBuilder {
 
 
   /**
-   * @param sb
-   * @param entry
    */
   public static void appendAttribute(StringBuilder sb, Map.Entry<String, String> entry) {
     appendAttribute(sb, entry.getKey(), entry.getValue());
@@ -72,9 +65,6 @@ public class XHTMLBuilder {
 
 
   /**
-   * @param sb
-   * @param key
-   * @param value
    */
   public static void appendAttribute(StringBuilder sb, String key, String value) {
     if ((!sb.isEmpty()) && (sb.charAt(sb.length() - 1) != ' ')) {
@@ -86,15 +76,9 @@ public class XHTMLBuilder {
     sb.append('"');
   }
 
-
-  /**
-   * @param content
-   * @return
-   */
   public static String p(String content) {
-      String sb = "<p>\n" +
+      return "<p>\n" +
               content +
               "\n</p>\n";
-    return sb;
   }
 }

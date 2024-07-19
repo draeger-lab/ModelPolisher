@@ -1,7 +1,5 @@
 package edu.ucsd.sbrg;
 
-import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.io.IOOptions;
 import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
@@ -10,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -91,7 +90,10 @@ public class TestUtils {
                 return;
             }
         }
-        fail(message + "Instead: " + entity.getCVTerms().toString());
+        fail(message + "Instead: " + entity.getCVTerms().stream()
+                .map(CVTerm::getResources)
+                .flatMap(List::stream)
+                .collect(Collectors.joining("\n")));
     }
 
     /**

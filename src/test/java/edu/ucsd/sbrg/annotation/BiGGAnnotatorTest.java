@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -27,7 +28,7 @@ public class BiGGAnnotatorTest extends BiGGDBContainerTest {
         var sbml = new SBMLDocument(3, 2);
         var m = new Model("iJO1366", 3, 2);
         sbml.setModel(m);
-        var annotator = new BiGGAnnotator(parameters);
+        var annotator = new BiGGAnnotator(parameters, new IdentifiersOrg());
 
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());

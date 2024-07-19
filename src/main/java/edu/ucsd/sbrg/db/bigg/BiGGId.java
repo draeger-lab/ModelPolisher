@@ -15,17 +15,17 @@ import de.zbit.util.ResourceManager;
  * Represents a BiGG identifier used to uniquely identify various biological entities
  * such as reactions, metabolites, and genes within the BiGG database. This class provides methods to parse, validate,
  * and manipulate BiGG IDs according to the standards specified in the BiGG database.
- *
+ * <p>
  * The BiGG ID typically consists of several parts:
  * - A prefix indicating the type of entity (e.g., 'R' for reaction, 'M' for metabolite, 'G' for gene).
  * - An abbreviation which is the main identifier part.
  * - A compartment code that specifies the cellular location of the metabolite.
  * - A tissue code that indicates the tissue specificity of the identifier, applicable in multicellular organisms.
- *
+ * <p>
  * This class also includes methods to create BiGG IDs from strings, validate them against known patterns, and
  * extract specific parts like the compartment code. It supports handling special cases and correcting common
  * formatting issues in BiGG IDs.
- *
+ * <p>
  * For a formal description of the structure of BiGG ids see the proposed
  * <a href=
  * "https://github.com/SBRG/bigg_models/wiki/BiGG-Models-ID-Specification-and-Guidelines">
@@ -174,7 +174,7 @@ public class BiGGId {
 
   /**
    * Creates a BiGG ID for a gene, with an option to correct the ID to conform to BiGG standards.
-   *
+   * <p>
    * This method first checks if the provided ID is empty, returning an empty Optional if true.
    * If the 'correct' parameter is true, the ID is processed to conform to BiGG standards:
    * - Leading underscores are removed.

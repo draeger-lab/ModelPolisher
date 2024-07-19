@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -40,7 +41,7 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, parameters).polish(mPlug.getListOfObjectives());
+        new FluxObjectivesPolisher(mPlug, parameters, new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
     }
@@ -70,7 +71,7 @@ public class FluxObjectivesPolisherTest {
         var parameters = initParameters(Map.of("fluxObjectives",
                 List.of("objective_reaction1", "objective_reaction2")));
 
-        new FluxObjectivesPolisher(fbcPlugin, parameters).polish(fbcPlugin.getListOfObjectives());
+        new FluxObjectivesPolisher(fbcPlugin, parameters, new IdentifiersOrg()).polish(fbcPlugin.getListOfObjectives());
 
         assertEquals("obj3", fbcPlugin.getActiveObjective());
         assertEquals(2, fbcPlugin.getListOfObjectives()
@@ -107,7 +108,7 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, initParameters()).polish(mPlug.getListOfObjectives());
+        new FluxObjectivesPolisher(mPlug, initParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
         assertEquals(Set.of("yadda_Biomass_yadda"),
@@ -134,7 +135,7 @@ public class FluxObjectivesPolisherTest {
         // o1.setListOfFluxObjectives(new ListOf<>());
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, initParameters()).polish(mPlug.getListOfObjectives());
+        new FluxObjectivesPolisher(mPlug, initParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
 
         assertEquals(0, fbcPlugin.getObjectiveCount());
     }

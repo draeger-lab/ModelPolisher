@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.io.parsers.cobra;
 
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -8,8 +9,9 @@ import java.io.IOException;
 
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-    public class COBRAParserTest {
+public class COBRAParserTest {
 
     /**
      * This is here to call the static initializer code of the Registry class,
@@ -18,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
      */
     @BeforeAll
     public static void setUp() throws ClassNotFoundException {
-        Class.forName("edu.ucsd.sbrg.identifiersorg.IdentifiersOrg");
+        Class.forName("edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg");
     }
 
     @Test
@@ -26,11 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
         var parameters = initParameters();
         var recon = new File(COBRAParserTest.class.getResource("Recon3D.mat").getFile());
         try {
-            new COBRAParser(parameters).read(recon);
+            new COBRAParser(parameters, new IdentifiersOrg()).parse(recon);
             assertTrue(true);
         } catch (IOException e) {
             e.printStackTrace();
-            assertTrue(false, "Parsing Recon3D.mat threw an exception.");
+            fail("Parsing Recon3D.mat threw an exception.");
         }
     }
 

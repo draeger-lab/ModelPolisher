@@ -35,11 +35,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.io.parsers.json.models.Compartments;
-import edu.ucsd.sbrg.io.parsers.json.models.Gene;
-import edu.ucsd.sbrg.io.parsers.json.models.Metabolite;
-import edu.ucsd.sbrg.io.parsers.json.models.Metabolites;
-import edu.ucsd.sbrg.io.parsers.json.models.Root;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Compartments;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Gene;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolites;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Root;
 import edu.ucsd.sbrg.util.GPRParser;
 
 public class JSONConverter {
@@ -47,8 +47,6 @@ public class JSONConverter {
   private static Map<String, String> compartments = new HashMap<>();
 
   /**
-   * @param doc
-   * @return
    */
   public static Root convertDocument(SBMLDocument doc) {
     return convertModel(doc.getModel());
@@ -56,8 +54,6 @@ public class JSONConverter {
 
 
   /**
-   * @param model
-   * @return
    */
   public static Root convertModel(Model model) {
     Root root = new Root();
@@ -83,8 +79,6 @@ public class JSONConverter {
 
 
   /**
-   * @param model
-   * @return
    */
   public static List<Gene> convertGenes(Model model) {
     List<Gene> genes = new ArrayList<>();
@@ -97,7 +91,6 @@ public class JSONConverter {
 
 
   /**
-   * @param g
    */
   public static Gene convertGene(GeneProduct g) {
     Gene gene = new Gene();
@@ -114,8 +107,6 @@ public class JSONConverter {
 
 
   /**
-   * @param model
-   * @return
    */
   public static List<Metabolite> convertMetabolites(Model model) {
     List<Metabolite> metabolites = new ArrayList<>();
@@ -127,8 +118,6 @@ public class JSONConverter {
 
 
   /**
-   * @param species
-   * @return
    */
   public static Metabolite convertMetabolite(Species species) {
     Metabolite metabolite = new Metabolite();
@@ -162,11 +151,9 @@ public class JSONConverter {
 
 
   /**
-   * @param model
-   * @return
    */
-  public static List<edu.ucsd.sbrg.io.parsers.json.models.Reaction> convertReactions(Model model) {
-    List<edu.ucsd.sbrg.io.parsers.json.models.Reaction> reactions = new ArrayList<>();
+  public static List<edu.ucsd.sbrg.io.parsers.json.mapping.Reaction> convertReactions(Model model) {
+    List<edu.ucsd.sbrg.io.parsers.json.mapping.Reaction> reactions = new ArrayList<>();
     for (Reaction reaction : model.getListOfReactions()) {
       reactions.add(convertReaction(reaction));
     }
@@ -175,11 +162,9 @@ public class JSONConverter {
 
 
   /**
-   * @param r
-   * @return
    */
-  public static edu.ucsd.sbrg.io.parsers.json.models.Reaction convertReaction(Reaction r) {
-    edu.ucsd.sbrg.io.parsers.json.models.Reaction reaction = new edu.ucsd.sbrg.io.parsers.json.models.Reaction();
+  public static edu.ucsd.sbrg.io.parsers.json.mapping.Reaction convertReaction(Reaction r) {
+    edu.ucsd.sbrg.io.parsers.json.mapping.Reaction reaction = new edu.ucsd.sbrg.io.parsers.json.mapping.Reaction();
     reaction.setId(r.getId());
     reaction.setName(r.getName());
     Metabolites metabolites = new Metabolites();
@@ -251,8 +236,6 @@ public class JSONConverter {
 
 
   /**
-   * @param doc
-   * @return
    */
   public static String getJSONDocument(SBMLDocument doc) {
     return getJSONModel(doc.getModel());
@@ -260,8 +243,6 @@ public class JSONConverter {
 
 
   /**
-   * @param g
-   * @return
    */
   public static String getJSONGene(GeneProduct g) {
     Gene gene = convertGene(g);
@@ -278,8 +259,6 @@ public class JSONConverter {
 
 
   /**
-   * @param species
-   * @return
    */
   public static String getJSONMetabolite(Species species) {
     Metabolite metabolite = convertMetabolite(species);
@@ -296,11 +275,9 @@ public class JSONConverter {
 
 
   /**
-   * @param r
-   * @return
    */
   public static String getJSONReaction(Reaction r) {
-    edu.ucsd.sbrg.io.parsers.json.models.Reaction reaction = convertReaction(r);
+    edu.ucsd.sbrg.io.parsers.json.mapping.Reaction reaction = convertReaction(r);
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -314,8 +291,6 @@ public class JSONConverter {
 
 
   /**
-   * @param model
-   * @return
    */
   public static String getJSONModel(Model model) {
     Root root = convertModel(model);
@@ -332,8 +307,6 @@ public class JSONConverter {
 
 
   /**
-   * @param annotation
-   * @return
    */
   private static Map<String, List<String>> serializeAnnotation(Annotation annotation) {
     Map<String, List<String>> terms = new LinkedHashMap<>();
@@ -345,8 +318,6 @@ public class JSONConverter {
 
 
   /**
-   * @param notes
-   * @return
    */
   private static List<String> serializeNotes(XMLNode notes) {
     List<String> convertedNotes = new ArrayList<>();

@@ -4,6 +4,9 @@ import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.AnnotationPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -15,8 +18,9 @@ import java.util.List;
  */
 public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
 
-  public GeneProductsPolisher(Parameters parameters, List<ProgressObserver> observers) {
-      super(parameters, observers);
+
+  public GeneProductsPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+      super(parameters, registry, observers);
   }
 
 
@@ -28,7 +32,7 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   @Override
   public void polish(List<GeneProduct> geneProducts) {
     for (GeneProduct geneProduct : geneProducts) {
-      updateProgressObservers("Polishing Gene Products (8/9)  ", geneProduct);
+      statusReport("Polishing Gene Products (8/9)  ", geneProduct);
       polish(geneProduct);
     }
   }
@@ -44,7 +48,7 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   @Override
   public void polish(GeneProduct geneProduct) {
     // Process the annotations associated with the gene product
-    new AnnotationPolisher(parameters).polish(geneProduct.getAnnotation());
+    new AnnotationPolisher(parameters, registry).polish(geneProduct.getAnnotation());
     
     // Initialize label variable
     String label = null;

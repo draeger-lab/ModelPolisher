@@ -4,6 +4,7 @@ import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.io.parsers.cobra.COBRAParser;
 import edu.ucsd.sbrg.io.parsers.json.JSONParser;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 
@@ -25,9 +26,11 @@ public class ModelReader {
     private static final Logger logger = Logger.getLogger(ModelReader.class.getName());
 
     private final Parameters parameters;
+    private final Registry registry;
 
-    public ModelReader(Parameters parameters) {
+    public ModelReader(Parameters parameters, Registry registry) {
         this.parameters = parameters;
+        this.registry = registry;
     }
 
 
@@ -51,9 +54,9 @@ public class ModelReader {
 
         // Determine the file type and parse accordingly
         if (fileType.equals(SBMLFileUtils.FileType.MAT_FILE)) {
-            doc = new COBRAParser(parameters).read(input);
+            doc = new COBRAParser(parameters, registry).parse(input);
         } else if (fileType.equals(SBMLFileUtils.FileType.JSON_FILE)) {
-            doc = JSONParser.read(input);
+            doc = new JSONParser(registry).parse(input);
         } else {
             checkHTMLTags(input);
             doc = SBMLReader.read(input, new UpdateListener());

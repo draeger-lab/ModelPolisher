@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.annotation;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 
 import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;

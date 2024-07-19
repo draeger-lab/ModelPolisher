@@ -2,8 +2,9 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.identifiersorg.Entries;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
@@ -32,10 +33,13 @@ public class SpeciesParser {
   private final int index;
   private static MatlabFields matlabFields;
 
-  public SpeciesParser(Model model, int index) {
+  private final Registry registry;
+
+  public SpeciesParser(Model model, int index, Registry registry) {
     this.model = model;
     this.index = index;
     matlabFields = MatlabFields.getInstance();
+    this.registry = registry;
   }
 
 
@@ -53,7 +57,6 @@ public class SpeciesParser {
 
 
   /**
-   * @param species
    */
   private void parseSpeciesFields(Species species) {
     matlabFields.getCell(ModelField.metNames.name()).ifPresent(
@@ -95,7 +98,6 @@ public class SpeciesParser {
 
 
   /**
-   * @param species
    */
   private void parseAnnotation(Species species) {
     CVTerm term = new CVTerm();
@@ -116,38 +118,36 @@ public class SpeciesParser {
 
   /**
    * Adds resources to provided CVTerm if catalog and id from MLCell
-   * provide a valid URI. Logs ids not matching collection patterns
+   * provide a valid URI. Logs ids not matching namespaceName patterns
    * and invalid collections. In both cases no resource is added.
    *
-   * @param cell
    * @param i
    *        the index within the cell.
-   * @param term
-   * @param collection
    */
-  private boolean addResource(Cell cell, int i, CVTerm term, String collection) {
+  private boolean addResource(Cell cell, int i, CVTerm term, String namespaceName) {
     boolean success = false;
     if (cell.get(i) != null) {
       String id = toMIRIAMid((Array) cell.get(i));
       if (!COBRAUtils.isEmptyString(id)) {
         id = COBRAUtils.checkId(id);
-        String prefix = Entries.getInstance().getProviderForCollection(collection);
+        String prefix = registry.getPrefixByNamespaceName(namespaceName);
         if (!prefix.isEmpty()) {
           String resource;
           if (id.startsWith("http")) {
             resource = id;
           } else {
-            resource = IdentifiersOrg.createURI(prefix, id);
+            resource = new IdentifiersOrgURI(prefix, id).getURI();
           }
           String finalId = id;
-          success = IdentifiersOrg.checkResourceUrl(resource).map(res -> {
-            term.addResource(res);
-            logger.finest(format(MESSAGES.getString("ADDED_URI_COBRA"), res));
-            return true;
-          }).orElseGet(() -> {
-            logger.severe(format(MESSAGES.getString("ADD_URI_FAILED_COBRA"), collection, finalId));
-            return false;
-          });
+          success = registry.findRegistryUrlForOtherUrl(resource)
+                  .map(res -> {
+                    term.addResource(res.getURI());
+                    logger.finest(format(MESSAGES.getString("ADDED_URI_COBRA"), res));
+                    return true;
+                  }).orElseGet(() -> {
+                    logger.severe(format(MESSAGES.getString("ADD_URI_FAILED_COBRA"), namespaceName, finalId));
+                    return false;
+                  });
         }
       }
     }
@@ -188,8 +188,6 @@ public class SpeciesParser {
 
 
   /**
-   * @param term
-   * @param i
    */
   private void addKEGGResources(CVTerm term, int i) {
     // use short circuit evaluation to only run addResource until one of them returns true
@@ -202,8 +200,6 @@ public class SpeciesParser {
 
 
   /**
-   * @param term
-   * @param i
    */
   private void addPubChemResources(CVTerm term, int i) {
     matlabFields.getCell(ModelField.metPubChemID.name())

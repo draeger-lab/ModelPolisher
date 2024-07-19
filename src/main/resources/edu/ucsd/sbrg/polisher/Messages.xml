@@ -184,7 +184,7 @@
     <entry key="TISS_CODE_INVALID">Invalid tissue code: {0}</entry>
     <entry key="TOO_MUCH_OBJ_TARGETS">Only one reaction should be the target of objective {0}.</entry>
     <entry key="TRUNCATED_ID">Given id String possibly contained more than one id. Only the first one is used: </entry>
-    <entry key="TRY_CONV_LVL3_V2">Trying to convert the model to Level 3 Version 2.</entry>
+    <entry key="TRY_CONV_LVL3_V1">Trying to convert the model to Level 3 Version 1.</entry>
     <entry key="TRY_GUESS_MISSING_FLUX_OBJ">Trying to identify missing flux objective from model in model {0}.</entry>
     <entry key="TYPE_MISMATCH_CELL">Expected data structure {1} to be of type cell, but received type {0}.</entry>
     <entry key="TYPE_MISMATCH_CHAR">Expected data structure {1} to be of type char, but received type {0}.</entry>

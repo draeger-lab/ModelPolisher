@@ -6,7 +6,8 @@ import edu.ucsd.sbrg.annotation.AnnotationUtils;
 import edu.ucsd.sbrg.annotation.CVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -30,6 +31,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
 
   static final Logger logger = Logger.getLogger(GeneProductAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  public static final String BIGG_GENE_ID_PATTERN = "^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
   /**
    * Instance of gene product to annotate
@@ -37,8 +39,8 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
   private final GeneProductReferencesAnnotator gprAnnotator;
 
   public GeneProductAnnotator(GeneProductReferencesAnnotator gprAnnotator, Parameters parameters,
-                              List<ProgressObserver> observers) {
-    super(parameters, observers);
+                              Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
     this.gprAnnotator = gprAnnotator;
   }
 
@@ -52,7 +54,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
   public void annotate(List<GeneProduct> geneProducts) {
     // Iterate over each gene product and annotate it
     for (GeneProduct geneProduct : geneProducts) {
-      updateProgressObservers("Annotating Gene Products (5/5)  ", geneProduct);
+      statusReport("Annotating Gene Products (5/5)  ", geneProduct);
       annotate(geneProduct);
     }
 
@@ -67,7 +69,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
    */
   @Override
   public void annotate(GeneProduct geneProduct) {
-    Optional<BiGGId> biggId = checkId(geneProduct);
+    Optional<BiGGId> biggId = findBiGGId(geneProduct);
 
     Optional<String> label = biggId.map(id -> getLabel(geneProduct, id));
     if (label.isEmpty()) {
@@ -95,9 +97,9 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
    * @return An {@link Optional<BiGGId>} containing the validated or retrieved BiGG ID, or an empty Optional if no valid ID is found.
    */
   @Override
-  public Optional<BiGGId> checkId(GeneProduct geneProduct) {
+  public Optional<BiGGId> findBiGGId(GeneProduct geneProduct) {
     String id = geneProduct.getId();
-    boolean isBiGGid = id.matches("^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$");
+    boolean isBiGGid = id.matches(BIGG_GENE_ID_PATTERN);
     if (!isBiGGid) {
       // Collect all resources from CVTerms that qualify as BQB_IS into a list
       List<String> resources = geneProduct.getAnnotation().getListOfCVTerms().stream()
@@ -105,7 +107,10 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
                                           .flatMap(term -> term.getResources().stream())
                                           .collect(Collectors.toList());
       // Attempt to update the ID with a valid BiGG ID from the resources, if available
-      id = AnnotationUtils.getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT).orElse(id);
+      Optional<BiGGId> biGGIdFromResources = AnnotationUtils.getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT, registry);
+      if (biGGIdFromResources.isPresent()) {
+        return biGGIdFromResources;
+      }
     }
     // Create and return a BiGGId object based on the validated or updated ID
     return BiGGId.createGeneId(id);
@@ -162,7 +167,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
     });
   }
 
-  
+
   /**
    * Adds annotations to a gene product based on a given {@link BiGGId}. This method differentiates between
    * annotations that specify what the gene product 'is' and what it 'is encoded by'. Resources are fetched
@@ -176,18 +181,17 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // Retrieve gene IDs from BiGG database and categorize them based on their prefix
     BiGGDB.getGeneIds(biggId.getAbbreviation()).forEach(
-      resource -> IdentifiersOrg.checkResourceUrl(resource).map(IdentifiersOrg::getPartsFromIdentifiersURI)
-                          .filter(parts -> !parts.isEmpty()).map(parts -> parts.get(0)).ifPresent(prefix -> {
-                            switch (prefix) {
-                              case "interpro":
-                              case "pdb":
-                              case "uniprot":
-                                termIs.addResource(resource);
-                                break;
-                              default:
-                                termEncodedBy.addResource(resource);
-                            }
-                          }));
+            uri -> {
+              switch (IdentifiersOrg.fixIdentifiersOrgUri(uri).getPrefix()) {
+                case "interpro":
+                case "pdb":
+                case "uniprot":
+                  termIs.addResource(uri.getURI());
+                  break;
+                default:
+                  termEncodedBy.addResource(uri.getURI());
+              }
+            });
     // Add the CVTerm to the gene product if resources are present
     if (termIs.getResourceCount() > 0) {
       geneProduct.addCVTerm(termIs);

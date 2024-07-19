@@ -6,7 +6,8 @@ import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.MemorizedQuery;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.CVTerm.Qualifier;
@@ -34,12 +35,12 @@ public abstract class CVTermAnnotator<T extends AbstractSBase> extends AbstractA
 
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  public CVTermAnnotator(Parameters parameters) {
-    super(parameters);
+  public CVTermAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
 
-  public CVTermAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  public CVTermAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
   }
 
 
@@ -49,7 +50,7 @@ public abstract class CVTermAnnotator<T extends AbstractSBase> extends AbstractA
    *
    * @return Optional containing the valid BiGG ID or empty if the ID is invalid.
    */
-  protected abstract Optional<BiGGId> checkId(T element);
+  protected abstract Optional<BiGGId> findBiGGId(T element);
 
   /**
    * Adds annotations to an SBML node (either a Species or a Reaction) using a given BiGGId.
@@ -85,9 +86,10 @@ public abstract class CVTermAnnotator<T extends AbstractSBase> extends AbstractA
       boolean isBiGGReaction = MemorizedQuery.isReaction(biggId.getAbbreviation());
       // using BiGG Database
       if (isBiGGReaction) {
-        annotations.add(IdentifiersOrg.createURI("bigg.reaction", biggId));
+        annotations.add(new IdentifiersOrgURI("bigg.reaction", biggId).getURI());
       }
-      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), true);
+      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), true)
+              .stream().map(IdentifiersOrgURI::getURI).collect(Collectors.toSet());
       annotations.addAll(biggAnnotations);
       // using AnnotateDB
       if (parameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGReaction) {
@@ -98,9 +100,10 @@ public abstract class CVTermAnnotator<T extends AbstractSBase> extends AbstractA
       boolean isBiGGMetabolite = MemorizedQuery.isMetabolite(biggId.getAbbreviation());
       // using BiGG Database
       if (isBiGGMetabolite) {
-        annotations.add(IdentifiersOrg.createURI("bigg.metabolite", biggId));
+        annotations.add(new IdentifiersOrgURI("bigg.metabolite", biggId).getURI());
       }
-      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), false);
+      Set<String> biggAnnotations = BiGGDB.getResources(biggId, parameters.includeAnyURI(), false)
+              .stream().map(IdentifiersOrgURI::getURI).collect(Collectors.toSet());
       annotations.addAll(biggAnnotations);
       // using AnnotateDB
       if (parameters.addADBAnnotations() && AnnotateDB.inUse() && isBiGGMetabolite) {

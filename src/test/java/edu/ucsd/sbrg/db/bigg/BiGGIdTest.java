@@ -22,10 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class BiGGIdTest {
 
   private static Map<String, List<String>> biggIds = new HashMap<>();
-  private static Map<String, BiGGId> correctMetaboliteId = new HashMap<>();
-  private static Map<String, BiGGId> correctReactionId = new HashMap<>();
-  private static Map<String, BiGGId> correctGeneProductId = new HashMap<>();
-  private static Map<String, String> processedIdentifiers = new HashMap<>();
+  private static final Map<String, BiGGId> correctMetaboliteId = new HashMap<>();
+  private static final Map<String, BiGGId> correctReactionId = new HashMap<>();
+  private static final Map<String, BiGGId> correctGeneProductId = new HashMap<>();
 
   /**
    * Initializes BiGGIds for testing - empty IDs are should be handled elsewhere, as they are invalid in SBML
@@ -151,7 +150,6 @@ public class BiGGIdTest {
     List<String> ids = biggIds.get("genes");
     ids.forEach(id -> {
       BiGGId.createGeneId(id).ifPresent(biggId -> {
-        processedIdentifiers.put(id, biggId.toBiGGId());
         assertTrue(BiGGId.isValid(biggId.toBiGGId()));
       });
     });
@@ -161,24 +159,18 @@ public class BiGGIdTest {
   @Test
   public final void metaboliteIdsValid() {
     List<String> ids = biggIds.get("metabolites");
-    ids.forEach(id -> {
-      BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
-        processedIdentifiers.put(id, biggId.toBiGGId());
-        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-      });
-    });
+    ids.forEach(id -> BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
+      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+    }));
   }
 
 
   @Test
   public final void reactionIdsValid() {
     List<String> ids = biggIds.get("reactions");
-    ids.forEach(id -> {
-      BiGGId.createReactionId(id).ifPresent(biggId -> {
-        processedIdentifiers.put(id, biggId.toBiGGId());
-        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-      });
-    });
+    ids.forEach(id -> BiGGId.createReactionId(id).ifPresent(biggId -> {
+      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+    }));
   }
 
 

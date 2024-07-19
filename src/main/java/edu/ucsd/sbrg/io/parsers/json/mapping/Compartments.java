@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.io.parsers.json.models;
+package edu.ucsd.sbrg.io.parsers.json.mapping;
 
 import static java.text.MessageFormat.format;
 
@@ -36,7 +36,6 @@ public class Compartments {
 
 
   /**
-   * @param comps
    */
   public void addAll(Map<String, String> comps) {
     comps.forEach(this::add);

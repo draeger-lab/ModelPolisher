@@ -7,11 +7,13 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.identifiersorg.Entries;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -45,10 +47,13 @@ public class ReactionParser {
   private static MatlabFields matlabFields;
   private static final String DELIM = " ,;\t\n\r\f";
 
-  public ReactionParser(ModelBuilder builder, int index) {
+  private final Registry registry;
+
+  public ReactionParser(ModelBuilder builder, int index, Registry registry) {
     this.builder = builder;
     this.index = index;
     matlabFields = MatlabFields.getInstance();
+    this.registry = registry;
   }
 
 
@@ -76,8 +81,6 @@ public class ReactionParser {
 
 
   /**
-   * @param reaction
-   * @param index
    */
   private void setNameAndReversibility(Reaction reaction, int index) {
     matlabFields.getCell(ModelField.rxnNames.name()).ifPresent(
@@ -87,9 +90,6 @@ public class ReactionParser {
 
 
   /**
-   * @param builder
-   * @param reaction
-   * @param index
    */
   private void setReactionBounds(ModelBuilder builder, Reaction reaction, int index) {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
@@ -103,9 +103,6 @@ public class ReactionParser {
 
 
   /**
-   * @param model
-   * @param reaction
-   * @param index
    */
   @SuppressWarnings("unchecked")
   private void buildReactantsProducts(Model model, Reaction reaction, int index) {
@@ -138,10 +135,6 @@ public class ReactionParser {
 
 
   /**
-   * @param builder
-   * @param reaction
-   * @param rId
-   * @param index
    */
   private void parseAnnotations(ModelBuilder builder, Reaction reaction, String rId, int index) {
     matlabFields.getCell(ModelField.ecNumbers.name()).ifPresent(ecNumbers -> {
@@ -198,8 +191,6 @@ public class ReactionParser {
 
 
   /**
-   * @param comment
-   * @param sbase
    */
   private void appendComment(String comment, SBase sbase) {
     try {
@@ -213,8 +204,6 @@ public class ReactionParser {
 
 
   /**
-   * @param ec
-   * @param reaction
    */
   private void parseECcodes(String ec, Reaction reaction) {
     if (COBRAUtils.isEmptyString(ec)) {
@@ -226,7 +215,7 @@ public class ReactionParser {
     while (st.hasMoreElements()) {
       String ecCode = st.nextElement().toString().trim();
       if (!ecCode.isEmpty() && validId("ec-code", ecCode)) {
-        String resource = IdentifiersOrg.createURI("ec-code", ecCode);
+        String resource = new IdentifiersOrgURI("ec-code", ecCode).getURI();
         if (!term.getResources().contains(resource)) {
           match = term.addResource(resource);
         }
@@ -241,22 +230,19 @@ public class ReactionParser {
   }
 
   /**
-   * @param keggId
-   * @param reaction
    */
   private void parseRxnKEGGids(String keggId, Reaction reaction) {
     if (COBRAUtils.isEmptyString(keggId)) {
       return;
     }
     String prefix = "kegg.reaction";
-    Entries entries = Entries.getInstance();
-    String pattern = entries.getPattern(entries.getCollectionForProvider(prefix));
+    String pattern = registry.getPatternByNamespaceName(registry.getNamespaceForPrefix(prefix));
     CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
-      if (!kId.isEmpty() && IdentifiersOrg.checkPattern(kId, pattern)) {
-        term.addResource(IdentifiersOrg.createURI(prefix, kId));
+      if (!kId.isEmpty() && Pattern.compile(pattern).matcher(kId).matches()) {
+        term.addResource(new IdentifiersOrgURI(prefix, kId).getURI());
       }
     }
     if (term.getResourceCount() == 0) {
@@ -273,8 +259,6 @@ public class ReactionParser {
    * Searches for the first {@link CVTerm} within the given {@link SBase} that
    * has the given {@link CVTerm.Qualifier}.
    *
-   * @param sbase
-   * @param qualifier
    * @return the found {@link CVTerm} or a new {@link CVTerm} if non exists.
    *         To distinguish between both cases, test if the parent is
    *         {@code null}.
@@ -292,22 +276,19 @@ public class ReactionParser {
 
 
   /**
-   * @param keggId
-   * @param reaction
    */
   private void parseRxnKEGGOrthology(String keggId, Reaction reaction) {
     if (COBRAUtils.isEmptyString(keggId)) {
       return;
     }
     String catalog = "kegg.orthology";
-    Entries entries = Entries.getInstance();
-    String pattern = entries.getPattern(entries.getCollectionForProvider(catalog));
+    String pattern = registry.getPatternByNamespaceName(registry.getNamespaceForPrefix(catalog));
     CVTerm term = findOrCreateCVTerm(reaction, CVTerm.Qualifier.BQB_IS);
     StringTokenizer st = new StringTokenizer(keggId, DELIM);
     while (st.hasMoreElements()) {
       String kId = st.nextElement().toString().trim();
-      if (!kId.isEmpty() && IdentifiersOrg.checkPattern(kId, pattern)) {
-        term.addResource(IdentifiersOrg.createURI(catalog, kId));
+      if (!kId.isEmpty() && Pattern.compile(pattern).matcher(kId).matches()) {
+        term.addResource(new IdentifiersOrgURI(catalog, kId).getURI());
       }
     }
     if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
@@ -317,8 +298,6 @@ public class ReactionParser {
 
 
   /**
-   * @param citation
-   * @param reaction
    */
   private void parseCitation(String citation, Reaction reaction) {
     StringBuilder otherCitation = new StringBuilder();
@@ -361,12 +340,9 @@ public class ReactionParser {
    * given term. This method assumes that there is a colon between catalog id
    * and resource id. If this is not the case, {@code false} will be returned.
    *
-   * @param resource
-   * @param term
-   * @param prefix
    * @return {@code true} if successful, {@code false} otherwise.
    */
-  public static boolean addResource(String resource, CVTerm term, String prefix) {
+  public boolean addResource(String resource, CVTerm term, String prefix) {
     StringTokenizer st = new StringTokenizer(resource, " ");
     while (st.hasMoreElements()) {
       String r = st.nextElement().toString().trim();
@@ -384,7 +360,7 @@ public class ReactionParser {
           if (st.countTokens() > 1) {
             logger.warning(format(MESSAGES.getString("SKIP_COMMENT"), resource, r, prefix));
           }
-          resource = IdentifiersOrg.createURI(prefix, r);
+          resource = new IdentifiersOrgURI(prefix, r).getURI();
           logger.finest(format(MESSAGES.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }
@@ -404,15 +380,14 @@ public class ReactionParser {
    *        id to test for membership
    * @return {@code true}, if it matches, else {@code false}
    */
-  private static boolean validId(String prefix, String id) {
+  private boolean validId(String prefix, String id) {
     if (id.isEmpty()) {
       return false;
     }
-    Entries entries = Entries.getInstance();
-    String pattern = entries.getPattern(entries.getCollectionForProvider(prefix));
+      String pattern = registry.getPatternByNamespaceName(registry.getNamespaceForPrefix(prefix));
     boolean validId = false;
     if (!pattern.isEmpty()) {
-      validId = IdentifiersOrg.checkPattern(id, pattern);
+      validId = Pattern.compile(pattern).matcher(id).matches();
       if (!validId) {
         logger.warning(format(MESSAGES.getString("PATTERN_MISMATCH"), id, pattern));
       }

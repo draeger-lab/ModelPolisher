@@ -1,24 +1,24 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.CVTerm;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class AnnotationPolisher extends AbstractPolisher<Annotation> {
 
-    public AnnotationPolisher(Parameters parameters) {
-        super(parameters);
+    public AnnotationPolisher(Parameters parameters, Registry registry) {
+        super(parameters, registry);
     }
 
-    public AnnotationPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public AnnotationPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
     }
 
     /**
@@ -35,24 +35,10 @@ public class AnnotationPolisher extends AbstractPolisher<Annotation> {
         for (CVTerm term : annotation.getListOfCVTerms()) {
             Set<String> resources = new HashSet<>();
             for (String resource : term.getResources()) {
-                Optional<String> checkedResource = IdentifiersOrg.checkResourceUrl(resource);
-                if (checkedResource.isEmpty()) {
-                    // The resource URL could not be verified, so it is retained as is.
-                    resources.add(resource);
-                } else {
-                    String newResource = checkedResource.get();
-                    if (newResource.equals(resource)) {
-                        // The resource URL is correct and requires no changes.
-                        resources.add(resource);
-                    } else if (newResource.contains("identifiers.org") && !resource.contains("identifiers.org")) {
-                        // A new identifiers.org URL has been obtained, add both the original and new URL.
-                        resources.add(resource);
-                        resources.add(newResource);
-                    } else {
-                        // Corrections were made to the resource URL.
-                        resources.add(newResource);
-                    }
-                }
+                registry.findRegistryUrlForOtherUrl(resource)
+                        .map(RegistryURI::getURI)
+                        .map(resources::add);
+                resources.add(resource);
             }
             // Remove all existing resources from the CV Term.
             for (int i = 0; i < term.getResourceCount(); i++) {

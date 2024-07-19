@@ -3,25 +3,29 @@ package edu.ucsd.sbrg.polishing;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
+import org.apache.commons.lang3.tuple.Pair;
 import org.sbml.jsbml.AbstractSBase;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class AbstractPolisher<SBMLElement> {
 
     protected final Parameters parameters;
+    protected final Registry registry;
 
     private final List<ProgressObserver> observers;
 
-    public AbstractPolisher(Parameters parameters) {
+    public AbstractPolisher(Parameters parameters, Registry registry) {
         this.parameters = parameters;
+        this.registry = registry;
         observers = new ArrayList<>();
     }
 
-    public AbstractPolisher(Parameters parameters, List<ProgressObserver> observers) {
+    public AbstractPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
         this.parameters = parameters;
+        this.registry = registry;
         this.observers = observers;
     }
 
@@ -31,14 +35,10 @@ public abstract class AbstractPolisher<SBMLElement> {
 
     abstract public void polish(SBMLElement elementToPolish);
 
-    protected void updateProgressObservers(String text, AbstractSBase obj) {
+    protected void statusReport(String text, Object element) {
         for (var o : observers) {
-            o.update(new ProgressUpdate(text, obj));
+            o.update(new ProgressUpdate(text, element, ReportType.STATUS));
         }
-    }
-
-    public void addObserver(ProgressObserver o) {
-        observers.add(o);
     }
 
     public List<ProgressObserver> getObservers() {

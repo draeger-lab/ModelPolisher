@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.io.UpdateListener;
@@ -54,32 +55,19 @@ public class COBRAParser {
   private static MatlabFields matlabFields;
   private final Parameters parameters;
 
-  /**
-   *
-   */
-  public COBRAParser(Parameters parameters) {
+  private final Registry registry;
+
+
+  public COBRAParser(Parameters parameters, Registry registry) {
     super();
     this.parameters = parameters;
+    this.registry = registry;
   }
 
 
   /**
-   * @param matFile
-   * @return
-   * @throws IOException
    */
-  public SBMLDocument read(File matFile) throws IOException {
-    COBRAParser parser = new COBRAParser(parameters);
-    return parser.parse(matFile);
-  }
-
-
-  /**
-   * @param matFile
-   * @return
-   * @throws IOException
-   */
-  private SBMLDocument parse(File matFile) throws IOException {
+  public SBMLDocument parse(File matFile) throws IOException {
     Mat5File mat5File = Mat5.readFromFile(matFile);
     SBMLDocument doc = parseModel(mat5File);
     mat5File.close();
@@ -88,8 +76,6 @@ public class COBRAParser {
 
 
   /**
-   * @param matFile
-   * @return
    */
   private SBMLDocument parseModel(Mat5File matFile) {
     String modelName = "";
@@ -123,8 +109,6 @@ public class COBRAParser {
 
 
   /**
-   * @param modelStruct
-   * @return
    */
   private void fixFields(Struct modelStruct) {
     List<String> fieldNames = new ArrayList<>(modelStruct.getFieldNames());
@@ -158,7 +142,6 @@ public class COBRAParser {
 
 
   /**
-   * @param builder
    */
   private void parseFields(ModelBuilder builder) {
     Model model = builder.getModel();
@@ -179,7 +162,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseDescription(Model model) {
     matlabFields.setDescriptionFields(model);
@@ -187,7 +169,6 @@ public class COBRAParser {
 
 
   /**
-   * @param builder
    */
   private void buildBasicUnits(ModelBuilder builder) {
     UnitDefinition ud = builder.buildUnitDefinition("mmol_per_gDW_per_hr", null);
@@ -198,12 +179,11 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseMetabolites(Model model) {
     matlabFields.getCell(ModelField.mets.name()).ifPresent(mets -> {
       for (int i = 0; i < mets.getNumElements(); i++) {
-        SpeciesParser speciesParser = new SpeciesParser(model, i);
+        SpeciesParser speciesParser = new SpeciesParser(model, i, registry);
         speciesParser.parse();
       }
     });
@@ -211,7 +191,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseGenes(Model model) {
     matlabFields.getCell(ModelField.genes.name()).ifPresentOrElse(genes -> {
@@ -225,12 +204,11 @@ public class COBRAParser {
 
 
   /**
-   * @param builder
    */
   private void parseRxns(ModelBuilder builder) {
     matlabFields.getCell(ModelField.rxns.name()).ifPresent(rxns -> {
       for (int index = 0; index < rxns.getNumElements(); index++) {
-        ReactionParser reactionParser = new ReactionParser(builder, index);
+        ReactionParser reactionParser = new ReactionParser(builder, index, registry);
         reactionParser.parse();
       }
     });
@@ -238,7 +216,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseGPRs(Model model) {
     matlabFields.getCell(ModelField.grRules.name()).ifPresent(grRules -> {
@@ -255,7 +232,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseSubsystems(Model model) {
     // this is to avoid creating the identical group multiple times.
@@ -284,7 +260,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseCSense(Model model) {
     matlabFields.getChar(ModelField.csense.name()).ifPresent(csense -> {
@@ -305,8 +280,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
-   * @param obj
    */
   private void buildFluxObjectives(Model model, Objective obj) {
     matlabFields.getMatrix(ModelField.coefficients.name()).ifPresent(coefficients -> {
@@ -327,7 +300,6 @@ public class COBRAParser {
 
 
   /**
-   * @param model
    */
   private void parseBValue(Model model) {
     matlabFields.getMatrix(ModelField.b.name()).ifPresent(b -> {

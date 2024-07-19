@@ -2,7 +2,10 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.Publication;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -13,16 +16,17 @@ public class PublicationsAnnotator extends AbstractAnnotator<Publication>{
 
     private final Model model;
 
-    public PublicationsAnnotator(Model model, Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public PublicationsAnnotator(Model model, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
         this.model = model;
     }
 
     @Override
     public void annotate(Publication publication) {
         model.addCVTerm(
-                new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY,
-                        IdentifiersOrg.createURI(publication.referenceId(), publication.referenceType())));
+                new CVTerm(
+                        CVTerm.Qualifier.BQM_IS_DESCRIBED_BY,
+                        new IdentifiersOrgURI(publication.referenceId(), publication.referenceType()).getURI()));
     }
 
 
@@ -34,10 +38,11 @@ public class PublicationsAnnotator extends AbstractAnnotator<Publication>{
      * with the qualifier {@link CVTerm.Qualifier#BQM_IS_DESCRIBED_BY}.
      */
     public void annotatePublications(List<Publication> publications) {
-        updateProgressObservers("Annotating Publications (1/5)  ", model);
+        statusReport("Annotating Publications (1/5)  ", model);
 
         String[] resources = publications.stream()
-                .map(publication -> IdentifiersOrg.createURI(publication.referenceType(), publication.referenceId()))
+                .map(publication -> new IdentifiersOrgURI(publication.referenceType(), publication.referenceId()))
+                .map(IdentifiersOrgURI::getURI)
                 .toArray(String[]::new);
 
         model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS_DESCRIBED_BY, resources));

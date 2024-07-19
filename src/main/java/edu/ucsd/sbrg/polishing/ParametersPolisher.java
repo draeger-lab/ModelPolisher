@@ -2,14 +2,17 @@ package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Parameter;
 
 import java.util.List;
 
 public class ParametersPolisher extends AbstractPolisher<Parameter> {
 
-    public ParametersPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public ParametersPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
     }
 
     /**
@@ -19,7 +22,7 @@ public class ParametersPolisher extends AbstractPolisher<Parameter> {
     @Override
     public void polish(List<Parameter> modelParameters) {
         for (Parameter parameter : modelParameters) {
-            updateProgressObservers("Polishing Parameters (9/9)  ", parameter);
+            statusReport("Polishing Parameters (9/9)  ", parameter);
             polish(parameter);
         }
     }

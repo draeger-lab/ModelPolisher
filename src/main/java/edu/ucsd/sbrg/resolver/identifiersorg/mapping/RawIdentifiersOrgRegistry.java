@@ -1,9 +1,9 @@
-package edu.ucsd.sbrg.identifiersorg.models;
+package edu.ucsd.sbrg.resolver.identifiersorg.mapping;
 
 import java.util.List;
 import java.util.Map;
 
-public class Root {
+public class RawIdentifiersOrgRegistry {
   private String apiVersion;
   private String errorMessage;
   private Map<String, List<Namespace>> payload;

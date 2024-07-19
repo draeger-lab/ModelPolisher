@@ -26,6 +26,8 @@ import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.PolisherProgressBar;
 import edu.ucsd.sbrg.reporting.ProgressInitialization;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -71,6 +73,7 @@ public class ModelPolisherCLILauncher extends Launcher {
   private static final Logger logger = Logger.getLogger(ModelPolisherCLILauncher.class.getName());
 
   private CommandLineParameters parameters;
+  private Registry registry;
 
   /**
    * Entry point
@@ -118,6 +121,8 @@ public class ModelPolisherCLILauncher extends Launcher {
     } catch (IllegalArgumentException exc1) {
       throw new IllegalArgumentException(exc1.getLocalizedMessage());
     }
+
+    registry = new IdentifiersOrg();
 
     DBConfig.initBiGG(args, parameters.annotateWithBiGG());
     DBConfig.initADB(args, parameters.addADBAnnotations());
@@ -194,7 +199,7 @@ public class ModelPolisherCLILauncher extends Launcher {
   private void processFile(File input, File output) throws XMLStreamException, IOException {
     long startTime = System.currentTimeMillis();
 
-    SBMLDocument doc = new ModelReader(parameters).read(input);
+    SBMLDocument doc = new ModelReader(parameters, registry).read(input);
     // TODO: we should be doing better sanity checking here; e.g.: just validate the SBML
     if (doc == null) return;
     Model model = doc.getModel();
@@ -210,7 +215,7 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.initialize(new ProgressInitialization(count));
     }
 
-    new SBMLPolisher(parameters, polishingObservers).polish(doc);
+    new SBMLPolisher(parameters, registry, polishingObservers).polish(doc);
 
     for (var o : polishingObservers) {
       o.finish(null);
@@ -223,7 +228,7 @@ public class ModelPolisherCLILauncher extends Launcher {
     }
     // Annotate the document if the parameters specify
     if (parameters.annotateWithBiGG()) {
-        new BiGGAnnotator(parameters, annotationObservers).annotate(doc);
+        new BiGGAnnotator(parameters, registry, annotationObservers).annotate(doc);
     }
 
     for (var o : annotationObservers) {

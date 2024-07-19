@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.identifiersorg.models;
+package edu.ucsd.sbrg.resolver.identifiersorg.mapping;
 
 import java.util.Calendar;
 import java.util.List;

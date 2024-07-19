@@ -8,6 +8,9 @@ import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBO;
@@ -37,11 +40,11 @@ public class SpeciesAnnotator extends CVTermAnnotator<Species> {
   static final Logger logger = Logger.getLogger(SpeciesAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  protected SpeciesAnnotator(Parameters parameters) {
-    super(parameters);
+  protected SpeciesAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
-  protected SpeciesAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  protected SpeciesAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
   }
 
   /**
@@ -50,7 +53,7 @@ public class SpeciesAnnotator extends CVTermAnnotator<Species> {
    */
   public void annotate(List<Species> species) {
     for (Species s : species) {
-      updateProgressObservers("Annotating Species (3/5)  ", s);
+      statusReport("Annotating Species (3/5)  ", s);
       annotate(s);
     }
   }
@@ -67,7 +70,7 @@ public class SpeciesAnnotator extends CVTermAnnotator<Species> {
   @Override
   public void annotate(Species species) {
     // Retrieve the BiGGId for the species, either from its URI list or its direct ID
-    checkId(species).ifPresent(biggId -> {
+    findBiGGId(species).ifPresent(biggId -> {
       setName(species, biggId); // Set the species name based on the BiGGId
       setSBOTerm(species, biggId); // Assign the appropriate SBO term
       addAnnotations(species, biggId); // Add database cross-references and other annotations
@@ -84,11 +87,11 @@ public class SpeciesAnnotator extends CVTermAnnotator<Species> {
    * @return An {@link Optional} containing the BiGGId if a valid one is found or created, otherwise {@link Optional#empty()}
    */
   @Override
-  public Optional<BiGGId> checkId(Species species) {
+  public Optional<BiGGId> findBiGGId(Species species) {
     // Attempt to create a BiGGId from the species ID
     Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
     // Check if the created BiGGId is valid, if not, try to find a BiGGId from annotations
-    Optional<String> id = metaboliteId.flatMap(biggId -> {
+    Optional<BiGGId> id = metaboliteId.flatMap(biggId -> {
       boolean isBiGGid = MemorizedQuery.isMetabolite(biggId.getAbbreviation());
       List<String> resources = new ArrayList<>();
       if (!isBiGGid) {
@@ -99,10 +102,10 @@ public class SpeciesAnnotator extends CVTermAnnotator<Species> {
                            .collect(Collectors.toList());
       }
       // Attempt to retrieve a BiGGId from the collected resources
-      return AnnotationUtils.getBiGGIdFromResources(resources, TYPE_SPECIES);
+      return AnnotationUtils.getBiGGIdFromResources(resources, TYPE_SPECIES, registry);
     });
     // Return the found BiGGId or the originally created one if no new ID was found
-    return id.map(BiGGId::createMetaboliteId).orElse(metaboliteId);
+    return id.map(BiGGId::toBiGGId).map(BiGGId::createMetaboliteId).orElse(metaboliteId);
   }
 
 

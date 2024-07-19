@@ -79,9 +79,7 @@ class Node {
 
   /**
    * Returns the Node containing the specified Term or null, if not present
-   * 
-   * @param term
-   * @return
+   *
    */
   public Node findTerm(Term term) {
     if (this.getTerm().equals(term)) {

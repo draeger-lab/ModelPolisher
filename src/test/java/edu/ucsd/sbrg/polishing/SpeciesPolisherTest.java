@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 
@@ -12,7 +13,7 @@ public class SpeciesPolisherTest {
     private final Parameters parameters = initParameters();
 
     @Test
-    public void noIdNoChanges() {
+    public void speciesWithoutIdIsDeleted() {
         var m = new Model(3, 2);
         var s = m.createSpecies();
 
@@ -22,7 +23,7 @@ public class SpeciesPolisherTest {
         assertFalse(s.isSetHasOnlySubstanceUnits());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher(parameters).polish(m.getListOfSpecies());
+        new SpeciesPolisher(parameters, new IdentifiersOrg()).polish(m.getListOfSpecies());
 
         assertEquals(0, m.getCompartmentCount());
         assertFalse(s.isSetMetaId());
@@ -30,7 +31,7 @@ public class SpeciesPolisherTest {
         assertFalse(s.isSetConstant());
         assertFalse(s.isSetBoundaryCondition());
         assertFalse(s.isSetHasOnlySubstanceUnits());
-        assertEquals(1,  m.getSpeciesCount());
+        assertEquals(0,  m.getSpeciesCount());
     }
 
     /**
@@ -47,7 +48,7 @@ public class SpeciesPolisherTest {
         assertFalse(s.isSetHasOnlySubstanceUnits());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher(parameters).polish(s);
+        new SpeciesPolisher(parameters, new IdentifiersOrg()).polish(s);
 
         assertEquals("c", s.getCompartment());
         assertEquals("stuff_c", s.getId());
@@ -76,7 +77,7 @@ public class SpeciesPolisherTest {
         assertEquals(0, m.getCompartmentCount());
         assertEquals(1,  m.getSpeciesCount());
 
-        new SpeciesPolisher(parameters).polish(s);
+        new SpeciesPolisher(parameters, new IdentifiersOrg()).polish(s);
 
         assertEquals("c", s.getCompartment());
         assertEquals("stuff_c", s.getId());
@@ -98,7 +99,7 @@ public class SpeciesPolisherTest {
 
         assertEquals(0, m.getCompartmentCount());
 
-        new SpeciesPolisher(parameters).polish(s);
+        new SpeciesPolisher(parameters, new IdentifiersOrg()).polish(s);
 
         assertEquals("e", s.getCompartment());
         assertEquals("stuff", s.getId());

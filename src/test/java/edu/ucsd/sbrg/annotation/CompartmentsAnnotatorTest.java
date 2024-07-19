@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
@@ -26,7 +27,7 @@ public class CompartmentsAnnotatorTest extends BiGGDBContainerTest {
             c.setSBOTerm(537);
             assertNotEquals(SBO.getCompartment(), c.getSBOTerm());
 
-            new CompartmentsAnnotator(parameters).annotate(c);
+            new CompartmentsAnnotator(parameters, new IdentifiersOrg()).annotate(c);
 
             assertEquals(1, c.getCVTerms().size());
             assertCVTermIsPresent(c,
@@ -41,7 +42,7 @@ public class CompartmentsAnnotatorTest extends BiGGDBContainerTest {
     public void nameAnnotationIsSane() {
         var c = new Compartment("im", "default",3, 2);
 
-        new CompartmentsAnnotator(parameters).annotate(c);
+        new CompartmentsAnnotator(parameters, new IdentifiersOrg()).annotate(c);
 
         assertTrue(c.isSetName());
         assertEquals("intermembrane space of mitochondria", c.getName());

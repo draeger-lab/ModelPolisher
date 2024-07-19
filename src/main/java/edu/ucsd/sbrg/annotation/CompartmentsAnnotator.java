@@ -1,7 +1,8 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
 
@@ -19,17 +20,17 @@ import java.util.List;
 public class CompartmentsAnnotator extends AbstractAnnotator<Compartment>{
 
 
-  public CompartmentsAnnotator(Parameters parameters) {
-    super(parameters);
+  public CompartmentsAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
 
-  public CompartmentsAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  public CompartmentsAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
   }
 
   public void annotate(List<Compartment> compartments) {
       for (Compartment compartment : compartments) {
-        updateProgressObservers("Annotating Compartments (2/5)  ", compartment);
+        statusReport("Annotating Compartments (2/5)  ", compartment);
         annotate(compartment);
       }
   }
@@ -42,8 +43,9 @@ public class CompartmentsAnnotator extends AbstractAnnotator<Compartment>{
   public void annotate(Compartment compartment) {
     BiGGId biggId = new BiGGId(compartment.getId());
     if (MemorizedQuery.isCompartment(biggId.getAbbreviation())) {
-      compartment.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_IS,
-              IdentifiersOrg.createURI("bigg.compartment", biggId)));
+      compartment.addCVTerm(
+              new CVTerm(CVTerm.Qualifier.BQB_IS,
+              new IdentifiersOrgURI("bigg.compartment", biggId).getURI()));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
         BiGGDB.getCompartmentName(biggId).ifPresent(compartment::setName);

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.io.parsers.json.models;
+package edu.ucsd.sbrg.io.parsers.json.mapping;
 
 import java.util.List;
 

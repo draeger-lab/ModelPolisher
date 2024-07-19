@@ -15,7 +15,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author Kaustubh Trivedi

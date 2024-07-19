@@ -2,7 +2,8 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
@@ -26,18 +27,18 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
   public static final String REF_SEQ_ACCESSION_NUMBER_PATTERN = "^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$";
   public static final String GENOME_ASSEMBLY_ID_PATTERN = "^GC[AF]_[0-9]{9}\\.[0-9]+$";
 
-  public ModelAnnotator(Parameters parameters) {
-    super(parameters);
+  public ModelAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
-  public ModelAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  public ModelAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
   }
 
 
   /**
    * Annotates the {@link Model} with relevant metadata and delegates the annotation of contained elements such as
    * {@link Compartment}, {@link Species}, {@link Reaction}, and {@link GeneProduct}.
-   * 
+   * <p>
    * Steps:
    * 1. Retrieves the model's ID and uses it to fetch and add a taxonomy annotation if available.
    * 2. Checks if the model exists in the database and adds specific BiGG database annotations.
@@ -56,7 +57,9 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
     addTaxonomyAnnotation(model, model.getId());
 
     // annotation indicating the model's identity within BiGG
-    model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQM_IS, IdentifiersOrg.createURI("bigg.model", model.getId())));
+    model.addCVTerm(
+            new CVTerm(CVTerm.Qualifier.BQM_IS,
+            new IdentifiersOrgURI("bigg.model", model.getId()).getURI()));
 
     // Retrieve the genomic accession number for the model
     String accession = BiGGDB.getGenomeAccesion(model.getId());
@@ -72,8 +75,9 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
   private void addTaxonomyAnnotation(Model model, String modelId) {
     // Attempt to fetch and add a taxonomy annotation using the model's ID
     BiGGDB.getTaxonId(modelId).ifPresent(
-      taxonId -> model.addCVTerm(new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON,
-              IdentifiersOrg.createURI("taxonomy", taxonId))));
+      taxonId -> model.addCVTerm(
+              new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON,
+                      new IdentifiersOrgURI("taxonomy", taxonId).getURI())));
   }
 
 
@@ -85,7 +89,7 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
     // Check if the accession matches the RefSeq pattern
     if (refseqMatcher.matches()) {
       // Add a RefSeq resource to the CVTerm
-      term.addResource(IdentifiersOrg.createShortURI("refseq:" + accession));
+      term.addResource(new IdentifiersOrgURI("refseq", accession).getURI());
     } else {
       // Check if non-MIRIAM URIs are allowed
       if (parameters.includeAnyURI()) {

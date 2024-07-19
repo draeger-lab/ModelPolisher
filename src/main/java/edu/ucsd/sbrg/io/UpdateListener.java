@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * identifiers (IDs) of model elements like reactions and gene products, ensuring that all references remain consistent
  * across the model. It also manages the addition of new nodes to the model, particularly focusing on gene product
  * references, and maintains a mapping from gene identifiers to their associated gene product references.
- * 
+ * <p>
  * The {@link TreeNodeChangeListener} base class provides the interface for receiving notifications when changes occur
  * to any node within a tree structure, which in the context of SBML, corresponds to elements within the model's
  * hierarchical structure.

@@ -38,7 +38,6 @@ public class COBRAUtils {
    * Necessary to check for a special whitespace (code 160) at beginning of id
    * (iCHOv1.mat, possibly other models) and to remove trailing ';'
    *
-   * @param id
    * @return trimmed id without ';' at the end
    */
   public static String checkId(String id) {
@@ -59,9 +58,6 @@ public class COBRAUtils {
 
 
   /**
-   * @param cell
-   * @param i
-   * @return
    */
   public static boolean exists(Array cell, int i) {
     if (cell != null) {
@@ -75,7 +71,6 @@ public class COBRAUtils {
 
 
   /**
-   * @param exc
    */
   public static void logException(Exception exc) {
     logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(), de.zbit.util.Utils.getMessage(exc)));
@@ -83,8 +78,6 @@ public class COBRAUtils {
 
 
   /**
-   * @param array
-   * @return
    */
   public static String asString(Array array) {
     return asString(array, null, -1);
@@ -92,10 +85,6 @@ public class COBRAUtils {
 
 
   /**
-   * @param array
-   * @param parentName
-   * @param parentIndex
-   * @return
    */
   public static String asString(Array array, String parentName, int parentIndex) {
     StringBuilder sb = new StringBuilder();

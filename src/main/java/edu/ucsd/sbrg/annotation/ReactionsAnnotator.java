@@ -4,7 +4,9 @@ import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.MemorizedQuery;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -32,15 +34,16 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
 
   static final Logger logger = Logger.getLogger(ReactionsAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  public static final String BIGG_REACTION_ID_FORMAT = "^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
   private static boolean triggeredSubsystemWarning = false;
 
-  public ReactionsAnnotator(Parameters parameters) {
-    super(parameters);
+  public ReactionsAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
 
-  public ReactionsAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  public ReactionsAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
   }
 
 
@@ -64,9 +67,9 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
    */
   @Override
   public void annotate(Reaction reaction) {
-    updateProgressObservers("Annotating Reactions (4/5)  ", reaction);
+    statusReport("Annotating Reactions (4/5)  ", reaction);
     // Attempt to retrieve a BiGG ID for the reaction, either directly from the reaction ID or through associated annotations
-    checkId(reaction).ifPresent(biggId -> {
+    findBiGGId(reaction).ifPresent(biggId -> {
       setName(reaction, biggId); // Set the reaction's name based on the BiGG ID
       setSBOTerm(reaction, biggId); // Assign the appropriate SBO term based on the BiGG ID
       addAnnotations(reaction, biggId); // Add additional annotations related to the BiGG ID
@@ -86,25 +89,19 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
    * @return An {@link Optional} containing the BiGG ID if found or created successfully, otherwise {@link Optional#empty()}
    */
   @Override
-  public Optional<BiGGId> checkId(Reaction reaction) {
+  public Optional<BiGGId> findBiGGId(Reaction reaction) {
     String id = reaction.getId();
     // Check if the reaction ID matches the expected BiGG ID format and exists in the database
-    boolean isBiGGid = id.matches("^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$")
-            && MemorizedQuery.isReaction(id);
+    boolean isBiGGid = MemorizedQuery.isReaction(id);
     if (!isBiGGid) {
       // Extract BiGG IDs from annotations if the direct ID check fails
       Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
               .stream()
               .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
               .flatMap(term -> term.getResources().stream())
-              .map(IdentifiersOrg::checkResourceUrl)
+              .map(registry::findRegistryUrlForOtherUrl)
               .flatMap(Optional::stream)
-              .map(IdentifiersOrg::getPartsFromIdentifiersURI)
-              .map(parts -> {
-                String prefix = parts.get(0);
-                String synonymId = parts.get(1);
-                return BiGGDB.getBiggIdsForReactionForeignId(prefix, synonymId);
-              })
+              .map(BiGGDB::getBiggIdsForReactionForeignId)
               .flatMap(Collection::stream)
               .filter(foreignReaction -> matchingCompartments(reaction, foreignReaction))
               .map(fr -> fr.reactionId)
@@ -119,7 +116,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
 
   /**
    * Determines if the reaction's compartment matches the compartment information of a foreign reaction from the BiGG database.
-   * 
+   * <p>
    * This method checks various conditions to ensure that the compartments are correctly matched:
    * 1. If the reaction does not have a compartment set and the foreign reaction also lacks compartment details, it returns true.
    * 2. If the reaction does not have a compartment set but the foreign reaction does, it returns false.

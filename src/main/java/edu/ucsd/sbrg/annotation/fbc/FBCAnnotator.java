@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.annotation.fbc;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.annotation.AbstractAnnotator;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
@@ -11,8 +12,8 @@ import java.util.List;
 
 public class FBCAnnotator extends AbstractAnnotator<Model> {
 
-    public FBCAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public FBCAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
     }
 
     @Override
@@ -26,7 +27,7 @@ public class FBCAnnotator extends AbstractAnnotator<Model> {
 //            progress.setCallNr(current);
 //        }
         FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        new GeneProductAnnotator(new GeneProductReferencesAnnotator(), parameters, getObservers())
+        new GeneProductAnnotator(new GeneProductReferencesAnnotator(), parameters, registry, getObservers())
                 .annotate(fbcModelPlugin.getListOfGeneProducts());
     }
 }

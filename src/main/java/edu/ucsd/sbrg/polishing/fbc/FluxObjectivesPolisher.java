@@ -3,6 +3,9 @@ package edu.ucsd.sbrg.polishing.fbc;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.Objective;
@@ -15,12 +18,12 @@ public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
 
     private final FBCModelPlugin modelPlug;
 
-    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters) {
-        super(parameters);
+    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, Registry registry) {
+        super(parameters, registry);
         this.modelPlug = modelPlug;
     }
-    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, List<ProgressObserver>  observers) {
-        super(parameters, observers);
+    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, Registry registry, List<ProgressObserver>  observers) {
+        super(parameters, registry, observers);
         this.modelPlug = modelPlug;
     }
 
@@ -34,7 +37,7 @@ public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
     @Override
     public void polish(List<Objective> objectives) {
         for (var objective : objectives) {
-            updateProgressObservers("Polishing Objectives (7/9)  ", objective); // "Processing objective " + objective.getId());
+            statusReport("Polishing Objectives (7/9)  ", objective); // "Processing objective " + objective.getId());
             if (!objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().isEmpty()) {
                 var model = objective.getModel();
                 SBMLFix.fixObjective(

@@ -4,6 +4,9 @@ import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.jetbrains.annotations.Nullable;
@@ -39,13 +42,13 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
 
   private final GeneProductAssociationsProcessor gpaPolisher;
 
-  public ReactionsPolisher(Parameters parameters) {
-      super(parameters);
+  public ReactionsPolisher(Parameters parameters, Registry registry) {
+      super(parameters, registry);
       this.gpaPolisher = new GeneProductAssociationsProcessor();
   }
 
-  public ReactionsPolisher(Parameters parameters, List<ProgressObserver> observers) {
-    super(parameters, observers);
+  public ReactionsPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(parameters, registry, observers);
     this.gpaPolisher = new GeneProductAssociationsProcessor();
   }
 
@@ -59,7 +62,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
     var iterator = reactions.iterator();
     while (iterator.hasNext()) {
       var reaction = iterator.next();
-      updateProgressObservers("Polishing Reactions (5/9)  ", reaction);
+      statusReport("Polishing Reactions (5/9)  ", reaction);
 
       // remove reaction if ID is missing
       String id = reaction.getId();
@@ -85,7 +88,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
   @SuppressWarnings("deprecated")
   public void polish(Reaction reaction) {
       // Process any external resources linked via annotations in the reaction
-      new AnnotationPolisher(parameters).polish(reaction.getAnnotation());
+      new AnnotationPolisher(parameters, registry).polish(reaction.getAnnotation());
       // Check and set the compartment of the reaction based on its reactants and products
       polishCompartments(reaction);
       // Set meta ID if not set and CV terms are present

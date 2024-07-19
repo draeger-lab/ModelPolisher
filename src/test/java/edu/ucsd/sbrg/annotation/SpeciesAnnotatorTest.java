@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.TestUtils;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
@@ -30,7 +31,7 @@ public class SpeciesAnnotatorTest extends BiGGDBContainerTest {
         var s = m.createSpecies("atp");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        new SpeciesAnnotator(parameters).annotate(s);
+        new SpeciesAnnotator(parameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("atp", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -47,7 +48,7 @@ public class SpeciesAnnotatorTest extends BiGGDBContainerTest {
         var m = new Model(3, 2);
         var s = m.createSpecies("atp_c");
 
-        new SpeciesAnnotator(parameters).annotate(s);
+        new SpeciesAnnotator(parameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("atp_c", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -69,7 +70,7 @@ public class SpeciesAnnotatorTest extends BiGGDBContainerTest {
         cvTerm.addResource("http://identifiers.org/reactome.compound/113592");
         s.addCVTerm(cvTerm);
 
-        new SpeciesAnnotator(parameters).annotate(s);
+        new SpeciesAnnotator(parameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("big_chungus", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -130,7 +131,7 @@ public class SpeciesAnnotatorTest extends BiGGDBContainerTest {
         var s = m.createSpecies("h2o");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        new SpeciesAnnotator(parameters).annotate(s);
+        new SpeciesAnnotator(parameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("h2o", s.getId());
         assertEquals("H2O H2O", s.getName());
@@ -216,7 +217,7 @@ public class SpeciesAnnotatorTest extends BiGGDBContainerTest {
 
 
         // new SpeciesAnnotation(s1).annotate();
-        new SpeciesAnnotator(parameters).annotate(s2);
+        new SpeciesAnnotator(parameters, new IdentifiersOrg()).annotate(s2);
 //
 //        assertEquals(1, s1.getCVTermCount());
 //        assertEquals(29, s1.getCVTerm(0).getNumResources());

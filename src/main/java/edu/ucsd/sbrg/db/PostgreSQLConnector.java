@@ -26,8 +26,6 @@ public class PostgreSQLConnector {
   private final HikariDataSource dataSource;
 
   /**
-   * @return
-   * @throws SQLException
    */
   public Connection getConnection() throws SQLException {
     return dataSource.getConnection();
@@ -44,11 +42,6 @@ public class PostgreSQLConnector {
 
 
   /**
-   * @param host
-   * @param port
-   * @param user
-   * @param password
-   * @param dbName
    */
   public PostgreSQLConnector(String host, int port, String user, String password, String dbName) {
     password = password == null ? "" : password;

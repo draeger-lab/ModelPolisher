@@ -1,7 +1,10 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
@@ -13,7 +16,7 @@ import java.util.Optional;
  * This class is responsible for ensuring that all necessary {@link UnitDefinition}s and {@link Unit}s are correctly
  * defined and present in the SBML model. It handles the creation and verification of units used in the model,
  * particularly focusing on the units related to growth, substance, time, and volume.
- *
+ * <p>
  * Additionally, this class is responsible for accurately assigning these defined units to specific components 
  * such as reactions, species, and parameters within the model as needed. 
  * This ensures that all these components adhere uniformly to the correct unit specifications, 
@@ -21,24 +24,26 @@ import java.util.Optional;
  */
 public class UnitPolisher extends AbstractPolisher<Model>{
 
-    public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS_DESCRIBED_BY, IdentifiersOrg.createURI("pubmed", 7986045));
+    public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(
+            CVTerm.Qualifier.BQB_IS_DESCRIBED_BY,
+            new IdentifiersOrgURI("pubmed", 7986045).getURI());
     public static final String GROWTH_UNIT_ID = "mmol_per_gDW_per_hr";
     public static final String GROWTH_UNIT_NAME = "Millimoles per gram (dry weight) per hour";
-    public static final CVTerm CV_TERM_IS_SUBSTANCE_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000006"));
-    public static final CVTerm CV_TERM_IS_TIME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000003"));
-    public static final CVTerm CV_TERM_IS_VOLUME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000095"));
-    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000010"));
-    public static final CVTerm CV_TERM_IS_UO_HOUR = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000032"));
-    public static final CVTerm CV_TERM_IS_UO_MMOL = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000040"));
-    public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, IdentifiersOrg.createURI("unit", "UO:0000021"));
-    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, IdentifiersOrg.createURI("unit", "UO:0000010"));
-    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, IdentifiersOrg.createURI("unit", "UO:0000013"));
+    public static final CVTerm CV_TERM_IS_SUBSTANCE_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000006").getURI());
+    public static final CVTerm CV_TERM_IS_TIME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000003").getURI());
+    public static final CVTerm CV_TERM_IS_VOLUME_UNIT = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000095").getURI());
+    public static final CVTerm CV_TERM_IS_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000010").getURI());
+    public static final CVTerm CV_TERM_IS_UO_HOUR = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000032").getURI());
+    public static final CVTerm CV_TERM_IS_UO_MMOL = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000040").getURI());
+    public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000021").getURI());
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000010").getURI());
+    public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000013").getURI());
 
-    public UnitPolisher(Parameters parameters) {
-        super(parameters);
+    public UnitPolisher(Parameters parameters, Registry registry) {
+        super(parameters, registry);
     }
-    public UnitPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public UnitPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
     }
 
     /**
@@ -48,7 +53,7 @@ public class UnitPolisher extends AbstractPolisher<Model>{
      */
     public void polish(Model model) {
         // Update progress bar to indicate the current process stage
-        updateProgressObservers("Polishing Unit Definitions (2/9)   ", null);
+        statusReport("Polishing Unit Definitions (2/9)   ", model);
 
 //        int udCount = model.getUnitDefinitionCount();
 

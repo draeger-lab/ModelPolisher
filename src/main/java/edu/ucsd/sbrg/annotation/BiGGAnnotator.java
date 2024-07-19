@@ -7,6 +7,7 @@ import edu.ucsd.sbrg.annotation.fbc.FBCAnnotator;
 import edu.ucsd.sbrg.db.MemorizedQuery;
 import edu.ucsd.sbrg.db.bigg.Publication;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -22,12 +23,12 @@ import edu.ucsd.sbrg.db.bigg.BiGGDB;
  */
 public class BiGGAnnotator extends AbstractAnnotator<SBMLDocument> {
 
-  public BiGGAnnotator(Parameters parameters) {
-    super(parameters);
+  public BiGGAnnotator(Parameters parameters, Registry registry) {
+    super(parameters, registry);
   }
 
-  public BiGGAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-      super(parameters, observers);
+  public BiGGAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+      super(parameters, registry, observers);
   }
   
 
@@ -48,19 +49,19 @@ public class BiGGAnnotator extends AbstractAnnotator<SBMLDocument> {
     }
     // model.isSetMetaId()
 
-    new ModelAnnotator(parameters, getObservers()).annotate(model);
+    new ModelAnnotator(parameters, registry, getObservers()).annotate(model);
 
     // Annotate various components of the model
     List<Publication> publications = BiGGDB.getPublications(modelId);
-    new PublicationsAnnotator(model, parameters, getObservers()).annotatePublications(publications);
+    new PublicationsAnnotator(model, parameters, registry, getObservers()).annotatePublications(publications);
 
-    new CompartmentsAnnotator(parameters, getObservers()).annotate(model.getListOfCompartments());
+    new CompartmentsAnnotator(parameters, registry, getObservers()).annotate(model.getListOfCompartments());
 
-    new SpeciesAnnotator(parameters, getObservers()).annotate(model.getListOfSpecies());
+    new SpeciesAnnotator(parameters, registry, getObservers()).annotate(model.getListOfSpecies());
 
-    new ReactionsAnnotator(parameters, getObservers()).annotate(model.getListOfReactions());
+    new ReactionsAnnotator(parameters, registry, getObservers()).annotate(model.getListOfReactions());
 
-    new FBCAnnotator(parameters, getObservers()).annotate(model);
+    new FBCAnnotator(parameters, registry, getObservers()).annotate(model);
 
     new DocumentNotesProcessor(parameters).processNotes(doc);
 

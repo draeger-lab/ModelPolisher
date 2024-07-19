@@ -3,9 +3,10 @@ package edu.ucsd.sbrg.io.parsers.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.io.parsers.json.models.Compartments;
-import edu.ucsd.sbrg.io.parsers.json.models.Metabolite;
-import edu.ucsd.sbrg.io.parsers.json.models.Reaction;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Compartments;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Reaction;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,8 +41,15 @@ public class JSONParserTest {
 
   @Test
   public void parseCompartmentsTest() {
-    String compartmentsJSON = "{\n" + "\"\":\"\",\n" + "\"c\":\"cytoplasm\",\n" + "\"C_c\":\"cytoplasm\",\n"
-      + "\"e\":\"extracellular\",\n" + "\"w\":\"cell wall\"\n" + "}\n";
+    String compartmentsJSON = """
+            {
+            "":"",
+            "c":"cytoplasm",
+            "C_c":"cytoplasm",
+            "e":"extracellular",
+            "w":"cell wall"
+            }
+            """;
     ObjectMapper mapper = new ObjectMapper();
     Compartments compartments = null;
     try {
@@ -51,7 +58,7 @@ public class JSONParserTest {
       e.printStackTrace();
     }
     assertNotNull(compartments);
-    JSONParser parser = new JSONParser();
+    JSONParser parser = new JSONParser(new IdentifiersOrg());
     parser.parseCompartments(builder, compartments.get());
     Model model = builder.getModel();
     assertEquals(3, model.getListOfCompartments().size());
@@ -68,12 +75,24 @@ public class JSONParserTest {
 
   @Test
   public void parseReactionTest() {
-    String reactionJSON = "{\n" + "\"id\":\"FAH1\",\n" + "\"name\":\"Fatty acid omega-hydroxylase\",\n"
-      + "\"metabolites\":{\n" + "\"ddca_c\":-1.0,\n" + "\"h2o_c\":1.0,\n" + "\"h_c\":-1.0,\n" + "\"nadp_c\":1.0,\n"
-      + "\"nadph_c\":-1.0,\n" + "\"o2_c\":-1.0,\n" + "\"whddca_c\":1.0\n" + "},\n" + "\"lower_bound\":1.0,\n"
-      + "\"upper_bound\":10.0,\n"
-      + "\"gene_reaction_rule\":\"( 100767149 or 100767921 or 100768211 or 100768783 or 100769255 or 100755384 or 100773614 or 100750743 ) and 100689241\",\n"
-      + "\"subsystem\":\"dummy\"\n" + "}";
+    String reactionJSON = """
+            {
+            "id":"FAH1",
+            "name":"Fatty acid omega-hydroxylase",
+            "metabolites":{
+            "ddca_c":-1.0,
+            "h2o_c":1.0,
+            "h_c":-1.0,
+            "nadp_c":1.0,
+            "nadph_c":-1.0,
+            "o2_c":-1.0,
+            "whddca_c":1.0
+            },
+            "lower_bound":1.0,
+            "upper_bound":10.0,
+            "gene_reaction_rule":"( 100767149 or 100767921 or 100768211 or 100768783 or 100769255 or 100755384 or 100773614 or 100750743 ) and 100689241",
+            "subsystem":"dummy"
+            }""";
     ObjectMapper mapper = new ObjectMapper();
     Reaction reaction = null;
     try {
@@ -82,7 +101,7 @@ public class JSONParserTest {
       e.printStackTrace();
     }
     assertNotNull(reaction);
-    JSONParser parser = new JSONParser();
+    JSONParser parser = new JSONParser(new IdentifiersOrg());
     BiGGId.createReactionId(reaction.getId()).ifPresentOrElse(id -> assertEquals("R_FAH1", id.toBiGGId()),
       Assertions::fail);
     parser.parseReaction(builder, reaction, "R_FAH1");
@@ -143,7 +162,7 @@ public class JSONParserTest {
     assertTrue(r.getListOfProducts().containsAll(products));
     GroupsModelPlugin groupsModelPlugin = (GroupsModelPlugin) builder.getModel().getPlugin(GroupsConstants.shortLabel);
     List<String> groupNames =
-      groupsModelPlugin.getListOfGroups().stream().map(AbstractSBase::getName).collect(Collectors.toList());
+      groupsModelPlugin.getListOfGroups().stream().map(AbstractSBase::getName).toList();
     assertEquals(1, groupNames.size());
     assertTrue(groupNames.contains("dummy"));
   }
@@ -151,8 +170,15 @@ public class JSONParserTest {
 
   @Test
   public void parseSpeciesTest() {
-    String speciesJSON = "{\n" + "  \"id\" : \"amp_e\",\n" + "  \"name\" : \"AMP\",\n" + "  \"compartment\" : \"e\",\n"
-      + "  \"charge\" : -2,\n" + "  \"formula\" : \"C10H12N5O7P\"\n" + "}\n";
+    String speciesJSON = """
+            {
+              "id" : "amp_e",
+              "name" : "AMP",
+              "compartment" : "e",
+              "charge" : -2,
+              "formula" : "C10H12N5O7P"
+            }
+            """;
     ObjectMapper mapper = new ObjectMapper();
     Metabolite metabolite = null;
     try {
@@ -163,7 +189,7 @@ public class JSONParserTest {
     assertNotNull(metabolite);
     BiGGId.createMetaboliteId(metabolite.getId()).ifPresentOrElse(id -> assertEquals("M_amp_e", id.toBiGGId()),
       Assertions::fail);
-    JSONParser parser = new JSONParser();
+    JSONParser parser = new JSONParser(new IdentifiersOrg());
     parser.parseMetabolite(builder.getModel(), metabolite, BiGGId.createMetaboliteId(metabolite.getId()).get());
     Species species = builder.getModel().getSpecies("M_amp_e");
     assertNotNull(species);
@@ -180,7 +206,7 @@ public class JSONParserTest {
   public void iJB785isParsedWithoutError() throws XMLStreamException {
     var iJB785 = new File(JSONParserTest.class.getResource("iJB785.json").getFile());
     try {
-      var sbmlDoc = JSONParser.read(iJB785);
+        var sbmlDoc = new JSONParser(new IdentifiersOrg()).parse(iJB785);
 
       // see https://github.com/draeger-lab/ModelPolisher/issues/27 for context on this assertion
       var s =  sbmlDoc.getModel().getListOfSpecies()
@@ -192,7 +218,7 @@ public class JSONParserTest {
               "Formula from the model not retained in notes!");
     } catch (IOException e) {
       e.printStackTrace();
-      assertTrue(false, "Parsing iJB785.json threw an exception.");
+        fail("Parsing iJB785.json threw an exception.");
     }
   }
 }

@@ -43,7 +43,6 @@ class MatlabFields {
   private static MatlabFields instance;
 
   /**
-   * @param struct
    */
   private MatlabFields(Struct struct) {
     fields = new HashMap<>();
@@ -52,7 +51,6 @@ class MatlabFields {
 
 
   /**
-   * @param struct
    */
   public static void init(Struct struct) {
     instance = new MatlabFields(struct);
@@ -76,7 +74,6 @@ class MatlabFields {
 
 
   /**
-   * @param model
    */
   public void setDescriptionFields(Model model) {
     if (!fields.containsKey(ModelField.description.name())) {
@@ -98,8 +95,6 @@ class MatlabFields {
 
 
   /**
-   * @param model
-   * @param description
    */
   private void setDescriptionFromStruct(Model model, Array description) {
     Struct desc = (Struct) description;
@@ -122,7 +117,6 @@ class MatlabFields {
 
 
   /**
-   * @return
    */
   public static MatlabFields getInstance() {
     if (instance == null) {
@@ -133,8 +127,6 @@ class MatlabFields {
 
 
   /**
-   * @param name
-   * @return
    */
   public Optional<Cell> getCell(String name) {
     if (fields.containsKey(name)) {
@@ -148,8 +140,6 @@ class MatlabFields {
 
 
   /**
-   * @param name
-   * @return
    */
   public Optional<Char> getChar(String name) {
     if (fields.containsKey(name)) {
@@ -163,8 +153,6 @@ class MatlabFields {
 
 
   /**
-   * @param name
-   * @return
    */
   public Optional<Matrix> getMatrix(String name) {
     if (fields.containsKey(name)) {
@@ -178,8 +166,6 @@ class MatlabFields {
 
 
   /**
-   * @param name
-   * @return
    */
   public Optional<Sparse> getSparse(String name) {
     if (fields.containsKey(name)) {

@@ -46,7 +46,7 @@ import java.util.regex.Pattern;
  * The methods in this class can also be used in other parts of ModelPolisher,
  * and are used in fact. This class can become a collection of repair functions
  * for invalid SBML models.
- * 
+ * <p>
  * Date: 2016-02-19
  * @author Andreas Dr&auml;ger
  */
@@ -66,8 +66,6 @@ public class SBMLFix {
   private static final double DEFAULT_COEFFICIENT = 1d;
 
   /**
-   * @param input
-   * @param output
    */
   public static void batchProcess(File input, File output) {
     if (!output.exists() && !output.isFile() && !(input.isFile() && input.getName().equals(output.getName()))) {
@@ -100,8 +98,7 @@ public class SBMLFix {
 
   /**
    * Set group kind where required
-   * 
-   * @param model
+   *
    */
   public static void fixGroups(Model model) {
     GroupsModelPlugin gPlug = (GroupsModelPlugin) model.getExtension(GroupsConstants.shortLabel);
@@ -123,7 +120,6 @@ public class SBMLFix {
    * @param modelDescriptor
    *        this can be the path to the model file or some name that describes
    *        this model.
-   * @param model
    */
   public static void fixObjective(String modelDescriptor, Model model) {
     FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getExtension(FBCConstants.shortLabel);
@@ -218,14 +214,13 @@ public class SBMLFix {
     logger.info(MessageFormat.format(MESSAGES.getString("WRITE_FILE_INFO"), out.getAbsolutePath()));
     TidySBMLWriter.write(doc, out, ModelPolisherCLILauncher.class.getName(), "1.1", ' ', (short) 2);
     String archive = out.getAbsolutePath() + ".gz";
-    logger.info(MessageFormat.format("ARCHIVE", archive));
+    logger.info(MessageFormat.format("ARCHIVE {0}", archive));
     ZIPUtils.GZip(out.getAbsolutePath(), archive);
     logger.info(MessageFormat.format("Done. Time elapsed: {0,number,integer} ms", System.currentTimeMillis() - time));
   }
 
 
   /**
-   * @param args
    */
   public static void main(String[] args) {
     LogUtil.initializeLogging("de.zbit", "edu.ucsd.sbrg");

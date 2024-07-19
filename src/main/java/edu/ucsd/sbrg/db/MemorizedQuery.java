@@ -14,8 +14,6 @@ public class MemorizedQuery {
   private static Set<String> BiGGDBReactions = new LinkedHashSet<>();
 
   /**
-   * @param id
-   * @return
    */
   public static boolean isCompartment(String id) {
     if (BiGGDBCompartments.isEmpty()) {
@@ -29,8 +27,6 @@ public class MemorizedQuery {
 
 
   /**
-   * @param id
-   * @return
    */
   public static boolean isDataSource(String id) {
     if (BiGGDBDataSources.isEmpty()) {
@@ -41,8 +37,6 @@ public class MemorizedQuery {
 
 
   /**
-   * @param id
-   * @return
    */
   public static boolean isMetabolite(String id) {
     if (BiGGDBMetabolites.isEmpty()) {
@@ -56,8 +50,6 @@ public class MemorizedQuery {
 
 
   /**
-   * @param id
-   * @return
    */
   public static boolean isModel(String id) {
     if (BiGGDBModels.isEmpty()) {
@@ -68,8 +60,6 @@ public class MemorizedQuery {
 
 
   /**
-   * @param id
-   * @return
    */
   public static boolean isReaction(String id) {
     if (BiGGDBReactions.isEmpty()) {

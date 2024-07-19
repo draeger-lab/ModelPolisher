@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.io.parsers.json.models;
+package edu.ucsd.sbrg.io.parsers.json.mapping;
 
 import static java.text.MessageFormat.format;
 
@@ -69,7 +69,7 @@ public class Metabolite {
       this.compartment = compartment;
     } else {
       logger.finest(format(
-        "Compartment code '{0}' in metabolite '{1}' did not match pattern (C_)?[a-z]'{'1,2'}', trying to extract from id after parsing",
+        "Compartment code {0} in metabolite {1} did not match pattern (C_)?[a-z]'{'1,2'}', trying to extract from id after parsing",
         compartment, id));
     }
   }

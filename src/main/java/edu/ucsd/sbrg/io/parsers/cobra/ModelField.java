@@ -342,8 +342,6 @@ public enum ModelField {
    * Get known model field variant name for a struct field, disregarding upper/lowercase discrepancies using struct
    * field as prefix of knwon model field
    *
-   * @param query
-   * @return
    */
   public static List<String> getNameForPrefix(String query) {
     return Arrays.stream(ModelField.values()).map(Enum::name)

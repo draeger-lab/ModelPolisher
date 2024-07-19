@@ -1,4 +1,6 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 plugins {
     id 'com.github.jk1.dependency-license-report' version '2.0'
@@ -193,16 +195,19 @@ tasks.javadoc {
 // get latest version of MIRIAM registry
 task downloadMIRIAM {
     doLast {
-	def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
-	def parentDir = file('src/main/resources/edu/ucsd/sbrg/identifiersorg')
-	def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
+        def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
+        def parentDir = file('src/main/resources/edu/ucsd/sbrg/resolver/identifiersorg')
+        def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
 
-	if (!parentDir.exists()) {
-	    parentDir.mkdirs()
-	}
+        if (!parentDir.exists()) {
+            parentDir.mkdirs()
+        }
 
-	def registry = new URL(registryUrl).text
-	registryFile.text = registry
+        def registry = new URL(registryUrl).text
+        def jsonParser = new JsonSlurper()
+        def parsedJson = jsonParser.parseText(registry)
+        def prettyJson = JsonOutput.prettyPrint(JsonOutput.toJson(parsedJson))
+        registryFile.text = prettyJson
     }
 }
 

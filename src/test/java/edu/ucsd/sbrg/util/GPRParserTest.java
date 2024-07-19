@@ -10,11 +10,7 @@ import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
 
 public class GPRParserTest {
 
-  final static int LEVEL = 3;
-  final static int VERSION = 1;
-  static Model model = new Model(LEVEL, VERSION);
-  static List<String> geneReactionRules = new ArrayList<>();
-  static List<GeneProductAssociation> geneProductAssociations = new ArrayList<>();
+  static final List<String> geneReactionRules = new ArrayList<>();
 
   @BeforeAll
   public static void setUp() {
@@ -47,7 +43,4 @@ public class GPRParserTest {
   //   return association;
   // }
 
-
-  public final void test() {
-  }
 }

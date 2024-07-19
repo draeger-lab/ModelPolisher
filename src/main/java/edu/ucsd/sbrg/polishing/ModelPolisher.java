@@ -18,6 +18,9 @@ import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.fbc.FBCPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 
@@ -42,12 +45,12 @@ public class ModelPolisher extends AbstractPolisher<Model> {
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
 
-  public ModelPolisher(Parameters parameters) {
-      super(parameters);
+  public ModelPolisher(Parameters parameters, Registry registry) {
+      super(parameters, registry);
   }
 
-  public ModelPolisher(Parameters parameters, List<ProgressObserver> observers) {
-      super(parameters, observers);
+  public ModelPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+      super(parameters, registry, observers);
   }
 
   /**
@@ -62,23 +65,23 @@ public class ModelPolisher extends AbstractPolisher<Model> {
     // Log the start of processing the model.
     logger.info(format(MESSAGES.getString("PROCESSING_MODEL"), model.getId()));
 
-    updateProgressObservers("Polishing Model (1/9)  ", model);
+    statusReport("Polishing Model (1/9)  ", model);
 
     // Delegate polishing tasks
-    new UnitPolisher(parameters, getObservers()).polish(model);
+    new UnitPolisher(parameters, registry, getObservers()).polish(model);
 
-    new CompartmentPolisher(parameters, getObservers()).polish(model.getListOfCompartments());
+    new CompartmentPolisher(parameters, registry, getObservers()).polish(model.getListOfCompartments());
 
-    new SpeciesPolisher(parameters, getObservers()).polish(model.getListOfSpecies());
+    new SpeciesPolisher(parameters, registry, getObservers()).polish(model.getListOfSpecies());
 
-    new ParametersPolisher(parameters, getObservers()).polish(model.getListOfParameters());
+    new ParametersPolisher(parameters, registry, getObservers()).polish(model.getListOfParameters());
 
-    new AnnotationPolisher(parameters, getObservers()).polish(model.getAnnotation());
+    new AnnotationPolisher(parameters, registry, getObservers()).polish(model.getAnnotation());
 
-    new ReactionsPolisher(parameters, getObservers()).polish(model.getListOfReactions());
+    new ReactionsPolisher(parameters, registry, getObservers()).polish(model.getListOfReactions());
 
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      new FBCPolisher(parameters, getObservers()).polish(model);
+      new FBCPolisher(parameters, registry, getObservers()).polish(model);
     }
 
     // Set the metaId of the model if it is not set and there are CV terms

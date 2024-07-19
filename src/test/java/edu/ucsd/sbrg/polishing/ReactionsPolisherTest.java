@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.fbc.StrictnessPredicate;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
@@ -29,7 +30,7 @@ public class ReactionsPolisherTest {
         assertFalse(r.isSetName());
         assertEquals(1, model.getReactionCount());
 
-        new ModelPolisher(parameters).polish(model);
+        new ModelPolisher(parameters, new IdentifiersOrg()).polish(model);
 
         boolean strict = new StrictnessPredicate().test(model);
 
@@ -55,7 +56,7 @@ public class ReactionsPolisherTest {
         assertFalse(r.isSetReversible());
         assertEquals(1, model.getReactionCount());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
         boolean strict = new StrictnessPredicate().test(model);
 
         assertFalse(strict);
@@ -76,7 +77,7 @@ public class ReactionsPolisherTest {
 
         assertFalse(r.isSetFast());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertFalse(r.isSetFast());
     }
@@ -93,7 +94,7 @@ public class ReactionsPolisherTest {
 
         assertNull(r.getCompartmentInstance());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(cytosol, r.getCompartmentInstance());
     }
@@ -114,7 +115,7 @@ public class ReactionsPolisherTest {
 
         assertEquals("", r.getCompartment());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getReactantCount());
         assertEquals(1, r.getProductCount());
@@ -136,7 +137,7 @@ public class ReactionsPolisherTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getReactantCount());
         assertEquals(extracellular, r.getCompartmentInstance());
@@ -155,7 +156,7 @@ public class ReactionsPolisherTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getProductCount());
         assertNull(r.getCompartmentInstance());
@@ -179,7 +180,7 @@ public class ReactionsPolisherTest {
 
         assertEquals(cytosol, r.getCompartmentInstance());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfProducts().size());
         assertEquals(Set.of(cytosol, extracellular), r.getListOfProducts().stream()
@@ -201,7 +202,7 @@ public class ReactionsPolisherTest {
         r.createReactant();
         r.createReactant();
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfReactants().size());
         assertEquals(cytosol, r.getCompartmentInstance());
@@ -222,7 +223,7 @@ public class ReactionsPolisherTest {
         r.createProduct();
         r.createProduct();
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfProducts().size());
         assertNull(r.getCompartmentInstance());
@@ -245,7 +246,7 @@ public class ReactionsPolisherTest {
         assertFalse(react1.isSetConstant());
         assertFalse(product1.isSetConstant());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getListOfReactants().size());
         assertEquals(1, r.getListOfProducts().size());
@@ -284,7 +285,7 @@ public class ReactionsPolisherTest {
         assertFalse(product2.isSetConstant());
         assertFalse(product3.isSetConstant());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(3, r.getListOfProducts().size());
         assertEquals("SBO:0000011", product1.getSBOTermID());
@@ -315,7 +316,7 @@ public class ReactionsPolisherTest {
         assertEquals(1, model.getReactionCount());
         assertEquals(0, fbcPlugin.getObjectiveCount());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(1, fbcPlugin.getObjectiveCount());
@@ -346,7 +347,7 @@ public class ReactionsPolisherTest {
         assertEquals(0, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -382,7 +383,7 @@ public class ReactionsPolisherTest {
         assertEquals(1, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -412,7 +413,7 @@ public class ReactionsPolisherTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("some_reaction_LOWER_BOUND", lb.getId());
@@ -443,7 +444,7 @@ public class ReactionsPolisherTest {
         var p2 = model.createParameter("other_blubb");
         rFbcPlugin.setUpperFluxBound(p2);
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("default_blubb", lb.getId());
@@ -473,7 +474,7 @@ public class ReactionsPolisherTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("DEFAULT_UPPER_BOUND", lb.getId());
@@ -503,7 +504,7 @@ public class ReactionsPolisherTest {
         body.addChild(p2);
         r.setNotes(body);
 
-        new ReactionsPolisher(parameters).polish(r);
+        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
 
         assertInstanceOf(GeneProductRef.class, rFbcPlugin.getGeneProductAssociation()
                 .getAssociation(), "The result is expected to be " +

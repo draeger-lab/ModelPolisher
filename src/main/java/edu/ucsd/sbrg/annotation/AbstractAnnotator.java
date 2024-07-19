@@ -3,6 +3,8 @@ package edu.ucsd.sbrg.annotation;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.AbstractSBase;
 
 import java.util.ArrayList;
@@ -12,16 +14,19 @@ import java.util.Objects;
 public abstract class AbstractAnnotator<SBMLElement> {
 
     protected final Parameters parameters;
+    protected final Registry registry;
 
     private final List<ProgressObserver> observers;
 
-    public AbstractAnnotator(Parameters parameters) {
+    public AbstractAnnotator(Parameters parameters, Registry registry) {
         this.parameters = parameters;
+        this.registry = registry;
         observers = new ArrayList<>();
     }
 
-    public AbstractAnnotator(Parameters parameters, List<ProgressObserver> observers) {
+    public AbstractAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
         this.parameters = parameters;
+        this.registry = registry;
         this.observers = observers;
     }
 
@@ -31,14 +36,10 @@ public abstract class AbstractAnnotator<SBMLElement> {
 
     abstract public void annotate(SBMLElement elementToAnnotate);
 
-    protected void updateProgressObservers(String text, AbstractSBase obj) {
+    protected void statusReport(String text, Object element) {
         for (var o : observers) {
-            o.update(new ProgressUpdate(text, obj));
+            o.update(new ProgressUpdate(text, element, ReportType.STATUS));
         }
-    }
-
-    public void addObserver(ProgressObserver o) {
-        observers.add(o);
     }
 
     public List<ProgressObserver> getObservers() {

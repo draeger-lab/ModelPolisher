@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.resolver.Registry;
+import edu.ucsd.sbrg.resolver.RegistryURI;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -45,11 +47,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.io.parsers.json.models.Compartments;
-import edu.ucsd.sbrg.io.parsers.json.models.Gene;
-import edu.ucsd.sbrg.io.parsers.json.models.Metabolite;
-import edu.ucsd.sbrg.io.parsers.json.models.Reaction;
-import edu.ucsd.sbrg.io.parsers.json.models.Root;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Compartments;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Gene;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Reaction;
+import edu.ucsd.sbrg.io.parsers.json.mapping.Root;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.io.UpdateListener;
@@ -68,34 +70,20 @@ public class JSONParser {
    */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  /**
-   * 
-   */
-  public JSONParser() {
+  private final Registry registry;
+
+  public JSONParser(Registry registry) {
     super();
-  }
-
-
-  /**
-   * @param jsonFile,
-   *        to be read and parsed
-   * @return parsed {@link SBMLDocument}
-   * @throws IOException
-   */
-  public static SBMLDocument read(File jsonFile) throws IOException {
-    JSONParser parser = new JSONParser();
-    return parser.parse(jsonFile);
+    this.registry = registry;
   }
 
 
   /**
    * Creates the {@link ModelBuilder}, {@link SBMLDocument} and reads the
    * jsonFile as a tree
-   * 
-   * @param jsonFile
-   * @return
+   *
    */
-  private SBMLDocument parse(File jsonFile) throws IOException {
+  public SBMLDocument parse(File jsonFile) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     Root root = mapper.readValue(jsonFile, Root.class);
     ModelBuilder builder = new ModelBuilder(3, 1);
@@ -119,10 +107,7 @@ public class JSONParser {
    * version), generates a basic unit definition (mmol_per_gDW_per_hr) and calls
    * the parse methods for the main fields (compartments, metabolites, genes,
    * reactions)
-   * 
-   * @param builder
-   * @param root
-   * @return
+   *
    */
   private void parseModel(ModelBuilder builder, Root root) {
     logger.info(MESSAGES.getString("JSON_PARSER_STARTED"));
@@ -148,8 +133,6 @@ public class JSONParser {
 
 
   /**
-   * @param node
-   * @param annotation
    */
   @SuppressWarnings("unchecked")
   public void parseAnnotation(SBase node, Object annotation) {
@@ -175,8 +158,6 @@ public class JSONParser {
 
 
   /**
-   * @param entry
-   * @return
    */
   @SuppressWarnings("unchecked")
   private Set<String> parseAnnotation(Map.Entry<String, Object> entry) {
@@ -197,24 +178,19 @@ public class JSONParser {
 
 
   /**
-   * @param providerCode
-   * @param id
-   * @return
    */
   private Optional<String> checkResource(String providerCode, String id) {
     String resource;
     if (id.startsWith("http")) {
       resource = id;
     } else {
-      resource = IdentifiersOrg.createURI(providerCode, id);
+      resource = new IdentifiersOrgURI(providerCode, id).getURI();
     }
-    return IdentifiersOrg.checkResourceUrl(resource);
+    return registry.findRegistryUrlForOtherUrl(resource).map(RegistryURI::getURI);
   }
 
 
   /**
-   * @param node
-   * @param notes
    */
   @SuppressWarnings("unchecked")
   public void parseNotes(SBase node, Object notes) {
@@ -251,8 +227,6 @@ public class JSONParser {
 
 
   /**
-   * @param entry
-   * @return
    */
   @SuppressWarnings("unchecked")
   private String parseNotes(Map.Entry<String, Object> entry) {
@@ -273,8 +247,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param compartments
    */
   public void parseCompartments(ModelBuilder builder, Map<String, String> compartments) {
     int compSize = compartments.size();
@@ -298,8 +270,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param metabolites
    */
   private void parseMetabolites(ModelBuilder builder, List<Metabolite> metabolites) {
     int metSize = metabolites.size();
@@ -319,8 +289,6 @@ public class JSONParser {
 
 
   /**
-   * @param model
-   * @param metabolite
    */
   public void parseMetabolite(Model model, Metabolite metabolite, BiGGId biggId) {
     Species species = model.createSpecies(biggId.toBiGGId());
@@ -364,8 +332,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param genes
    */
   private void parseGenes(ModelBuilder builder, List<Gene> genes) {
     int genSize = genes.size();
@@ -386,8 +352,6 @@ public class JSONParser {
 
 
   /**
-   * @param model
-   * @param gene
    */
   public void parseGene(Model model, Gene gene, String id) {
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
@@ -404,8 +368,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param reactions
    */
   private void parseReactions(ModelBuilder builder, List<Reaction> reactions) {
     int reactSize = reactions.size();
@@ -425,8 +387,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param reaction
    */
   public void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
     Model model = builder.getModel();
@@ -450,9 +410,6 @@ public class JSONParser {
 
 
   /**
-   * @param builder
-   * @param reaction
-   * @param r
    */
   private void setReactionFluxBounds(ModelBuilder builder, Reaction reaction, org.sbml.jsbml.Reaction r) {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -470,15 +427,12 @@ public class JSONParser {
 
 
   /**
-   * @param reaction
-   * @param model
-   * @param r
    */
   @SuppressWarnings("unchecked")
   private void setReactionStoichiometry(Reaction reaction, Model model, org.sbml.jsbml.Reaction r) {
     Map<String, Double> metabolites = reaction.getMetabolites().get();
     for (Map.Entry<String, Double> metabolite : metabolites.entrySet()) {
-      // removed mu code, as unused not not matching schema
+      // removed mu code, as unused not matching schema
       String id = metabolite.getKey();
       BiGGId.createMetaboliteId(id).ifPresent(metId -> {
         double value = metabolite.getValue();
@@ -500,9 +454,6 @@ public class JSONParser {
 
 
   /**
-   * @param model
-   * @param reaction
-   * @param r
    */
   private void createSubsystem(Model model, Reaction reaction, org.sbml.jsbml.Reaction r) {
     String subsystem = reaction.getSubsystem() != null ? reaction.getSubsystem() : "";
@@ -526,9 +477,6 @@ public class JSONParser {
 
 
   /**
-   * @param reaction
-   * @param model
-   * @param r
    */
   private void setObjectiveCoefficient(Reaction reaction, Model model, org.sbml.jsbml.Reaction r) {
     FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);

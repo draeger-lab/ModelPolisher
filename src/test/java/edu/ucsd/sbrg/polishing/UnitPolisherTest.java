@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -27,9 +28,7 @@ public class UnitPolisherTest {
     }
 
     public static Set<Unit> setOfUnits(UnitDefinition ud) {
-        return ud.getListOfUnits()
-                .stream()
-                .collect(Collectors.toSet());
+        return new HashSet<>(ud.getListOfUnits());
     }
 
     public static Unit newUnit(int multiplier, int scale, Unit.Kind kind, int exponent) {
@@ -39,9 +38,9 @@ public class UnitPolisherTest {
     public static void assertUnits(Set<Unit> expected, Set<Unit> us) {
         assertEquals(expected.size(), us.size(), "Unit sets are of unequal size."
                 + System.getProperty("line.separator")
-                + "Expected: " + expected.toString()
+                + "Expected: " + expected
                 + System.getProperty("line.separator")
-                + "Found: " + us.toString());
+                + "Found: " + us);
         for (var u : us) {
             assertNotNull(u);
         }
@@ -54,9 +53,9 @@ public class UnitPolisherTest {
                 }
             }
             if (!found)
-                assertTrue(false, e.toString() + " not found."
+                fail(e.toString() + " not found."
                         + System.getProperty("line.separator")
-                        + "Instead: " + us.toString());
+                        + "Instead: " + us);
         }
     }
 
@@ -74,7 +73,7 @@ public class UnitPolisherTest {
     public void modelWithNoUnitDefinitions() {
         var m = new Model(3, 2);
 
-        new UnitPolisher(parameters).polish(m);
+        new UnitPolisher(parameters, new IdentifiersOrg()).polish(m);
 
         assertEquals(3, m.getListOfUnitDefinitions().getChildCount());
         assertEquals(Set.of("mmol_per_gDW_per_hr", "substance", "time"),
@@ -132,7 +131,7 @@ public class UnitPolisherTest {
         someUnit.setId("some");
         growth.addUnit(someUnit);
 
-        new UnitPolisher(parameters).polish(m);
+        new UnitPolisher(parameters, new IdentifiersOrg()).polish(m);
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "mmol_per_gDW_per_hr__preexisting",
                 "substance", "time"),
@@ -171,7 +170,7 @@ public class UnitPolisherTest {
         m.addUnitDefinition(time);
         m.setTimeUnits("test_time");
 
-        new UnitPolisher(parameters).polish(m);
+        new UnitPolisher(parameters, new IdentifiersOrg()).polish(m);
 
         assertEquals(Set.of("mmol_per_gDW_per_hr", "test_time", "test_substance"),
                 setOfUnitDefinitions(m));

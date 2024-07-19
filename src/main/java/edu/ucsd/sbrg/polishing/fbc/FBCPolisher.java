@@ -5,6 +5,7 @@ import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
@@ -20,8 +21,8 @@ public class FBCPolisher extends AbstractPolisher<Model> {
     private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-    public FBCPolisher(Parameters parameters, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public FBCPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, registry, observers);
     }
 
     @Override
@@ -36,13 +37,13 @@ public class FBCPolisher extends AbstractPolisher<Model> {
                 // Note: the strict attribute does not require the presence of any Objectives in the model.
                 logger.warning(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
             } else {
-                new FluxObjectivesPolisher(modelPlug, parameters, getObservers()).polish(modelPlug.getListOfObjectives());
+                new FluxObjectivesPolisher(modelPlug, parameters, registry, getObservers()).polish(modelPlug.getListOfObjectives());
             }
 
         }
         // Polish the list of gene products if set
         if (modelPlug.isSetListOfGeneProducts()) {
-            new GeneProductsPolisher(parameters, getObservers()).polish(modelPlug.getListOfGeneProducts());
+            new GeneProductsPolisher(parameters, registry, getObservers()).polish(modelPlug.getListOfGeneProducts());
         }
 
         boolean strict = new StrictnessPredicate().test(model);

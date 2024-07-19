@@ -41,12 +41,7 @@ public class AnnotateDB {
 
   /**
    * Initialize a SQL connection
-   * 
-   * @param host
-   * @param port
-   * @param user
-   * @param passwd
-   * @param name
+   *
    */
   public static void init(String host, String port, String user, String passwd, String name) {
     connector = new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd, name);
@@ -95,9 +90,8 @@ public class AnnotateDB {
     String query = "SELECT m." + TARGET_TERM + ", ac." + URLPATTERN + " FROM " + MAPPING_VIEW + " m, " + ADB_COLLECTION
       + " ac WHERE m." + SOURCE_NAMESPACE + " = ? AND m." + SOURCE_TERM + " = ? AND ac." + NAMESPACE + " = m."
       + TARGET_NAMESPACE;
-    try {
-      Connection connection = connector.getConnection();
-      PreparedStatement pStatement = connection.prepareStatement(query);
+    try (Connection connection = connector.getConnection();
+         PreparedStatement pStatement = connection.prepareStatement(query)) {
       pStatement.setString(1, type);
       pStatement.setString(2, biggId);
       ResultSet resultSet = pStatement.executeQuery();
@@ -108,8 +102,6 @@ public class AnnotateDB {
         uri = uri.replace("{$id}", id);
         annotations.add(uri);
       }
-      pStatement.close();
-      connection.close();
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));
     }

@@ -52,7 +52,6 @@ public interface ModelPolisherOptions extends KeyProvider {
 
 
     /**
-     * @param extension
      */
     Compression(String extension) {
       this.extension = extension;
@@ -60,7 +59,6 @@ public interface ModelPolisherOptions extends KeyProvider {
 
 
     /**
-     * @return
      */
     public String getFileExtension() {
       return extension;

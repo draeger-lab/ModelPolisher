@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
@@ -26,7 +27,7 @@ public class ModelAnnotatorTest extends BiGGDBContainerTest {
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());
 
-        new ModelAnnotator(parameters).annotate(m);
+        new ModelAnnotator(parameters, new IdentifiersOrg()).annotate(m);
 
         assertTrue(m.isSetMetaId());
         assertEquals(3, m.getCVTerms().size());
@@ -41,7 +42,7 @@ public class ModelAnnotatorTest extends BiGGDBContainerTest {
         assertCVTermIsPresent(m,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS_VERSION_OF,
-                "https://identifiers.org/refseq:NC_000913.3",
+                "https://identifiers.org/refseq/NC_000913.3",
                 "Expected NCBI refseq accession NC_000913.3 not present on the model.");
     }
 

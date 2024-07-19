@@ -105,8 +105,7 @@ public class ECOparser {
 
   /**
    * Traverse top-down from root and build the DAG
-   * 
-   * @param node
+   *
    */
   private static void traverse(Node node) {
     Set<Triple> triples = ontology.getTriples(null, node.getTerm(), null);
