@@ -59,6 +59,35 @@ loadScripts(document, 'script');</script>
 <h2 title="edu.ucsd.*">edu.ucsd.*</h2>
 <ul class="block-list">
 <li>
+<div class="caption"><span>edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGModelAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGModelAnnotator</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.annotation.bigg.BiGGModelAnnotator.GENOME_ASSEMBLY_ID_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/annotation/bigg/BiGGModelAnnotator.html#GENOME_ASSEMBLY_ID_PATTERN">GENOME_ASSEMBLY_ID_PATTERN</a></code></div>
+<div class="col-last even-row-color"><code>"^GC[AF]_[0-9]{9}\\.[0-9]+$"</code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.annotation.bigg.BiGGModelAnnotator.REF_SEQ_ACCESSION_NUMBER_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/annotation/bigg/BiGGModelAnnotator.html#REF_SEQ_ACCESSION_NUMBER_PATTERN">REF_SEQ_ACCESSION_NUMBER_PATTERN</a></code></div>
+<div class="col-last odd-row-color"><code>"^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$"</code></div>
+</div>
+</li>
+</ul>
+<ul class="block-list">
+<li>
+<div class="caption"><span>edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGGeneProductAnnotator</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.annotation.bigg.fbc.BiGGGeneProductAnnotator.BIGG_GENE_ID_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html#BIGG_GENE_ID_PATTERN">BIGG_GENE_ID_PATTERN</a></code></div>
+<div class="col-last even-row-color"><code>"^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$"</code></div>
+</div>
+</li>
+</ul>
+<ul class="block-list">
+<li>
 <div class="caption"><span>edu.ucsd.sbrg.db.adb.<a href="edu/ucsd/sbrg/db/adb/AnnotateDBContract.Constants.html" title="class in edu.ucsd.sbrg.db.adb">AnnotateDBContract.Constants</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
@@ -94,17 +123,30 @@ loadScripts(document, 'script');</script>
 </ul>
 <ul class="block-list">
 <li>
-<div class="caption"><span>edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/UnitPolishing.html" title="class in edu.ucsd.sbrg.polishing">UnitPolishing</a></span></div>
+<div class="caption"><span>edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Constant Field</div>
 <div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.polishing.UnitPolishing.GROWTH_UNIT_ID">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/polishing/UnitPolishing.html#GROWTH_UNIT_ID">GROWTH_UNIT_ID</a></code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.polishing.UnitPolisher.GROWTH_UNIT_ID">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/polishing/UnitPolisher.html#GROWTH_UNIT_ID">GROWTH_UNIT_ID</a></code></div>
 <div class="col-last even-row-color"><code>"mmol_per_gDW_per_hr"</code></div>
-<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.polishing.UnitPolishing.GROWTH_UNIT_NAME">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/polishing/UnitPolishing.html#GROWTH_UNIT_NAME">GROWTH_UNIT_NAME</a></code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.polishing.UnitPolisher.GROWTH_UNIT_NAME">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/polishing/UnitPolisher.html#GROWTH_UNIT_NAME">GROWTH_UNIT_NAME</a></code></div>
 <div class="col-last odd-row-color"><code>"Millimoles per gram (dry weight) per hour"</code></div>
+</div>
+</li>
+</ul>
+<ul class="block-list">
+<li>
+<div class="caption"><span>edu.ucsd.sbrg.resolver.identifiersorg.<a href="edu/ucsd/sbrg/resolver/identifiersorg/IdentifiersOrgURI.html" title="class in edu.ucsd.sbrg.resolver.identifiersorg">IdentifiersOrgURI</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI.IDENTIFIERS_ORG_ID_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/resolver/identifiersorg/IdentifiersOrgURI.html#IDENTIFIERS_ORG_ID_PATTERN">IDENTIFIERS_ORG_ID_PATTERN</a></code></div>
+<div class="col-last even-row-color"><code>"(https?://)?(www\\.)?identifiers\\.org/(?&lt;prefix&gt;.*?)/(?&lt;id&gt;.*)"</code></div>
 </div>
 </li>
 </ul>

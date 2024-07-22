@@ -104,7 +104,7 @@ loadScripts(document, 'script');</script>
  The methods in this class can also be used in other parts of ModelPolisher,
  and are used in fact. This class can become a collection of repair functions
  for invalid SBML models.
- 
+ <p>
  Date: 2016-02-19</div>
 </section>
 <section class="summary">
@@ -142,17 +142,17 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Set group kind where required</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin)" class="member-name-link">fixObjective</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin,double%5B%5D,java.lang.String%5B%5D)" class="member-name-link">fixObjective</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin,java.util.List,java.util.List)" class="member-name-link">fixObjective</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug,
- double[]&nbsp;fluxCoefficients,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;fluxObjectives)</code></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Double.html" title="class or interface in java.lang" class="external-link">Double</a>&gt;&nbsp;fluxCoefficients,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;fluxObjectives)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fixObjective(java.lang.String,org.sbml.jsbml.Model)" class="member-name-link">fixObjective</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
@@ -203,11 +203,6 @@ loadScripts(document, 'script');</script>
 <h3>batchProcess</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">batchProcess</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;input,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;output)</span></div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>input</code> - </dd>
-<dd><code>output</code> - </dd>
-</dl>
 </section>
 </li>
 <li>
@@ -215,10 +210,6 @@ loadScripts(document, 'script');</script>
 <h3>fixGroups</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixGroups</span><wbr><span class="parameters">(org.sbml.jsbml.Model&nbsp;model)</span></div>
 <div class="block">Set group kind where required</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>model</code> - </dd>
-</dl>
 </section>
 </li>
 <li>
@@ -231,45 +222,30 @@ loadScripts(document, 'script');</script>
 <dt>Parameters:</dt>
 <dd><code>modelDescriptor</code> - this can be the path to the model file or some name that describes
         this model.</dd>
-<dd><code>model</code> - </dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin)">
 <h3>fixObjective</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug)</span></div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>modelDescriptor</code> - some descriptive String for the model, e.g., its id, the path to the
         file, or any other meaningful information for users.</dd>
-<dd><code>listOfReactions</code> - </dd>
-<dd><code>fbcPlug</code> - </dd>
-<dt>Returns:</dt>
-<dd><code>true</code> if this operation was successful and <code>false</code> if
-         the problem could not be fixed.</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin,double[],java.lang.String[])">
+<section class="detail" id="fixObjective(java.lang.String,org.sbml.jsbml.ListOf,org.sbml.jsbml.ext.fbc.FBCModelPlugin,java.util.List,java.util.List)">
 <h3>fixObjective</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fixObjective</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;modelDescriptor,
  org.sbml.jsbml.ListOf&lt;org.sbml.jsbml.Reaction&gt;&nbsp;listOfReactions,
  org.sbml.jsbml.ext.fbc.FBCModelPlugin&nbsp;fbcPlug,
- double[]&nbsp;fluxCoefficients,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;fluxObjectives)</span></div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>modelDescriptor</code> - </dd>
-<dd><code>listOfReactions</code> - </dd>
-<dd><code>fbcPlug</code> - </dd>
-<dd><code>fluxCoefficients</code> - </dd>
-<dd><code>fluxObjectives</code> - </dd>
-<dt>Returns:</dt>
-</dl>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Double.html" title="class or interface in java.lang" class="external-link">Double</a>&gt;&nbsp;fluxCoefficients,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;fluxObjectives)</span></div>
 </section>
 </li>
 <li>
@@ -280,9 +256,6 @@ loadScripts(document, 'script');</script>
                     throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.xml/javax/xml/stream/XMLStreamException.html" title="class or interface in javax.xml.stream" class="external-link">XMLStreamException</a>,
 <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></span></div>
 <dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>in</code> - </dd>
-<dd><code>out</code> - </dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.xml/javax/xml/stream/XMLStreamException.html" title="class or interface in javax.xml.stream" class="external-link">XMLStreamException</a></code></dd>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></code></dd>
@@ -293,10 +266,6 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="main(java.lang.String[])">
 <h3>main</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">main</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>args</code> - </dd>
-</dl>
 </section>
 </li>
 </ul>

@@ -78,6 +78,8 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">edu.ucsd.sbrg</a></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><a href="fbc/package-summary.html">edu.ucsd.sbrg.polishing.fbc</a></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 </div>
 </div>
 </li>
@@ -88,40 +90,42 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="CompartmentPolishing.html" title="class in edu.ucsd.sbrg.polishing">CompartmentPolishing</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;SBMLElement&gt;</div>
+<div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="AnnotationPolisher.html" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="CompartmentPolisher.html" title="class in edu.ucsd.sbrg.polishing">CompartmentPolisher</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">This class is responsible for polishing the properties of a compartment in an SBML model to ensure
  compliance with standards and completeness.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GeneProductPolishing.html" title="class in edu.ucsd.sbrg.polishing">GeneProductPolishing</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">This class is responsible for polishing GeneProduct instances by processing their annotations and adjusting their identifiers and names.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="MiscPolishing.html" title="class in edu.ucsd.sbrg.polishing">MiscPolishing</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GeneProductAssociationsProcessor.html" title="class in edu.ucsd.sbrg.polishing">GeneProductAssociationsProcessor</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">This class provides methods to polish an SBML model to conform to specific standards and conventions.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">This class provides functionality to polish an SBML (Systems Biology Markup Language) document.</div>
 </div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ParametersPolisher.html" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="PolishingUtils.html" title="class in edu.ucsd.sbrg.polishing">PolishingUtils</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ReactionPolishing.html" title="class in edu.ucsd.sbrg.polishing">ReactionPolishing</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">This class provides methods to polish and validate SBML reactions according to specific rules and patterns.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab3"><a href="ReactionPolishing.Patterns.html" title="enum class in edu.ucsd.sbrg.polishing">ReactionPolishing.Patterns</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="ReactionNamePatterns.html" title="enum class in edu.ucsd.sbrg.polishing">ReactionNamePatterns</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab3">
 <div class="block">Defines an enumeration for regex patterns that are used to categorize reactions based on their ID strings.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SpeciesPolishing.html" title="class in edu.ucsd.sbrg.polishing">SpeciesPolishing</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="ReactionsPolisher.html" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">This class provides methods to polish and validate SBML reactions according to specific rules and patterns.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SBMLPolisher.html" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="SpeciesPolisher.html" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">This class is responsible for polishing <code>Species</code> objects in an SBML model to ensure they conform to
  specific standards and completeness.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="UnitPolishing.html" title="class in edu.ucsd.sbrg.polishing">UnitPolishing</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">This class is responsible for ensuring that all necessary <code>UnitDefinition</code>s and <code>Unit</code>s are correctly
  defined and present in the SBML model.</div>
 </div>
