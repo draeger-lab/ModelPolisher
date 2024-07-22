@@ -1,7 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;

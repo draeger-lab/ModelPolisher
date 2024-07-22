@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.annotation.bigg.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.annotation.bigg.BiGGAnnotationUtils;
 import edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;

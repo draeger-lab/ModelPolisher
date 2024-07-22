@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamException;
 
 import edu.ucsd.sbrg.resolver.Registry;
-import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;

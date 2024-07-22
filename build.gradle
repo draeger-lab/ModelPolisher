@@ -1,3 +1,5 @@
+import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
@@ -22,12 +24,12 @@ licenseReport {
 	/*
 	 - Ensures that similar licenses are grouped together
 	 */
-	new com.github.jk1.license.filter.LicenseBundleNormalizer(),
+	new LicenseBundleNormalizer(),
 	/*
 	 - Transitive dependencies are not included in the report
 	 - Be aware that excluding transitive dependencies might omit some licenses from the report
 	 */
-	new com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter()
+	new ExcludeTransitiveDependenciesFilter()
     ]
 }
 
@@ -136,43 +138,43 @@ dependencies {
 /** === Configuration for pre-existing Tasks === **/
 
 // config for all jar tasks
-tasks.withType(Jar) {
+tasks.withType(Jar).configureEach {
     dependsOn test
     destinationDirectory = file("$rootDir/target")
     manifest {
-	attributes(
-	    "Version": project.version,
-	    "Implementation-Title": "ModelPolisher",
-	    "Implementation-Version": project.version,
-	    "Specification-Vendor": "University of California, San Diego",
-	    "Specification-Title": "ModelPolisher",
-	    "Implementation-Vendor-Id": "edu.ucsd.sbrg",
-	    "Implementation-Vendor": "University of California, San Diego",
-	    "Main-Class": "edu.ucsd.sbrg.ModelPolisherCLILauncher"
-	)
+        attributes(
+                "Version": project.version,
+                "Implementation-Title": "ModelPolisher",
+                "Implementation-Version": project.version,
+                "Specification-Vendor": "University of California, San Diego",
+                "Specification-Title": "ModelPolisher",
+                "Implementation-Vendor-Id": "edu.ucsd.sbrg",
+                "Implementation-Vendor": "University of California, San Diego",
+                "Main-Class": "edu.ucsd.sbrg.ModelPolisherCLILauncher"
+        )
     }
 }
 
 // enable deprecation linter in compilation
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << '-Xlint:deprecation'
 }
 
 // config for all test tasks
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
     testLogging {
-	showStandardStreams = true
-	events "passed", "skipped", "failed"
-	exceptionFormat TestExceptionFormat.FULL
-	showCauses true
-	showExceptions true
-	showStackTraces true
-	// showStandardStreams = false
-	// events "failed"
-	// showCauses false
-	// showExceptions false
-	// showStackTraces false
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+        exceptionFormat TestExceptionFormat.FULL
+        showCauses true
+        showExceptions true
+        showStackTraces true
+        // showStandardStreams = false
+        // events "failed"
+        // showCauses false
+        // showExceptions false
+        // showStackTraces false
     }
 }
 
@@ -193,7 +195,7 @@ tasks.javadoc {
 
 /** === Custom Tasks === **/
 // get latest version of MIRIAM registry
-task downloadMIRIAM {
+tasks.register('downloadMIRIAM') {
     doLast {
         def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
         def parentDir = file('src/main/resources/edu/ucsd/sbrg/resolver/identifiersorg')
@@ -218,37 +220,37 @@ processResources.dependsOn(downloadMIRIAM)
 
 // create distributable standalone JAR that includes
 // not only the project's compiled classes but also all the dependencies' classes
-task uberJar(type: Jar) {
+tasks.register('uberJar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath
     from {
-	configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 }
 
 // build a Docker container image after rebuilding the JAR
-task buildDockerContainer(type: Exec) {
+tasks.register('buildDockerContainer', Exec) {
     commandLine "sh", "-c", "cp target/ModelPolisher-" + project.version + ".jar docker/java_docker && " +
-	"export COMPOSE_FILE=docker-compose.devel.yml && " +
-	"docker-compose pull && " +
-	"docker-compose build && " +
-	"rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
+            "export COMPOSE_FILE=docker-compose.devel.yml && " +
+            "docker-compose pull && " +
+            "docker-compose build && " +
+            "rm docker/java_docker/ModelPolisher-" + project.version + ".jar"
     dependsOn uberJar
 }
 
 // bump jar version in ModelPolisher.sh
 if (project.file( "src/scripts/ModelPolisher.sh").exists()) {
-    task bumpVersionMP() {
-	replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
-	replaceVersion(rootProject.projectDir.toString() + "/README.md")
-	replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
+    tasks.register('bumpVersionMP') {
+        replaceVersion(rootProject.projectDir.toString() + "/docker/java_docker/Dockerfile")
+        replaceVersion(rootProject.projectDir.toString() + "/README.md")
+        replaceVersion(rootProject.projectDir.toString() + "/src/scripts/ModelPolisher.sh")
     }
     processResources.dependsOn bumpVersionMP
 }
 
-def replaceVersion(path) {
+def replaceVersion(String path) {
     ArrayList<String> content = new ArrayList<>()
     File file = new File(path)
     String MPVersion = /ModelPolisher-(.*?)\d{1,2}(.\d{1,2}){1,2}(-beta)?.jar/

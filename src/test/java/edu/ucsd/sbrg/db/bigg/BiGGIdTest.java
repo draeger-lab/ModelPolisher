@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import edu.ucsd.sbrg.db.bigg.BiGGId;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -148,29 +146,23 @@ public class BiGGIdTest {
   @Test
   public final void geneIdsValid() {
     List<String> ids = biggIds.get("genes");
-    ids.forEach(id -> {
-      BiGGId.createGeneId(id).ifPresent(biggId -> {
-        assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-      });
-    });
+    ids.forEach(id -> BiGGId.createGeneId(id).ifPresent(biggId -> {
+      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
+    }));
   }
 
 
   @Test
   public final void metaboliteIdsValid() {
     List<String> ids = biggIds.get("metabolites");
-    ids.forEach(id -> BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
-      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-    }));
+    ids.forEach(id -> BiGGId.createMetaboliteId(id).ifPresent(biggId -> assertTrue(BiGGId.isValid(biggId.toBiGGId()))));
   }
 
 
   @Test
   public final void reactionIdsValid() {
     List<String> ids = biggIds.get("reactions");
-    ids.forEach(id -> BiGGId.createReactionId(id).ifPresent(biggId -> {
-      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-    }));
+    ids.forEach(id -> BiGGId.createReactionId(id).ifPresent(biggId -> assertTrue(BiGGId.isValid(biggId.toBiGGId()))));
   }
 
 
@@ -228,7 +220,4 @@ public class BiGGIdTest {
   }
 
 
-  @AfterAll
-  public static void cleanUp() {
-  }
 }

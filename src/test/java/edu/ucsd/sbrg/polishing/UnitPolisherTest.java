@@ -37,9 +37,9 @@ public class UnitPolisherTest {
 
     public static void assertUnits(Set<Unit> expected, Set<Unit> us) {
         assertEquals(expected.size(), us.size(), "Unit sets are of unequal size."
-                + System.getProperty("line.separator")
+                + System.lineSeparator()
                 + "Expected: " + expected
-                + System.getProperty("line.separator")
+                + System.lineSeparator()
                 + "Found: " + us);
         for (var u : us) {
             assertNotNull(u);
@@ -54,7 +54,7 @@ public class UnitPolisherTest {
             }
             if (!found)
                 fail(e.toString() + " not found."
-                        + System.getProperty("line.separator")
+                        + System.lineSeparator()
                         + "Instead: " + us);
         }
     }

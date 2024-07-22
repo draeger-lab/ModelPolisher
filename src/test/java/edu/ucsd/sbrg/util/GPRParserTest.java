@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.sbml.jsbml.Model;
-import org.sbml.jsbml.ext.fbc.GeneProductAssociation;
 
 public class GPRParserTest {
 

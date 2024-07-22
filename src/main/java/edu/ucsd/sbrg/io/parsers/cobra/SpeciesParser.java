@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.resolver.Registry;
-import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;

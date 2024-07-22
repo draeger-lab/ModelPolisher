@@ -5,8 +5,6 @@ import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
-import org.apache.commons.lang3.tuple.Pair;
-import org.sbml.jsbml.AbstractSBase;
 
 import java.util.*;
 

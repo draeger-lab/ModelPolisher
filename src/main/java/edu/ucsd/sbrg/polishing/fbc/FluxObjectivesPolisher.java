@@ -3,8 +3,6 @@ package edu.ucsd.sbrg.polishing.fbc;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;

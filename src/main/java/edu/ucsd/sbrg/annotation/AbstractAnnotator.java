@@ -1,15 +1,12 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
-import edu.ucsd.sbrg.resolver.Registry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class AbstractAnnotator<SBMLElement> {
 
