@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
@@ -13,15 +13,17 @@ import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
-public class DocumentNotesProcessor {
+public class BiGGDocumentNotesProcessor {
 
-    static final Logger logger = Logger.getLogger(DocumentNotesProcessor.class.getName());
+    static final Logger logger = Logger.getLogger(BiGGDocumentNotesProcessor.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     private final Parameters parameters;
+    private final BiGGDB bigg;
 
-    public DocumentNotesProcessor(Parameters parameters) {
+    public BiGGDocumentNotesProcessor(BiGGDB bigg, Parameters parameters) {
         this.parameters = parameters;
+        this.bigg = bigg;
     }
 
 
@@ -49,7 +51,7 @@ public class DocumentNotesProcessor {
         // Retrieve the model ID
         String id = model.getId();
         // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
-        String organism = BiGGDB.getOrganism(id).orElse("");
+        String organism = bigg.getOrganism(id).orElse("");
         // Retrieve and process the document title pattern by replacing placeholders
         String name = parameters.documentTitlePattern();
         name = name.replace("[biggId]", id);
@@ -60,7 +62,7 @@ public class DocumentNotesProcessor {
         replacements.put("${title}", name);
         replacements.put("${bigg_id}", id);
         replacements.put("${year}", Integer.toString(Calendar.getInstance().get(Calendar.YEAR)));
-        replacements.put("${bigg.timestamp}", BiGGDB.getBiGGVersion().map(date -> format("{0,date}", date)).orElse(""));
+        replacements.put("${bigg.timestamp}", bigg.getBiGGVersion().map(date -> format("{0,date}", date)).orElse(""));
         replacements.put("${species_table}", "");
         return replacements;
     }

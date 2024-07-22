@@ -1,17 +1,16 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.db.MemorizedQuery;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
+import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -25,25 +24,24 @@ import java.util.stream.Collectors;
 
 /**
  * This class provides functionality to annotate a reaction in an SBML model using BiGG database identifiers.
- * It extends the {@link CVTermAnnotator} class, allowing it to manage controlled vocabulary (CV) terms
+ * It extends the {@link BiGGCVTermAnnotator} class, allowing it to manage controlled vocabulary (CV) terms
  * associated with the reaction. The class handles various aspects of reaction annotation including setting
  * the reaction's name, SBO term, and additional annotations. It also processes gene reaction rules and
  * subsystem information associated with the reaction.
  */
-public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
+public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
 
-  static final Logger logger = Logger.getLogger(ReactionsAnnotator.class.getName());
+  static final Logger logger = Logger.getLogger(BiGGReactionsAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  public static final String BIGG_REACTION_ID_FORMAT = "^(R_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
   private static boolean triggeredSubsystemWarning = false;
 
-  public ReactionsAnnotator(Parameters parameters, Registry registry) {
-    super(parameters, registry);
+  public BiGGReactionsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+    super(bigg, parameters, registry);
   }
 
-  public ReactionsAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-    super(parameters, registry, observers);
+  public BiGGReactionsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(bigg, parameters, registry, observers);
   }
 
 
@@ -92,7 +90,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
   public Optional<BiGGId> findBiGGId(Reaction reaction) {
     String id = reaction.getId();
     // Check if the reaction ID matches the expected BiGG ID format and exists in the database
-    boolean isBiGGid = MemorizedQuery.isReaction(id);
+    boolean isBiGGid = bigg.isReaction(id);
     if (!isBiGGid) {
       // Extract BiGG IDs from annotations if the direct ID check fails
       Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
@@ -101,7 +99,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
               .flatMap(term -> term.getResources().stream())
               .map(registry::findRegistryUrlForOtherUrl)
               .flatMap(Optional::stream)
-              .map(BiGGDB::getBiggIdsForReactionForeignId)
+              .map(bigg::getBiggIdsForReactionForeignId)
               .flatMap(Collection::stream)
               .filter(foreignReaction -> matchingCompartments(reaction, foreignReaction))
               .map(fr -> fr.reactionId)
@@ -154,7 +152,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
    */
   public void setName(Reaction reaction, BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    BiGGDB.getReactionName(abbreviation)
+    bigg.getReactionName(abbreviation)
             .filter(name -> !name.equals(reaction.getName()))
             .map(PolishingUtils::polishName)
             .ifPresent(reaction::setName);
@@ -172,7 +170,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
   public void setSBOTerm(Reaction reaction, BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
     if (!reaction.isSetSBOTerm()) {
-      if (BiGGDB.isPseudoreaction(abbreviation)) {
+      if (bigg.isPseudoreaction(abbreviation)) {
         reaction.setSBOTerm(631);
       } else if (!parameters.omitGenericTerms()) {
         reaction.setSBOTerm(375); // generic process
@@ -180,6 +178,53 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
     }
   }
 
+  void addAnnotations(Reaction node, BiGGId biggId) {
+    // TODO: ???
+    CVTerm cvTerm = null;
+    for (CVTerm term : node.getAnnotation().getListOfCVTerms()) {
+      if (term.getQualifier() == Qualifier.BQB_IS) {
+        cvTerm = term;
+        node.removeCVTerm(term);
+        break;
+      }
+    }
+    if (cvTerm == null) {
+      cvTerm = new CVTerm(Qualifier.BQB_IS);
+    }
+
+    Set<String> annotations = new HashSet<>();
+    boolean isBiGGReaction = bigg.isReaction(biggId.getAbbreviation());
+    // using BiGG Database
+    if (isBiGGReaction) {
+      annotations.add(new IdentifiersOrgURI("bigg.reaction", biggId).getURI());
+
+      Set<String> biggAnnotations = bigg.getResources(biggId, parameters.includeAnyURI(), true)
+              .stream()
+              .map(IdentifiersOrgURI::getURI)
+              .collect(Collectors.toSet());
+      annotations.addAll(biggAnnotations);
+    }
+
+
+    // don't add resources that are already present
+    Set<String> existingAnnotations =
+            cvTerm.getResources().stream()
+                    .map(resource -> resource.replaceAll("http://identifiers.org", "https://identifiers.org"))
+                    .collect(Collectors.toSet());
+    annotations.removeAll(existingAnnotations);
+    // adding annotations to cvTerm
+    List<String> sortedAnnotations = new ArrayList<>(annotations);
+    Collections.sort(sortedAnnotations);
+    for (String annotation : sortedAnnotations) {
+      cvTerm.addResource(annotation);
+    }
+    if (cvTerm.getResourceCount() > 0) {
+      node.addCVTerm(cvTerm);
+    }
+    if ((node.getCVTermCount() > 0) && !node.isSetMetaId()) {
+      node.setMetaId(node.getId());
+    }
+  }
 
   /**
    * Parses gene reaction rules for a given reaction based on the BiGG database identifier.
@@ -191,7 +236,7 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
    */
   public void parseGeneReactionRules(Reaction reaction, BiGGId biggId) {
     String abbreviation = biggId.getAbbreviation();
-    List<String> geneReactionRules = BiGGDB.getGeneReactionRule(abbreviation, reaction.getModel().getId());
+    List<String> geneReactionRules = bigg.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
       GPRParser.parseGPR(reaction, geneReactionRule, parameters.omitGenericTerms());
     }
@@ -211,16 +256,16 @@ public class ReactionsAnnotator extends CVTermAnnotator<Reaction> {
    */
   private void parseSubsystems(Reaction reaction, BiGGId biggId) {
     Model model = reaction.getModel();
-    boolean isBiGGModel = MemorizedQuery.isModel(model.getId());
+    boolean isBiGGModel = bigg.isModel(model.getId());
     List<String> subsystems;
     if (isBiGGModel) {
-      subsystems = BiGGDB.getSubsystems(model.getId(), biggId.getAbbreviation());
+      subsystems = bigg.getSubsystems(model.getId(), biggId.getAbbreviation());
     } else {
       if (!triggeredSubsystemWarning) {
         triggeredSubsystemWarning = true;
         logger.warning(MESSAGES.getString("SUBSYSTEM_MODEL_NOT_BIGG"));
       }
-      subsystems = BiGGDB.getSubsystemsForReaction(biggId.getAbbreviation());
+      subsystems = bigg.getSubsystemsForReaction(biggId.getAbbreviation());
     }
     if (subsystems.isEmpty()) {
       return;

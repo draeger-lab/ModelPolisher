@@ -1,9 +1,9 @@
-package edu.ucsd.sbrg.annotation.fbc;
+package edu.ucsd.sbrg.annotation.bigg.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.annotation.AnnotationUtils;
-import edu.ucsd.sbrg.annotation.CVTermAnnotator;
+import edu.ucsd.sbrg.annotation.bigg.BiGGAnnotationUtils;
+import edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -24,23 +24,23 @@ import static java.text.MessageFormat.format;
 
 /**
  * Provides functionality to annotate gene products in an SBML model using data from the BiGG database.
- * This class extends {@link CVTermAnnotator} and specifically handles the annotation of {@link GeneProduct} instances.
+ * This class extends {@link BiGGCVTermAnnotator} and specifically handles the annotation of {@link GeneProduct} instances.
  * It includes methods to validate gene product IDs, retrieve and set labels, and add annotations based on BiGG IDs.
  */
-public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
+public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
 
-  static final Logger logger = Logger.getLogger(GeneProductAnnotator.class.getName());
+  static final Logger logger = Logger.getLogger(BiGGGeneProductAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   public static final String BIGG_GENE_ID_PATTERN = "^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
   /**
    * Instance of gene product to annotate
    */
-  private final GeneProductReferencesAnnotator gprAnnotator;
+  private final BiGGGeneProductReferencesAnnotator gprAnnotator;
 
-  public GeneProductAnnotator(GeneProductReferencesAnnotator gprAnnotator, Parameters parameters,
-                              Registry registry, List<ProgressObserver> observers) {
-    super(parameters, registry, observers);
+  public BiGGGeneProductAnnotator(BiGGGeneProductReferencesAnnotator gprAnnotator, BiGGDB bigg, Parameters parameters,
+                                  Registry registry, List<ProgressObserver> observers) {
+    super(bigg, parameters, registry, observers);
     this.gprAnnotator = gprAnnotator;
   }
 
@@ -107,7 +107,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
                                           .flatMap(term -> term.getResources().stream())
                                           .collect(Collectors.toList());
       // Attempt to update the ID with a valid BiGG ID from the resources, if available
-      Optional<BiGGId> biGGIdFromResources = AnnotationUtils.getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT, registry);
+      Optional<BiGGId> biGGIdFromResources = getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT);
       if (biGGIdFromResources.isPresent()) {
         return biGGIdFromResources;
       }
@@ -152,7 +152,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
       geneProduct.setLabel(label);
     }
     // Attempt to fetch the gene name from the BiGG database using the label
-    BiGGDB.getGeneName(label).ifPresent(geneName -> {
+    bigg.getGeneName(label).ifPresent(geneName -> {
       // Log if no gene name is associated with the label
       if (geneName.isEmpty()) {
         logger.fine(format(MESSAGES.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
@@ -180,7 +180,7 @@ public class GeneProductAnnotator extends CVTermAnnotator<GeneProduct> {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // Retrieve gene IDs from BiGG database and categorize them based on their prefix
-    BiGGDB.getGeneIds(biggId.getAbbreviation()).forEach(
+    bigg.getGeneIds(biggId.getAbbreviation()).forEach(
             uri -> {
               switch (IdentifiersOrg.fixIdentifiersOrgUri(uri).getPrefix()) {
                 case "interpro":

@@ -80,8 +80,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void setNameAndReversibility(Reaction reaction, int index) {
     matlabFields.getCell(ModelField.rxnNames.name()).ifPresent(
       rxnNames -> reaction.setName(COBRAUtils.asString(rxnNames.get(index), ModelField.rxnNames.name(), index + 1)));
@@ -89,8 +87,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void setReactionBounds(ModelBuilder builder, Reaction reaction, int index) {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) reaction.getPlugin(FBCConstants.shortLabel);
     matlabFields.getMatrix(ModelField.lb.name())
@@ -102,8 +98,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   private void buildReactantsProducts(Model model, Reaction reaction, int index) {
     // Take the current column of S and look for all non-zero coefficients
@@ -134,8 +128,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void parseAnnotations(ModelBuilder builder, Reaction reaction, String rId, int index) {
     matlabFields.getCell(ModelField.ecNumbers.name()).ifPresent(ecNumbers -> {
       if (ecNumbers.get(index) != null) {
@@ -190,8 +182,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void appendComment(String comment, SBase sbase) {
     try {
       if (!COBRAUtils.isEmptyString(comment)) {
@@ -203,8 +193,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void parseECcodes(String ec, Reaction reaction) {
     if (COBRAUtils.isEmptyString(ec)) {
       return;
@@ -229,8 +217,7 @@ public class ReactionParser {
     }
   }
 
-  /**
-   */
+
   private void parseRxnKEGGids(String keggId, Reaction reaction) {
     if (COBRAUtils.isEmptyString(keggId)) {
       return;
@@ -275,8 +262,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void parseRxnKEGGOrthology(String keggId, Reaction reaction) {
     if (COBRAUtils.isEmptyString(keggId)) {
       return;
@@ -297,8 +282,6 @@ public class ReactionParser {
   }
 
 
-  /**
-   */
   private void parseCitation(String citation, Reaction reaction) {
     StringBuilder otherCitation = new StringBuilder();
     if (COBRAUtils.isEmptyString(citation)) {

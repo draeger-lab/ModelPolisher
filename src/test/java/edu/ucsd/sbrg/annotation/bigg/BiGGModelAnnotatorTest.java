@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.Parameters;
@@ -13,7 +13,7 @@ import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ModelAnnotatorTest extends BiGGDBContainerTest {
+public class BiGGModelAnnotatorTest extends BiGGDBContainerTest {
 
     private final Parameters parameters = initParameters();
 
@@ -27,7 +27,7 @@ public class ModelAnnotatorTest extends BiGGDBContainerTest {
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());
 
-        new ModelAnnotator(parameters, new IdentifiersOrg()).annotate(m);
+        new BiGGModelAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(m);
 
         assertTrue(m.isSetMetaId());
         assertEquals(3, m.getCVTerms().size());

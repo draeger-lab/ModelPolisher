@@ -11,39 +11,20 @@ import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
-/**
- * Created by mephenor on 05.05.17.
- */
-public class PostgreSQLConnector {
+public class PostgresConnectionPool {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(PostgreSQLConnector.class.getName());
-  /**
-   * 
-   */
+  private static final Logger logger = Logger.getLogger(PostgresConnectionPool.class.getName());
   private final HikariDataSource dataSource;
 
-  /**
-   */
   public Connection getConnection() throws SQLException {
     return dataSource.getConnection();
   }
 
-
-  /**
-   * 
-   */
   public void close() {
     dataSource.close();
   }
 
-
-
-  /**
-   */
-  public PostgreSQLConnector(String host, int port, String user, String password, String dbName) {
+  public PostgresConnectionPool(String host, int port, String user, String password, String dbName) {
     password = password == null ? "" : password;
     Properties properties = new Properties();
     properties.setProperty("dataSourceClassName", "org.postgresql.ds.PGSimpleDataSource");

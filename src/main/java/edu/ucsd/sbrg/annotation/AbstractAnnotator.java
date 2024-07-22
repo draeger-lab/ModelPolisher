@@ -1,11 +1,11 @@
 package edu.ucsd.sbrg.annotation;
 
 import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
-import org.sbml.jsbml.AbstractSBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +14,16 @@ import java.util.Objects;
 public abstract class AbstractAnnotator<SBMLElement> {
 
     protected final Parameters parameters;
-    protected final Registry registry;
 
     private final List<ProgressObserver> observers;
 
-    public AbstractAnnotator(Parameters parameters, Registry registry) {
+    public AbstractAnnotator(Parameters parameters) {
         this.parameters = parameters;
-        this.registry = registry;
         observers = new ArrayList<>();
     }
 
-    public AbstractAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public AbstractAnnotator(Parameters parameters, List<ProgressObserver> observers) {
         this.parameters = parameters;
-        this.registry = registry;
         this.observers = observers;
     }
 
@@ -46,23 +43,4 @@ public abstract class AbstractAnnotator<SBMLElement> {
         return observers;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AbstractAnnotator<?> that = (AbstractAnnotator<?>) o;
-        return Objects.equals(parameters, that.parameters);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(parameters);
-    }
-
-    @Override
-    public String toString() {
-        return "AbstractAnnotator{" +
-                "parameters=" + parameters +
-                '}';
-    }
 }

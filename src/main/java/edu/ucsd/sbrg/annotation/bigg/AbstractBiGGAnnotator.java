@@ -1,22 +1,42 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.db.MemorizedQuery;
+import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.annotation.AbstractAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDBContract;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.reporting.ProgressObserver;
+import edu.ucsd.sbrg.reporting.ProgressUpdate;
+import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
-import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class AnnotationUtils {
+public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotator<SBMLElement> {
+
+    protected final BiGGDB bigg;
+    protected final Registry registry;
+
+    public AbstractBiGGAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+        super(parameters);
+        this.bigg = bigg;
+        this.registry = registry;
+    }
+
+    public AbstractBiGGAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+        super(parameters, observers);
+        this.bigg = bigg;
+        this.registry = registry;
+    }
 
     /**
      * Attempts to extract a BiGG ID that conforms to the BiGG ID specification from the BiGG knowledgebase. This method
@@ -29,7 +49,7 @@ public class AnnotationUtils {
      *             {@link BiGGDBContract.Constants#TYPE_GENE_PRODUCT}.
      * @return An {@link Optional <String>} containing the BiGG ID if it could be successfully retrieved, otherwise {@link Optional#empty()}.
      */
-    public static Optional<BiGGId> getBiGGIdFromResources(List<String> resources, String type, Registry registry) {
+    public Optional<BiGGId> getBiGGIdFromResources(List<String> resources, String type) {
         var identifiersOrgUrisStream = resources.stream()
                 .filter(registry::isValid)
                 .map(IdentifiersOrgURI::new)
@@ -57,13 +77,14 @@ public class AnnotationUtils {
      *              {@link BiGGDBContract.Constants} and include TYPE_SPECIES, TYPE_REACTION, and TYPE_GENE_PRODUCT.
      * @return An {@link Optional<String>} containing the BiGG ID if found, otherwise {@link Optional#empty()}.
      */
-    private static Optional<BiGGId> getBiggIdFromParts(RegistryURI uri, String type) {
-        if (MemorizedQuery.isDataSource(uri.getPrefix())) {
-            Optional<BiGGId> id = BiGGDB.getBiggIdFromSynonym(uri.getPrefix(), uri.getId(), type);
+    private Optional<BiGGId> getBiggIdFromParts(RegistryURI uri, String type) {
+        if (bigg.isDataSource(uri.getPrefix())) {
+            Optional<BiGGId> id = bigg.getBiggIdFromSynonym(uri.getPrefix(), uri.getId(), type);
             if (id.isPresent()) {
                 return id;
             }
         }
         return Optional.empty();
     }
+
 }

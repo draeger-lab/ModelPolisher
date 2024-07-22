@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
@@ -12,13 +12,13 @@ import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CompartmentsAnnotatorTest extends BiGGDBContainerTest {
+public class BiGGCompartmentsAnnotatorTest extends BiGGDBContainerTest {
 
     private final Parameters parameters = initParameters();
 
     @Test
     public void annotateKnownCompartments() {
-        for (var c_id : BiGGDB.getOnce("compartment")) {
+        for (var c_id : bigg.getAllBiggIds("compartment")) {
             var c = new Compartment(c_id,3, 2);
 
             assertTrue( c.getCVTerms().isEmpty());
@@ -27,7 +27,7 @@ public class CompartmentsAnnotatorTest extends BiGGDBContainerTest {
             c.setSBOTerm(537);
             assertNotEquals(SBO.getCompartment(), c.getSBOTerm());
 
-            new CompartmentsAnnotator(parameters, new IdentifiersOrg()).annotate(c);
+            new BiGGCompartmentsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(c);
 
             assertEquals(1, c.getCVTerms().size());
             assertCVTermIsPresent(c,
@@ -42,7 +42,7 @@ public class CompartmentsAnnotatorTest extends BiGGDBContainerTest {
     public void nameAnnotationIsSane() {
         var c = new Compartment("im", "default",3, 2);
 
-        new CompartmentsAnnotator(parameters, new IdentifiersOrg()).annotate(c);
+        new BiGGCompartmentsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(c);
 
         assertTrue(c.isSetName());
         assertEquals("intermembrane space of mitochondria", c.getName());

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
@@ -22,16 +22,16 @@ import java.util.regex.Pattern;
  * {@link Compartment}, {@link Species}, {@link Reaction}, and {@link GeneProduct}.
  * The annotations can include taxonomy information, database references, and meta identifiers.
  */
-public class ModelAnnotator extends AbstractAnnotator<Model>{
+public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
 
   public static final String REF_SEQ_ACCESSION_NUMBER_PATTERN = "^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$";
   public static final String GENOME_ASSEMBLY_ID_PATTERN = "^GC[AF]_[0-9]{9}\\.[0-9]+$";
 
-  public ModelAnnotator(Parameters parameters, Registry registry) {
-    super(parameters, registry);
+  public BiGGModelAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+    super(bigg, parameters, registry);
   }
-  public ModelAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-    super(parameters, registry, observers);
+  public BiGGModelAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(bigg, parameters, registry, observers);
   }
 
 
@@ -49,7 +49,7 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
     // Retrieve the model ID
     String id = model.getId();
     // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
-    String organism = BiGGDB.getOrganism(id).orElse("");
+    String organism = bigg.getOrganism(id).orElse("");
     if (!model.isSetName()) {
       model.setName(organism);
     }
@@ -62,7 +62,7 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
             new IdentifiersOrgURI("bigg.model", model.getId()).getURI()));
 
     // Retrieve the genomic accession number for the model
-    String accession = BiGGDB.getGenomeAccesion(model.getId());
+    String accession = bigg.getGenomeAccesion(model.getId());
     addNCBIReferenceAnnotation(model, accession);
 
     // Set the model's MetaId to its ID if MetaId is not set and there are existing CVTerms
@@ -74,7 +74,7 @@ public class ModelAnnotator extends AbstractAnnotator<Model>{
 
   private void addTaxonomyAnnotation(Model model, String modelId) {
     // Attempt to fetch and add a taxonomy annotation using the model's ID
-    BiGGDB.getTaxonId(modelId).ifPresent(
+    bigg.getTaxonId(modelId).ifPresent(
       taxonId -> model.addCVTerm(
               new CVTerm(CVTerm.Qualifier.BQB_HAS_TAXON,
                       new IdentifiersOrgURI("taxonomy", taxonId).getURI())));

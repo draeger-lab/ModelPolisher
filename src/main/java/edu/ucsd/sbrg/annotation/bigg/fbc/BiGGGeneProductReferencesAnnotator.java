@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation.fbc;
+package edu.ucsd.sbrg.annotation.bigg.fbc;
 
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Reaction;
@@ -8,7 +8,7 @@ import javax.swing.tree.TreeNode;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GeneProductReferencesAnnotator {
+public class BiGGGeneProductReferencesAnnotator {
 
     /**
      * A static map that holds references to all gene products within a model, facilitating quick updates.

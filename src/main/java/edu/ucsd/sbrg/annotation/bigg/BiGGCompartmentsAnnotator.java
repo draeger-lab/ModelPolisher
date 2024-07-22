@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -8,7 +8,6 @@ import org.sbml.jsbml.*;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
-import edu.ucsd.sbrg.db.MemorizedQuery;
 
 import java.util.List;
 
@@ -17,15 +16,15 @@ import java.util.List;
  * It allows for the addition of both BiGG and SBO annotations to a compartment, and can also set the compartment's name
  * based on information retrieved from the BiGG database.
  */
-public class CompartmentsAnnotator extends AbstractAnnotator<Compartment>{
+public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator<Compartment> {
 
 
-  public CompartmentsAnnotator(Parameters parameters, Registry registry) {
-    super(parameters, registry);
+  public BiGGCompartmentsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+    super(bigg, parameters, registry);
   }
 
-  public CompartmentsAnnotator(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-    super(parameters, registry, observers);
+  public BiGGCompartmentsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    super(bigg, parameters, registry, observers);
   }
 
   public void annotate(List<Compartment> compartments) {
@@ -42,13 +41,13 @@ public class CompartmentsAnnotator extends AbstractAnnotator<Compartment>{
    */
   public void annotate(Compartment compartment) {
     BiGGId biggId = new BiGGId(compartment.getId());
-    if (MemorizedQuery.isCompartment(biggId.getAbbreviation())) {
+    if (bigg.isCompartment(biggId.getAbbreviation())) {
       compartment.addCVTerm(
               new CVTerm(CVTerm.Qualifier.BQB_IS,
               new IdentifiersOrgURI("bigg.compartment", biggId).getURI()));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
-        BiGGDB.getCompartmentName(biggId).ifPresent(compartment::setName);
+        bigg.getCompartmentName(biggId).ifPresent(compartment::setName);
       }
     }
   }

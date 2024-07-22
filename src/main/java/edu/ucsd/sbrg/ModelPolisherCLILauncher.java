@@ -17,7 +17,10 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
-import edu.ucsd.sbrg.annotation.BiGGAnnotator;
+import edu.ucsd.sbrg.annotation.adb.ADBSBMLAnnotator;
+import edu.ucsd.sbrg.annotation.bigg.BiGGSBMLAnnotator;
+import edu.ucsd.sbrg.db.adb.AnnotateDB;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.io.IOOptions;
 import edu.ucsd.sbrg.io.ModelReader;
 import edu.ucsd.sbrg.io.ModelWriter;
@@ -38,10 +41,7 @@ import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
-import edu.ucsd.sbrg.db.adb.AnnotateDB;
-import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
-import edu.ucsd.sbrg.db.DBConfig;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 
@@ -74,6 +74,8 @@ public class ModelPolisherCLILauncher extends Launcher {
 
   private CommandLineParameters parameters;
   private Registry registry;
+  private BiGGDB bigg;
+  private AnnotateDB adb;
 
   /**
    * Entry point
@@ -124,8 +126,13 @@ public class ModelPolisherCLILauncher extends Launcher {
 
     registry = new IdentifiersOrg();
 
-    DBConfig.initBiGG(args, parameters.annotateWithBiGG());
-    DBConfig.initADB(args, parameters.addADBAnnotations());
+    if (parameters.annotateWithBiGG()) {
+      this.bigg = new BiGGDB(args);
+    }
+
+    if (parameters.addADBAnnotations()) {
+      this.adb = new AnnotateDB(args);
+    }
 
     try {
       var input = parameters.input();
@@ -151,15 +158,6 @@ public class ModelPolisherCLILauncher extends Launcher {
 
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
-    }
-    // make sure DB connections are closed in case of exception
-    finally {
-      if (BiGGDB.inUse()) {
-        BiGGDB.close();
-      }
-      if (AnnotateDB.inUse()) {
-        AnnotateDB.close();
-      }
     }
   }
 
@@ -226,9 +224,13 @@ public class ModelPolisherCLILauncher extends Launcher {
     for (var o : annotationObservers) {
       o.initialize(new ProgressInitialization(annotationTaskCount));
     }
-    // Annotate the document if the parameters specify
+
     if (parameters.annotateWithBiGG()) {
-        new BiGGAnnotator(parameters, registry, annotationObservers).annotate(doc);
+        new BiGGSBMLAnnotator(bigg, parameters, registry, annotationObservers).annotate(doc);
+    }
+
+    if (parameters.addADBAnnotations()) {
+      new ADBSBMLAnnotator(adb, parameters).annotate(doc);
     }
 
     for (var o : annotationObservers) {

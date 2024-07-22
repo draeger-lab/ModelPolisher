@@ -4,8 +4,6 @@ import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.AnnotationPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.reporting.ReportType;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
@@ -24,11 +22,6 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   }
 
 
-  /**
-   * Polishes the list of gene products in the given FBC model plugin.
-   * This method iterates through each gene product, displays the progress,
-   * and applies the polishing process to each gene product.
-   */
   @Override
   public void polish(List<GeneProduct> geneProducts) {
     for (GeneProduct geneProduct : geneProducts) {
@@ -49,41 +42,42 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   public void polish(GeneProduct geneProduct) {
     // Process the annotations associated with the gene product
     new AnnotationPolisher(parameters, registry).polish(geneProduct.getAnnotation());
-    
-    // Initialize label variable
+
+    setName(geneProduct);
+
+    setIdToBiggId(geneProduct);
+  }
+
+  private void setName(GeneProduct geneProduct) {
     String label = null;
-    
     // Determine the label from the gene product's label or ID
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {
       label = geneProduct.getLabel();
     } else if (geneProduct.isSetId()) {
       label = geneProduct.getId();
     }
-    
-    // If no label is determined, exit the method
-    if (label == null) {
-      return;
+
+    if ((!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None"))
+            && label != null) {
+      geneProduct.setName(label);
     }
-    
+  }
+
+  private void setIdToBiggId(GeneProduct geneProduct) {
     // Create a new BiGG ID for the gene product, if possible
     BiGGId.createGeneId(geneProduct.getId()).ifPresent(biggId -> {
       String id = biggId.toBiGGId();
-      
+
       // Update the gene product's ID if the new ID is different
       if (!id.equals(geneProduct.getId())) {
         geneProduct.setId(id);
       }
-      
+
       // Set the metaId if there are CV terms associated with the gene product
       if (geneProduct.getCVTermCount() > 0) {
         geneProduct.setMetaId(id);
       }
     });
-    
-    // Set the gene product's name if it is not set or is "None"
-    if (!geneProduct.isSetName() || geneProduct.getName().equalsIgnoreCase("None")) {
-      geneProduct.setName(label);
-    }
   }
 
 }

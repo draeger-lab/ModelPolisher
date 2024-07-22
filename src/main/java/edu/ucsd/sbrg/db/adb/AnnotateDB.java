@@ -1,7 +1,8 @@
 package edu.ucsd.sbrg.db.adb;
 
 import de.zbit.util.Utils;
-import edu.ucsd.sbrg.db.PostgreSQLConnector;
+import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.db.PostgresConnectionPool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,33 +31,38 @@ import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Table.MAPPING_VI
 public class AnnotateDB {
 
   private static final Logger logger = Logger.getLogger(AnnotateDB.class.getName());
-  private static PostgreSQLConnector connector;
+  private static PostgresConnectionPool connectionPool;
 
-  /**
-   * Don't allow instantiation
-   */
-  private AnnotateDB() {
+  public AnnotateDB(SBProperties args) {
+    String dbName = args.getProperty(AnnotateDBOptions.DBNAME);
+    String host = args.getProperty(AnnotateDBOptions.HOST);
+    String passwd = args.getProperty(AnnotateDBOptions.PASSWD);
+    String port = args.getProperty(AnnotateDBOptions.PORT);
+    String user = args.getProperty(AnnotateDBOptions.USER);
+    boolean run = iStrNotNullOrEmpty(dbName);
+    run &= iStrNotNullOrEmpty(host);
+    run &= iStrNotNullOrEmpty(port);
+    run &= iStrNotNullOrEmpty(user);
+    if (run) {
+      AnnotateDB.init(host, port, user, passwd, dbName);
+    }
   }
 
-
-  /**
-   * Initialize a SQL connection
-   *
-   */
-  public static void init(String host, String port, String user, String passwd, String name) {
-    connector = new PostgreSQLConnector(host, Integer.parseInt(port), user, passwd, name);
+  private static boolean iStrNotNullOrEmpty(String string) {
+    return !(string == null || string.isEmpty());
   }
 
-
-
-  public static void close() {
-    connector.close();
+  public AnnotateDB(String host, String port, String user, String passwd, String dbName)
+  {
+    init(host, port, user, passwd, dbName);
   }
 
+  public static void init(String host, String port, String user, String passwd, String dbName) {
+    if (null == connectionPool) {
+      connectionPool = new PostgresConnectionPool(host, Integer.parseInt(port), user, passwd, dbName);
 
-
-  public static boolean inUse() {
-    return connector != null;
+      Runtime.getRuntime().addShutdownHook(new Thread(connectionPool::close));
+    }
   }
 
 
@@ -70,7 +76,7 @@ public class AnnotateDB {
    * @return A sorted set of URLs that are annotations for the given BiGG ID. If the type is neither metabolite
    *         nor reaction, or if an SQL exception occurs, an empty set is returned.
    */
-  public static Set<String> getAnnotations(String type, String biggId) {
+  public Set<String> getAnnotations(String type, String biggId) {
     TreeSet<String> annotations = new TreeSet<>();
     // Check if the type is valid for querying annotations
     if (!type.equals(BIGG_METABOLITE) && !type.equals(BIGG_REACTION)) {
@@ -90,17 +96,18 @@ public class AnnotateDB {
     String query = "SELECT m." + TARGET_TERM + ", ac." + URLPATTERN + " FROM " + MAPPING_VIEW + " m, " + ADB_COLLECTION
       + " ac WHERE m." + SOURCE_NAMESPACE + " = ? AND m." + SOURCE_TERM + " = ? AND ac." + NAMESPACE + " = m."
       + TARGET_NAMESPACE;
-    try (Connection connection = connector.getConnection();
+    try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)) {
       pStatement.setString(1, type);
       pStatement.setString(2, biggId);
-      ResultSet resultSet = pStatement.executeQuery();
-      // Process each result and construct the URL
-      while (resultSet.next()) {
-        String uri = resultSet.getString(URLPATTERN);
-        String id = resultSet.getString(TARGET_TERM);
-        uri = uri.replace("{$id}", id);
-        annotations.add(uri);
+      try (ResultSet resultSet = pStatement.executeQuery()) {
+        // Process each result and construct the URL
+        while (resultSet.next()) {
+          String uri = resultSet.getString(URLPATTERN);
+          String id = resultSet.getString(TARGET_TERM);
+          uri = uri.replace("{$id}", id);
+          annotations.add(uri);
+        }
       }
     } catch (SQLException exc) {
       logger.warning(Utils.getMessage(exc));

@@ -14,9 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -46,7 +48,10 @@ public class ModelReader {
             if (fileType.equals(SBMLFileUtils.FileType.UNKNOWN)) {
                 logger.warning(format(MESSAGES.getString("INPUT_UNKNOWN"), input.getPath()));
                 // TODO: this is not graceful
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Could not identify file type. Supported file types are: "
+                + Arrays.stream(SBMLFileUtils.FileType.values())
+                        .map(SBMLFileUtils.FileType::name)
+                        .collect(Collectors.joining(", ")));
             }
         }
 

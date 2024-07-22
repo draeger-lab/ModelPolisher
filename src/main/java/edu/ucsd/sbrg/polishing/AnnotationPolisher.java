@@ -38,6 +38,9 @@ public class AnnotationPolisher extends AbstractPolisher<Annotation> {
                 registry.findRegistryUrlForOtherUrl(resource)
                         .map(RegistryURI::getURI)
                         .map(resources::add);
+
+                resource = resource.replaceAll("http://identifiers.org", "https://identifiers.org");
+
                 resources.add(resource);
             }
             // Remove all existing resources from the CV Term.

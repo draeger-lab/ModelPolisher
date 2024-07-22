@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.annotation;
+package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.Parameters;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ReactionsAnnotatorTest extends BiGGDBContainerTest {
+public class BiGGReactionsAnnotatorTest extends BiGGDBContainerTest {
 
     private final Parameters parameters = initParameters();
 
@@ -54,9 +54,9 @@ public class ReactionsAnnotatorTest extends BiGGDBContainerTest {
         var gPlugin = (GroupsModelPlugin) m.getPlugin(GroupsConstants.shortLabel);
         assertEquals(0, gPlugin.getGroupCount());
 
-        new ReactionsAnnotator(parameters, new IdentifiersOrg()).annotate(r1);
-        new ReactionsAnnotator(parameters, new IdentifiersOrg()).annotate(r2);
-        new ReactionsAnnotator(parameters, new IdentifiersOrg()).annotate(r3);
+        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r1);
+        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r2);
+        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r3);
 
         var r1FbcPlugin = (FBCReactionPlugin) r1.getPlugin(FBCConstants.shortLabel);
         var gpa1 =  r1FbcPlugin.getGeneProductAssociation();

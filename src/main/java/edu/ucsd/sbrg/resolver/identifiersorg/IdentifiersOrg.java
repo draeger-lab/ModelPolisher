@@ -94,7 +94,6 @@ public class IdentifiersOrg implements Registry {
             return Optional.of(new IdentifiersOrgURI(url));
         }
 
-        // Check if the URL matches the identifiers.org pattern and handle accordingly
         Optional<Pair<Namespace, Resource>> matchingNamespaceResource = backwardsResolveResourceUrl(url);
         if (matchingNamespaceResource.isPresent()) {
             var namespace = matchingNamespaceResource.get().getLeft();
