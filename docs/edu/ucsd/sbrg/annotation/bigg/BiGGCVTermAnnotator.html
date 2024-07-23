@@ -112,10 +112,7 @@ loadScripts(document, 'script');</script>
 <h2>Field Summary</h2>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator">Fields inherited from class&nbsp;edu.ucsd.sbrg.annotation.bigg.<a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a></h3>
-<code><a href="AbstractBiGGAnnotator.html#bigg">bigg</a>, <a href="AbstractBiGGAnnotator.html#registry">registry</a></code></div>
-<div class="inherited-list">
-<h3 id="fields-inherited-from-class-edu.ucsd.sbrg.annotation.AbstractAnnotator">Fields inherited from class&nbsp;edu.ucsd.sbrg.annotation.<a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></h3>
-<code><a href="../AbstractAnnotator.html#parameters">parameters</a></code></div>
+<code><a href="AbstractBiGGAnnotator.html#bigg">bigg</a>, <a href="AbstractBiGGAnnotator.html#biGGAnnotationParameters">biGGAnnotationParameters</a>, <a href="AbstractBiGGAnnotator.html#registry">registry</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -126,12 +123,12 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.Parameters,edu.ucsd.sbrg.resolver.Registry)" class="member-name-link">BiGGCVTermAnnotator</a><wbr>(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
- <a href="../../Parameters.html" title="class in edu.ucsd.sbrg">Parameters</a>&nbsp;parameters,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.parameters.BiGGAnnotationParameters,edu.ucsd.sbrg.resolver.Registry)" class="member-name-link">BiGGCVTermAnnotator</a><wbr>(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
+ <a href="../../parameters/BiGGAnnotationParameters.html" title="class in edu.ucsd.sbrg.parameters">BiGGAnnotationParameters</a>&nbsp;parameters,
  <a href="../../resolver/Registry.html" title="interface in edu.ucsd.sbrg.resolver">Registry</a>&nbsp;registry)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.Parameters,edu.ucsd.sbrg.resolver.Registry,java.util.List)" class="member-name-link">BiGGCVTermAnnotator</a><wbr>(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
- <a href="../../Parameters.html" title="class in edu.ucsd.sbrg">Parameters</a>&nbsp;parameters,
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.parameters.BiGGAnnotationParameters,edu.ucsd.sbrg.resolver.Registry,java.util.List)" class="member-name-link">BiGGCVTermAnnotator</a><wbr>(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
+ <a href="../../parameters/BiGGAnnotationParameters.html" title="class in edu.ucsd.sbrg.parameters">BiGGAnnotationParameters</a>&nbsp;parameters,
  <a href="../../resolver/Registry.html" title="interface in edu.ucsd.sbrg.resolver">Registry</a>&nbsp;registry,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../../reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>&gt;&nbsp;observers)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
@@ -178,18 +175,18 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.Parameters,edu.ucsd.sbrg.resolver.Registry)">
+<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.parameters.BiGGAnnotationParameters,edu.ucsd.sbrg.resolver.Registry)">
 <h3>BiGGCVTermAnnotator</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BiGGCVTermAnnotator</span><wbr><span class="parameters">(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
- <a href="../../Parameters.html" title="class in edu.ucsd.sbrg">Parameters</a>&nbsp;parameters,
+ <a href="../../parameters/BiGGAnnotationParameters.html" title="class in edu.ucsd.sbrg.parameters">BiGGAnnotationParameters</a>&nbsp;parameters,
  <a href="../../resolver/Registry.html" title="interface in edu.ucsd.sbrg.resolver">Registry</a>&nbsp;registry)</span></div>
 </section>
 </li>
 <li>
-<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.Parameters,edu.ucsd.sbrg.resolver.Registry,java.util.List)">
+<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.db.bigg.BiGGDB,edu.ucsd.sbrg.parameters.BiGGAnnotationParameters,edu.ucsd.sbrg.resolver.Registry,java.util.List)">
 <h3>BiGGCVTermAnnotator</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">BiGGCVTermAnnotator</span><wbr><span class="parameters">(<a href="../../db/bigg/BiGGDB.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGDB</a>&nbsp;bigg,
- <a href="../../Parameters.html" title="class in edu.ucsd.sbrg">Parameters</a>&nbsp;parameters,
+ <a href="../../parameters/BiGGAnnotationParameters.html" title="class in edu.ucsd.sbrg.parameters">BiGGAnnotationParameters</a>&nbsp;parameters,
  <a href="../../resolver/Registry.html" title="interface in edu.ucsd.sbrg.resolver">Registry</a>&nbsp;registry,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../../reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>&gt;&nbsp;observers)</span></div>
 </section>

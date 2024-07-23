@@ -11,6 +11,7 @@ edu.ucsd.sbrg.io
 edu.ucsd.sbrg.io.parsers.cobra
 edu.ucsd.sbrg.io.parsers.json
 edu.ucsd.sbrg.io.parsers.json.mapping
+edu.ucsd.sbrg.parameters
 edu.ucsd.sbrg.polishing
 edu.ucsd.sbrg.polishing.fbc
 edu.ucsd.sbrg.reporting
