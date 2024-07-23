@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
@@ -13,13 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class FluxObjectivesPolisherTest {
-
-    private final Parameters parameters = initParameters();
 
     /**
      * Test that if an objective is set, and it has flux objectives too, it won't be overwritten.
@@ -35,7 +33,11 @@ public class FluxObjectivesPolisherTest {
         fbcPlugin.setActiveObjective(o2);
         fbcPlugin.createObjective("obj3");
 
-        var parameters = initParameters(Map.of("FLUX_OBJECTIVES", " objective_reaction1 "));
+        var parameters = new PolishingParameters(
+                null,
+                new FluxObjectivesPolishingParameters(
+                        null,
+                        List.of(" objective_reaction1 ")));
 
         m.createReaction("objective_reaction1");
         m.createReaction("yadda_Biomass_yadda");
@@ -68,8 +70,11 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("objective_reaction2");
         m.createReaction("yadda_Biomass_yadda");
 
-        var parameters = initParameters(Map.of("fluxObjectives",
-                List.of("objective_reaction1", "objective_reaction2")));
+        var parameters = new PolishingParameters(
+                null,
+                new FluxObjectivesPolishingParameters(
+                        null,
+                        List.of("objective_reaction1", "objective_reaction2")));
 
         new FluxObjectivesPolisher(fbcPlugin, parameters, new IdentifiersOrg()).polish(fbcPlugin.getListOfObjectives());
 
@@ -108,7 +113,7 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, initParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
+        new FluxObjectivesPolisher(mPlug, new PolishingParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
         assertEquals(Set.of("yadda_Biomass_yadda"),
@@ -135,7 +140,7 @@ public class FluxObjectivesPolisherTest {
         // o1.setListOfFluxObjectives(new ListOf<>());
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, initParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
+        new FluxObjectivesPolisher(mPlug, new PolishingParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
 
         assertEquals(0, fbcPlugin.getObjectiveCount());
     }

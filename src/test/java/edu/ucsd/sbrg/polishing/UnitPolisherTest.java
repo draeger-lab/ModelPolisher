@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
@@ -9,16 +9,16 @@ import org.sbml.jsbml.Unit;
 import org.sbml.jsbml.UnitDefinition;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.TestUtils.assertCVTermsArePresent;
-import static edu.ucsd.sbrg.TestUtils.initParameters;
+import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UnitPolisherTest {
 
-    private final Parameters parameters = initParameters();
+    private final PolishingParameters parameters = new PolishingParameters();
 
     public static Set<String> setOfUnitDefinitions(Model m) {
         return m.getListOfUnitDefinitions()

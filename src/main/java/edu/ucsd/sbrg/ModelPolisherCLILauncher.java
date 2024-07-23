@@ -19,12 +19,14 @@ import javax.xml.stream.XMLStreamException;
 
 import edu.ucsd.sbrg.annotation.adb.ADBSBMLAnnotator;
 import edu.ucsd.sbrg.annotation.bigg.BiGGSBMLAnnotator;
+import edu.ucsd.sbrg.parameters.CommandLineParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.io.IOOptions;
 import edu.ucsd.sbrg.io.ModelReader;
 import edu.ucsd.sbrg.io.ModelWriter;
 import edu.ucsd.sbrg.io.SBMLFileUtils;
+import edu.ucsd.sbrg.parameters.OutputParameters;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.PolisherProgressBar;
 import edu.ucsd.sbrg.reporting.ProgressInitialization;
@@ -108,8 +110,6 @@ public class ModelPolisherCLILauncher extends Launcher {
 
 
   /**
-   * Starts ModelPolisher with given commandline arguments and initializes {@link Parameters} and database connections
-   *
    * @param appConf
    *        from super class initialization, holds commandline arguments
    * @see de.zbit.Launcher#commandLineMode(de.zbit.AppConf)
@@ -126,17 +126,17 @@ public class ModelPolisherCLILauncher extends Launcher {
 
     registry = new IdentifiersOrg();
 
-    if (parameters.annotateWithBiGG()) {
-      this.bigg = new BiGGDB(args);
+    if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
+      this.bigg = new BiGGDB(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
     }
 
-    if (parameters.addADBAnnotations()) {
-      this.adb = new AnnotateDB(args);
+    if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
+      this.adb = new AnnotateDB(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
     }
 
     try {
       var input = parameters.input();
-      var output = parameters.output();
+      var output = parameters.outputParameters().outputFile();
 
       // Check if the input exists, throw an exception if it does not
       if (!input.exists()) {
@@ -154,7 +154,7 @@ public class ModelPolisherCLILauncher extends Launcher {
       // Ensure the output directory or file's parent directory exists
       SBMLFileUtils.checkCreateOutDir(output);
 
-      batchProcess(input, parameters.output());
+      batchProcess(input, parameters.outputParameters().outputFile());
 
     } catch (XMLStreamException | IOException exc) {
       exc.printStackTrace();
@@ -166,7 +166,8 @@ public class ModelPolisherCLILauncher extends Launcher {
    * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
    *
    * @param input  Path to the input file or directory to be processed. This should correspond to {@link CommandLineParameters#input()}.
-   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link CommandLineParameters#output()}.
+   * @param output Path to the output file or directory where processed files should be saved.
+   *               This should correspond to {@link OutputParameters#outputFile()}.
    * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
    * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherCLILauncher#processFile(File, File)}.
    */
@@ -197,14 +198,14 @@ public class ModelPolisherCLILauncher extends Launcher {
   private void processFile(File input, File output) throws XMLStreamException, IOException {
     long startTime = System.currentTimeMillis();
 
-    SBMLDocument doc = new ModelReader(parameters, registry).read(input);
+    SBMLDocument doc = new ModelReader(parameters.sboParameters(), registry).read(input);
     // TODO: we should be doing better sanity checking here; e.g.: just validate the SBML
     if (doc == null) return;
     Model model = doc.getModel();
     if (model == null) {
       logger.severe(MESSAGES.getString("MODEL_MISSING"));
       // TODO: handle this better
-      throw new RuntimeException();
+      throw new RuntimeException(MESSAGES.getString("MODEL_MISSING"));
     }
 
     List<ProgressObserver> polishingObservers = List.of(new PolisherProgressBar());
@@ -213,7 +214,7 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.initialize(new ProgressInitialization(count));
     }
 
-    new SBMLPolisher(parameters, registry, polishingObservers).polish(doc);
+    new SBMLPolisher(parameters.polishingParameters(), parameters.sboParameters(), registry, polishingObservers).polish(doc);
 
     for (var o : polishingObservers) {
       o.finish(null);
@@ -225,22 +226,23 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.initialize(new ProgressInitialization(annotationTaskCount));
     }
 
-    if (parameters.annotateWithBiGG()) {
-        new BiGGSBMLAnnotator(bigg, parameters, registry, annotationObservers).annotate(doc);
+    if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
+        new BiGGSBMLAnnotator(bigg, parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
+                registry, annotationObservers).annotate(doc);
     }
 
-    if (parameters.addADBAnnotations()) {
-      new ADBSBMLAnnotator(adb, parameters).annotate(doc);
+    if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
+      new ADBSBMLAnnotator(adb, parameters.annotationParameters().adbAnnotationParameters()).annotate(doc);
     }
 
     for (var o : annotationObservers) {
       o.finish(null);
     }
 
-    new ModelWriter(parameters).write(doc, output, getVersionNumber());
+    new ModelWriter(parameters.outputParameters()).write(doc, output, getVersionNumber());
 
     if (parameters.SBMLValidation()) {
-      var mv = new ModelValidator(parameters);
+      var mv = new ModelValidator(parameters.outputParameters());
       // use offline validation
       mv.validate(output, false);
     }

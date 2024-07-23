@@ -1,33 +1,32 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.ModelPolisherOptions;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 
-import java.util.Map;
-
 import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
-import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BiGGModelAnnotatorTest extends BiGGDBContainerTest {
 
-    private final Parameters parameters = initParameters();
+    private final BiGGAnnotationParameters biGGAnnotationParameters = new BiGGAnnotationParameters(
+            false,
+            true,
+            null,
+            null,
+            null
+    );
 
     @Test
     public void basicModelAnnotation() {
-        initParameters(Map.of(
-                ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
-                "true"));
         var m = new Model("iJO1366", 3,2);
 
         assertFalse(m.isSetMetaId());
         assertTrue(m.getCVTerms().isEmpty());
 
-        new BiGGModelAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(m);
+        new BiGGModelAnnotator(bigg, biGGAnnotationParameters, new IdentifiersOrg()).annotate(m);
 
         assertTrue(m.isSetMetaId());
         assertEquals(3, m.getCVTerms().size());

@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -37,10 +37,10 @@ public class UnitPolisher extends AbstractPolisher<Model>{
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000010").getURI());
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000013").getURI());
 
-    public UnitPolisher(Parameters parameters, Registry registry) {
+    public UnitPolisher(PolishingParameters parameters, Registry registry) {
         super(parameters, registry);
     }
-    public UnitPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public UnitPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
         super(parameters, registry, observers);
     }
 

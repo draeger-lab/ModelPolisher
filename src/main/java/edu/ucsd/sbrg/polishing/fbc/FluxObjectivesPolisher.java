@@ -1,7 +1,7 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
@@ -16,11 +16,11 @@ public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
 
     private final FBCModelPlugin modelPlug;
 
-    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, Registry registry) {
+    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, PolishingParameters parameters, Registry registry) {
         super(parameters, registry);
         this.modelPlug = modelPlug;
     }
-    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, Parameters parameters, Registry registry, List<ProgressObserver>  observers) {
+    public FluxObjectivesPolisher(FBCModelPlugin modelPlug, PolishingParameters parameters, Registry registry, List<ProgressObserver>  observers) {
         super(parameters, registry, observers);
         this.modelPlug = modelPlug;
     }
@@ -42,8 +42,8 @@ public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
                         model.getId(),
                         model.getListOfReactions(),
                         modelPlug,
-                        parameters.fluxCoefficients(),
-                        parameters.fluxObjectives());
+                        polishingParameters.fluxObjectivesPolishingParameters().fluxCoefficients(),
+                        polishingParameters.fluxObjectivesPolishingParameters().fluxObjectives());
             }
         }
         // Identify and remove unused objectives, i.e., those without flux objectives

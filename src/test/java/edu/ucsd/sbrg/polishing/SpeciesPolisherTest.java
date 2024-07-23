@@ -1,16 +1,17 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 
-import static edu.ucsd.sbrg.TestUtils.initParameters;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class SpeciesPolisherTest {
 
-    private final Parameters parameters = initParameters();
+    private final PolishingParameters parameters = new PolishingParameters();
 
     @Test
     public void speciesWithoutIdIsDeleted() {

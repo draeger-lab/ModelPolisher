@@ -2,6 +2,7 @@ package edu.ucsd.sbrg;
 
 import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.parameters.OutputParameters;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLErrorLog;
@@ -30,9 +31,9 @@ public class ModelValidator {
      * A {@link Logger} for this class.
      */
     private static final Logger logger = Logger.getLogger(ModelValidator.class.getName());
-    private final Parameters parameters;
+    private final OutputParameters parameters;
 
-    public ModelValidator(Parameters parameters) {
+    public ModelValidator(OutputParameters parameters) {
         this.parameters = parameters;
     }
 

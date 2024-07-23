@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation.adb;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.ADBAnnotationParameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import org.sbml.jsbml.Reaction;
@@ -11,7 +12,7 @@ import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_REACTION;
 
 public class ADBReactionsAnnotator extends AbstractADBAnnotator<Reaction> {
 
-    public ADBReactionsAnnotator(AnnotateDB adb, Parameters parameters) {
+    public ADBReactionsAnnotator(AnnotateDB adb, ADBAnnotationParameters parameters) {
         super(adb, parameters);
     }
 

@@ -1,7 +1,7 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -27,10 +27,10 @@ public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
   public static final String REF_SEQ_ACCESSION_NUMBER_PATTERN = "^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$";
   public static final String GENOME_ASSEMBLY_ID_PATTERN = "^GC[AF]_[0-9]{9}\\.[0-9]+$";
 
-  public BiGGModelAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+  public BiGGModelAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry) {
     super(bigg, parameters, registry);
   }
-  public BiGGModelAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public BiGGModelAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
     super(bigg, parameters, registry, observers);
   }
 
@@ -92,7 +92,7 @@ public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
       term.addResource(new IdentifiersOrgURI("refseq", accession).getURI());
     } else {
       // Check if non-MIRIAM URIs are allowed
-      if (parameters.includeAnyURI()) {
+      if (biGGAnnotationParameters.includeAnyURI()) {
         // Prepare a pattern matcher for genome assembly accession numbers
         Matcher genomeAssemblyMatcher = Pattern.compile(GENOME_ASSEMBLY_ID_PATTERN).matcher(accession);
         if (genomeAssemblyMatcher.matches()) {

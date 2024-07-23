@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.Publication;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class BiGGPublicationsAnnotator extends AbstractBiGGAnnotator<Model> {
 
-    public BiGGPublicationsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public BiGGPublicationsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
         super(bigg, parameters, registry, observers);
 
     }

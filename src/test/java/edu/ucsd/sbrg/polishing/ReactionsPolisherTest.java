@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.polishing.fbc.StrictnessPredicate;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
@@ -11,15 +12,16 @@ import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.XMLTriple;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReactionsPolisherTest {
 
-    private final Parameters parameters = initParameters();
+    public final SBOParameters sboParameters = new SBOParameters();
+    private final PolishingParameters polishingParameters = new PolishingParameters();
 
     @Test
     public void noIdReactionIsDeletedFromModel() {
@@ -30,7 +32,7 @@ public class ReactionsPolisherTest {
         assertFalse(r.isSetName());
         assertEquals(1, model.getReactionCount());
 
-        new ModelPolisher(parameters, new IdentifiersOrg()).polish(model);
+        new ModelPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(model);
 
         boolean strict = new StrictnessPredicate().test(model);
 
@@ -48,7 +50,6 @@ public class ReactionsPolisherTest {
     @Test
     public void defaultsAreSet() {
         var model = new Model(3, 1);
-        initParameters();
         var r = model.createReaction("some_reaction");
 
         assertFalse(r.isSetName());
@@ -56,7 +57,7 @@ public class ReactionsPolisherTest {
         assertFalse(r.isSetReversible());
         assertEquals(1, model.getReactionCount());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
         boolean strict = new StrictnessPredicate().test(model);
 
         assertFalse(strict);
@@ -72,12 +73,11 @@ public class ReactionsPolisherTest {
     @Test
     public void fastIsOkay() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
 
         assertFalse(r.isSetFast());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertFalse(r.isSetFast());
     }
@@ -85,7 +85,6 @@ public class ReactionsPolisherTest {
     @Test
     public void reactionCompartmentIsSetFromParticipants() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
 
@@ -94,7 +93,7 @@ public class ReactionsPolisherTest {
 
         assertNull(r.getCompartmentInstance());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(cytosol, r.getCompartmentInstance());
     }
@@ -102,7 +101,6 @@ public class ReactionsPolisherTest {
     @Test
     public void compartmentIsSetFromPreferentiallyFromProducts() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
         var extracellular = model.createCompartment("e");
@@ -115,7 +113,7 @@ public class ReactionsPolisherTest {
 
         assertEquals("", r.getCompartment());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getReactantCount());
         assertEquals(1, r.getProductCount());
@@ -127,7 +125,6 @@ public class ReactionsPolisherTest {
     @Test
     public void reactionCompartmentIsNotOverridden() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
         var extracellular = model.createCompartment("e");
@@ -137,7 +134,7 @@ public class ReactionsPolisherTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getReactantCount());
         assertEquals(extracellular, r.getCompartmentInstance());
@@ -146,7 +143,6 @@ public class ReactionsPolisherTest {
     @Test
     public void conflictingProductsLeadToUnset() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
         var extracellular = model.createCompartment("e");
@@ -156,7 +152,7 @@ public class ReactionsPolisherTest {
 
         r.setCompartment(extracellular);
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getProductCount());
         assertNull(r.getCompartmentInstance());
@@ -165,7 +161,6 @@ public class ReactionsPolisherTest {
     @Test
     public void inconsistentProductCompartmentsLeadToUnset() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
         var extracellular = model.createCompartment("e");
@@ -180,7 +175,7 @@ public class ReactionsPolisherTest {
 
         assertEquals(cytosol, r.getCompartmentInstance());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfProducts().size());
         assertEquals(Set.of(cytosol, extracellular), r.getListOfProducts().stream()
@@ -193,7 +188,6 @@ public class ReactionsPolisherTest {
     @Test
     public void speciesReferencesWithoutSpeciesAreRetained() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
 
@@ -202,7 +196,7 @@ public class ReactionsPolisherTest {
         r.createReactant();
         r.createReactant();
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfReactants().size());
         assertEquals(cytosol, r.getCompartmentInstance());
@@ -214,7 +208,6 @@ public class ReactionsPolisherTest {
     @Test
     public void missingProductSpeciesAreConflictAndLeadToUnset() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
 
@@ -223,7 +216,7 @@ public class ReactionsPolisherTest {
         r.createProduct();
         r.createProduct();
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(2, r.getListOfProducts().size());
         assertNull(r.getCompartmentInstance());
@@ -232,7 +225,6 @@ public class ReactionsPolisherTest {
     @Test
     public void defaultsAreSetOnSpeciesReferences() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
 
         var s1 = model.createSpecies("s1");
@@ -246,7 +238,7 @@ public class ReactionsPolisherTest {
         assertFalse(react1.isSetConstant());
         assertFalse(product1.isSetConstant());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, r.getListOfReactants().size());
         assertEquals(1, r.getListOfProducts().size());
@@ -264,7 +256,6 @@ public class ReactionsPolisherTest {
     @Test
     public void defaultsAreSetEvenIfCompartmentsAreInconsistent() {
         var model = new Model(3, 2);
-        initParameters();
         var r = model.createReaction("some_reaction");
         var cytosol = model.createCompartment("c");
         var extracellular = model.createCompartment("e");
@@ -285,7 +276,7 @@ public class ReactionsPolisherTest {
         assertFalse(product2.isSetConstant());
         assertFalse(product3.isSetConstant());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(3, r.getListOfProducts().size());
         assertEquals("SBO:0000011", product1.getSBOTermID());
@@ -306,7 +297,6 @@ public class ReactionsPolisherTest {
     public void objectiveIsCreatedIfNoneIsPresent() {
         var model = new Model(3, 2);
         var fbcPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var kl = r.createKineticLaw();
@@ -316,7 +306,7 @@ public class ReactionsPolisherTest {
         assertEquals(1, model.getReactionCount());
         assertEquals(0, fbcPlugin.getObjectiveCount());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(1, fbcPlugin.getObjectiveCount());
@@ -332,7 +322,6 @@ public class ReactionsPolisherTest {
     public void fluxObjectivesAreSetFromKinematicLaws() {
         var model = new Model(3, 2);
         var fbcPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var kl = r.createKineticLaw();
@@ -347,7 +336,7 @@ public class ReactionsPolisherTest {
         assertEquals(0, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -366,7 +355,6 @@ public class ReactionsPolisherTest {
     public void existingObjectivesAreRespected() {
         var model = new Model(3, 2);
         var fbcPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var kl = r.createKineticLaw();
@@ -383,7 +371,7 @@ public class ReactionsPolisherTest {
         assertEquals(1, obj1.getFluxObjectiveCount());
         assertEquals(0, obj2.getFluxObjectiveCount());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertEquals(1, model.getReactionCount());
         assertEquals(2, fbcPlugin.getObjectiveCount());
@@ -401,7 +389,6 @@ public class ReactionsPolisherTest {
     @Test
     public void boundsAreCreatedFromLocalParameters() {
         var model = new Model(3, 2);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var rFbcPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -413,7 +400,7 @@ public class ReactionsPolisherTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("some_reaction_LOWER_BOUND", lb.getId());
@@ -430,7 +417,6 @@ public class ReactionsPolisherTest {
     @Test
     public void existingBoundsGetDefaults() {
         var model = new Model(3, 2);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var rFbcPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -444,7 +430,7 @@ public class ReactionsPolisherTest {
         var p2 = model.createParameter("other_blubb");
         rFbcPlugin.setUpperFluxBound(p2);
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("default_blubb", lb.getId());
@@ -459,7 +445,6 @@ public class ReactionsPolisherTest {
     @Test
     public void newBoundsSettingsByValueAndExistingParameters() {
         var model = new Model(3, 2);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var rFbcPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -474,7 +459,7 @@ public class ReactionsPolisherTest {
         assertNull(rFbcPlugin.getLowerFluxBoundInstance());
         assertNull(rFbcPlugin.getUpperFluxBoundInstance());
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         var lb = rFbcPlugin.getLowerFluxBoundInstance();
         assertEquals("DEFAULT_UPPER_BOUND", lb.getId());
@@ -491,7 +476,6 @@ public class ReactionsPolisherTest {
     @Test
     public void notesToGPRs() {
         var model = new Model(3, 2);
-        initParameters();
 
         var r = model.createReaction("some_reaction");
         var rFbcPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
@@ -504,7 +488,7 @@ public class ReactionsPolisherTest {
         body.addChild(p2);
         r.setNotes(body);
 
-        new ReactionsPolisher(parameters, new IdentifiersOrg()).polish(r);
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(r);
 
         assertInstanceOf(GeneProductRef.class, rFbcPlugin.getGeneProductAssociation()
                 .getAssociation(), "The result is expected to be " +

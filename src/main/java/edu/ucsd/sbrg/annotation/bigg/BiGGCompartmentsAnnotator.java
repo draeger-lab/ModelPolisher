@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -19,11 +19,11 @@ import java.util.List;
 public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator<Compartment> {
 
 
-  public BiGGCompartmentsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+  public BiGGCompartmentsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry) {
     super(bigg, parameters, registry);
   }
 
-  public BiGGCompartmentsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public BiGGCompartmentsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
     super(bigg, parameters, registry, observers);
   }
 

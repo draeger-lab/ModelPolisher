@@ -1,7 +1,8 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
@@ -36,12 +37,16 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
 
   private static boolean triggeredSubsystemWarning = false;
 
-  public BiGGReactionsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
-    super(bigg, parameters, registry);
+  private final SBOParameters sboParameters;
+
+  public BiGGReactionsAnnotator(BiGGDB bigg, BiGGAnnotationParameters biGGAnnotationParameters, SBOParameters sboParameters, Registry registry) {
+    super(bigg, biGGAnnotationParameters, registry);
+    this.sboParameters = sboParameters;
   }
 
-  public BiGGReactionsAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public BiGGReactionsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
     super(bigg, parameters, registry, observers);
+    this.sboParameters = sboParameters;
   }
 
 
@@ -172,7 +177,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
     if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(abbreviation)) {
         reaction.setSBOTerm(631);
-      } else if (!parameters.omitGenericTerms()) {
+      } else if (!sboParameters.omitGenericTerms()) {
         reaction.setSBOTerm(375); // generic process
       }
     }
@@ -198,7 +203,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
     if (isBiGGReaction) {
       annotations.add(new IdentifiersOrgURI("bigg.reaction", biggId).getURI());
 
-      Set<String> biggAnnotations = bigg.getResources(biggId, parameters.includeAnyURI(), true)
+      Set<String> biggAnnotations = bigg.getResources(biggId, biGGAnnotationParameters.includeAnyURI(), true)
               .stream()
               .map(IdentifiersOrgURI::getURI)
               .collect(Collectors.toSet());
@@ -238,7 +243,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
     String abbreviation = biggId.getAbbreviation();
     List<String> geneReactionRules = bigg.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
-      GPRParser.parseGPR(reaction, geneReactionRule, parameters.omitGenericTerms());
+      GPRParser.parseGPR(reaction, geneReactionRule, sboParameters.omitGenericTerms());
     }
   }
 

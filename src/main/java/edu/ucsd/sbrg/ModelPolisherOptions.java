@@ -6,6 +6,7 @@ package edu.ucsd.sbrg;
 import java.io.File;
 import java.util.ResourceBundle;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.prefs.KeyProvider;
 import de.zbit.util.prefs.Option;
@@ -25,41 +26,21 @@ public interface ModelPolisherOptions extends KeyProvider {
    */
   enum Compression {
 
-    /**
-     * 
-     */
     GZIP("gz"),
-    /**
-     * 
-     */
-    NONE,
-    /**
-     * 
-     */
+    NONE("none"),
     ZIP("zip");
 
-    /**
-     * 
-     */
+    @JsonValue
     private final String extension;
 
-    /**
-     * 
-     */
     Compression() {
       this(null);
     }
 
-
-    /**
-     */
     Compression(String extension) {
       this.extension = extension;
     }
 
-
-    /**
-     */
     public String getFileExtension() {
       return extension;
     }

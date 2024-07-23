@@ -1,15 +1,15 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
-import edu.ucsd.sbrg.TestUtils;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
+import java.util.Map;
 import java.util.Set;
 
 import static edu.ucsd.sbrg.TestUtils.*;
@@ -18,12 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
-    private final Parameters parameters = initParameters();
-
-    @BeforeEach
-    public void init() {
-        TestUtils.initParameters();
-    }
+    private final BiGGAnnotationParameters biGGAnnotationParameters = new BiGGAnnotationParameters();
+    private final SBOParameters sboParameters = new SBOParameters();
 
     @Test
     public void basicAnnotationTest() {
@@ -31,7 +27,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
         var s = m.createSpecies("atp");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        new BiGGSpeciesAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(s);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("atp", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -48,7 +44,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
         var m = new Model(3, 2);
         var s = m.createSpecies("atp_c");
 
-        new BiGGSpeciesAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(s);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("atp_c", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -70,7 +66,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
         cvTerm.addResource("http://identifiers.org/reactome.compound/113592");
         s.addCVTerm(cvTerm);
 
-        new BiGGSpeciesAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(s);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("big_chungus", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
@@ -131,7 +127,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
         var s = m.createSpecies("h2o");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
 
-        new BiGGSpeciesAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(s);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
 
         assertEquals("h2o", s.getId());
         assertEquals("H2O H2O", s.getName());
@@ -200,7 +196,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
      */
     @Test
     public void getBiGGIdFromResourcesTest() {
-        initParameters();
         var m = new Model("iJO1366", 3, 2);
         var s1 = m.createSpecies("some_name");
         var s2 = m.createSpecies("some_other_name");
@@ -217,7 +212,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
 
         // new SpeciesAnnotation(s1).annotate();
-        new BiGGSpeciesAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(s2);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s2);
 //
 //        assertEquals(1, s1.getCVTermCount());
 //        assertEquals(29, s1.getCVTerm(0).getNumResources());

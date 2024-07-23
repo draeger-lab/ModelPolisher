@@ -15,7 +15,8 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.polishing.fbc.FBCPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -41,14 +42,17 @@ public class ModelPolisher extends AbstractPolisher<Model> {
 
   private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private final SBOParameters sboParameters;
 
 
-  public ModelPolisher(Parameters parameters, Registry registry) {
-      super(parameters, registry);
+  public ModelPolisher(PolishingParameters polishingParameters, SBOParameters sboParameters, Registry registry) {
+      super(polishingParameters, registry);
+      this.sboParameters = sboParameters;
   }
 
-  public ModelPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-      super(parameters, registry, observers);
+  public ModelPolisher(PolishingParameters polishingParameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
+      super(polishingParameters, registry, observers);
+      this.sboParameters = sboParameters;
   }
 
   /**
@@ -66,20 +70,20 @@ public class ModelPolisher extends AbstractPolisher<Model> {
     statusReport("Polishing Model (1/9)  ", model);
 
     // Delegate polishing tasks
-    new UnitPolisher(parameters, registry, getObservers()).polish(model);
+    new UnitPolisher(polishingParameters, registry, getObservers()).polish(model);
 
-    new CompartmentPolisher(parameters, registry, getObservers()).polish(model.getListOfCompartments());
+    new CompartmentPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfCompartments());
 
-    new SpeciesPolisher(parameters, registry, getObservers()).polish(model.getListOfSpecies());
+    new SpeciesPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfSpecies());
 
-    new ParametersPolisher(parameters, registry, getObservers()).polish(model.getListOfParameters());
+    new ParametersPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfParameters());
 
-    new AnnotationPolisher(parameters, registry, getObservers()).polish(model.getAnnotation());
+    new AnnotationPolisher(polishingParameters, registry, getObservers()).polish(model.getAnnotation());
 
-    new ReactionsPolisher(parameters, registry, getObservers()).polish(model.getListOfReactions());
+    new ReactionsPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model.getListOfReactions());
 
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      new FBCPolisher(parameters, registry, getObservers()).polish(model);
+      new FBCPolisher(polishingParameters, registry, getObservers()).polish(model);
     }
 
     // Set the metaId of the model if it is not set and there are CV terms
@@ -91,7 +95,7 @@ public class ModelPolisher extends AbstractPolisher<Model> {
   @Override
   public String toString() {
     return "ModelPolisher{" +
-            "parameters=" + parameters +
+            "parameters=" + polishingParameters +
             '}';
   }
 

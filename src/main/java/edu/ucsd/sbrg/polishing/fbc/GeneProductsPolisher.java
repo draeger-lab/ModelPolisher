@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.polishing.AnnotationPolisher;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
@@ -17,7 +17,7 @@ import java.util.List;
 public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
 
 
-  public GeneProductsPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public GeneProductsPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
       super(parameters, registry, observers);
   }
 
@@ -41,7 +41,7 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   @Override
   public void polish(GeneProduct geneProduct) {
     // Process the annotations associated with the gene product
-    new AnnotationPolisher(parameters, registry).polish(geneProduct.getAnnotation());
+    new AnnotationPolisher(polishingParameters, registry).polish(geneProduct.getAnnotation());
 
     setName(geneProduct);
 

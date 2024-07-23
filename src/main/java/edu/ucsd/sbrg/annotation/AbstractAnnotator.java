@@ -1,6 +1,5 @@
 package edu.ucsd.sbrg.annotation;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
@@ -10,17 +9,13 @@ import java.util.List;
 
 public abstract class AbstractAnnotator<SBMLElement> {
 
-    protected final Parameters parameters;
-
     private final List<ProgressObserver> observers;
 
-    public AbstractAnnotator(Parameters parameters) {
-        this.parameters = parameters;
+    public AbstractAnnotator() {
         observers = new ArrayList<>();
     }
 
-    public AbstractAnnotator(Parameters parameters, List<ProgressObserver> observers) {
-        this.parameters = parameters;
+    public AbstractAnnotator(List<ProgressObserver> observers) {
         this.observers = observers;
     }
 

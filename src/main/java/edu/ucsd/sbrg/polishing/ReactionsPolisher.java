@@ -2,8 +2,10 @@ package edu.ucsd.sbrg.polishing;
 
 import de.zbit.kegg.AtomBalanceCheck;
 import de.zbit.kegg.AtomBalanceCheck.AtomCheckResult;
+import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -36,18 +38,21 @@ import static java.text.MessageFormat.format;
 public class ReactionsPolisher extends AbstractPolisher<Reaction> {
 
   private final static Logger logger = Logger.getLogger(ReactionsPolisher.class.getName());
-  private static final ResourceBundle MESSAGES = de.zbit.util.ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final GeneProductAssociationsProcessor gpaPolisher;
+  private final SBOParameters sboParameters;
 
-  public ReactionsPolisher(Parameters parameters, Registry registry) {
-      super(parameters, registry);
+  public ReactionsPolisher(PolishingParameters polishingParameters, SBOParameters sboParameters, Registry registry) {
+      super(polishingParameters, registry);
+      this.sboParameters = sboParameters;
       this.gpaPolisher = new GeneProductAssociationsProcessor();
   }
 
-  public ReactionsPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-    super(parameters, registry, observers);
+  public ReactionsPolisher(PolishingParameters polishingParameters, SBOParameters sboParameters,  Registry registry, List<ProgressObserver> observers) {
+    super(polishingParameters, registry, observers);
     this.gpaPolisher = new GeneProductAssociationsProcessor();
+    this.sboParameters = sboParameters;
   }
 
   /**
@@ -86,7 +91,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
   @SuppressWarnings("deprecated")
   public void polish(Reaction reaction) {
       // Process any external resources linked via annotations in the reaction
-      new AnnotationPolisher(parameters, registry).polish(reaction.getAnnotation());
+      new AnnotationPolisher(polishingParameters, registry).polish(reaction.getAnnotation());
       // Check and set the compartment of the reaction based on its reactants and products
       polishCompartments(reaction);
       // Set meta ID if not set and CV terms are present
@@ -99,7 +104,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
       // check mass balance of the reaction - no-op
       checkBalance(reaction);
       // Convert gene associations to FBCv2 format and set flux objectives from local parameters
-      gpaPolisher.convertAssociationsToFBCV2(reaction, parameters.omitGenericTerms());
+      gpaPolisher.convertAssociationsToFBCV2(reaction, sboParameters.omitGenericTerms());
 
       fluxObjectiveFromLocalParameter(reaction);
 
@@ -195,7 +200,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
   private Optional<String> polishSpeciesReferences(ListOf<SpeciesReference> speciesReferences, int defaultSBOterm) {
     // Assign default SBO terms and constant values to species references
     for (SpeciesReference sr : speciesReferences) {
-      if (!sr.isSetSBOTerm() && !parameters.omitGenericTerms()) {
+      if (!sr.isSetSBOTerm() && !sboParameters.omitGenericTerms()) {
         sr.setSBOTerm(defaultSBOterm);
       }
       if (!sr.isSetConstant()) {
@@ -226,7 +231,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
   private void checkBalance(Reaction reaction) {
     // TODO: logging this information is nonsense, this should be available as output
     // Check mass balance if enabled in parameters and reaction is not a special type
-    if (parameters.checkMassBalance()
+    if (polishingParameters.reactionPolishingParameters().checkMassBalance()
             && ((reaction.getSBOTerm() < 627) || (630 < reaction.getSBOTerm()))) {
       // Perform atom balance check
       AtomCheckResult<Reaction> defects = AtomBalanceCheck.checkAtomBalance(reaction, 1);
@@ -336,7 +341,7 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
                 String association = splits[1];
                 if (!association.isEmpty()) {
                   // Parse the gene product association and apply it to the reaction.
-                  GPRParser.parseGPR(reaction, association, parameters.omitGenericTerms());
+                  GPRParser.parseGPR(reaction, association, sboParameters.omitGenericTerms());
                 }
               }
             }

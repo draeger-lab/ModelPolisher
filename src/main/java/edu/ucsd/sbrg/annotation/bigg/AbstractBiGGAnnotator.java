@@ -1,10 +1,10 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.annotation.AbstractAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDBContract;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
@@ -21,17 +21,20 @@ public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotat
 
     protected final BiGGDB bigg;
     protected final Registry registry;
+    protected final BiGGAnnotationParameters biGGAnnotationParameters;
 
-    public AbstractBiGGAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
-        super(parameters);
+    public AbstractBiGGAnnotator(BiGGDB bigg, BiGGAnnotationParameters biGGAnnotationParameters, Registry registry) {
+        super();
         this.bigg = bigg;
         this.registry = registry;
+        this.biGGAnnotationParameters = biGGAnnotationParameters;
     }
 
-    public AbstractBiGGAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-        super(parameters, observers);
+    public AbstractBiGGAnnotator(BiGGDB bigg, BiGGAnnotationParameters biGGAnnotationParameters, Registry registry, List<ProgressObserver> observers) {
+        super(observers);
         this.bigg = bigg;
         this.registry = registry;
+        this.biGGAnnotationParameters = biGGAnnotationParameters;
     }
 
     /**

@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.*;
@@ -28,11 +28,11 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
 
   private final List<Species> speciesToRemove = new ArrayList<>();
 
-  public SpeciesPolisher(Parameters parameters, Registry registry) {
+  public SpeciesPolisher(PolishingParameters parameters, Registry registry) {
       super(parameters, registry);
   }
 
-  public SpeciesPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public SpeciesPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
       super(parameters, registry, observers);
   }
 
@@ -60,7 +60,7 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
    */
   public void polish(Species species) {
     // Process any external resources linked via annotations in the species
-    new AnnotationPolisher(parameters, registry).polish(species.getAnnotation());
+    new AnnotationPolisher(polishingParameters, registry).polish(species.getAnnotation());
     String id = species.getId();
     
     // Check if the species ID is missing and log an error if so
@@ -148,12 +148,12 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
     SBase candidate = model.findUniqueNamedSBase(cId);
     // If the found SBase is a Compartment, polish it
     if (candidate instanceof Compartment) {
-      var compartmentPolisher = new CompartmentPolisher(parameters, registry, getObservers());
+      var compartmentPolisher = new CompartmentPolisher(polishingParameters, registry, getObservers());
       compartmentPolisher.polish((Compartment) candidate);
     } else if (candidate == null) {
       // If no compartment is found, log a warning and create a new compartment
       logger.warning(format(MESSAGES.getString("CREATE_MISSING_COMP"), cId, species.getId(), species.getElementName()));
-      var compartmentPolisher = new CompartmentPolisher(parameters, registry, getObservers());
+      var compartmentPolisher = new CompartmentPolisher(polishingParameters, registry, getObservers());
       compartmentPolisher.polish(model.createCompartment(cId));
     }
   }

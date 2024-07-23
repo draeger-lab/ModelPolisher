@@ -1,13 +1,12 @@
 package edu.ucsd.sbrg;
 
+import edu.ucsd.sbrg.parameters.OutputParameters;
 import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,20 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestUtils {
-
-    public static Parameters initParameters() {
-        return initParameters(Map.of());
-    }
-
-    public static Parameters initParameters(Map<String, Object> params) {
-//        props.setProperty(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getOptionName(),
-//                "");
-
-        var map = new HashMap<>(params);
-        map.putIfAbsent("compressionType", ModelPolisherOptions.Compression.NONE.name());
-
-        return new Parameters(map);
-    }
 
 
     public static void assertCVTermIsPresent(AbstractNamedSBase entity,

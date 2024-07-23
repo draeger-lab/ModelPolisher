@@ -3,8 +3,8 @@ package edu.ucsd.sbrg.io;
 import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.ModelPolisherOptions;
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.io.parsers.json.JSONConverter;
+import edu.ucsd.sbrg.parameters.OutputParameters;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.TidySBMLWriter;
 
@@ -20,17 +20,11 @@ import static java.text.MessageFormat.format;
 
 public class ModelWriter {
 
-    /**
-     * Bundle for ModelPolisher logger messages
-     */
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-    /**
-     * A {@link Logger} for this class.
-     */
     private static final Logger logger = Logger.getLogger(ModelWriter.class.getName());
-    private final Parameters parameters;
+    private final OutputParameters parameters;
 
-    public ModelWriter(Parameters parameters) {
+    public ModelWriter(OutputParameters parameters) {
         this.parameters = parameters;
     }
 
@@ -53,11 +47,11 @@ public class ModelWriter {
         }
         // Handle file compression based on the specified method
         if (parameters.compression() != ModelPolisherOptions.Compression.NONE) {
-            writeZIP(output, parameters);
+            writeZIP(output);
         }
     }
 
-    private void writeZIP(File output, Parameters parameters) throws IOException {
+    private void writeZIP(File output) throws IOException {
         String fileExtension = parameters.compression().getFileExtension();
         String archive = output.getAbsolutePath() + "." + fileExtension;
         logger.info(format(MESSAGES.getString("ARCHIVE"), archive));

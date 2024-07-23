@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.db.adb;
 import de.zbit.util.Utils;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
+import edu.ucsd.sbrg.parameters.DBParameters;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,18 +34,18 @@ public class AnnotateDB {
   private static final Logger logger = Logger.getLogger(AnnotateDB.class.getName());
   private static PostgresConnectionPool connectionPool;
 
-  public AnnotateDB(SBProperties args) {
-    String dbName = args.getProperty(AnnotateDBOptions.DBNAME);
-    String host = args.getProperty(AnnotateDBOptions.HOST);
-    String passwd = args.getProperty(AnnotateDBOptions.PASSWD);
-    String port = args.getProperty(AnnotateDBOptions.PORT);
-    String user = args.getProperty(AnnotateDBOptions.USER);
+  public AnnotateDB (DBParameters parameters) {
+    String dbName = parameters.dbName();
+    String host = parameters.host();
+    String passwd = parameters.passwd();
+    Integer port = parameters.port();
+    String user = parameters.user();
     boolean run = iStrNotNullOrEmpty(dbName);
     run &= iStrNotNullOrEmpty(host);
-    run &= iStrNotNullOrEmpty(port);
+    run &= port != null;
     run &= iStrNotNullOrEmpty(user);
     if (run) {
-      AnnotateDB.init(host, port, user, passwd, dbName);
+      init(host, port, user, passwd, dbName);
     }
   }
 
@@ -52,14 +53,14 @@ public class AnnotateDB {
     return !(string == null || string.isEmpty());
   }
 
-  public AnnotateDB(String host, String port, String user, String passwd, String dbName)
+  public AnnotateDB(String host, Integer port, String user, String passwd, String dbName)
   {
     init(host, port, user, passwd, dbName);
   }
 
-  public static void init(String host, String port, String user, String passwd, String dbName) {
+  public static void init(String host, Integer port, String user, String passwd, String dbName) {
     if (null == connectionPool) {
-      connectionPool = new PostgresConnectionPool(host, Integer.parseInt(port), user, passwd, dbName);
+      connectionPool = new PostgresConnectionPool(host, port, user, passwd, dbName);
 
       Runtime.getRuntime().addShutdownHook(new Thread(connectionPool::close));
     }

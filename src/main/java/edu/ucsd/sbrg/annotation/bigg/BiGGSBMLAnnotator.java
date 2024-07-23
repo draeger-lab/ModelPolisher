@@ -2,7 +2,8 @@ package edu.ucsd.sbrg.annotation.bigg;
 
 import java.util.List;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.annotation.AnnotationsSorter;
 import edu.ucsd.sbrg.annotation.bigg.fbc.BiGGFBCAnnotator;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -22,12 +23,16 @@ import edu.ucsd.sbrg.db.bigg.BiGGDB;
  */
 public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator<SBMLDocument> {
 
-  public BiGGSBMLAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+  private final SBOParameters sboParameters;
+
+  public BiGGSBMLAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, SBOParameters sboParameters, Registry registry) {
     super(bigg, parameters, registry);
+    this.sboParameters = sboParameters;
   }
 
-  public BiGGSBMLAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-      super(bigg, parameters, registry, observers);
+  public BiGGSBMLAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
+    super(bigg, parameters, registry, observers);
+    this.sboParameters = sboParameters;
   }
   
 
@@ -48,20 +53,20 @@ public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator<SBMLDocument> {
     }
     // model.isSetMetaId()
 
-    new BiGGModelAnnotator(bigg, parameters, registry, getObservers()).annotate(model);
+    new BiGGModelAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model);
 
     // Annotate various components of the model
-    new BiGGPublicationsAnnotator(bigg, parameters, registry, getObservers()).annotate(model);
+    new BiGGPublicationsAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model);
 
-    new BiGGCompartmentsAnnotator(bigg, parameters, registry, getObservers()).annotate(model.getListOfCompartments());
+    new BiGGCompartmentsAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model.getListOfCompartments());
 
-    new BiGGSpeciesAnnotator(bigg, parameters, registry, getObservers()).annotate(model.getListOfSpecies());
+    new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, registry, getObservers()).annotate(model.getListOfSpecies());
 
-    new BiGGReactionsAnnotator(bigg, parameters, registry, getObservers()).annotate(model.getListOfReactions());
+    new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, registry, getObservers()).annotate(model.getListOfReactions());
 
-    new BiGGFBCAnnotator(bigg, parameters, registry, getObservers()).annotate(model);
+    new BiGGFBCAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model);
 
-    new BiGGDocumentNotesProcessor(bigg, parameters).processNotes(doc);
+    new BiGGDocumentNotesProcessor(bigg, biGGAnnotationParameters).processNotes(doc);
 
     new AnnotationsSorter().groupAndSortAnnotations(doc);
   }

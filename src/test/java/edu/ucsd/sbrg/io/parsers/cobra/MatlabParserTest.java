@@ -1,17 +1,18 @@
 package edu.ucsd.sbrg.io.parsers.cobra;
 
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
-import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class COBRAParserTest {
+public class MatlabParserTest {
 
     /**
      * This is here to call the static initializer code of the Registry class,
@@ -25,10 +26,10 @@ public class COBRAParserTest {
 
     @Test
     public void parsingDoesNotThrowErrors() {
-        var parameters = initParameters();
-        var recon = new File(COBRAParserTest.class.getResource("Recon3D.mat").getFile());
+        var parameters = new SBOParameters();
+        var recon = new File(MatlabParserTest.class.getResource("Recon3D.mat").getFile());
         try {
-            new COBRAParser(parameters, new IdentifiersOrg()).parse(recon);
+            new MatlabParser(parameters, new IdentifiersOrg()).parse(recon);
             assertTrue(true);
         } catch (IOException e) {
             e.printStackTrace();

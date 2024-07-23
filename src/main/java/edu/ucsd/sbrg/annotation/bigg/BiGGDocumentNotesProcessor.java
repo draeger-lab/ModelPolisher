@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -18,10 +18,10 @@ public class BiGGDocumentNotesProcessor {
     static final Logger logger = Logger.getLogger(BiGGDocumentNotesProcessor.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-    private final Parameters parameters;
+    private final BiGGAnnotationParameters parameters;
     private final BiGGDB bigg;
 
-    public BiGGDocumentNotesProcessor(BiGGDB bigg, Parameters parameters) {
+    public BiGGDocumentNotesProcessor(BiGGDB bigg, BiGGAnnotationParameters parameters) {
         this.parameters = parameters;
         this.bigg = bigg;
     }
@@ -82,16 +82,16 @@ public class BiGGDocumentNotesProcessor {
         String documentNotesFile = "SBMLDocumentNotes.html";
 
         // Determine the files to use for model and document notes based on user settings
-        if (parameters.noModelNotes()) {
+        if (parameters.notesParameters().noModelNotes()) {
             modelNotesFile = null;
             documentNotesFile = null;
         } else {
-            if (parameters.modelNotesFile() != null) {
-                File modelNotes = parameters.modelNotesFile();
+            if (parameters.notesParameters().modelNotesFile() != null) {
+                File modelNotes = parameters.notesParameters().modelNotesFile();
                 modelNotesFile = modelNotes != null ? modelNotes.getAbsolutePath() : null;
             }
-            if (parameters.documentNotesFile() != null) {
-                File documentNotes = parameters.documentNotesFile();
+            if (parameters.notesParameters().documentNotesFile() != null) {
+                File documentNotes = parameters.notesParameters().documentNotesFile();
                 documentNotesFile = documentNotes != null ? documentNotes.getAbsolutePath() : null;
             }
         }

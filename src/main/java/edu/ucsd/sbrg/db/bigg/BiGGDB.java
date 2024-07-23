@@ -16,7 +16,7 @@ package edu.ucsd.sbrg.db.bigg;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.parameters.DBParameters;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
@@ -52,15 +52,15 @@ public class BiGGDB {
   private static Set<String> BiGGDBReactions = new HashSet<>();
 
 
-  public BiGGDB (SBProperties args) {
-    String dbName = args.getProperty(BiGGDBOptions.DBNAME);
-    String host = args.getProperty(BiGGDBOptions.HOST);
-    String passwd = args.getProperty(BiGGDBOptions.PASSWD);
-    String port = args.getProperty(BiGGDBOptions.PORT);
-    String user = args.getProperty(BiGGDBOptions.USER);
+  public BiGGDB (DBParameters parameters) {
+    String dbName = parameters.dbName();
+    String host = parameters.host();
+    String passwd = parameters.passwd();
+    Integer port = parameters.port();
+    String user = parameters.user();
     boolean run = iStrNotNullOrEmpty(dbName);
     run &= iStrNotNullOrEmpty(host);
-    run &= iStrNotNullOrEmpty(port);
+    run &= null != port;
     run &= iStrNotNullOrEmpty(user);
     if (run) {
       init(host, port, user, passwd, dbName);
@@ -71,13 +71,13 @@ public class BiGGDB {
     return !(string == null || string.isEmpty());
   }
 
-  public BiGGDB(String host, String port, String user, String passwd, String dbName) {
+  public BiGGDB(String host, Integer port, String user, String passwd, String dbName) {
     init(host, port, user, passwd, dbName);
   }
 
-  public static void init(String host, String port, String user, String passwd, String dbName) {
+  public static void init(String host, Integer port, String user, String passwd, String dbName) {
     if (null == connectionPool) {
-      connectionPool = new PostgresConnectionPool(host, Integer.parseInt(port), user, passwd, dbName);
+      connectionPool = new PostgresConnectionPool(host, port, user, passwd, dbName);
 
       Runtime.getRuntime().addShutdownHook(new Thread(connectionPool::close));
     }

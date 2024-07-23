@@ -1,0 +1,47 @@
+{
+  "sbml-validation": true,
+  "sbo-terms": {
+    "omit-generic-terms": true
+  },
+  "polishing": {
+    "reactions": {
+      "check-mass-balance": true
+    },
+    "flux-objectives": {
+      "objectives": "",
+      "coefficients": ""
+    }
+  },
+  "annotation": {
+    "bigg": {
+      "include-any-uri": true,
+      "document-title-pattern": "",
+      "notes": {
+        "no-model-notes": true,
+        "model-notes-file": "",
+        "document-notes-file": ""
+      },
+      "db-config": {
+        "host": "",
+        "port": "",
+        "user": "",
+        "password": "",
+        "db-name": ""
+      }
+    },
+    "annotatedb": {
+      "db-config": {
+        "host": "",
+        "port": "",
+        "user": "",
+        "password": "",
+        "db-name": ""
+      }
+    }
+  },
+  "output": {
+    "write-json": false,
+    "output-combine": false,
+    "compression": "zip"
+  }
+}

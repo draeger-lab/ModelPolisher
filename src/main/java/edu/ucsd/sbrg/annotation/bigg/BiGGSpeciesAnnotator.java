@@ -2,7 +2,8 @@ package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
@@ -33,11 +34,15 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
   static final Logger logger = Logger.getLogger(BiGGSpeciesAnnotator.class.getName());
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-  protected BiGGSpeciesAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+  private final SBOParameters sboParameters;
+
+  protected BiGGSpeciesAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, SBOParameters sboParameters, Registry registry) {
     super(bigg, parameters, registry);
+      this.sboParameters = sboParameters;
   }
-  protected BiGGSpeciesAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  protected BiGGSpeciesAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
     super(bigg, parameters, registry, observers);
+      this.sboParameters = sboParameters;
   }
 
   /**
@@ -121,7 +126,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * Assigns the SBO term to a species based on its component type as determined from the BiGG database.
    * The component type can be a metabolite, protein, or a generic material entity. If the component type is not explicitly
    * identified in the BiGG database, the species is annotated as a generic material entity unless the configuration
-   * explicitly omits such generic terms (controlled by {@link Parameters#omitGenericTerms()}).
+   * explicitly omits such generic terms (controlled by {@link SBOParameters#omitGenericTerms()}).
    *
    * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
@@ -135,13 +140,13 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
         species.setSBOTerm(SBO.getProtein()); // Assign SBO term for proteins.
         break;
       default:
-        if (!parameters.omitGenericTerms()) {
+        if (!sboParameters.omitGenericTerms()) {
           species.setSBOTerm(SBO.getMaterialEntity()); // Assign SBO term for generic material entities.
         }
         break;
       }
     }, () -> {
-      if (!parameters.omitGenericTerms()) {
+      if (!sboParameters.omitGenericTerms()) {
         species.setSBOTerm(SBO.getMaterialEntity()); // Default SBO term assignment when no specific type is found.
       }
     });
@@ -170,7 +175,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
     if (isBiGGMetabolite) {
       annotations.add(new IdentifiersOrgURI("bigg.metabolite", biggId).getURI());
 
-      Set<String> biggAnnotations = bigg.getResources(biggId, parameters.includeAnyURI(), false)
+      Set<String> biggAnnotations = bigg.getResources(biggId, biGGAnnotationParameters.includeAnyURI(), false)
               .stream()
               .map(IdentifiersOrgURI::getURI)
               .collect(Collectors.toSet());

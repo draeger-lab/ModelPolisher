@@ -1,7 +1,8 @@
 package edu.ucsd.sbrg.annotation.adb;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.annotation.AbstractAnnotator;
+import edu.ucsd.sbrg.parameters.ADBAnnotationParameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import org.sbml.jsbml.Annotation;
@@ -12,10 +13,12 @@ import java.util.*;
 public abstract class AbstractADBAnnotator<SBMLElement> extends AbstractAnnotator<SBMLElement> {
 
     protected final AnnotateDB adb;
+    protected final ADBAnnotationParameters parameters;
 
-    public AbstractADBAnnotator(AnnotateDB adb, Parameters parameters) {
-        super(parameters);
+    public AbstractADBAnnotator(AnnotateDB adb, ADBAnnotationParameters parameters) {
+        super();
         this.adb = adb;
+        this.parameters = parameters;
     }
 
     public abstract void annotate(SBMLElement element);

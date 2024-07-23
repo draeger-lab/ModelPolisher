@@ -1,7 +1,9 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
+import edu.ucsd.sbrg.parameters.ParametersParser;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
@@ -13,21 +15,30 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.ext.groups.Member;
 
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static edu.ucsd.sbrg.TestUtils.initParameters;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BiGGReactionsAnnotatorTest extends BiGGDBContainerTest {
 
-    private final Parameters parameters = initParameters();
+    private final BiGGAnnotationParameters biGGAnnotationParameters = new BiGGAnnotationParameters(
+            false,
+            true,
+            null,
+            null,
+            null
+    );
+
+    private final SBOParameters sboParameters = new SBOParameters();
+
+    public BiGGReactionsAnnotatorTest() throws IOException {
+    }
 
     @Test
     public void getBiGGIdFromResourcesTest() {
-        initParameters(Map.of(ModelPolisherOptions.INCLUDE_ANY_URI.getOptionName(),
-                "true"));
         var m = new Model("iJO1366", 3, 2);
         var r1 = m.createReaction("some_name");
         var r2 = m.createReaction("some_other_name");
@@ -54,9 +65,9 @@ public class BiGGReactionsAnnotatorTest extends BiGGDBContainerTest {
         var gPlugin = (GroupsModelPlugin) m.getPlugin(GroupsConstants.shortLabel);
         assertEquals(0, gPlugin.getGroupCount());
 
-        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r1);
-        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r2);
-        new BiGGReactionsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(r3);
+        new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(r1);
+        new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(r2);
+        new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(r3);
 
         var r1FbcPlugin = (FBCReactionPlugin) r1.getPlugin(FBCConstants.shortLabel);
         var gpa1 =  r1FbcPlugin.getGeneProductAssociation();

@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
@@ -42,25 +42,25 @@ import static java.text.MessageFormat.format;
 /**
  * @author Andreas Dr&auml;ger
  */
-public class COBRAParser {
+public class MatlabParser {
 
   /**
    * A {@link Logger} for this class.
    */
-  private static final Logger logger = Logger.getLogger(COBRAParser.class.getName());
+  private static final Logger logger = Logger.getLogger(MatlabParser.class.getName());
   /**
    * Bundle for ModelPolisher logger messages
    */
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private static MatlabFields matlabFields;
-  private final Parameters parameters;
+  private final SBOParameters sboParameters;
 
   private final Registry registry;
 
 
-  public COBRAParser(Parameters parameters, Registry registry) {
+  public MatlabParser(SBOParameters sboParameters, Registry registry) {
     super();
-    this.parameters = parameters;
+    this.sboParameters = sboParameters;
     this.registry = registry;
   }
 
@@ -224,7 +224,7 @@ public class COBRAParser {
         if (model.getReaction(i) == null) {
           logger.severe(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
-          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, parameters.omitGenericTerms());
+          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, sboParameters.omitGenericTerms());
         }
       }
     });

@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
@@ -18,11 +18,11 @@ import java.util.Optional;
  */
 public abstract class BiGGCVTermAnnotator<T extends AbstractSBase> extends AbstractBiGGAnnotator<T> {
 
-  public BiGGCVTermAnnotator(BiGGDB bigg, Parameters parameters, Registry registry) {
+  public BiGGCVTermAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry) {
     super(bigg, parameters, registry);
   }
 
-  public BiGGCVTermAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+  public BiGGCVTermAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
     super(bigg, parameters, registry, observers);
   }
 

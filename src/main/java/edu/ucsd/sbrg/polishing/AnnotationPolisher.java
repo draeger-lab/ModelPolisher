@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -13,12 +13,12 @@ import java.util.Set;
 
 public class AnnotationPolisher extends AbstractPolisher<Annotation> {
 
-    public AnnotationPolisher(Parameters parameters, Registry registry) {
-        super(parameters, registry);
+    public AnnotationPolisher(PolishingParameters polishingParameters, Registry registry) {
+        super(polishingParameters, registry);
     }
 
-    public AnnotationPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-        super(parameters, registry, observers);
+    public AnnotationPolisher(PolishingParameters polishingParameters, Registry registry, List<ProgressObserver> observers) {
+        super(polishingParameters, registry, observers);
     }
 
     /**

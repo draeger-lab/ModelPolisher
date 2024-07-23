@@ -1,19 +1,20 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.SBO;
 
-import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
-import static edu.ucsd.sbrg.TestUtils.initParameters;
+import java.util.Map;
+
+import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BiGGCompartmentsAnnotatorTest extends BiGGDBContainerTest {
 
-    private final Parameters parameters = initParameters();
+    private final BiGGAnnotationParameters parameters = new BiGGAnnotationParameters();
 
     @Test
     public void annotateKnownCompartments() {

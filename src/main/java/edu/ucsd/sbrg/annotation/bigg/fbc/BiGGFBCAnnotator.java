@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg.fbc;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -13,7 +13,7 @@ import java.util.List;
 
 public class BiGGFBCAnnotator extends AbstractBiGGAnnotator<Model> {
 
-    public BiGGFBCAnnotator(BiGGDB bigg, Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public BiGGFBCAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
         super(bigg, parameters, registry, observers);
     }
 
@@ -28,7 +28,7 @@ public class BiGGFBCAnnotator extends AbstractBiGGAnnotator<Model> {
 //            progress.setCallNr(current);
 //        }
         FBCModelPlugin fbcModelPlugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        new BiGGGeneProductAnnotator(new BiGGGeneProductReferencesAnnotator(), bigg, parameters, registry, getObservers())
+        new BiGGGeneProductAnnotator(new BiGGGeneProductReferencesAnnotator(), bigg, biGGAnnotationParameters, registry, getObservers())
                 .annotate(fbcModelPlugin.getListOfGeneProducts());
     }
 }

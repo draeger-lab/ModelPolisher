@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.polishing;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
@@ -10,19 +10,19 @@ import java.util.*;
 
 public abstract class AbstractPolisher<SBMLElement> {
 
-    protected final Parameters parameters;
+    protected final PolishingParameters polishingParameters;
     protected final Registry registry;
 
     private final List<ProgressObserver> observers;
 
-    public AbstractPolisher(Parameters parameters, Registry registry) {
-        this.parameters = parameters;
+    public AbstractPolisher(PolishingParameters polishingParameters, Registry registry) {
+        this.polishingParameters = polishingParameters;
         this.registry = registry;
         observers = new ArrayList<>();
     }
 
-    public AbstractPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
-        this.parameters = parameters;
+    public AbstractPolisher(PolishingParameters polishingParameters, Registry registry, List<ProgressObserver> observers) {
+        this.polishingParameters = polishingParameters;
         this.registry = registry;
         this.observers = observers;
     }
@@ -48,18 +48,18 @@ public abstract class AbstractPolisher<SBMLElement> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AbstractPolisher<?> that = (AbstractPolisher<?>) o;
-        return Objects.equals(parameters, that.parameters);
+        return Objects.equals(polishingParameters, that.polishingParameters);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(parameters);
+        return Objects.hashCode(polishingParameters);
     }
 
     @Override
     public String toString() {
         return "AbstractPolisher{" +
-                "parameters=" + parameters +
+                "parameters=" + polishingParameters +
                 '}';
     }
 }

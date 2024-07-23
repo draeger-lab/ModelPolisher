@@ -25,7 +25,7 @@ public abstract class BiGGDBContainerTest {
         biggContainer.start();
         bigg = new BiGGDB(
                 biggContainer.getHost(),
-                biggContainer.getFirstMappedPort().toString(),
+                biggContainer.getFirstMappedPort(),
                 "postgres",
                 "postgres",
                 "bigg");

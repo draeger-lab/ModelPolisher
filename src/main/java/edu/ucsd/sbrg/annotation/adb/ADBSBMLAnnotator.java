@@ -1,13 +1,14 @@
 package edu.ucsd.sbrg.annotation.adb;
 
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.ADBAnnotationParameters;
+import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
 public class ADBSBMLAnnotator extends AbstractADBAnnotator<SBMLDocument> {
 
-    public ADBSBMLAnnotator(AnnotateDB adb, Parameters parameters) {
+    public ADBSBMLAnnotator(AnnotateDB adb, ADBAnnotationParameters parameters) {
         super(adb, parameters);
     }
 

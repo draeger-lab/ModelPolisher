@@ -1,7 +1,8 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.Parameters;
+import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
@@ -18,13 +19,16 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
 
     private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private final SBOParameters sboParameters;
 
-    public SBMLPolisher(Parameters parameters, Registry registry) {
+    public SBMLPolisher(PolishingParameters parameters, SBOParameters sboParameters, Registry registry) {
         super(parameters, registry);
+        this.sboParameters = sboParameters;
     }
 
-    public SBMLPolisher(Parameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public SBMLPolisher(PolishingParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
         super(parameters, registry, observers);
+        this.sboParameters = sboParameters;
     }
 
     /**
@@ -48,10 +52,10 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
 
         // Polish the model.
         Model model = doc.getModel();
-        new ModelPolisher(parameters, registry, getObservers()).polish(model);
+        new ModelPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model);
 
         // Process any external resources linked in the document's annotations.
-        new AnnotationPolisher(parameters, registry).polish(doc.getAnnotation());
+        new AnnotationPolisher(polishingParameters, registry).polish(doc.getAnnotation());
     }
 
 }
