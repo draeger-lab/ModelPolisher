@@ -191,7 +191,7 @@ loadScripts(document, 'script');</script>
 <code><a href="../AbstractBiGGAnnotator.html#getBiGGIdFromResources(java.util.List,java.lang.String)">getBiGGIdFromResources</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-edu.ucsd.sbrg.annotation.AbstractAnnotator">Methods inherited from class&nbsp;edu.ucsd.sbrg.annotation.<a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></h3>
-<code><a href="../../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
+<code><a href="../../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -249,20 +249,24 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="annotate(java.util.List)">
 <h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;&nbsp;geneProducts)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;&nbsp;geneProducts)</span>
+              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">This method handles the annotation of gene products in a given SBML model. It checks if the model has the FBC plugin
  set and then proceeds to annotate each gene product found within the model. The progress bar is updated to reflect
  the number of gene products being annotated.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="../../AbstractAnnotator.html#annotate(java.util.List)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="annotate(org.sbml.jsbml.ext.fbc.GeneProduct)">
 <h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span>
+              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Annotates a gene product by adding relevant metadata and references.
  This method first checks the gene product's ID for validity and retrieves a corresponding BiGGId if available.
  It then attempts to get a label for the gene product. If no label is found, the method returns early.
@@ -271,13 +275,16 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="findBiGGId(org.sbml.jsbml.ext.fbc.GeneProduct)">
 <h3>findBiGGId</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span>
+                            throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Validates the ID of a <code>GeneProduct</code> against the expected BiGG ID format and attempts to retrieve a
  corresponding <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a> from existing annotations if the initial ID does not conform to the BiGG format.
  The method first checks if the gene product's ID matches the BiGG ID pattern. If it does not match, it then
@@ -288,6 +295,8 @@ loadScripts(document, 'script');</script>
 <dd><code><a href="../BiGGCVTermAnnotator.html#findBiGGId(T)">findBiGGId</a></code>&nbsp;in class&nbsp;<code><a href="../BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
 <dt>Returns:</dt>
 <dd>An <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</code> containing the validated or retrieved BiGG ID, or an empty Optional if no valid ID is found.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
@@ -311,7 +320,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="setGPLabelName(org.sbml.jsbml.ext.fbc.GeneProduct,java.lang.String)">
 <h3>setGPLabelName</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setGPLabelName</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;label)</span></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;label)</span>
+                    throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Updates the label of a gene product and sets its name based on the retrieved gene name from the BiGG database.
  If the current label is set to "None", it updates the label to the provided one. It then attempts to fetch
  the gene name corresponding to this label from the BiGG database. If a gene name is found, it checks if the
@@ -321,6 +331,8 @@ loadScripts(document, 'script');</script>
 <dt>Parameters:</dt>
 <dd><code>label</code> - The label to set or use for fetching the gene name. This label should correspond to a <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a>
               or be derived from <code>AbstractSBase.getId()</code>.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
@@ -328,7 +340,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="addAnnotations(org.sbml.jsbml.ext.fbc.GeneProduct,edu.ucsd.sbrg.db.bigg.BiGGId)">
 <h3>addAnnotations</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addAnnotations</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct,
- <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+ <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span>
+                    throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Adds annotations to a gene product based on a given <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a>. This method differentiates between
  annotations that specify what the gene product 'is' and what it 'is encoded by'. Resources are fetched
  from the BiGG database using the abbreviation from the provided BiGGId. Each resource URL is checked and
@@ -336,6 +349,8 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>biggId</code> - The <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a> associated with the gene product, typically derived from a species ID.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>

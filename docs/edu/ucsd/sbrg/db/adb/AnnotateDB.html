@@ -192,7 +192,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getAnnotations(java.lang.String,java.lang.String)">
 <h3>getAnnotations</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Set.html" title="class or interface in java.util" class="external-link">Set</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getAnnotations</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;type,
- <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;biggId)</span></div>
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;biggId)</span>
+                           throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Retrieves a set of annotated URLs based on the type and BiGG ID provided.
  This method queries the database to find matching annotations and constructs URLs using the retrieved data.</div>
 <dl class="notes">
@@ -203,6 +204,8 @@ loadScripts(document, 'script');</script>
 <dt>Returns:</dt>
 <dd>A sorted set of URLs that are annotations for the given BiGG ID. If the type is neither metabolite
          nor reaction, or if an SQL exception occurs, an empty set is returned.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>

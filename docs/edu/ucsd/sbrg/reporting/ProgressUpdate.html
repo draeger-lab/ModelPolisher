@@ -91,7 +91,7 @@ loadScripts(document, 'script');</script>
 </div>
 <section class="class-description" id="class-description">
 <hr>
-<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ProgressUpdate</span>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;obj, <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;status)
+<div class="type-signature"><span class="modifiers">public record </span><span class="element-name type-name-label">ProgressUpdate</span>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;obj, <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;reportType)
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Record.html" title="class or interface in java.lang" class="external-link">Record</a></span></div>
 </section>
 <section class="summary">
@@ -106,7 +106,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(java.lang.String,java.lang.Object,edu.ucsd.sbrg.reporting.ReportType)" class="member-name-link">ProgressUpdate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;obj,
- <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;status)</code></div>
+ <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;reportType)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates an instance of a <code>ProgressUpdate</code> record class.</div>
 </div>
@@ -140,9 +140,9 @@ loadScripts(document, 'script');</script>
 <div class="block">Returns the value of the <code>obj</code> record component.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#status()" class="member-name-link">status</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reportType()" class="member-name-link">reportType</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the value of the <code>status</code> record component.</div>
+<div class="block">Returns the value of the <code>reportType</code> record component.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
@@ -176,13 +176,13 @@ loadScripts(document, 'script');</script>
 <h3>ProgressUpdate</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ProgressUpdate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;obj,
- <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;status)</span></div>
+ <a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a>&nbsp;reportType)</span></div>
 <div class="block">Creates an instance of a <code>ProgressUpdate</code> record class.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>text</code> - the value for the <code>text</code> record component</dd>
 <dd><code>obj</code> - the value for the <code>obj</code> record component</dd>
-<dd><code>status</code> - the value for the <code>status</code> record component</dd>
+<dd><code>reportType</code> - the value for the <code>reportType</code> record component</dd>
 </dl>
 </section>
 </li>
@@ -258,13 +258,13 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="status()">
-<h3>status</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a></span>&nbsp;<span class="element-name">status</span>()</div>
-<div class="block">Returns the value of the <code>status</code> record component.</div>
+<section class="detail" id="reportType()">
+<h3>reportType</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="ReportType.html" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a></span>&nbsp;<span class="element-name">reportType</span>()</div>
+<div class="block">Returns the value of the <code>reportType</code> record component.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the value of the <code>status</code> record component</dd>
+<dd>the value of the <code>reportType</code> record component</dd>
 </dl>
 </section>
 </li>

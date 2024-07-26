@@ -102,7 +102,7 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.parameters.OutputParameters)" class="member-name-link">ModelValidator</a><wbr>(<a href="parameters/OutputParameters.html" title="class in edu.ucsd.sbrg.parameters">OutputParameters</a>&nbsp;parameters)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">ModelValidator</a>()</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -119,11 +119,8 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#validate(java.io.File,boolean)" class="member-name-link">validate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;outputFile,
- boolean&nbsp;online)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Validates an SBML file either online or offline based on the provided parameters.</div>
-</div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#validate(java.io.File)" class="member-name-link">validate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;outputFile)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -142,9 +139,9 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.parameters.OutputParameters)">
+<section class="detail" id="&lt;init&gt;()">
 <h3>ModelValidator</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelValidator</span><wbr><span class="parameters">(<a href="parameters/OutputParameters.html" title="class in edu.ucsd.sbrg.parameters">OutputParameters</a>&nbsp;parameters)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelValidator</span>()</div>
 </section>
 </li>
 </ul>
@@ -156,18 +153,13 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="validate(java.io.File,boolean)">
+<section class="detail" id="validate(java.io.File)">
 <h3>validate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">validate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;outputFile,
- boolean&nbsp;online)</span></div>
-<div class="block">Validates an SBML file either online or offline based on the provided parameters.
- Online validation refers to checking the file against a remote service or database, using specific parameters for the validation process.
- Offline validation involves reading the file locally, handling different compression formats if necessary, and validating the SBML document against local constraints.
- Errors encountered during the validation process are logged for further analysis.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">validate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;outputFile)</span>
+              throws <span class="exceptions"><a href="ModelValidatorException.html" title="class in edu.ucsd.sbrg">ModelValidatorException</a></span></div>
 <dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>outputFile</code> - The file object of the SBML file to be validated.</dd>
-<dd><code>online</code> - A boolean flag indicating whether to perform online (true) or offline (false) validation.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="ModelValidatorException.html" title="class in edu.ucsd.sbrg">ModelValidatorException</a></code></dd>
 </dl>
 </section>
 </li>

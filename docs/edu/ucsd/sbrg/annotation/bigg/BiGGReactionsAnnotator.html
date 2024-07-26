@@ -189,7 +189,7 @@ loadScripts(document, 'script');</script>
 <code><a href="AbstractBiGGAnnotator.html#getBiGGIdFromResources(java.util.List,java.lang.String)">getBiGGIdFromResources</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-edu.ucsd.sbrg.annotation.AbstractAnnotator">Methods inherited from class&nbsp;edu.ucsd.sbrg.annotation.<a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></h3>
-<code><a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
+<code><a href="../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -234,20 +234,24 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="annotate(java.util.List)">
 <h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.Reaction&gt;&nbsp;reactions)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.Reaction&gt;&nbsp;reactions)</span>
+              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Delegates the annotation process for each reaction in the given SBML model.
  This method iterates over all reactions in the model, updates the progress display,
  and invokes the annotation for each reaction.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="../AbstractAnnotator.html#annotate(java.util.List)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Reaction&gt;</code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="annotate(org.sbml.jsbml.Reaction)">
 <h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span>
+              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Annotates a reaction by setting its name, SBO term, and additional annotations. It also processes gene reaction rules
  and subsystem information associated with the reaction. This method retrieves a BiGG ID for the reaction, either from
  the reaction's ID directly or through associated annotations. If a valid BiGG ID is found, it proceeds with the
@@ -255,13 +259,16 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Reaction&gt;</code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="findBiGGId(org.sbml.jsbml.Reaction)">
 <h3>findBiGGId</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction)</span>
+                            throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">This method checks if the ID of the reaction is a valid BiGG ID and attempts to retrieve a corresponding
  BiGG ID based on existing annotations. It first checks if the reaction ID matches the expected BiGG ID format
  and verifies its existence in the database. If the ID does not match or is not found, it then attempts to
@@ -273,6 +280,8 @@ loadScripts(document, 'script');</script>
 <dd><code><a href="BiGGCVTermAnnotator.html#findBiGGId(T)">findBiGGId</a></code>&nbsp;in class&nbsp;<code><a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.Reaction&gt;</code></dd>
 <dt>Returns:</dt>
 <dd>An <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link"><code>Optional</code></a> containing the BiGG ID if found or created successfully, otherwise <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html#empty()" title="class or interface in java.util" class="external-link"><code>Optional.empty()</code></a></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
@@ -280,12 +289,15 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="setName(org.sbml.jsbml.Reaction,edu.ucsd.sbrg.db.bigg.BiGGId)">
 <h3>setName</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setName</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction,
- <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+ <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span>
+             throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Sets the name of the reaction based on the provided BiGGId. It retrieves the reaction name using the abbreviation
  from the BiGGId, polishes the name, and updates the reaction's name if the new name is different from the current name.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>biggId</code> - The BiGGId object containing the abbreviation used to fetch and potentially update the reaction's name.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
@@ -293,7 +305,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="setSBOTerm(org.sbml.jsbml.Reaction,edu.ucsd.sbrg.db.bigg.BiGGId)">
 <h3>setSBOTerm</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setSBOTerm</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction,
- <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+ <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span>
+                throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Sets the SBO term for a reaction based on the given BiGGId.
  If the reaction does not already have an SBO term set, it determines the appropriate SBO term
  based on whether the reaction is a pseudoreaction or a generic process. Pseudoreactions are assigned
@@ -302,6 +315,8 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>biggId</code> - The BiGGId object containing the abbreviation used to check if the reaction is a pseudoreaction.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
@@ -309,7 +324,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="parseGeneReactionRules(org.sbml.jsbml.Reaction,edu.ucsd.sbrg.db.bigg.BiGGId)">
 <h3>parseGeneReactionRules</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">parseGeneReactionRules</span><wbr><span class="parameters">(org.sbml.jsbml.Reaction&nbsp;reaction,
- <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span></div>
+ <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span>
+                            throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Parses gene reaction rules for a given reaction based on the BiGG database identifier.
  This method retrieves gene reaction rules associated with the reaction's abbreviation
  from the BiGG database and applies gene-protein-reaction (GPR) parsing to the reaction.
@@ -317,6 +333,8 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>biggId</code> - The BiGG database identifier for the reaction, used to fetch and parse gene reaction rules.</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
 </section>
 </li>
