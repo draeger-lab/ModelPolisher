@@ -9,6 +9,7 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
     private final SBOParameters sboParameters = new SBOParameters();
 
     @Test
-    public void basicAnnotationTest() {
+    public void basicAnnotationTest() throws SQLException {
         var m = new Model(3, 2);
         var s = m.createSpecies("atp");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
@@ -40,7 +41,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
     }
 
     @Test
-    public void unknownMetaboliteCanBeInferredFromId() {
+    public void unknownMetaboliteCanBeInferredFromId() throws SQLException {
         var m = new Model(3, 2);
         var s = m.createSpecies("atp_c");
 
@@ -57,7 +58,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
     }
 
     @Test
-    public void unknownMetaboliteCanBeInferredFromCV() {
+    public void unknownMetaboliteCanBeInferredFromCV() throws SQLException {
         var m = new Model(3, 2);
         var s = m.createSpecies("big_chungus");
 
@@ -122,7 +123,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
      * The annotations as are should likely not be considered correct.
      */
     @Test
-    public void H2OAnnotationTest() {
+    public void H2OAnnotationTest() throws SQLException {
         var m = new Model(3, 2);
         var s = m.createSpecies("h2o");
         var sFbcPlugin = (FBCSpeciesPlugin) s.getPlugin(FBCConstants.shortLabel);
@@ -195,7 +196,7 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
      * Same principle as above, just testing for kegg and biocyc too.
      */
     @Test
-    public void getBiGGIdFromResourcesTest() {
+    public void getBiGGIdFromResourcesTest() throws SQLException {
         var m = new Model("iJO1366", 3, 2);
         var s1 = m.createSpecies("some_name");
         var s2 = m.createSpecies("some_other_name");

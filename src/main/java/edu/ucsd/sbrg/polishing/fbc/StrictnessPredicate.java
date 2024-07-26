@@ -2,6 +2,8 @@ package edu.ucsd.sbrg.polishing.fbc;
 
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -38,9 +40,12 @@ import java.util.function.Predicate;
  *      (implemented via {@link #reactionHasValidBounds})
  */
 public class StrictnessPredicate implements Predicate<Model> {
+    private static final Logger logger = LoggerFactory.getLogger(StrictnessPredicate.class);
 
     @Override
     public boolean test(Model model) {
+        logger.debug("Test Strictness");
+
         var strict = model.getListOfReactions().stream()
                 .allMatch(reaction ->
                         reactionHasValidBounds(reaction)

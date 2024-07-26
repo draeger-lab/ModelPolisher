@@ -12,6 +12,7 @@ import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,7 +46,7 @@ public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
    * 3. Sets the model's MetaId to its ID if MetaId is not already set and the model has at least one CVTerm.
    */
   @Override
-  public void annotate(Model model) {
+  public void annotate(Model model) throws SQLException {
     // Retrieve the model ID
     String id = model.getId();
     // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available
@@ -72,7 +73,7 @@ public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
   }
 
 
-  private void addTaxonomyAnnotation(Model model, String modelId) {
+  private void addTaxonomyAnnotation(Model model, String modelId) throws SQLException {
     // Attempt to fetch and add a taxonomy annotation using the model's ID
     bigg.getTaxonId(modelId).ifPresent(
       taxonId -> model.addCVTerm(

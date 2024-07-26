@@ -8,6 +8,7 @@ import edu.ucsd.sbrg.db.bigg.BiGGId;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.CVTerm;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AbstractADBAnnotator<SBMLElement> extends AbstractAnnotator<SBMLElement> {
@@ -21,9 +22,9 @@ public abstract class AbstractADBAnnotator<SBMLElement> extends AbstractAnnotato
         this.parameters = parameters;
     }
 
-    public abstract void annotate(SBMLElement element);
+    public abstract void annotate(SBMLElement element) throws SQLException;
 
-    protected void addBQB_IS_AnnotationsFromADB(Annotation annotation, String type, BiGGId biggId) {
+    protected void addBQB_IS_AnnotationsFromADB(Annotation annotation, String type, BiGGId biggId) throws SQLException {
         CVTerm cvTerm = annotation.getListOfCVTerms().stream()
                 .filter(term -> term.getQualifier() == CVTerm.Qualifier.BQB_IS)
                 .findFirst()

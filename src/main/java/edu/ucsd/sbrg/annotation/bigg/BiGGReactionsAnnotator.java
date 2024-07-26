@@ -19,6 +19,7 @@ import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -56,7 +57,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    * and invokes the annotation for each reaction.
    */
   @Override
-  public void annotate(List<Reaction> reactions) {
+  public void annotate(List<Reaction> reactions) throws SQLException {
     for (Reaction reaction : reactions) {
       annotate(reaction);
     }
@@ -69,16 +70,17 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    * annotation and parsing processes.
    */
   @Override
-  public void annotate(Reaction reaction) {
+  public void annotate(Reaction reaction) throws SQLException {
     statusReport("Annotating Reactions (4/5)  ", reaction);
     // Attempt to retrieve a BiGG ID for the reaction, either directly from the reaction ID or through associated annotations
-    findBiGGId(reaction).ifPresent(biggId -> {
-      setName(reaction, biggId); // Set the reaction's name based on the BiGG ID
-      setSBOTerm(reaction, biggId); // Assign the appropriate SBO term based on the BiGG ID
-      addAnnotations(reaction, biggId); // Add additional annotations related to the BiGG ID
-      parseGeneReactionRules(reaction, biggId); // Parse and process gene reaction rules associated with the BiGG ID
-      parseSubsystems(reaction, biggId); // Convert subsystem information into corresponding groups based on the BiGG ID
-    });
+    var biggId = findBiGGId(reaction);
+    if (biggId.isPresent()) {
+      setName(reaction, biggId.get()); // Set the reaction's name based on the BiGG ID
+      setSBOTerm(reaction, biggId.get()); // Assign the appropriate SBO term based on the BiGG ID
+      addAnnotations(reaction, biggId.get()); // Add additional annotations related to the BiGG ID
+      parseGeneReactionRules(reaction, biggId.get()); // Parse and process gene reaction rules associated with the BiGG ID
+      parseSubsystems(reaction, biggId.get()); // Convert subsystem information into corresponding groups based on the BiGG ID
+    }
   }
 
   /**
@@ -92,7 +94,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    * @return An {@link Optional} containing the BiGG ID if found or created successfully, otherwise {@link Optional#empty()}
    */
   @Override
-  public Optional<BiGGId> findBiGGId(Reaction reaction) {
+  public Optional<BiGGId> findBiGGId(Reaction reaction) throws SQLException {
     String id = reaction.getId();
     // Check if the reaction ID matches the expected BiGG ID format and exists in the database
     boolean isBiGGid = bigg.isReaction(id);
@@ -155,7 +157,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    * 
    * @param biggId The BiGGId object containing the abbreviation used to fetch and potentially update the reaction's name.
    */
-  public void setName(Reaction reaction, BiGGId biggId) {
+  public void setName(Reaction reaction, BiGGId biggId) throws SQLException {
     String abbreviation = biggId.getAbbreviation();
     bigg.getReactionName(abbreviation)
             .filter(name -> !name.equals(reaction.getName()))
@@ -172,7 +174,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    *
    * @param biggId The BiGGId object containing the abbreviation used to check if the reaction is a pseudoreaction.
    */
-  public void setSBOTerm(Reaction reaction, BiGGId biggId) {
+  public void setSBOTerm(Reaction reaction, BiGGId biggId) throws SQLException {
     String abbreviation = biggId.getAbbreviation();
     if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(abbreviation)) {
@@ -183,7 +185,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
     }
   }
 
-  void addAnnotations(Reaction node, BiGGId biggId) {
+  void addAnnotations(Reaction node, BiGGId biggId) throws SQLException {
     // TODO: ???
     CVTerm cvTerm = null;
     for (CVTerm term : node.getAnnotation().getListOfCVTerms()) {
@@ -239,7 +241,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    *
    * @param biggId The BiGG database identifier for the reaction, used to fetch and parse gene reaction rules.
    */
-  public void parseGeneReactionRules(Reaction reaction, BiGGId biggId) {
+  public void parseGeneReactionRules(Reaction reaction, BiGGId biggId) throws SQLException {
     String abbreviation = biggId.getAbbreviation();
     List<String> geneReactionRules = bigg.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
@@ -259,7 +261,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> {
    *
    * @param biggId the {@link BiGGId} associated with the reaction, used to fetch subsystem information
    */
-  private void parseSubsystems(Reaction reaction, BiGGId biggId) {
+  private void parseSubsystems(Reaction reaction, BiGGId biggId) throws SQLException {
     Model model = reaction.getModel();
     boolean isBiGGModel = bigg.isModel(model.getId());
     List<String> subsystems;

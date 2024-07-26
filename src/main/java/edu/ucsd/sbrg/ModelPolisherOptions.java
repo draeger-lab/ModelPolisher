@@ -24,20 +24,20 @@ public interface ModelPolisherOptions extends KeyProvider {
   /**
    * @author Andreas Dr&auml;ger
    */
-  enum Compression {
+  enum OutputType {
 
-    GZIP("gz"),
-    NONE("none"),
-    ZIP("zip");
+    SBML("xml"),
+    JSON("json"),
+    COMBINE("combine");
 
     @JsonValue
     private final String extension;
 
-    Compression() {
-      this(null);
+     OutputType() {
+       this(null);
     }
 
-    Compression(String extension) {
+    OutputType(String extension) {
       this.extension = extension;
     }
 
@@ -74,8 +74,8 @@ public interface ModelPolisherOptions extends KeyProvider {
    * so, which archive type should be used.
    */
   @SuppressWarnings("unchecked")
-  Option<Compression> COMPRESSION_TYPE =
-    new Option<>("COMPRESSION_TYPE", Compression.class, MESSAGES.getString("COMPR_DESC"), Compression.NONE);
+  Option<OutputType> OUTPUT_TYPE =
+    new Option<>("OUTPUT_TYPE", OutputType.class, MESSAGES.getString("COMPR_DESC"), OutputType.SBML);
   /**
    * This XHTML file defines alternative document notes and makes them
    * exchangeable.

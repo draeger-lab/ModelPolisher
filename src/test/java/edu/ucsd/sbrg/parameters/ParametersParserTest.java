@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.parameters;
 import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
-import edu.ucsd.sbrg.io.IOOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -66,10 +65,7 @@ class ParametersParserTest {
         assertEquals(BiGGDBOptions.PASSWD.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().dbParameters().passwd());
 
-        assertEquals(IOOptions.OUTPUT.getDefaultValue(), parameters.output().outputFile());
-        assertEquals(ModelPolisherOptions.OUTPUT_COMBINE.getDefaultValue(), parameters.output().outputCOMBINE());
-        assertEquals(ModelPolisherOptions.WRITE_JSON.getDefaultValue(), parameters.output().writeJSON());
-        assertEquals(ModelPolisherOptions.COMPRESSION_TYPE.getDefaultValue(), parameters.output().compression());
+        assertEquals(ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue(), parameters.outputType());
     }
 
     @Test
@@ -77,6 +73,6 @@ class ParametersParserTest {
         var parameters = new ParametersParser()
                 .parse(ParametersParserTest.class.getResourceAsStream("parameters.json"));
         assertNotNull(parameters);
-        assertEquals(ModelPolisherOptions.Compression.ZIP, parameters.output().compression());
+        assertEquals(ModelPolisherOptions.OutputType.COMBINE, parameters.outputType());
     }
 }

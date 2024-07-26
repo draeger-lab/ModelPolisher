@@ -13,7 +13,8 @@ public class PolisherProgressBar implements ProgressObserver {
 
     @Override
     public void update(ProgressUpdate update) {
-        bar.DisplayBar(update.text());
+        if(update.reportType().equals(ReportType.STATUS))
+            bar.DisplayBar(update.text());
     }
 
     @Override

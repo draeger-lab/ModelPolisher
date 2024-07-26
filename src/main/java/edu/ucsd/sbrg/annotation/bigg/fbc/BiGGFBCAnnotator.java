@@ -9,6 +9,7 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class BiGGFBCAnnotator extends AbstractBiGGAnnotator<Model> {
@@ -18,7 +19,7 @@ public class BiGGFBCAnnotator extends AbstractBiGGAnnotator<Model> {
     }
 
     @Override
-    public void annotate(Model model) {
+    public void annotate(Model model) throws SQLException {
 //        // Calculate the change in the number of gene products to update the progress bar accordingly
 //        int changed = fbcModelPlugin.getNumGeneProducts() - initialGeneProducts;
 //        if (changed > 0) {

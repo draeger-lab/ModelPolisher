@@ -14,11 +14,12 @@ import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.util.ValuePair;
 import org.sbml.jsbml.xml.XMLNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
@@ -37,7 +38,7 @@ import static java.text.MessageFormat.format;
  */
 public class ReactionsPolisher extends AbstractPolisher<Reaction> {
 
-  private final static Logger logger = Logger.getLogger(ReactionsPolisher.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(ReactionsPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final GeneProductAssociationsProcessor gpaPolisher;
@@ -62,6 +63,8 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
    */
   @Override
   public void polish(List<Reaction> reactions) {
+    logger.debug("Polish Reactions");
+
     var iterator = reactions.iterator();
     while (iterator.hasNext()) {
       var reaction = iterator.next();
@@ -71,12 +74,13 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
       String id = reaction.getId();
       if (id.isEmpty()) {
         if (reaction.isSetName()) {
-          logger.severe(format(MESSAGES.getString("REACTION_MISSING_ID"), reaction.getName()));
+          logger.debug(format(MESSAGES.getString("REACTION_MISSING_ID"), reaction.getName()));
         } else {
-          logger.severe(MESSAGES.getString("REACTION_MISSING_ID_NAME"));
+          logger.debug(MESSAGES.getString("REACTION_MISSING_ID_NAME"));
         }
         iterator.remove();
       } else {
+        diffReport("reaction", reaction.clone(), reaction);
         polish(reaction);
       }
     }
@@ -89,7 +93,9 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
    *
    */
   @SuppressWarnings("deprecated")
+  @Override
   public void polish(Reaction reaction) {
+      var originalReaction = reaction.clone();
       // Process any external resources linked via annotations in the reaction
       new AnnotationPolisher(polishingParameters, registry).polish(reaction.getAnnotation());
       // Check and set the compartment of the reaction based on its reactants and products
@@ -237,13 +243,13 @@ public class ReactionsPolisher extends AbstractPolisher<Reaction> {
       AtomCheckResult<Reaction> defects = AtomBalanceCheck.checkAtomBalance(reaction, 1);
       if ((defects != null) && (defects.hasDefects())) {
         // Log warning if atom defects are found
-        logger.warning(format(MESSAGES.getString("ATOMS_MISSING"), reaction.getId(), defects.getDefects().toString()));
+        logger.trace(format(MESSAGES.getString("ATOMS_MISSING"), reaction.getId(), defects.getDefects().toString()));
       } else if (defects == null) {
         // Log failure to check atom balance
-        logger.fine(format(MESSAGES.getString("CHECK_ATOM_BALANCE_FAILED"), reaction.getId()));
+        logger.trace(format(MESSAGES.getString("CHECK_ATOM_BALANCE_FAILED"), reaction.getId()));
       } else {
         // Log successful atom balance check
-        logger.fine(format(MESSAGES.getString("ATOMS_OK"), reaction.getId()));
+        logger.trace(format(MESSAGES.getString("ATOMS_OK"), reaction.getId()));
       }
     }
   }

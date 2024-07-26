@@ -8,6 +8,7 @@ import org.sbml.jsbml.SBMLDocument;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -27,14 +28,14 @@ public class BiGGDocumentNotesProcessor {
     }
 
 
-    public void processNotes(SBMLDocument doc) {
+    public void processNotes(SBMLDocument doc) throws BiGGAnnotationException, SQLException {
         var model = doc.getModel();
-        // Process replacements for placeholders in the model notes
-        Map<String, String> replacements = processReplacements(model);
         try {
+            // Process replacements for placeholders in the model notes
+            Map<String, String> replacements = processReplacements(model);
             appendNotes(doc, replacements);
-        } catch (IOException | XMLStreamException exc) {
-            logger.warning(MESSAGES.getString("FAILED_WRITE_NOTES"));
+        } catch (IOException | XMLStreamException e) {
+            throw new BiGGAnnotationException(MESSAGES.getString("FAILED_WRITE_NOTES"), e, doc);
         }
     }
 
@@ -47,7 +48,7 @@ public class BiGGDocumentNotesProcessor {
      *
      * @return A map of placeholder strings and their corresponding replacement values.
      */
-    private Map<String, String> processReplacements(Model model) {
+    private Map<String, String> processReplacements(Model model) throws SQLException {
         // Retrieve the model ID
         String id = model.getId();
         // Attempt to retrieve the organism name associated with the model ID; use an empty string if not available

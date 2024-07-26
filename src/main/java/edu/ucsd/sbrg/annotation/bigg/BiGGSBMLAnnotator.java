@@ -1,7 +1,9 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
+import java.sql.SQLException;
 import java.util.List;
 
+import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.annotation.AnnotationsSorter;
@@ -44,7 +46,7 @@ public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator<SBMLDocument> {
    * @param doc The SBMLDocument that contains the model to be annotated.
    */
   @Override
-  public void annotate(SBMLDocument doc) {
+  public void annotate(SBMLDocument doc) throws SQLException, AnnotationException {
     // TODO: these sanity checks need to be improved
     Model model = doc.getModel();
     String modelId = model.getId();

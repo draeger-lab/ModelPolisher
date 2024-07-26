@@ -17,6 +17,7 @@ import org.sbml.jsbml.ext.groups.Member;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,7 @@ public class BiGGReactionsAnnotatorTest extends BiGGDBContainerTest {
     }
 
     @Test
-    public void getBiGGIdFromResourcesTest() {
+    public void getBiGGIdFromResourcesTest() throws SQLException {
         var m = new Model("iJO1366", 3, 2);
         var r1 = m.createReaction("some_name");
         var r2 = m.createReaction("some_other_name");

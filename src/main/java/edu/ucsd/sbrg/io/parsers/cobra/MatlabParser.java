@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.io.parsers.json.JSONParser;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.GPRParser;
@@ -20,6 +21,7 @@ import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.util.ModelBuilder;
+import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
 import us.hebi.matlab.mat.types.Array;
@@ -44,13 +46,7 @@ import static java.text.MessageFormat.format;
  */
 public class MatlabParser {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(MatlabParser.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MatlabParser.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private static MatlabFields matlabFields;
   private final SBOParameters sboParameters;
@@ -87,12 +83,12 @@ public class MatlabParser {
       }
     }
     if (modelName.isEmpty()) {
-      logger.severe("Model name is empty for matlab model, aborting");
+      logger.info("Model name is empty for matlab model, aborting");
       return new SBMLDocument();
     }
     Struct modelStruct = matFile.getStruct(modelName);
     if (!Arrays.equals(modelStruct.getDimensions(), new int[] {1, 1})) {
-      logger.severe("Model struct dimensions are wrong, aborting");
+      logger.info("Model struct dimensions are wrong, aborting");
       return new SBMLDocument();
     }
     ModelBuilder builder = new ModelBuilder(3, 1);
@@ -134,7 +130,7 @@ public class MatlabParser {
           modelStruct.remove(fieldName);
           modelStruct.set(match, array);
         } else {
-          logger.warning(format("Could not resolve field {0} to known variant", fieldName));
+          logger.info(format("Could not resolve field {0} to known variant", fieldName));
         }
       }
     }
@@ -222,7 +218,7 @@ public class MatlabParser {
       for (int i = 0; i < grRules.getNumElements(); i++) {
         String geneReactionRule = COBRAUtils.asString(grRules.get(i), ModelField.grRules.name(), i + 1);
         if (model.getReaction(i) == null) {
-          logger.severe(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
+          logger.info(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
           GPRParser.parseGPR(model.getReaction(i), geneReactionRule, sboParameters.omitGenericTerms());
         }
@@ -251,7 +247,7 @@ public class MatlabParser {
           if (model.getReaction(i) != null) {
             SBMLUtils.createSubsystemLink(model.getReaction(i), group.createMember());
           } else {
-            logger.severe(format(MESSAGES.getString("SUBSYS_LINK_ERROR"), i));
+            logger.info(format(MESSAGES.getString("SUBSYS_LINK_ERROR"), i));
           }
         }
       }
@@ -268,10 +264,10 @@ public class MatlabParser {
           char c = csense.getChar(0, i);
           // TODO: only 'E' (equality) is supported for now!
           if (c != 'E' && model.getListOfSpecies().size() > i) {
-            logger.severe(format(MESSAGES.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
+            logger.info(format(MESSAGES.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
           }
         } catch (Exception e) {
-          logger.severe(e.toString());
+          logger.info(e.toString());
           return;
         }
       }
@@ -307,7 +303,7 @@ public class MatlabParser {
         double bVal = b.getDouble(i);
         if (bVal != 0d && model.getListOfSpecies().size() > i) {
           // TODO: this should be incorporated into FBC version 3.
-          logger.warning(format(MESSAGES.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
+          logger.info(format(MESSAGES.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
         }
       }
     });

@@ -13,9 +13,10 @@ public class CommandLineParameters {
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     private final File input;
+    private final File output;
     protected boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
+    protected ModelPolisherOptions.OutputType outputType = ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue();
 
-    private final OutputParameters outputParameters;
     private final SBOParameters sboParameters;
     private final PolishingParameters polishingParameters;
     private final AnnotationParameters annotationParameters;
@@ -26,9 +27,15 @@ public class CommandLineParameters {
         if (inPath == null) {
             throw new IllegalArgumentException(MESSAGES.getString("PARAM_INPUT_MISSING"));
         }
+
+        String outPath = args.getProperty(IOOptions.OUTPUT);
+        if (outPath == null) {
+            throw new IllegalArgumentException(MESSAGES.getString("PARAM_OUTPUT_MISSING"));
+        }
+        output = new File(outPath);
         input = new File(inPath);
         sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-        outputParameters = new OutputParameters(args);
+        outputType = ModelPolisherOptions.OutputType.valueOf(args.getProperty(ModelPolisherOptions.OUTPUT_TYPE));
         annotationParameters = new AnnotationParameters(args);
         sboParameters = new SBOParameters(args);
         polishingParameters = new PolishingParameters(args);
@@ -38,12 +45,16 @@ public class CommandLineParameters {
         return input;
     }
 
+    public File output() {
+        return output;
+    }
+
     public boolean SBMLValidation() {
         return sbmlValidation;
     }
 
-    public OutputParameters outputParameters() {
-        return outputParameters;
+    public ModelPolisherOptions.OutputType outputType() {
+        return outputType;
     }
 
     public AnnotationParameters annotationParameters() {
@@ -57,4 +68,5 @@ public class CommandLineParameters {
     public PolishingParameters polishingParameters() {
         return polishingParameters;
     }
+
 }

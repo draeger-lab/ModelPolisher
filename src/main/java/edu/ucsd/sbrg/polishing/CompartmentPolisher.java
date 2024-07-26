@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.polishing;
 import static java.text.MessageFormat.format;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import java.util.List;
 
 import edu.ucsd.sbrg.parameters.PolishingParameters;
@@ -15,6 +14,8 @@ import org.sbml.jsbml.Unit;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for polishing the properties of a compartment in an SBML model to ensure
@@ -22,8 +23,7 @@ import edu.ucsd.sbrg.db.bigg.BiGGId;
  * and ensures that necessary attributes like units and spatial dimensions are appropriately set.
  */
 public class CompartmentPolisher extends AbstractPolisher<Compartment> {
-
-  private final static Logger logger = Logger.getLogger(CompartmentPolisher.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(CompartmentPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   public CompartmentPolisher(PolishingParameters polishingParameters, Registry registry, List<ProgressObserver> observers) {
@@ -38,7 +38,9 @@ public class CompartmentPolisher extends AbstractPolisher<Compartment> {
    */
   @Override
   public void polish(List<Compartment> compartments) {
+    logger.debug("Polish Compartments");
     for (Compartment compartment : compartments) {
+      diffReport("compartment", compartment.clone(), compartment);
       statusReport("Polishing Compartments (3/9)  ", compartment);
       polish(compartment);
     }
@@ -61,7 +63,7 @@ public class CompartmentPolisher extends AbstractPolisher<Compartment> {
     } else {
       // Attempt to remove the 'C_' prefix from the compartment ID, log a warning if the format is incorrect
       BiGGId.extractCompartmentCode(compartment.getId()).ifPresentOrElse(compartment::setId,
-        () -> logger.warning(format(MESSAGES.getString("COMPARTMENT_CODE_WRONG_FORMAT"), compartment.getId())));
+        () -> logger.info(format(MESSAGES.getString("COMPARTMENT_CODE_WRONG_FORMAT"), compartment.getId())));
     }
 
     // Set the SBOTerm to indicate an implicit compartment

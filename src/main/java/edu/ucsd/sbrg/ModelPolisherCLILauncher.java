@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,18 +16,13 @@ import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import javax.xml.stream.XMLStreamException;
-
+import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.annotation.adb.ADBSBMLAnnotator;
 import edu.ucsd.sbrg.annotation.bigg.BiGGSBMLAnnotator;
+import edu.ucsd.sbrg.io.*;
 import edu.ucsd.sbrg.parameters.CommandLineParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
-import edu.ucsd.sbrg.io.IOOptions;
-import edu.ucsd.sbrg.io.ModelReader;
-import edu.ucsd.sbrg.io.ModelWriter;
-import edu.ucsd.sbrg.io.SBMLFileUtils;
-import edu.ucsd.sbrg.parameters.OutputParameters;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.PolisherProgressBar;
 import edu.ucsd.sbrg.reporting.ProgressInitialization;
@@ -62,7 +58,7 @@ import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
  * - HTML tag correction in SBML files.
  * - SBML document validation and conversion.
  * - Annotation of models using external databases.
- * - Output management including file writing, COMBINE archive creation, and compression.
+ * - Output management including file writing, COMBINE archive creation, and outputType.
  * <p>
  * This class also handles error logging and provides detailed logging of the processing steps.
  * 
@@ -118,12 +114,7 @@ public class ModelPolisherCLILauncher extends Launcher {
   public void commandLineMode(AppConf appConf) {
     SBProperties args = appConf.getCmdArgs();
 
-    try {
-        parameters = new CommandLineParameters(args);
-    } catch (IllegalArgumentException exc1) {
-      throw new IllegalArgumentException(exc1.getLocalizedMessage());
-    }
-
+    parameters = new CommandLineParameters(args);
     registry = new IdentifiersOrg();
 
     if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
@@ -136,7 +127,7 @@ public class ModelPolisherCLILauncher extends Launcher {
 
     try {
       var input = parameters.input();
-      var output = parameters.outputParameters().outputFile();
+      var output = parameters.output();
 
       // Check if the input exists, throw an exception if it does not
       if (!input.exists()) {
@@ -154,10 +145,18 @@ public class ModelPolisherCLILauncher extends Launcher {
       // Ensure the output directory or file's parent directory exists
       SBMLFileUtils.checkCreateOutDir(output);
 
-      batchProcess(input, parameters.outputParameters().outputFile());
+      batchProcess(input, parameters.output());
 
-    } catch (XMLStreamException | IOException exc) {
-      exc.printStackTrace();
+    } catch (ModelReaderException | ModelValidatorException | ModelWriterException | IOException |
+             AnnotationException e) {
+      // TODO: produce some user-friendly output and log to a file that can be provided for trouble-shooting
+      throw new RuntimeException(e);
+    } catch (IllegalArgumentException exc1) {
+      // TODO: produce some user-friendly output and log to a file that can be provided for trouble-shooting
+      throw new IllegalArgumentException(exc1.getLocalizedMessage());
+    } catch (SQLException e) {
+      // TODO: produce some user-friendly output and log to a file that can be provided for trouble-shooting
+      throw new RuntimeException(e);
     }
   }
 
@@ -166,12 +165,9 @@ public class ModelPolisherCLILauncher extends Launcher {
    * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
    *
    * @param input  Path to the input file or directory to be processed. This should correspond to {@link CommandLineParameters#input()}.
-   * @param output Path to the output file or directory where processed files should be saved.
-   *               This should correspond to {@link OutputParameters#outputFile()}.
-   * @throws IOException if the input file or directory does not exist, or if no files are found within the directory.
-   * @throws XMLStreamException if an error occurs during file processing, propagated from {@link ModelPolisherCLILauncher#processFile(File, File)}.
+   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link CommandLineParameters#output()}.
    */
-  private void batchProcess(File input, File output) throws IOException, XMLStreamException {
+  private void batchProcess(File input, File output) throws ModelReaderException, ModelWriterException, ModelValidatorException, AnnotationException, SQLException {
     // If the input is a directory, process each file within it
     if (input.isDirectory()) {
       File[] files = input.listFiles();
@@ -195,7 +191,7 @@ public class ModelPolisherCLILauncher extends Launcher {
   }
 
 
-  private void processFile(File input, File output) throws XMLStreamException, IOException {
+  private void processFile(File input, File output) throws ModelReaderException, ModelWriterException, ModelValidatorException, AnnotationException, SQLException {
     long startTime = System.currentTimeMillis();
 
     SBMLDocument doc = new ModelReader(parameters.sboParameters(), registry).read(input);
@@ -214,7 +210,10 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.initialize(new ProgressInitialization(count));
     }
 
-    new SBMLPolisher(parameters.polishingParameters(), parameters.sboParameters(), registry, polishingObservers).polish(doc);
+    new SBMLPolisher(
+            parameters.polishingParameters(),
+            parameters.sboParameters(),
+            registry, polishingObservers).polish(doc);
 
     for (var o : polishingObservers) {
       o.finish(null);
@@ -227,8 +226,8 @@ public class ModelPolisherCLILauncher extends Launcher {
     }
 
     if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
-        new BiGGSBMLAnnotator(bigg, parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
-                registry, annotationObservers).annotate(doc);
+      new BiGGSBMLAnnotator(bigg, parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
+              registry, annotationObservers).annotate(doc);
     }
 
     if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
@@ -239,12 +238,12 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.finish(null);
     }
 
-    new ModelWriter(parameters.outputParameters()).write(doc, output, getVersionNumber());
+    output = new ModelWriter(parameters.outputType()).write(doc, output);
 
     if (parameters.SBMLValidation()) {
-      var mv = new ModelValidator(parameters.outputParameters());
+      var mv = new ModelValidator();
       // use offline validation
-      mv.validate(output, false);
+      mv.validate(output);
     }
 
     // Log the time taken to process the file

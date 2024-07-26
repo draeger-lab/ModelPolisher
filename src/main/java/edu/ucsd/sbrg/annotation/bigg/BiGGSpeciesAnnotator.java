@@ -15,6 +15,7 @@ import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -49,7 +50,8 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * Delegates annotation processing for all chemical species contained in the {@link Model}.
    * This method iterates over each species in the model and applies specific annotations.
    */
-  public void annotate(List<Species> species) {
+  @Override
+  public void annotate(List<Species> species) throws SQLException {
     for (Species s : species) {
       statusReport("Annotating Species (3/5)  ", s);
       annotate(s);
@@ -66,14 +68,15 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * The BiGGId used for these operations is either derived from the species' URI list or directly from its ID if available.
    */
   @Override
-  public void annotate(Species species) {
+  public void annotate(Species species) throws SQLException {
     // Retrieve the BiGGId for the species, either from its URI list or its direct ID
-    findBiGGId(species).ifPresent(biggId -> {
-      setName(species, biggId); // Set the species name based on the BiGGId
-      setSBOTerm(species, biggId); // Assign the appropriate SBO term
-      addAnnotations(species, biggId); // Add database cross-references and other annotations
-      FBCSetFormulaCharge(species, biggId); // Set the chemical formula and charge
-    });
+    Optional<BiGGId> biGGId = findBiGGId(species);
+    if (biGGId.isPresent()) {
+      setName(species, biGGId.get()); // Set the species name based on the BiGGId
+      setSBOTerm(species, biGGId.get()); // Assign the appropriate SBO term
+      addAnnotations(species, biGGId.get()); // Add database cross-references and other annotations
+      FBCSetFormulaCharge(species, biGGId.get()); // Set the chemical formula and charge
+    };
   }
 
 
@@ -85,25 +88,24 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * @return An {@link Optional} containing the BiGGId if a valid one is found or created, otherwise {@link Optional#empty()}
    */
   @Override
-  public Optional<BiGGId> findBiGGId(Species species) {
+  public Optional<BiGGId> findBiGGId(Species species) throws SQLException {
     // Attempt to create a BiGGId from the species ID
     Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
     // Check if the created BiGGId is valid, if not, try to find a BiGGId from annotations
-    Optional<BiGGId> id = metaboliteId.flatMap(biggId -> {
-      boolean isBiGGid = bigg.isMetabolite(biggId.getAbbreviation());
-      List<String> resources = new ArrayList<>();
-      if (!isBiGGid) {
+    if (metaboliteId.isPresent()) {
+      boolean isBiGGid = bigg.isMetabolite(metaboliteId.get().getAbbreviation());
+        if (!isBiGGid) {
         // Collect all resources from CVTerms that qualify as BQB_IS
-        resources = species.getAnnotation().getListOfCVTerms().stream()
-                           .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                           .flatMap(term -> term.getResources().stream())
-                           .collect(Collectors.toList());
+            // Attempt to retrieve a BiGGId from the collected resources
+        return getBiGGIdFromResources(species.getAnnotation().getListOfCVTerms().stream()
+                .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                .flatMap(term -> term.getResources().stream())
+                .toList(), TYPE_SPECIES);
       }
-      // Attempt to retrieve a BiGGId from the collected resources
-      return getBiGGIdFromResources(resources, TYPE_SPECIES);
-    });
-    // Return the found BiGGId or the originally created one if no new ID was found
-    return id.map(BiGGId::toBiGGId).map(BiGGId::createMetaboliteId).orElse(metaboliteId);
+      // Return the found BiGGId or the originally created one if no new ID was found
+      return metaboliteId.map(BiGGId::toBiGGId).map(BiGGId::createMetaboliteId).orElse(metaboliteId);
+    }
+    return Optional.empty();
   }
 
 
@@ -114,7 +116,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    *
    * @param biggId The {@link BiGGId} associated with the species, used to fetch the component name from the BiGG database.
    */
-  public void setName(Species species, BiGGId biggId) {
+  public void setName(Species species, BiGGId biggId) throws SQLException {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
       bigg.getComponentName(biggId).map(PolishingUtils::polishName).ifPresent(species::setName);
@@ -130,7 +132,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    *
    * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
-  private void setSBOTerm(Species species, BiGGId biggId) {
+  private void setSBOTerm(Species species, BiGGId biggId) throws SQLException {
     bigg.getComponentType(biggId).ifPresentOrElse(type -> {
       switch (type) {
       case "metabolite":
@@ -153,7 +155,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
   }
 
 
-  void addAnnotations(Species species, BiGGId biggId) throws IllegalArgumentException {
+  void addAnnotations(Species species, BiGGId biggId) throws IllegalArgumentException, SQLException {
 
     // TODO: ???
     CVTerm cvTerm = null;
@@ -210,7 +212,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * @param biggId: {@link BiGGId} from species id
    */
   @SuppressWarnings("deprecation")
-  private void FBCSetFormulaCharge(Species species, BiGGId biggId) {
+  private void FBCSetFormulaCharge(Species species, BiGGId biggId) throws SQLException {
     boolean isBiGGModel = species.getModel() !=null && bigg.isModel(species.getModel().getId());
 
     String compartmentCode = biggId.getCompartmentCode();

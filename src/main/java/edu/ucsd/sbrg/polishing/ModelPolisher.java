@@ -22,10 +22,11 @@ import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
@@ -40,7 +41,7 @@ import static java.text.MessageFormat.format;
  */
 public class ModelPolisher extends AbstractPolisher<Model> {
 
-  private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(ModelPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final SBOParameters sboParameters;
 
@@ -64,9 +65,7 @@ public class ModelPolisher extends AbstractPolisher<Model> {
    */
   @Override
   public void polish(Model model) {
-    // Log the start of processing the model.
-    logger.info(format(MESSAGES.getString("PROCESSING_MODEL"), model.getId()));
-
+    logger.debug(format(MESSAGES.getString("PROCESSING_MODEL"), model.toString()));
     statusReport("Polishing Model (1/9)  ", model);
 
     // Delegate polishing tasks
@@ -78,6 +77,7 @@ public class ModelPolisher extends AbstractPolisher<Model> {
 
     new ParametersPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfParameters());
 
+    diffReport("modelAnnotation", model.getAnnotation().clone(), model.getAnnotation());
     new AnnotationPolisher(polishingParameters, registry, getObservers()).polish(model.getAnnotation());
 
     new ReactionsPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model.getListOfReactions());

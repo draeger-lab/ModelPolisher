@@ -6,6 +6,8 @@ import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
+import java.sql.SQLException;
+
 public class ADBSBMLAnnotator extends AbstractADBAnnotator<SBMLDocument> {
 
     public ADBSBMLAnnotator(AnnotateDB adb, ADBAnnotationParameters parameters) {
@@ -13,7 +15,7 @@ public class ADBSBMLAnnotator extends AbstractADBAnnotator<SBMLDocument> {
     }
 
     @Override
-    public void annotate(SBMLDocument doc) {
+    public void annotate(SBMLDocument doc) throws SQLException {
         Model model = doc.getModel();
 
         new ADBSpeciesAnnotator(adb, parameters).annotate(model.getListOfSpecies());

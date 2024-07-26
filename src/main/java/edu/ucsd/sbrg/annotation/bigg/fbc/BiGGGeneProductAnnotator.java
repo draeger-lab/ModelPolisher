@@ -12,6 +12,7 @@ import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -50,7 +51,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    * the number of gene products being annotated.
    */
   @Override
-  public void annotate(List<GeneProduct> geneProducts) {
+  public void annotate(List<GeneProduct> geneProducts) throws SQLException {
     // Iterate over each gene product and annotate it
     for (GeneProduct geneProduct : geneProducts) {
       statusReport("Annotating Gene Products (5/5)  ", geneProduct);
@@ -67,20 +68,19 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    * and sets the gene product's metaId if it has any CV terms. Finally, it sets the gene product's label name.
    */
   @Override
-  public void annotate(GeneProduct geneProduct) {
+  public void annotate(GeneProduct geneProduct) throws SQLException {
     Optional<BiGGId> biggId = findBiGGId(geneProduct);
 
     Optional<String> label = biggId.map(id -> getLabel(geneProduct, id));
     if (label.isEmpty()) {
       return;
     }
+
     gprAnnotator.update(geneProduct);
-    biggId.ifPresent(id -> {
-      addAnnotations(geneProduct, id);
-      if (geneProduct.getCVTermCount() > 0) {
-        geneProduct.setMetaId(id.toBiGGId());
-      }
-    });
+    addAnnotations(geneProduct, biggId.get());
+    if (geneProduct.getCVTermCount() > 0) {
+      geneProduct.setMetaId(biggId.get().toBiGGId());
+    }
     setGPLabelName(geneProduct, label.get());
   }
 
@@ -96,7 +96,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    * @return An {@link Optional<BiGGId>} containing the validated or retrieved BiGG ID, or an empty Optional if no valid ID is found.
    */
   @Override
-  public Optional<BiGGId> findBiGGId(GeneProduct geneProduct) {
+  public Optional<BiGGId> findBiGGId(GeneProduct geneProduct) throws SQLException {
     String id = geneProduct.getId();
     boolean isBiGGid = id.matches(BIGG_GENE_ID_PATTERN);
     if (!isBiGGid) {
@@ -145,7 +145,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    * @param label The label to set or use for fetching the gene name. This label should correspond to a {@link BiGGId}
    *              or be derived from {@link GeneProduct#getId()}.
    */
-  public void setGPLabelName(GeneProduct geneProduct, String label) {
+  public void setGPLabelName(GeneProduct geneProduct, String label) throws SQLException {
     // Check if the current label is "None" and update it if so
     if (geneProduct.getLabel().equalsIgnoreCase("None")) {
       geneProduct.setLabel(label);
@@ -175,7 +175,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    *
    * @param biggId The {@link BiGGId} associated with the gene product, typically derived from a species ID.
    */
-  public void addAnnotations(GeneProduct geneProduct, BiGGId biggId) {
+  public void addAnnotations(GeneProduct geneProduct, BiGGId biggId) throws SQLException {
     CVTerm termIs = new CVTerm(Qualifier.BQB_IS);
     CVTerm termEncodedBy = new CVTerm(Qualifier.BQB_IS_ENCODED_BY);
     // Retrieve gene IDs from BiGG database and categorize them based on their prefix

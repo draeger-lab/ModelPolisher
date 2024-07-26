@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 
+import java.sql.SQLException;
+
 import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +22,7 @@ public class BiGGModelAnnotatorTest extends BiGGDBContainerTest {
     );
 
     @Test
-    public void basicModelAnnotation() {
+    public void basicModelAnnotation() throws SQLException {
         var m = new Model("iJO1366", 3,2);
 
         assertFalse(m.isSetMetaId());

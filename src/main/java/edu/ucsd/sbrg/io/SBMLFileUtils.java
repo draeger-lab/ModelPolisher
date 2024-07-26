@@ -102,7 +102,7 @@ public class SBMLFileUtils {
             } else {
                 logger.severe(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
                 // TODO: grace
-                throw new RuntimeException();
+                throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
             }
         }
         // output is a file
@@ -116,7 +116,7 @@ public class SBMLFileUtils {
                     logger.severe(
                             format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
                     // TODO: grace
-                    throw new RuntimeException();
+                    throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
                 }
             }
         }

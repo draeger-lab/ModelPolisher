@@ -13,9 +13,12 @@ import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static java.util.stream.Stream.concat;
 
 public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotator<SBMLElement> {
 
@@ -48,7 +51,7 @@ public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotat
      *             {@link BiGGDBContract.Constants#TYPE_GENE_PRODUCT}.
      * @return An {@link Optional <String>} containing the BiGG ID if it could be successfully retrieved, otherwise {@link Optional#empty()}.
      */
-    public Optional<BiGGId> getBiGGIdFromResources(List<String> resources, String type) {
+    public Optional<BiGGId> getBiGGIdFromResources(List<String> resources, String type) throws SQLException {
         var identifiersOrgUrisStream = resources.stream()
                 .filter(registry::isValid)
                 .map(IdentifiersOrgURI::new)
@@ -61,11 +64,14 @@ public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotat
                 .map(Optional::get)
                 .filter(registry::validRegistryUrlPrefix);
 
-        return Stream.concat(identifiersOrgUrisStream, resolvedIdentifiersOrgUrisStream)
-                .map(uri -> getBiggIdFromParts(uri, type))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findFirst();
+        var uris = Stream.concat(identifiersOrgUrisStream, resolvedIdentifiersOrgUrisStream).toList();
+        for (var uri : uris ) {
+            var biggId = getBiggIdFromParts(uri, type);
+            if (biggId.isPresent()) {
+                return biggId;
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -76,7 +82,7 @@ public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotat
      *              {@link BiGGDBContract.Constants} and include TYPE_SPECIES, TYPE_REACTION, and TYPE_GENE_PRODUCT.
      * @return An {@link Optional<String>} containing the BiGG ID if found, otherwise {@link Optional#empty()}.
      */
-    private Optional<BiGGId> getBiggIdFromParts(RegistryURI uri, String type) {
+    private Optional<BiGGId> getBiggIdFromParts(RegistryURI uri, String type) throws SQLException {
         if (bigg.isDataSource(uri.getPrefix())) {
             Optional<BiGGId> id = bigg.getBiggIdFromSynonym(uri.getPrefix(), uri.getId(), type);
             if (id.isPresent()) {

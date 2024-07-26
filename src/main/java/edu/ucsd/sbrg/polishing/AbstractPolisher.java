@@ -39,6 +39,12 @@ public abstract class AbstractPolisher<SBMLElement> {
         }
     }
 
+    protected void diffReport(String elementType, Object element1, Object element2) {
+        for (var o : observers) {
+            o.update(new ProgressUpdate(elementType, List.of(element1, element2), ReportType.DATA));
+        }
+    }
+
     public List<ProgressObserver> getObservers() {
         return observers;
     }

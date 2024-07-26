@@ -1,6 +1,5 @@
 package edu.ucsd.sbrg;
 
-import edu.ucsd.sbrg.parameters.OutputParameters;
 import org.sbml.jsbml.AbstractNamedSBase;
 import org.sbml.jsbml.AbstractSBase;
 import org.sbml.jsbml.CVTerm;

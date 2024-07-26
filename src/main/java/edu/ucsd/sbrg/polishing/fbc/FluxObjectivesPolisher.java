@@ -7,12 +7,15 @@ import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.SBMLFix;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.Objective;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
+    private static final Logger logger = LoggerFactory.getLogger(FluxObjectivesPolisher.class);
 
     private final FBCModelPlugin modelPlug;
 
@@ -34,7 +37,10 @@ public class FluxObjectivesPolisher extends AbstractPolisher<Objective> {
      */
     @Override
     public void polish(List<Objective> objectives) {
+        logger.debug("Polish Objectives");
+
         for (var objective : objectives) {
+            diffReport("objective", objective.clone(), objective);
             statusReport("Polishing Objectives (7/9)  ", objective); // "Processing objective " + objective.getId());
             if (!objective.isSetListOfFluxObjectives() || objective.getListOfFluxObjectives().isEmpty()) {
                 var model = objective.getModel();

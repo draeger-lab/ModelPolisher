@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.BiGGNotesParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
+
+import java.sql.SQLException;
 
 import static edu.ucsd.sbrg.TestUtils.assertCVTermIsPresent;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,7 +28,7 @@ public class BiGGSBMLAnnotatorTest extends BiGGDBContainerTest {
     private final SBOParameters sboParameters = new SBOParameters();
 
     @Test
-    public void annotatePublication() {
+    public void annotatePublication() throws SQLException, AnnotationException {
 
         var sbml = new SBMLDocument(3, 2);
         var m = new Model("iJO1366", 3, 2);

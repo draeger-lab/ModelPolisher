@@ -7,6 +7,7 @@ import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.SBO;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import static edu.ucsd.sbrg.TestUtils.*;
@@ -17,7 +18,7 @@ public class BiGGCompartmentsAnnotatorTest extends BiGGDBContainerTest {
     private final BiGGAnnotationParameters parameters = new BiGGAnnotationParameters();
 
     @Test
-    public void annotateKnownCompartments() {
+    public void annotateKnownCompartments() throws SQLException {
         for (var c_id : bigg.getAllBiggIds("compartment")) {
             var c = new Compartment(c_id,3, 2);
 
@@ -39,7 +40,7 @@ public class BiGGCompartmentsAnnotatorTest extends BiGGDBContainerTest {
     }
 
     @Test
-    public void nameAnnotationIsSane() {
+    public void nameAnnotationIsSane() throws SQLException {
         var c = new Compartment("im", "default",3, 2);
 
         new BiGGCompartmentsAnnotator(bigg, parameters, new IdentifiersOrg()).annotate(c);

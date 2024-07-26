@@ -18,13 +18,15 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.parameters.DBParameters;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
+import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.Column.*;
@@ -40,7 +42,7 @@ import static java.text.MessageFormat.format;
 @SuppressWarnings("ALL")
 public class BiGGDB {
 
-  private static final Logger logger = Logger.getLogger(BiGGDB.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(BiGGDB.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private static PostgresConnectionPool connectionPool;
@@ -76,7 +78,9 @@ public class BiGGDB {
   }
 
   public static void init(String host, Integer port, String user, String passwd, String dbName) {
+
     if (null == connectionPool) {
+      logger.debug("Initialize BiGG DB");
       connectionPool = new PostgresConnectionPool(host, port, user, passwd, dbName);
 
       Runtime.getRuntime().addShutdownHook(new Thread(connectionPool::close));
@@ -92,7 +96,7 @@ public class BiGGDB {
    * 
    * @return {@link Optional<Date>} The date of the last database update, or an empty {@link Optional} if not available.
    */
-  public Optional<Date> getBiGGVersion() {
+  public Optional<Date> getBiGGVersion() throws SQLException {
     Optional<Date> date = Optional.empty();
     String query = "SELECT " + DATE_TIME + " FROM " + DATABASE_VERSION;
     try (Connection connection = connectionPool.getConnection();
@@ -101,8 +105,6 @@ public class BiGGDB {
       if (resultSet.next()) {
         date = Optional.of(resultSet.getDate(1));
       }
-    } catch (SQLException exc) {
-      logger.finest(format("{0}: {1}", exc.getClass().getName(), Utils.getMessage(exc)));
     }
     return date;
   }
@@ -117,7 +119,7 @@ public class BiGGDB {
    * @param reactionBiGGid The BiGG ID of the reaction.
    * @return A List of subsystem names as strings. Returns an empty list if no subsystems are found or if an error occurs.
    */
-  public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) {
+  public List<String> getSubsystems(String modelBiGGid, String reactionBiGGid) throws SQLException {
     String query = "SELECT DISTINCT mr." + SUBSYSTEM + " FROM " + REACTION + " r, " + MODEL + " m, " + MODEL_REACTION
       + " mr WHERE m." + BIGG_ID + " = ? AND r." + BIGG_ID + " = ? AND m." + ID + " = mr." + MODEL_ID + " AND r." + ID
       + " = mr." + REACTION_ID + " AND LENGTH(mr." + SUBSYSTEM + ") > 0";
@@ -131,8 +133,6 @@ public class BiGGDB {
           list.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return list;
   }
@@ -146,7 +146,7 @@ public class BiGGDB {
    * @param reactionBiGGid The BiGG ID of the reaction for which subsystems are to be retrieved.
    * @return A List of subsystem names as strings. Returns an empty list if no subsystems are found or if an error occurs.
    */
-  public List<String> getSubsystemsForReaction(String reactionBiGGid) {
+  public List<String> getSubsystemsForReaction(String reactionBiGGid) throws SQLException {
     String query = "SELECT DISTINCT mr." + SUBSYSTEM + " FROM " + REACTION + " r, " + MODEL_REACTION + " mr WHERE r."
       + BIGG_ID + " = ? AND r." + ID + " = mr." + REACTION_ID + " AND LENGTH(mr." + SUBSYSTEM + ") > 0";
     List<String> list = new LinkedList<>();
@@ -158,8 +158,6 @@ public class BiGGDB {
           list.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return list;
   }
@@ -176,7 +174,7 @@ public class BiGGDB {
    * @return An {@link Optional} containing the chemical formula if exactly one unique formula is found,
    *         otherwise an empty {@link Optional} if none or multiple formulas are found.
    */
-  public Optional<String> getChemicalFormulaByCompartment(String componentId, String compartmentId) {
+  public Optional<String> getChemicalFormulaByCompartment(String componentId, String compartmentId) throws SQLException {
     String query = "SELECT DISTINCT mcc." + FORMULA + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT + " cc, "
       + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + BIGG_ID + " = ? AND c." + ID + " = cc." + COMPONENT_ID
       + " AND co." + BIGG_ID + " = ? AND co." + ID + " = cc." + COMPARTMENT_ID + " and cc." + ID + " = mcc."
@@ -203,7 +201,7 @@ public class BiGGDB {
    * @param compartmentOrModelId The BiGG ID of either the compartment or the model associated with the component.
    * @return A set of unique chemical formulas as strings. If no valid formulas are found, returns an empty set.
    */
-  private Set<String> runFormulaQuery(String query, String componentId, String compartmentOrModelId) {
+  private Set<String> runFormulaQuery(String query, String componentId, String compartmentOrModelId) throws SQLException {
     Set<String> results = new HashSet<>();
     try (Connection connection = connectionPool.getConnection()) {
       try (PreparedStatement pStatement = connection.prepareStatement(query)) {
@@ -215,8 +213,6 @@ public class BiGGDB {
           }
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return results.stream().filter(formula -> formula != null && !formula.isEmpty()).collect(Collectors.toSet());
   }
@@ -232,7 +228,7 @@ public class BiGGDB {
    * @param modelId The BiGG ID of the model in which the component is present.
    * @return An {@link Optional<String>} containing the chemical formula if exactly one is found, otherwise empty.
    */
-  public Optional<String> getChemicalFormula(String componentId, String modelId) {
+  public Optional<String> getChemicalFormula(String componentId, String modelId) throws SQLException {
     String query = "SELECT DISTINCT mcc." + FORMULA + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
       + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + ID + " = cc." + COMPONENT_ID + " AND\n cc." + ID
       + " = mcc." + COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + BIGG_ID + " = ? AND\n m." + BIGG_ID + " = ? AND\n m."
@@ -257,7 +253,7 @@ public class BiGGDB {
    * @param biggId The BiGGId object containing the abbreviation of the compartment.
    * @return An {@link Optional<String>} containing the name of the compartment if found, otherwise empty.
    */
-  public Optional<String> getCompartmentName(BiGGId biggId) {
+  public Optional<String> getCompartmentName(BiGGId biggId) throws SQLException {
     String query = "SELECT " + NAME + " FROM " + COMPARTMENT + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -272,7 +268,7 @@ public class BiGGDB {
    * @param param The parameter value to be used in the SQL query.
    * @return An {@link Optional<String>} containing the result if exactly one result is found, otherwise empty.
    */
-  public Optional<String> singleParamStatement(String query, String param) {
+  public Optional<String> singleParamStatement(String query, String param) throws SQLException {
     Set<String> results = new HashSet<>();
     try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)){
@@ -282,15 +278,13 @@ public class BiGGDB {
           results.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     results = results.stream().filter(result -> result != null && !result.isEmpty()).collect(Collectors.toSet());
     if (results.size() == 1) {
       return Optional.of(results.iterator().next());
     } else {
       if (results.size() > 1) {
-        logger.severe(format(MESSAGES.getString("QUERY_MULTIPLE_RESULTS"), param, query));
+        logger.info(format(MESSAGES.getString("QUERY_MULTIPLE_RESULTS"), param, query));
       }
       return Optional.empty();
     }
@@ -305,7 +299,7 @@ public class BiGGDB {
    * @param biggId The BiGGId object containing the abbreviation of the component.
    * @return An {@link Optional<String>} containing the name of the component if found, otherwise empty.
    */
-  public Optional<String> getComponentName(BiGGId biggId) {
+  public Optional<String> getComponentName(BiGGId biggId) throws SQLException {
     String query = "SELECT " + NAME + " FROM " + COMPONENT + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -318,7 +312,7 @@ public class BiGGDB {
    * @param biggId The BiGGId object containing the abbreviation of the component.
    * @return An {@link Optional<String>} containing the type of the component if found, otherwise empty.
    */
-  public Optional<String> getComponentType(BiGGId biggId) {
+  public Optional<String> getComponentType(BiGGId biggId) throws SQLException {
     String query = "SELECT " + TYPE + " FROM " + COMPONENT + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
     return singleParamStatement(query, biggId.getAbbreviation());
   }
@@ -332,7 +326,7 @@ public class BiGGDB {
    * @param label The label used to query gene identifiers.
    * @return A TreeSet containing unique, sorted MIRIAM-compliant gene identifiers.
    */
-  public TreeSet<IdentifiersOrgURI> getGeneIds(String label) {
+  public TreeSet<IdentifiersOrgURI> getGeneIds(String label) throws SQLException {
     TreeSet<IdentifiersOrgURI> results = new TreeSet<>();
     String query = "SELECT " + URL_PREFIX + ", s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, "
       + GENOME_REGION + " gr\n" + "WHERE d." + ID + " = s." + DATA_SOURCE_ID + " AND\n s." + OME_ID + " = gr." + ID
@@ -349,16 +343,14 @@ public class BiGGDB {
           if (prefix != null && id != null) {
             results.add(new IdentifiersOrgURI(prefix, id));
           } else if (prefix == null) {
-            logger.fine(MESSAGES.getString("COLLECTION_NULL_GENE"));
+            logger.info(MESSAGES.getString("COLLECTION_NULL_GENE"));
             continue;
           } else {
-            logger.warning(format(MESSAGES.getString("IDENTIFIER_NULL_GENE"), prefix));
+            logger.info(format(MESSAGES.getString("IDENTIFIER_NULL_GENE"), prefix));
             continue;
           }
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return results;
   }
@@ -374,7 +366,7 @@ public class BiGGDB {
    * @param label The label used to query the gene name, typically a BIGG ID.
    * @return An {@link Optional} containing the gene name if found, otherwise an empty {@link Optional}.
    */
-  public Optional<String> getGeneName(String label) {
+  public Optional<String> getGeneName(String label) throws SQLException {
     String query = "SELECT s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, " + GENOME_REGION
       + " gr\n" + "WHERE d." + ID + " = s." + DATA_SOURCE_ID + " AND\n s." + OME_ID + " = gr." + ID + " AND\n gr."
       + BIGG_ID + " = ? AND\n d." + BIGG_ID + " LIKE " + REFSEQ_NAME + " AND s." + SYNONYM_COL + " <> ''";
@@ -392,7 +384,7 @@ public class BiGGDB {
    * @param modelId The ID of the model associated with the reaction.
    * @return A list of formatted gene reaction rules as strings.
    */
-  public List<String> getGeneReactionRule(String reactionId, String modelId) {
+  public List<String> getGeneReactionRule(String reactionId, String modelId) throws SQLException {
     return getReactionRules("SELECT REPLACE(REPLACE(RTRIM(REPLACE(REPLACE(mr." + GENE_REACTION_RULE
       + ", 'or', '||'), 'and', '&&'), '.'), '.', '__SBML_DOT__'), '_AT', '__SBML_DOT__') AS " + GENE_REACTION_RULE
       + " FROM " + MODEL_REACTION + " mr, " + REACTION + " r, " + MODEL + " m WHERE r." + ID + " = mr." + REACTION_ID
@@ -412,7 +404,7 @@ public class BiGGDB {
    * @param modelId The ID of the model to be used as the second parameter in the SQL query.
    * @return A list of strings where each string is a gene reaction rule retrieved based on the given IDs.
    */
-  public List<String> getReactionRules(String query, String reactionId, String modelId) {
+  public List<String> getReactionRules(String query, String reactionId, String modelId) throws SQLException {
     List<String> results = new ArrayList<>();
     try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)){
@@ -423,8 +415,6 @@ public class BiGGDB {
           results.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return results;
   }
@@ -438,7 +428,7 @@ public class BiGGDB {
    * @param abbreviation The abbreviation of the model for which the organism is to be retrieved.
    * @return An Optional containing the organism name if found, otherwise an empty Optional.
    */
-  public Optional<String> getOrganism(String abbreviation) {
+  public Optional<String> getOrganism(String abbreviation) throws SQLException {
     String query = "SELECT g." + ORGANISM + " FROM " + GENOME + " g, " + MODEL + " m WHERE m." + GENOME_ID + " = g."
       + ID + " AND m." + BIGG_ID + " = ?";
     return singleParamStatement(query, abbreviation);
@@ -453,7 +443,7 @@ public class BiGGDB {
    * @param abbreviation The abbreviation of the model for which the publications are to be retrieved.
    * @return A list of pairs where each pair consists of a publication type and its corresponding ID.
    */
-  public List<Publication> getPublications(String abbreviation) {
+  public List<Publication> getPublications(String abbreviation) throws SQLException {
     List<Publication> results = new ArrayList<>();
     String query = "SELECT p." + REFERENCE_TYPE + ", p." + REFERENCE_ID + " FROM  " + PUBLICATION + " p, "
       + PUBLICATION_MODEL + " pm, " + MODEL + " m WHERE p." + ID + " = pm." + PUBLICATION_ID + " AND pm." + MODEL_ID
@@ -467,8 +457,6 @@ public class BiGGDB {
           results.add(new Publication(key.equals("pmid") ? "pubmed" : key, resultSet.getString(2)));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return results;
   }
@@ -482,7 +470,7 @@ public class BiGGDB {
    * @param abbreviation The abbreviation of the reaction for which the name is to be retrieved.
    * @return An Optional containing the reaction name if found and not empty, otherwise an empty Optional.
    */
-  public Optional<String> getReactionName(String abbreviation) {
+  public Optional<String> getReactionName(String abbreviation) throws SQLException {
     String query = "SELECT " + NAME + " FROM " + REACTION + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
     return singleParamStatement(query, abbreviation);
   }
@@ -498,7 +486,7 @@ public class BiGGDB {
    * @param isReaction If true, the BiGG ID is treated as a reaction; if false, it is treated as a component.
    * @return A sorted set of URLs as strings, potentially filtered by the 'identifiers.org' domain.
    */
-  public Set<IdentifiersOrgURI> getResources(BiGGId biggId, boolean includeAnyURI, boolean isReaction) {
+  public Set<IdentifiersOrgURI> getResources(BiGGId biggId, boolean includeAnyURI, boolean isReaction) throws SQLException {
     String type = isReaction ? REACTION : COMPONENT;
     Set<IdentifiersOrgURI> resources = new TreeSet<>();
     String query = format(
@@ -515,8 +503,6 @@ public class BiGGDB {
           resources.add(new IdentifiersOrgURI(result));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return resources;
   }
@@ -548,7 +534,7 @@ public class BiGGDB {
    * @param abbreviation The abbreviation of the model for which the taxon ID is being queried.
    * @return An {@link Optional} containing the taxon ID if found; otherwise, an empty {@link Optional}.
    */
-  public Optional<Integer> getTaxonId(String abbreviation) {
+  public Optional<Integer> getTaxonId(String abbreviation) throws SQLException {
     Integer result = null;
     String query = "SELECT " + TAXON_ID + " FROM " + GENOME + " g, " + MODEL + " m WHERE g." + ID + " = m." + GENOME_ID
       + " AND m." + BIGG_ID + " = ? AND " + TAXON_ID + " IS NOT NULL";
@@ -558,14 +544,12 @@ public class BiGGDB {
       try (ResultSet resultSet = pStatement.executeQuery()) {
         while (resultSet.next()) {
           if (result != null) {
-            logger.severe(format(MESSAGES.getString("QUERY_TAXON_MULTIPLE_RESULTS"), abbreviation));
+            logger.info(format(MESSAGES.getString("QUERY_TAXON_MULTIPLE_RESULTS"), abbreviation));
           } else {
             result = resultSet.getInt(1);
           }
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(format(MESSAGES.getString("GET_TAXON_ERROR"), abbreviation, Utils.getMessage(exc)));
     }
     return result == null ? Optional.empty() : Optional.of(result);
   }
@@ -583,7 +567,7 @@ public class BiGGDB {
    * @return The accession string which can be appended to the base URLs mentioned above.
    *         If the query fails or no accession is found, an empty string is returned.
    */
-  public String getGenomeAccesion(String id) {
+  public String getGenomeAccesion(String id) throws SQLException {
     String query = "SELECT g." + ACCESSION_VALUE + " FROM " + GENOME + " g, " + MODEL + " m WHERE m." + BIGG_ID
       + " = ? AND m." + GENOME_ID + " = g." + ID;
     String result = "";
@@ -596,8 +580,6 @@ public class BiGGDB {
           result = resultSet.getString(1);
         }
       }
-    } catch (SQLException e) {
-      logger.warning(format(MESSAGES.getString("GENOME_ACCESSION_FAIL"), id));
     }
     // The result should be non-empty as the query is expected to always return exactly one result.
     return result;
@@ -613,7 +595,7 @@ public class BiGGDB {
    * @return A Set of strings containing unique BiGG IDs from the specified table. If an SQL error occurs,
    *         the returned set will be empty.
    */
-  public Set<String> getAllBiggIds(String table) {
+  public Set<String> getAllBiggIds(String table) throws SQLException {
     Set<String> biggIds = new LinkedHashSet<>();
     String query = "SELECT " + BIGG_ID + " FROM " + table + " ORDER BY " + BIGG_ID;
     try (Connection connection = connectionPool.getConnection();
@@ -623,8 +605,6 @@ public class BiGGDB {
           biggIds.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(format(MESSAGES.getString("BIGGID_FOR_TABLE_FAIL"), table, Utils.getMessage(exc)));
     }
     return biggIds;
   }
@@ -640,7 +620,7 @@ public class BiGGDB {
    * @return An {@link Optional} containing the charge if it is unique and present; otherwise, an empty {@link Optional}.
    *         If multiple unique charge values are found, a warning is logged.
    */
-  public Optional<Integer> getChargeByCompartment(String componentId, String compartmentId) {
+  public Optional<Integer> getChargeByCompartment(String componentId, String compartmentId) throws SQLException {
     String query = "SELECT DISTINCT mcc." + CHARGE + " FROM " + MCC + " mcc, " + COMPARTMENTALIZED_COMPONENT + " cc, "
       + COMPONENT + " c, " + COMPARTMENT + " co WHERE c." + BIGG_ID + " = ? AND c." + ID + " = cc." + COMPONENT_ID
       + " AND co." + BIGG_ID + " = ? AND co." + ID + " = cc." + COMPARTMENT_ID + " and cc." + ID + " = mcc."
@@ -650,7 +630,7 @@ public class BiGGDB {
       return Optional.of(Integer.parseInt(results.iterator().next()));
     } else {
       if (results.size() > 1) {
-        logger.warning(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_COMPARTMENT"), componentId, compartmentId));
+        logger.info(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_COMPARTMENT"), componentId, compartmentId));
       }
       return Optional.empty();
     }
@@ -667,7 +647,7 @@ public class BiGGDB {
    * @param compartmentOrModelId The BiGG ID of the compartment or model, used to replace the second placeholder in the query.
    * @return A Set of strings containing distinct charge values from the query results. If no valid results are found, returns an empty set.
    */
-  private Set<String> runChargeQuery(String query, String componentId, String compartmentOrModelId) {
+  private Set<String> runChargeQuery(String query, String componentId, String compartmentOrModelId) throws SQLException {
     Set<String> results = new HashSet<>();
     try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)) {
@@ -678,8 +658,6 @@ public class BiGGDB {
           results.add(resultSet.getString(1));
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return results.stream().filter(charge -> charge != null && !charge.isEmpty()).collect(Collectors.toSet());
   }
@@ -695,7 +673,7 @@ public class BiGGDB {
    * @return An Optional containing the charge if exactly one distinct charge is found, otherwise an empty Optional.
    *         If multiple distinct charges are found, a warning is logged.
    */
-  public Optional<Integer> getCharge(String componentId, String modelId) {
+  public Optional<Integer> getCharge(String componentId, String modelId) throws SQLException {
     String query = "SELECT DISTINCT mcc." + CHARGE + "\n FROM " + COMPONENT + " c,\n" + COMPARTMENTALIZED_COMPONENT
       + " cc,\n" + MODEL + " m,\n" + MCC + " mcc\n WHERE c." + ID + " = cc." + COMPONENT_ID + " AND\n cc." + ID
       + " = mcc." + COMPARTMENTALIZED_COMPONENT_ID + " AND\n c." + BIGG_ID + " = ? AND\n m." + BIGG_ID + " = ? AND\n m."
@@ -705,7 +683,7 @@ public class BiGGDB {
       return Optional.of(Integer.parseInt(results.iterator().next()));
     } else {
       if (results.size() > 1) {
-        logger.warning(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_MODEL"), componentId, modelId));
+        logger.info(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_MODEL"), componentId, modelId));
       }
       return Optional.empty();
     }
@@ -720,7 +698,7 @@ public class BiGGDB {
    * @param reactionId The BiGG ID of the reaction to be checked.
    * @return true if the reaction is a pseudoreaction, false otherwise.
    */
-  public boolean isPseudoreaction(String reactionId) {
+  public boolean isPseudoreaction(String reactionId) throws SQLException {
     String query = "SELECT " + PSEUDOREACTION + " FROM " + REACTION + " WHERE " + BIGG_ID + " = ?";
     Optional<String> result = singleParamStatement(query, reactionId);
     return result.isPresent() && result.get().equals("t");
@@ -779,7 +757,7 @@ public class BiGGDB {
         }
       }
     } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
+      logger.info(Utils.getMessage(exc));
     }
 
     return Optional.empty();
@@ -853,12 +831,12 @@ public class BiGGDB {
         }
       }
     } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
+      logger.info(Utils.getMessage(exc));
     }
     return results;
   }
 
-  public boolean isCompartment(String id) {
+  public boolean isCompartment(String id) throws SQLException {
     if (BiGGDBCompartments.isEmpty()) {
       BiGGDBCompartments = getAllBiggIds("compartment");
     }
@@ -869,7 +847,7 @@ public class BiGGDB {
   }
 
 
-  public boolean isDataSource(String id) {
+  public boolean isDataSource(String id) throws SQLException {
     if (BiGGDBDataSources.isEmpty()) {
       BiGGDBDataSources = getAllBiggIds("data_source");
     }
@@ -877,7 +855,7 @@ public class BiGGDB {
   }
 
 
-  public boolean isMetabolite(String id) {
+  public boolean isMetabolite(String id) throws SQLException {
     if (BiGGDBMetabolites.isEmpty()) {
       BiGGDBMetabolites = getAllBiggIds("component");
     }
@@ -888,7 +866,7 @@ public class BiGGDB {
   }
 
 
-  public boolean isModel(String id) {
+  public boolean isModel(String id) throws SQLException {
     if (BiGGDBModels.isEmpty()) {
       BiGGDBModels = getAllBiggIds("model");
     }
@@ -896,7 +874,7 @@ public class BiGGDB {
   }
 
 
-  public boolean isReaction(String id) {
+  public boolean isReaction(String id) throws SQLException {
     if (BiGGDBReactions.isEmpty()) {
       BiGGDBReactions = getAllBiggIds("reaction");
     }

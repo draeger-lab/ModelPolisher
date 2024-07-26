@@ -6,12 +6,13 @@ import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
@@ -22,8 +23,7 @@ import static java.text.MessageFormat.format;
  */
 public class SpeciesPolisher extends AbstractPolisher<Species> {
 
-  private static final Logger logger = Logger.getLogger(SpeciesPolisher.class.getName());
-
+  private static final Logger logger = LoggerFactory.getLogger(SpeciesPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final List<Species> speciesToRemove = new ArrayList<>();
@@ -44,8 +44,10 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
    */
   @Override
   public void polish(List<Species> species) {
+    logger.debug("Polish Species");
     for (Species s : species) {
       statusReport("Polishing Species (4/9)  ", s); // Update progress display for each species
+      diffReport("species", s.clone(), s);
       // Polish each species and collect those that need to be removed
       polish(s);
     }
@@ -66,9 +68,9 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
     // Check if the species ID is missing and log an error if so
     if (id.isEmpty()) {
       if (species.isSetName()) {
-        logger.severe(format(MESSAGES.getString("SPECIES_MISSING_ID"), species.getName()));
+        logger.info(format(MESSAGES.getString("SPECIES_MISSING_ID"), species.getName()));
       } else {
-        logger.severe(MESSAGES.getString("SPECIES_MISSING_ID_NAME"));
+        logger.info(MESSAGES.getString("SPECIES_MISSING_ID_NAME"));
       }
       speciesToRemove.add(species);
       return;
@@ -76,9 +78,9 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
 
     // Warn if the species ID indicates a boundary species but the boundary condition is not set
     if (species.getId().endsWith("_boundary")) {
-      logger.warning(format(MESSAGES.getString("SPECIES_ID_INVALID"), id));
+      logger.info(format(MESSAGES.getString("SPECIES_ID_INVALID"), id));
       if (!species.isSetBoundaryCondition() || !species.isBoundaryCondition()) {
-        logger.warning(format(MESSAGES.getString("BOUNDARY_FLAG_MISSING"), id));
+        logger.info(format(MESSAGES.getString("BOUNDARY_FLAG_MISSING"), id));
         species.setBoundaryCondition(true);
       }
     } else if (!species.isSetBoundaryCondition()) {
@@ -100,7 +102,7 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
     BiGGId.createMetaboliteId(id).ifPresent(biggId -> {
       if (biggId.isSetCompartmentCode() && species.isSetCompartment()
         && !biggId.getCompartmentCode().equals(species.getCompartment())) {
-        logger.warning(format(MESSAGES.getString("CHANGE_COMPART_REFERENCE"), species.getId(), species.getCompartment(),
+        logger.info(format(MESSAGES.getString("CHANGE_COMPART_REFERENCE"), species.getId(), species.getCompartment(),
           biggId.getCompartmentCode()));
         species.setCompartment(biggId.getCompartmentCode());
       }
@@ -152,7 +154,7 @@ public class SpeciesPolisher extends AbstractPolisher<Species> {
       compartmentPolisher.polish((Compartment) candidate);
     } else if (candidate == null) {
       // If no compartment is found, log a warning and create a new compartment
-      logger.warning(format(MESSAGES.getString("CREATE_MISSING_COMP"), cId, species.getId(), species.getElementName()));
+      logger.info(format(MESSAGES.getString("CREATE_MISSING_COMP"), cId, species.getId(), species.getElementName()));
       var compartmentPolisher = new CompartmentPolisher(polishingParameters, registry, getObservers());
       compartmentPolisher.polish(model.createCompartment(cId));
     }

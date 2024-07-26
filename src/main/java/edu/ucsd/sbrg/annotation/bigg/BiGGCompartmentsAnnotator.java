@@ -9,6 +9,7 @@ import org.sbml.jsbml.*;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -27,7 +28,8 @@ public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator<Compartment
     super(bigg, parameters, registry, observers);
   }
 
-  public void annotate(List<Compartment> compartments) {
+  @Override
+  public void annotate(List<Compartment> compartments) throws SQLException {
       for (Compartment compartment : compartments) {
         statusReport("Annotating Compartments (2/5)  ", compartment);
         annotate(compartment);
@@ -39,12 +41,13 @@ public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator<Compartment
    * it updates the name based on the BiGG database. This method only processes compartments that are recognized
    * within the BiGG Knowledgebase.
    */
-  public void annotate(Compartment compartment) {
+  @Override
+  public void annotate(Compartment compartment) throws SQLException {
     BiGGId biggId = new BiGGId(compartment.getId());
     if (bigg.isCompartment(biggId.getAbbreviation())) {
       compartment.addCVTerm(
               new CVTerm(CVTerm.Qualifier.BQB_IS,
-              new IdentifiersOrgURI("bigg.compartment", biggId).getURI()));
+                      new IdentifiersOrgURI("bigg.compartment", biggId).getURI()));
       compartment.setSBOTerm(SBO.getCompartment()); // physical compartment
       if (!compartment.isSetName() || compartment.getName().equals("default")) {
         bigg.getCompartmentName(biggId).ifPresent(compartment::setName);

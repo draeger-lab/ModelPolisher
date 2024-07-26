@@ -11,10 +11,12 @@ public class Parameters {
     private AnnotationParameters annotation = new AnnotationParameters();
     @JsonProperty("sbo-terms")
     private SBOParameters sboTerms = new SBOParameters();
-    @JsonProperty("output")
-    private OutputParameters output = new OutputParameters();
     @JsonProperty("sbml-validation")
     protected boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
+    @JsonProperty("outputType")
+    protected ModelPolisherOptions.OutputType outputType = ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue();
+
+    public Parameters() {}
 
     public PolishingParameters polishing() {
         return polishing;
@@ -28,11 +30,11 @@ public class Parameters {
         return sboTerms;
     }
 
-    public OutputParameters output() {
-        return output;
-    }
-
     public boolean sbmlValidation() {
         return sbmlValidation;
+    }
+
+    public ModelPolisherOptions.OutputType outputType() {
+        return outputType;
     }
 }

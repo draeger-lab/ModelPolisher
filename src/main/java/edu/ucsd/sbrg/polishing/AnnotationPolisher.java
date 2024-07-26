@@ -6,12 +6,18 @@ import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.CVTerm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.text.MessageFormat.format;
+
+
 public class AnnotationPolisher extends AbstractPolisher<Annotation> {
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationPolisher.class);
 
     public AnnotationPolisher(PolishingParameters polishingParameters, Registry registry) {
         super(polishingParameters, registry);
@@ -32,6 +38,7 @@ public class AnnotationPolisher extends AbstractPolisher<Annotation> {
      * @param annotation The {@link Annotation} object associated with an SBML entity that contains CV Terms to be processed.
      */
     public void polish(Annotation annotation) {
+        logger.trace(format("Polish Annotation: {0}", annotation.toString()));
         for (CVTerm term : annotation.getListOfCVTerms()) {
             Set<String> resources = new HashSet<>();
             for (String resource : term.getResources()) {

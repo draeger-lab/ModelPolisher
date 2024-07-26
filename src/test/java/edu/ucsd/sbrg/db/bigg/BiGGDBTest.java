@@ -4,6 +4,7 @@ import edu.ucsd.sbrg.annotation.bigg.BiGGDBContainerTest;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.SQLException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,7 +15,7 @@ public class BiGGDBTest extends BiGGDBContainerTest {
 
 
     @Test
-    public void getSubsystems() {
+    public void getSubsystems() throws SQLException {
         var org = bigg.getOrganism("iJO1366");
         assertTrue(org.isPresent());
         assertEquals("Escherichia coli str. K-12 substr. MG1655", org.get());
@@ -22,11 +23,11 @@ public class BiGGDBTest extends BiGGDBContainerTest {
 
 
     /**
-     * This test serves primarily as documentation and to to raise awareness for
+     * This test serves primarily as documentation and to raise awareness for
      * new data sources in case of DB update.
      */
     @Test
-    public void dataSources() {
+    public void dataSources() throws SQLException {
         var dataSources = bigg.getAllBiggIds("data_source");
         assertEquals(Set.of("asap",
                         "biocyc",

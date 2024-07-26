@@ -6,9 +6,13 @@ import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.util.ModelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+
+import static java.text.MessageFormat.format;
 
 /**
  * This class is responsible for ensuring that all necessary {@link UnitDefinition}s and {@link Unit}s are correctly
@@ -36,6 +40,7 @@ public class UnitPolisher extends AbstractPolisher<Model>{
     public static final CVTerm CV_TERM_IS_UO_GRAM = new CVTerm(CVTerm.Qualifier.BQB_IS, new IdentifiersOrgURI("unit", "UO:0000021").getURI());
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_SECOND = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000010").getURI());
     public static final CVTerm CV_TERM_IS_VERSION_OF_UO_MOLE = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF, new IdentifiersOrgURI("unit", "UO:0000013").getURI());
+    private static final Logger logger  = LoggerFactory.getLogger(UnitPolisher.class);
 
     public UnitPolisher(PolishingParameters parameters, Registry registry) {
         super(parameters, registry);
@@ -50,13 +55,12 @@ public class UnitPolisher extends AbstractPolisher<Model>{
      * extent and substance units if they are not already set.
      */
     public void polish(Model model) {
+        logger.debug("Polish Unit Definitions");
         // Update progress bar to indicate the current process stage
         statusReport("Polishing Unit Definitions (2/9)   ", model);
 
-//        int udCount = model.getUnitDefinitionCount();
-
-        // Fetch all unit definitions from the model
         var unitDefinitions = model.getListOfUnitDefinitions();
+        diffReport("unitDefinitions", unitDefinitions.clone(), unitDefinitions);
 
         // Create or retrieve a growth unit definition
         var growth = createGrowthUnitDefinition(model);
@@ -74,6 +78,7 @@ public class UnitPolisher extends AbstractPolisher<Model>{
         if (!model.isSetSubstanceUnits())
             model.setSubstanceUnits(substanceUnits.getId());
 
+
         // TODO: ich bin mir ziemlich sicher, dass dieser Code hier nonsense ist
         // Continue updating the progress bar until all unit definitions are processed
 //        while (progress.getCallNumber() < udCount) {
@@ -85,7 +90,7 @@ public class UnitPolisher extends AbstractPolisher<Model>{
      * Using a growth unit as the template for equivalence, find a potentially already existing
      * growth unit.
      */
-    private Optional<UnitDefinition> findGrowthUnit(ListOf<UnitDefinition> uds, UnitDefinition growth) {
+    private Optional<UnitDefinition> findEquivalentGrowthUnit(ListOf<UnitDefinition> uds, UnitDefinition growth) {
         return uds.stream().filter(u -> UnitDefinition.areEquivalent(u, growth)).findFirst();
     }
 
@@ -110,23 +115,25 @@ public class UnitPolisher extends AbstractPolisher<Model>{
      * @return The newly created or modified growth unit definition.
      */
     private UnitDefinition createGrowthUnitDefinition(Model model) {
-        // Create a default growth unit definition.
         var growth = defaultGrowthUnitDefinition(model);
-        // Check if an equivalent growth unit already exists in the model.
-        var otherGrowth = findGrowthUnit(model.getListOfUnitDefinitions(), growth).orElse(growth);
-        // Set the meta ID of the growth unit if it is not already set.
-        if (!growth.isSetMetaId())
-            growth.setMetaId(growth.getId());
-        // Annotate the growth unit definition with relevant metadata.
-        annotateGrowthUnitDefinition(growth);
-        // If the found growth unit is the same as the newly created one and it already exists in the model,
-        // change its ID to indicate that it was preexisting.
-        if (otherGrowth.equals(growth) && null != model.getUnitDefinition(GROWTH_UNIT_ID)) {
-            model.getUnitDefinition(GROWTH_UNIT_ID).setId(GROWTH_UNIT_ID + "__preexisting");
+        var otherGrowth = findEquivalentGrowthUnit(model.getListOfUnitDefinitions(), growth);
+
+        if (otherGrowth.isPresent()) {
+            if (!otherGrowth.get().isSetMetaId())
+                otherGrowth.get().setMetaId(growth.getId());
+            annotateGrowthUnitDefinition(otherGrowth.get());
+            otherGrowth.get().setId(GROWTH_UNIT_ID);
+            return otherGrowth.get();
+        } else {
+            if (!growth.isSetMetaId())
+                growth.setMetaId(growth.getId());
+            annotateGrowthUnitDefinition(growth);
+            if (null != model.getUnitDefinition(GROWTH_UNIT_ID)) {
+                model.getUnitDefinition(GROWTH_UNIT_ID).setId(GROWTH_UNIT_ID + "__preexisting");
+            }
+            model.addUnitDefinition(growth);
+            return growth;
         }
-        // Add the growth unit definition to the model.
-        model.addUnitDefinition(growth);
-        return growth;
     }
 
     private CVTerm genericUnitAnnotation(Unit u) {

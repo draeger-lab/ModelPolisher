@@ -22,6 +22,7 @@ import javax.xml.stream.XMLStreamException;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
+import edu.ucsd.sbrg.util.SBMLFix;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -55,19 +56,14 @@ import edu.ucsd.sbrg.io.parsers.json.mapping.Root;
 import edu.ucsd.sbrg.util.GPRParser;
 import edu.ucsd.sbrg.util.SBMLUtils;
 import edu.ucsd.sbrg.io.UpdateListener;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Thomas Jakob Zajac
  */
 public class JSONParser {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(JSONParser.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JSONParser.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final Registry registry;
@@ -145,7 +141,7 @@ public class JSONParser {
         annotations.addAll(parseAnnotation(entry));
       }
     } else {
-      logger.severe(format(MESSAGES.getString("OPEN_ISSUE_ANNOTATION"), annotation.getClass().getName()));
+      logger.info(format(MESSAGES.getString("OPEN_ISSUE_ANNOTATION"), annotation.getClass().getName()));
     }
     if (!annotations.isEmpty()) {
       CVTerm term = new CVTerm();
@@ -171,7 +167,7 @@ public class JSONParser {
         checkResource(providerCode, id).map(annotations::add);
       }
     } else {
-      logger.severe(format(MESSAGES.getString("OPEN_ISSUE_ID_FORMAT"), ids.getClass().getName()));
+      logger.info(format(MESSAGES.getString("OPEN_ISSUE_ID_FORMAT"), ids.getClass().getName()));
     }
     return annotations;
   }
@@ -221,7 +217,7 @@ public class JSONParser {
         e.printStackTrace();
       }
     } else {
-      logger.severe(format(MESSAGES.getString("OPEN_ISSUE_NOTES_FORMAT"), notes.getClass().getName()));
+      logger.info(format(MESSAGES.getString("OPEN_ISSUE_NOTES_FORMAT"), notes.getClass().getName()));
     }
   }
 
@@ -240,7 +236,7 @@ public class JSONParser {
       ((List<String>) value).forEach(items::add);
       note = key + ":" + items;
     } else {
-      logger.severe(format(MESSAGES.getString("OPEN_ISSUE_NOTES_CONTENT"), value.getClass().getName()));
+      logger.info(format(MESSAGES.getString("OPEN_ISSUE_NOTES_CONTENT"), value.getClass().getName()));
     }
     return note;
   }
@@ -279,7 +275,7 @@ public class JSONParser {
       String id = metabolite.getId();
       BiGGId.createMetaboliteId(id).ifPresent(metId -> {
         if (model.getSpecies(metId.toBiGGId()) != null) {
-          logger.warning(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
+          logger.info(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
         } else {
           parseMetabolite(model, metabolite, metId);
         }
@@ -306,7 +302,7 @@ public class JSONParser {
         specPlug.setChemicalFormula(formula);
         validFormula = true;
       } catch (IllegalArgumentException exc) {
-        logger.warning(format(MESSAGES.getString("INVALID_SPECIES_FORMULA"), biggId.toBiGGId(), formula));
+        logger.info(format(MESSAGES.getString("INVALID_SPECIES_FORMULA"), biggId.toBiGGId(), formula));
       }
     }
     specPlug.setCharge(charge);
@@ -342,7 +338,7 @@ public class JSONParser {
       BiGGId.createGeneId(id).ifPresent(geneId -> {
         FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
         if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
-          logger.warning(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
+          logger.info(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
         } else {
           parseGene(model, gene, geneId.toBiGGId());
         }
@@ -377,7 +373,7 @@ public class JSONParser {
       // Add prefix for BiGGId
       BiGGId.createReactionId(id).ifPresent(reactionId -> {
         if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
-          logger.warning(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
+          logger.info(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
         } else {
           parseReaction(builder, reaction, reactionId.toBiGGId());
         }

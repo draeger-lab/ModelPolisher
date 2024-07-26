@@ -39,9 +39,5 @@
       }
     }
   },
-  "output": {
-    "write-json": false,
-    "output-combine": false,
-    "compression": "zip"
-  }
+  "outputType": "combine"
 }

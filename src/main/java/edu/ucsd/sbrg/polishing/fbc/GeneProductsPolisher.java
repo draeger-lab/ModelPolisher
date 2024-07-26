@@ -8,6 +8,8 @@ import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ import java.util.List;
  * This class is responsible for polishing GeneProduct instances by processing their annotations and adjusting their identifiers and names.
  */
 public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
-
+  private static final Logger logger = LoggerFactory.getLogger(GeneProductsPolisher.class);
 
   public GeneProductsPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
       super(parameters, registry, observers);
@@ -24,8 +26,11 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
 
   @Override
   public void polish(List<GeneProduct> geneProducts) {
+    logger.debug("Polish Gene Products");
+
     for (GeneProduct geneProduct : geneProducts) {
       statusReport("Polishing Gene Products (8/9)  ", geneProduct);
+      diffReport("geneProduct", geneProduct.clone(), geneProduct);
       polish(geneProduct);
     }
   }
@@ -49,6 +54,7 @@ public class GeneProductsPolisher extends AbstractPolisher<GeneProduct> {
   }
 
   private void setName(GeneProduct geneProduct) {
+
     String label = null;
     // Determine the label from the gene product's label or ID
     if (geneProduct.isSetLabel() && !geneProduct.getLabel().equalsIgnoreCase("None")) {

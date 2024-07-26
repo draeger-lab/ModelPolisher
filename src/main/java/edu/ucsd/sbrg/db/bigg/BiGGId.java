@@ -9,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.io.parsers.cobra.MatlabParser;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -36,13 +38,7 @@ import de.zbit.util.ResourceManager;
  */
 public class BiGGId {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(BiGGId.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BiGGId.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * First part of BiGG ID, either R, M or G
@@ -434,7 +430,7 @@ public class BiGGId {
     } else if (compartmentMatcher.matches()) {
       setAbbreviation(id);
     } else {
-      logger.warning(format(MESSAGES.getString("BIGGID_CONVERSION_FAIL"), id));
+      logger.info(format(MESSAGES.getString("BIGGID_CONVERSION_FAIL"), id));
       setAbbreviation(id);
     }
   }

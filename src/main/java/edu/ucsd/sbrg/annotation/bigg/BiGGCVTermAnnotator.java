@@ -7,6 +7,7 @@ import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.*;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +34,7 @@ public abstract class BiGGCVTermAnnotator<T extends AbstractSBase> extends Abstr
    *
    * @return Optional containing the valid BiGG ID or empty if the ID is invalid.
    */
-  protected abstract Optional<BiGGId> findBiGGId(T element);
+  protected abstract Optional<BiGGId> findBiGGId(T element) throws SQLException;
 
 //  /**
 //   * Adds annotations to an SBML node (either a Species or a Reaction) using a given BiGGId.

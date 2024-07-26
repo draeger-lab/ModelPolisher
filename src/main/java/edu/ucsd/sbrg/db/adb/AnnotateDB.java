@@ -3,7 +3,10 @@ package edu.ucsd.sbrg.db.adb;
 import de.zbit.util.Utils;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
+import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.parameters.DBParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_METABOLITE;
 import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_REACTION;
@@ -31,7 +33,7 @@ import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.Table.MAPPING_VI
  */
 public class AnnotateDB {
 
-  private static final Logger logger = Logger.getLogger(AnnotateDB.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(AnnotateDB.class);
   private static PostgresConnectionPool connectionPool;
 
   public AnnotateDB (DBParameters parameters) {
@@ -60,6 +62,7 @@ public class AnnotateDB {
 
   public static void init(String host, Integer port, String user, String passwd, String dbName) {
     if (null == connectionPool) {
+      logger.debug("Initialize AnnotateDB");
       connectionPool = new PostgresConnectionPool(host, port, user, passwd, dbName);
 
       Runtime.getRuntime().addShutdownHook(new Thread(connectionPool::close));
@@ -77,7 +80,7 @@ public class AnnotateDB {
    * @return A sorted set of URLs that are annotations for the given BiGG ID. If the type is neither metabolite
    *         nor reaction, or if an SQL exception occurs, an empty set is returned.
    */
-  public Set<String> getAnnotations(String type, String biggId) {
+  public Set<String> getAnnotations(String type, String biggId) throws SQLException {
     TreeSet<String> annotations = new TreeSet<>();
     // Check if the type is valid for querying annotations
     if (!type.equals(BIGG_METABOLITE) && !type.equals(BIGG_REACTION)) {
@@ -110,8 +113,6 @@ public class AnnotateDB {
           annotations.add(uri);
         }
       }
-    } catch (SQLException exc) {
-      logger.warning(Utils.getMessage(exc));
     }
     return annotations;
   }

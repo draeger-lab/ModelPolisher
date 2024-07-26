@@ -10,14 +10,17 @@ import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.ext.fbc.converters.CobraToFbcV2Converter;
 import org.sbml.jsbml.util.SBMLtools;
 import org.sbml.jsbml.util.ValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+
+import static java.text.MessageFormat.format;
 
 public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
 
-    private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SBMLPolisher.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
     private final SBOParameters sboParameters;
 
@@ -40,9 +43,10 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
      */
     @Override
     public void polish(SBMLDocument doc) {
+        logger.debug(format("Polish doc: {0}", doc.toString()));
         // Ensure the document is at the correct SBML level and version
         if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
-            logger.info(MESSAGES.getString("TRY_CONV_LVL3_V1"));
+            logger.debug(MESSAGES.getString("TRY_CONV_LVL3_V1"));
             SBMLtools.setLevelAndVersion(doc, 3, 1);
         }
 
@@ -55,6 +59,7 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
         new ModelPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model);
 
         // Process any external resources linked in the document's annotations.
+        diffReport("documentAnnotation", doc.getAnnotation().clone(), doc.getAnnotation());
         new AnnotationPolisher(polishingParameters, registry).polish(doc.getAnnotation());
     }
 

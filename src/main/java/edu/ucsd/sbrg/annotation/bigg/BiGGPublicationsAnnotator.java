@@ -9,6 +9,7 @@ import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class BiGGPublicationsAnnotator extends AbstractBiGGAnnotator<Model> {
@@ -19,7 +20,7 @@ public class BiGGPublicationsAnnotator extends AbstractBiGGAnnotator<Model> {
     }
 
     @Override
-    public void annotate(Model model) {
+    public void annotate(Model model) throws SQLException {
         List<Publication> publications = bigg.getPublications(model.getId());
         statusReport("Annotating Publications (1/5)  ", model);
 

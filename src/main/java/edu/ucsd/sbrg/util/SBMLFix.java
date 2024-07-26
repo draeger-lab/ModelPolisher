@@ -9,6 +9,7 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import de.zbit.util.logging.LogUtil;
 import edu.ucsd.sbrg.ModelPolisherCLILauncher;
+import edu.ucsd.sbrg.io.ModelWriter;
 import edu.ucsd.sbrg.polishing.ReactionNamePatterns;
 import org.sbml.jsbml.ListOf;
 import org.sbml.jsbml.Model;
@@ -22,6 +23,7 @@ import org.sbml.jsbml.ext.fbc.Objective;
 import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -52,21 +54,10 @@ import java.util.regex.Pattern;
  */
 public class SBMLFix {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(SBMLFix.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SBMLFix.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  /**
-   * 
-   */
   private static final double DEFAULT_COEFFICIENT = 1d;
 
-  /**
-   */
   public static void batchProcess(File input, File output) {
     if (!output.exists() && !output.isFile() && !(input.isFile() && input.getName().equals(output.getName()))) {
       logger.info(MessageFormat.format(MESSAGES.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
@@ -81,12 +72,12 @@ public class SBMLFix {
         try {
           fixSBML(input, output);
         } catch (XMLStreamException | IOException exc) {
-          logger.severe(exc.getMessage());
+          logger.error(exc.getMessage());
         }
       }
     } else {
       if (!output.isDirectory()) {
-        logger.severe(MessageFormat.format(MESSAGES.getString("WRITE_TO_FILE_ERROR"), output.getAbsolutePath()));
+        logger.error(MessageFormat.format(MESSAGES.getString("WRITE_TO_FILE_ERROR"), output.getAbsolutePath()));
       }
       for (File file : input.listFiles()) {
         File target = new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
@@ -143,7 +134,7 @@ public class SBMLFix {
                                   List<Double> fluxCoefficients, List<String> fluxObjectives) {
     Objective activeObjective = null;
     if (!fbcPlug.isSetActiveObjective()) {
-      logger.severe(MessageFormat.format(MESSAGES.getString("OBJ_NOT_DEFINED"), modelDescriptor));
+      logger.info(MessageFormat.format(MESSAGES.getString("OBJ_NOT_DEFINED"), modelDescriptor));
       if (fbcPlug.getObjectiveCount() == 1) {
         activeObjective = fbcPlug.getObjective(0);
         fbcPlug.setActiveObjective(activeObjective);
@@ -154,7 +145,7 @@ public class SBMLFix {
     }
     if (activeObjective != null) {
       if (!activeObjective.isSetListOfFluxObjectives()) {
-        logger.severe(MessageFormat.format(MESSAGES.getString("TRY_GUESS_MISSING_FLUX_OBJ"), modelDescriptor));
+        logger.info(MessageFormat.format(MESSAGES.getString("TRY_GUESS_MISSING_FLUX_OBJ"), modelDescriptor));
         if (listOfReactions != null) {
           if (fluxObjectives != null && !fluxObjectives.isEmpty()) {
             /*
@@ -168,7 +159,7 @@ public class SBMLFix {
               if (r != null) {
                 createFluxObjective(modelDescriptor, r, fluxCoefficients, activeObjective, i);
               } else {
-                logger.severe(MessageFormat.format(MESSAGES.getString("REACTION_UNKNOWN_ERROR"), id, modelDescriptor));
+                logger.info(MessageFormat.format(MESSAGES.getString("REACTION_UNKNOWN_ERROR"), id, modelDescriptor));
               }
             }
           } else {
@@ -182,11 +173,11 @@ public class SBMLFix {
             if (rBiomass != null) {
               createFluxObjective(modelDescriptor, rBiomass, fluxCoefficients, activeObjective, 0);
             } else {
-              logger.severe(MESSAGES.getString("REACTION_BIOMASS_UNKNOWN_ERROR"));
+              logger.info(MESSAGES.getString("REACTION_BIOMASS_UNKNOWN_ERROR"));
             }
           }
         } else {
-          logger.severe(MessageFormat.format(MESSAGES.getString("REACTION_LIST_MISSING"), modelDescriptor));
+          logger.info(MessageFormat.format(MESSAGES.getString("REACTION_LIST_MISSING"), modelDescriptor));
         }
       }
     }

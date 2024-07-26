@@ -3,22 +3,24 @@ package edu.ucsd.sbrg.polishing.fbc;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.polishing.ReactionsPolisher;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class FBCPolisher extends AbstractPolisher<Model> {
 
-    private static final Logger logger = Logger.getLogger(SBMLPolisher.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(FBCPolisher.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     public FBCPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
@@ -27,6 +29,7 @@ public class FBCPolisher extends AbstractPolisher<Model> {
 
     @Override
     public void polish(Model model) {
+        logger.debug("Polish FBC Plugin");
         // Set the SBO term for the document to indicate a flux balance framework.
         model.getSBMLDocument().setSBOTerm(624);
 
@@ -35,7 +38,7 @@ public class FBCPolisher extends AbstractPolisher<Model> {
         if (modelPlug.isSetListOfObjectives()) {
             if (modelPlug.getObjectiveCount() == 0) {
                 // Note: the strict attribute does not require the presence of any Objectives in the model.
-                logger.warning(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
+                logger.info(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
             } else {
                 new FluxObjectivesPolisher(modelPlug, polishingParameters, registry, getObservers()).polish(modelPlug.getListOfObjectives());
             }

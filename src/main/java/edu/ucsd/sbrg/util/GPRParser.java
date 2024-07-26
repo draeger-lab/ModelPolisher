@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.ucsd.sbrg.io.parsers.cobra.MatlabParser;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.And;
 import org.sbml.jsbml.ext.fbc.Association;
@@ -23,6 +24,7 @@ import org.sbml.jsbml.text.parser.CobraFormulaParser;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import org.slf4j.LoggerFactory;
 
 import static java.text.MessageFormat.format;
 
@@ -42,13 +44,7 @@ import static java.text.MessageFormat.format;
  */
 public class GPRParser {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(GPRParser.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GPRParser.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
 
@@ -70,7 +66,7 @@ public class GPRParser {
           convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))),
             r.getId(), r.getModel(), omitGenericTerms);
       } catch (Throwable exc) {
-        logger.warning(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
+        logger.info(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
       }
       if (association != null) {
         parseGPR(r, association, omitGenericTerms);
@@ -157,7 +153,7 @@ public class GPRParser {
         }
         // If the GeneProduct does not exist, create a new one and log a warning.
         if (gp == null) {
-          logger.warning(format(MESSAGES.getString("CREATE_MISSING_GPR"), id, reactionId));
+          logger.info(format(MESSAGES.getString("CREATE_MISSING_GPR"), id, reactionId));
           FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
           gp = fbcPlug.createGeneProduct(id);
           gp.setLabel(id);
@@ -290,7 +286,7 @@ public class GPRParser {
           String geneProduct = ((GeneProductRef) current).getGeneProduct();
           if (gprs.contains(geneProduct)) {
             if (!or.removeAssociation(current)) {
-              logger.warning(format("Failed to unset duplicate GeneProductReference {0} for reaction {1}",
+              logger.info(format("Failed to unset duplicate GeneProductReference {0} for reaction {1}",
                 geneProduct, r.getId()));
             }
           } else {

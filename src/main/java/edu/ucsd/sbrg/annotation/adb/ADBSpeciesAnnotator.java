@@ -6,6 +6,7 @@ import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import org.sbml.jsbml.Species;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static edu.ucsd.sbrg.db.adb.AnnotateDBContract.Constants.BIGG_METABOLITE;
@@ -17,15 +18,19 @@ public class ADBSpeciesAnnotator extends AbstractADBAnnotator<Species> {
     }
 
     @Override
-    public void annotate(List<Species> species) {
-        species.forEach(this::annotate);
+    public void annotate(List<Species> species) throws SQLException {
+        for (Species s : species) {
+            annotate(s);
+        }
     }
 
     @Override
-    public void annotate(Species species) {
+    public void annotate(Species species) throws SQLException {
         String id = species.getId();
         Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(id);
-        metaboliteId.ifPresent(biGGId -> addBQB_IS_AnnotationsFromADB(species.getAnnotation(), BIGG_METABOLITE, biGGId));
+        if (metaboliteId.isPresent()) {
+            addBQB_IS_AnnotationsFromADB(species.getAnnotation(), BIGG_METABOLITE, metaboliteId.get());
+        }
         if ((species.getCVTermCount() > 0) && !species.isSetMetaId()) {
             species.setMetaId(species.getId());
         }
