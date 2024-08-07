@@ -93,7 +93,7 @@ public class CompartmentPolisher extends AbstractPolisher<Compartment> {
     // Set the units of the compartment to dimensionless if no specific units are set in the model
     if (!compartment.isSetUnits()) {
       Model model = compartment.getModel();
-      if ((model == null) || !(model.isSetLengthUnits() || model.isSetAreaUnits() || model.isSetVolumeUnits())) {
+      if (!(model.isSetLengthUnits() || model.isSetAreaUnits() || model.isSetVolumeUnits())) {
         compartment.setUnits(Unit.Kind.DIMENSIONLESS);
       }
     }
