@@ -3,17 +3,18 @@ package edu.ucsd.sbrg.db;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.sbml.jsbml.util.StringTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class PostgresConnectionPool {
 
-  private static final Logger logger = Logger.getLogger(PostgresConnectionPool.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(PostgresConnectionPool.class);
   private final HikariDataSource dataSource;
 
   public Connection getConnection() throws SQLException {
@@ -37,6 +38,6 @@ public class PostgresConnectionPool {
     config.setMaximumPoolSize(16);
     config.setReadOnly(true);
     dataSource = new HikariDataSource(config);
-    logger.fine(format("{0}@{1}:{2}, password={3}", user, host, port, StringTools.fill(password.length(), '*')));
+    logger.debug(format("{0}@{1}:{2}, password={3}", user, host, port, StringTools.fill(password.length(), '*')));
   }
 }

@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation.bigg.fbc;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -11,12 +12,13 @@ import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.TYPE_GENE_PRODUCT;
@@ -27,9 +29,9 @@ import static java.text.MessageFormat.format;
  * This class extends {@link BiGGCVTermAnnotator} and specifically handles the annotation of {@link GeneProduct} instances.
  * It includes methods to validate gene product IDs, retrieve and set labels, and add annotations based on BiGG IDs.
  */
-public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
+public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> implements IAnnotateSBases<GeneProduct> {
 
-  static final Logger logger = Logger.getLogger(BiGGGeneProductAnnotator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(BiGGGeneProductAnnotator.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   public static final String BIGG_GENE_ID_PATTERN = "^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
@@ -69,19 +71,19 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    */
   @Override
   public void annotate(GeneProduct geneProduct) throws SQLException {
-    Optional<BiGGId> biggId = findBiGGId(geneProduct);
+    var biggId = findBiGGId(geneProduct);
 
-    Optional<String> label = biggId.map(id -> getLabel(geneProduct, id));
+    String label = getLabel(geneProduct, biggId);
     if (label.isEmpty()) {
       return;
     }
 
     gprAnnotator.update(geneProduct);
-    addAnnotations(geneProduct, biggId.get());
+    addAnnotations(geneProduct, biggId);
     if (geneProduct.getCVTermCount() > 0) {
-      geneProduct.setMetaId(biggId.get().toBiGGId());
+      geneProduct.setMetaId(biggId.toBiGGId());
     }
-    setGPLabelName(geneProduct, label.get());
+    setGPLabelName(geneProduct, label);
   }
 
 
@@ -96,7 +98,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
    * @return An {@link Optional<BiGGId>} containing the validated or retrieved BiGG ID, or an empty Optional if no valid ID is found.
    */
   @Override
-  public Optional<BiGGId> findBiGGId(GeneProduct geneProduct) throws SQLException {
+  public BiGGId findBiGGId(GeneProduct geneProduct) throws SQLException {
     String id = geneProduct.getId();
     boolean isBiGGid = id.matches(BIGG_GENE_ID_PATTERN);
     if (!isBiGGid) {
@@ -108,7 +110,7 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
       // Attempt to update the ID with a valid BiGG ID from the resources, if available
       Optional<BiGGId> biGGIdFromResources = getBiGGIdFromResources(resources, TYPE_GENE_PRODUCT);
       if (biGGIdFromResources.isPresent()) {
-        return biGGIdFromResources;
+        return biGGIdFromResources.get();
       }
     }
     // Create and return a BiGGId object based on the validated or updated ID
@@ -154,11 +156,11 @@ public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> {
     bigg.getGeneName(label).ifPresent(geneName -> {
       // Log if no gene name is associated with the label
       if (geneName.isEmpty()) {
-        logger.fine(format(MESSAGES.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
+        logger.debug(format(MESSAGES.getString("NO_GENE_FOR_LABEL"), geneProduct.getName()));
       } else {
         // Log a warning if the gene product name is set and differs from the fetched gene name
         if (geneProduct.isSetName() && !geneProduct.getName().equals(geneName)) {
-          logger.warning(format(MESSAGES.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
+          logger.debug(format(MESSAGES.getString("UPDATE_GP_NAME"), geneProduct.getName(), geneName));
         }
         // Update the gene product name with the fetched gene name
         geneProduct.setName(geneName);

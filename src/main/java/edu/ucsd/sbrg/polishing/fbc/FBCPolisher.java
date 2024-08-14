@@ -1,10 +1,10 @@
 package edu.ucsd.sbrg.polishing.fbc;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.polishing.AbstractPolisher;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
-import edu.ucsd.sbrg.polishing.ReactionsPolisher;
-import edu.ucsd.sbrg.polishing.SBMLPolisher;
+import edu.ucsd.sbrg.polishing.IPolishSBases;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;
@@ -18,13 +18,15 @@ import java.util.ResourceBundle;
 
 import static java.text.MessageFormat.format;
 
-public class FBCPolisher extends AbstractPolisher<Model> {
+public class FBCPolisher extends AbstractPolisher implements IPolishSBases<Model> {
 
     private static final Logger logger = LoggerFactory.getLogger(FBCPolisher.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private final SBOParameters sboParameters;
 
-    public FBCPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
+    public FBCPolisher(PolishingParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
         super(parameters, registry, observers);
+        this.sboParameters = sboParameters;
     }
 
     @Override
@@ -37,10 +39,12 @@ public class FBCPolisher extends AbstractPolisher<Model> {
         // Polish the list of objectives if set
         if (modelPlug.isSetListOfObjectives()) {
             if (modelPlug.getObjectiveCount() == 0) {
-                // Note: the strict attribute does not require the presence of any Objectives in the model.
                 logger.info(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
             } else {
-                new FluxObjectivesPolisher(modelPlug, polishingParameters, registry, getObservers()).polish(modelPlug.getListOfObjectives());
+                new ObjectivesPolisher(modelPlug, polishingParameters, registry, getObservers())
+                        .polish(modelPlug.getListOfObjectives());
+                new FBCReactionPolisher(modelPlug, polishingParameters, sboParameters, registry, getObservers())
+                        .polish(model.getListOfReactions());
             }
 
         }

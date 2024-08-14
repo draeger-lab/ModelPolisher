@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg;
+package edu.ucsd.sbrg.validation;
 
 import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
@@ -7,17 +7,27 @@ import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLErrorLog;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.validator.offline.LoggingValidationContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class ModelValidator {
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-    private static final Logger logger = Logger.getLogger(ModelValidator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ModelValidator.class);
+
+
+    public SBMLErrorLog validate(SBMLDocument doc) {
+        LoggingValidationContext context = new LoggingValidationContext(doc.getLevel(), doc.getVersion());
+        context.setValidateRecursively(true);
+        context.loadConstraints(SBMLDocument.class, doc.getLevel(), doc.getVersion());
+        context.validate(doc);
+        return context.getErrorLog();
+    }
 
 
     public void validate(File outputFile) throws ModelValidatorException {
@@ -36,13 +46,10 @@ public class ModelValidator {
             }
             doc = SBMLReader.read(istream);
             if (doc != null) {
-                LoggingValidationContext context = new LoggingValidationContext(doc.getLevel(), doc.getVersion());
-                context.loadConstraints(SBMLDocument.class);
-                context.validate(doc);
-                SBMLErrorLog sbmlErrorLog = context.getErrorLog();
-                handleErrorLog(sbmlErrorLog, filename);
+                SBMLErrorLog sbmlErrorLog = validate(doc);
+                logErrorLog(sbmlErrorLog, filename);
             } else {
-                logger.severe(format(MESSAGES.getString("VAL_OFFLINE_FAIL"), filename));
+                logger.info(format(MESSAGES.getString("VAL_OFFLINE_FAIL"), filename));
             }
         } catch (XMLStreamException | IOException e) {
             throw new ModelValidatorException(e, outputFile);
@@ -50,13 +57,13 @@ public class ModelValidator {
     }
 
 
-    private void handleErrorLog(SBMLErrorLog sbmlErrorLog, String filename) {
+    private void logErrorLog(SBMLErrorLog sbmlErrorLog, String filename) {
         if (sbmlErrorLog != null) {
             logger.info(format(MESSAGES.getString("VAL_ERR_COUNT"), sbmlErrorLog.getErrorCount(), filename));
             // printErrors
             for (int j = 0; j < sbmlErrorLog.getErrorCount(); j++) {
                 SBMLError error = sbmlErrorLog.getError(j);
-                logger.warning(error.toString());
+                logger.info(error.toString());
             }
         } else {
             logger.info(MESSAGES.getString("VAL_ERROR"));

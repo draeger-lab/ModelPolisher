@@ -1,14 +1,11 @@
 package edu.ucsd.sbrg.annotation;
 
-import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.reporting.*;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractAnnotator<SBMLElement> {
+public abstract class AbstractAnnotator implements IReportStatus, IReportDiffs {
 
     private final List<ProgressObserver> observers;
 
@@ -20,19 +17,15 @@ public abstract class AbstractAnnotator<SBMLElement> {
         this.observers = observers;
     }
 
-    public void annotate(List<SBMLElement> elementsToAnnotate) throws SQLException {
-        throw new UnsupportedOperationException();
-    }
-
-    abstract public void annotate(SBMLElement elementToAnnotate) throws SQLException, AnnotationException;
-
-    protected void statusReport(String text, Object element) {
+    @Override
+    public void statusReport(String text, Object element) {
         for (var o : observers) {
             o.update(new ProgressUpdate(text, element, ReportType.STATUS));
         }
     }
 
-    protected void diffReport(String elementType, Object element1, Object element2) {
+    @Override
+    public void diffReport(String elementType, Object element1, Object element2) {
         for (var o : observers) {
             o.update(new ProgressUpdate(elementType, List.of(element1, element2), ReportType.DATA));
         }

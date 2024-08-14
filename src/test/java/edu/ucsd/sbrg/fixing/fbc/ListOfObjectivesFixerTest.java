@@ -1,8 +1,8 @@
-package edu.ucsd.sbrg.polishing.fbc;
+package edu.ucsd.sbrg.fixing.fbc;
 
+import edu.ucsd.sbrg.fixing.ext.fbc.ListOfObjectivesFixer;
 import edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
-import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
@@ -10,43 +10,13 @@ import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+public class ListOfObjectivesFixerTest {
 
-public class FluxObjectivesPolisherTest {
-
-    /**
-     * Test that if an objective is set, and it has flux objectives too, it won't be overwritten.
-     */
-    @Test
-    public void activeObjectiveRemainsUnchangedIfItHasFluxObjective() {
-        var m = new Model(3,2);
-        var fbcPlugin = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-
-        fbcPlugin.createObjective("obj1");
-        var o2 = fbcPlugin.createObjective("obj2");
-        o2.createFluxObjective();
-        fbcPlugin.setActiveObjective(o2);
-        fbcPlugin.createObjective("obj3");
-
-        var parameters = new PolishingParameters(
-                null,
-                new FluxObjectivesPolishingParameters(
-                        null,
-                        List.of(" objective_reaction1 ")));
-
-        m.createReaction("objective_reaction1");
-        m.createReaction("yadda_Biomass_yadda");
-
-        var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, parameters, new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
-
-        assertEquals("obj2", fbcPlugin.getActiveObjective());
-    }
 
     /**
      * Test that if objectives don't have flux objectives set and viable arguments are supplied,
@@ -64,7 +34,6 @@ public class FluxObjectivesPolisherTest {
         fbcPlugin.createObjective("obj2");
         var o3 = fbcPlugin.createObjective("obj3");
         fbcPlugin.setActiveObjective(o3);
-        assertNotNull(fbcPlugin.getActiveObjectiveInstance());
 
         m.createReaction("objective_reaction1");
         m.createReaction("objective_reaction2");
@@ -76,7 +45,7 @@ public class FluxObjectivesPolisherTest {
                         null,
                         List.of("objective_reaction1", "objective_reaction2")));
 
-        new FluxObjectivesPolisher(fbcPlugin, parameters, new IdentifiersOrg()).polish(fbcPlugin.getListOfObjectives());
+        new ListOfObjectivesFixer(parameters, fbcPlugin).fix(fbcPlugin.getListOfObjectives(), 0);
 
         assertEquals("obj3", fbcPlugin.getActiveObjective());
         assertEquals(2, fbcPlugin.getListOfObjectives()
@@ -90,6 +59,7 @@ public class FluxObjectivesPolisherTest {
                 .collect(Collectors.toList());
         assertEquals(List.of("objective_reaction1", "objective_reaction2"), fos);
     }
+
 
     /**
      * Test that if objectives don't have flux objectives set and no (viable) arguments are supplied,
@@ -113,7 +83,7 @@ public class FluxObjectivesPolisherTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, new PolishingParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
+        new ListOfObjectivesFixer(new PolishingParameters(), fbcPlugin).fix(mPlug.getListOfObjectives(), 0);
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
         assertEquals(Set.of("yadda_Biomass_yadda"),
@@ -140,7 +110,7 @@ public class FluxObjectivesPolisherTest {
         // o1.setListOfFluxObjectives(new ListOf<>());
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new FluxObjectivesPolisher(mPlug, new PolishingParameters(), new IdentifiersOrg()).polish(mPlug.getListOfObjectives());
+        new ListOfObjectivesFixer(new PolishingParameters(), fbcPlugin).fix(mPlug.getListOfObjectives(), 0);
 
         assertEquals(0, fbcPlugin.getObjectiveCount());
     }

@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
@@ -17,7 +18,7 @@ import java.util.List;
  * It allows for the addition of both BiGG and SBO annotations to a compartment, and can also set the compartment's name
  * based on information retrieved from the BiGG database.
  */
-public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator<Compartment> {
+public class BiGGCompartmentsAnnotator extends AbstractBiGGAnnotator implements IAnnotateSBases<Compartment> {
 
 
   public BiGGCompartmentsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry) {

@@ -4,18 +4,19 @@ import static java.text.MessageFormat.format;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Compartments {
 
-  private static final Logger logger = Logger.getLogger(Compartments.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(Compartments.class);
   private Map<String, String> compartments = new HashMap<>();
 
   @JsonAnySetter
@@ -30,7 +31,7 @@ public class Compartments {
       }
       compartments.put(key, value);
     } else {
-      logger.warning(format("Compartment code {0} did not match required pattern (C_)?[a-z]'{'1,2'}'", key));
+      logger.debug(format("Compartment code {0} did not match required pattern (C_)?[a-z]'{'1,2'}'", key));
     }
   }
 

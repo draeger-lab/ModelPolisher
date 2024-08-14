@@ -10,7 +10,7 @@ public interface Registry {
 
     String getPatternByNamespaceName(String namespaceName);
 
-    Optional<RegistryURI> findRegistryUrlForOtherUrl(String url);
+    Optional<RegistryURI> resolveBackwards(String url);
 
     boolean validRegistryUrlPrefix(RegistryURI uri);
 

@@ -2,12 +2,9 @@ package edu.ucsd.sbrg.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.ModelPolisherOptions;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class FluxObjectivesPolishingParameters {
 

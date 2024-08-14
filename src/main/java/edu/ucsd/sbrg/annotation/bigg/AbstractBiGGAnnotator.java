@@ -18,9 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static java.util.stream.Stream.concat;
 
-public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotator<SBMLElement> {
+public abstract class AbstractBiGGAnnotator extends AbstractAnnotator {
 
     protected final BiGGDB bigg;
     protected final Registry registry;
@@ -59,7 +58,7 @@ public abstract class AbstractBiGGAnnotator<SBMLElement> extends AbstractAnnotat
 
         var resolvedIdentifiersOrgUrisStream = resources.stream()
                 .filter(r -> !registry.isValid(r))
-                .map(registry::findRegistryUrlForOtherUrl)
+                .map(registry::resolveBackwards)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .filter(registry::validRegistryUrlPrefix);

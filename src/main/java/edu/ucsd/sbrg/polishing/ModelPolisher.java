@@ -39,7 +39,7 @@ import static java.text.MessageFormat.format;
  * 
  * @author Andreas Dr&auml;ger
  */
-public class ModelPolisher extends AbstractPolisher<Model> {
+public class ModelPolisher extends AbstractPolisher implements IPolishSBases<Model> {
 
   private static final Logger logger = LoggerFactory.getLogger(ModelPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
@@ -68,6 +68,13 @@ public class ModelPolisher extends AbstractPolisher<Model> {
     logger.debug(format(MESSAGES.getString("PROCESSING_MODEL"), model.toString()));
     statusReport("Polishing Model (1/9)  ", model);
 
+    new AnnotationPolisher(polishingParameters, registry, getObservers()).polish(model.getAnnotation());
+
+    // Set the metaId of the model if it is not set and there are CV terms
+    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
+      model.setMetaId(model.getId());
+    }
+
     // Delegate polishing tasks
     new UnitPolisher(polishingParameters, registry, getObservers()).polish(model);
 
@@ -77,19 +84,12 @@ public class ModelPolisher extends AbstractPolisher<Model> {
 
     new ParametersPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfParameters());
 
-    diffReport("modelAnnotation", model.getAnnotation().clone(), model.getAnnotation());
-    new AnnotationPolisher(polishingParameters, registry, getObservers()).polish(model.getAnnotation());
-
     new ReactionsPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model.getListOfReactions());
 
     if (model.isSetPlugin(FBCConstants.shortLabel)) {
-      new FBCPolisher(polishingParameters, registry, getObservers()).polish(model);
+      new FBCPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model);
     }
 
-    // Set the metaId of the model if it is not set and there are CV terms
-    if (!model.isSetMetaId() && (model.getCVTermCount() > 0)) {
-      model.setMetaId(model.getId());
-    }
   }
 
   @Override

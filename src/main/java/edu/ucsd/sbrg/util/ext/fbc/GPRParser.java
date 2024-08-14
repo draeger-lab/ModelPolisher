@@ -1,13 +1,12 @@
-package edu.ucsd.sbrg.util;
+package edu.ucsd.sbrg.util.ext.fbc;
 
 import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Logger;
 
-import edu.ucsd.sbrg.io.parsers.cobra.MatlabParser;
+import de.zbit.util.Utils;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.And;
 import org.sbml.jsbml.ext.fbc.Association;
@@ -22,8 +21,9 @@ import org.sbml.jsbml.ext.fbc.Or;
 import org.sbml.jsbml.text.parser.CobraFormulaParser;
 
 import de.zbit.util.ResourceManager;
-import de.zbit.util.Utils;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import org.sbml.jsbml.text.parser.ParseException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.text.MessageFormat.format;
@@ -44,7 +44,7 @@ import static java.text.MessageFormat.format;
  */
 public class GPRParser {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GPRParser.class);
+  private static final Logger logger = LoggerFactory.getLogger(GPRParser.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
 
@@ -59,18 +59,19 @@ public class GPRParser {
    * @param omitGenericTerms Flag indicating whether to omit generic terms (e.g., SBO terms) in the association.
    */
   public static void parseGPR(Reaction r, String geneReactionRule, boolean omitGenericTerms) {
-    if ((geneReactionRule != null) && (!geneReactionRule.isEmpty())) {
-      Association association = null;
-      try {
-        association =
-          convertToAssociation(ASTNode.parseFormula(geneReactionRule, new CobraFormulaParser(new StringReader(""))),
-            r.getId(), r.getModel(), omitGenericTerms);
-      } catch (Throwable exc) {
-        logger.info(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(exc)));
-      }
-      if (association != null) {
-        parseGPR(r, association, omitGenericTerms);
-      }
+    ASTNode ast = null;
+    try {
+      ast = ASTNode.parseFormula(
+              geneReactionRule,
+              new CobraFormulaParser(new StringReader("")));
+      Association association = convertToAssociation(
+              ast,
+              r.getId(),
+              r.getModel(),
+              omitGenericTerms);
+      parseGPR(r, association, omitGenericTerms);
+    } catch (ParseException e) {
+      logger.info(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(e)));
     }
   }
 
@@ -136,36 +137,35 @@ public class GPRParser {
     // Determine the SBML document level and version for creating new elements.
     int level = model.getLevel(), version = model.getVersion();
     GeneProductRef gpr = new GeneProductRef(level, version);
-    
+
     // Normalize the identifier to include "G_" prefix if missing.
     String oldId = identifier.startsWith("G_") ? identifier : "G_" + identifier;
     boolean containsOldId = !model.containsUniqueNamedSBase(oldId);
-    
+
     // Attempt to create or find the GeneProduct using a standardized identifier.
-    BiGGId.createGeneId(identifier).map(BiGGId::toBiGGId).ifPresent(id -> {
-      if (!model.containsUniqueNamedSBase(id)) {
-        GeneProduct gp;
-        // Check if the old ID exists, if so, retrieve the GeneProduct, otherwise use the new ID.
-        if (containsOldId) {
-          gp = (GeneProduct) model.findUniqueNamedSBase(oldId);
-        } else {
-          gp = (GeneProduct) model.findUniqueNamedSBase(id);
-        }
-        // If the GeneProduct does not exist, create a new one and log a warning.
-        if (gp == null) {
-          logger.info(format(MESSAGES.getString("CREATE_MISSING_GPR"), id, reactionId));
-          FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-          gp = fbcPlug.createGeneProduct(id);
-          gp.setLabel(id);
-        } else {
-          // If the GeneProduct exists, update its ID and log the update.
-          logger.info(format(MESSAGES.getString("UPDATE_GP_ID"), gp.getId(), id));
-          gp.setId(id);
-        }
+    var id = BiGGId.createGeneId(identifier).toBiGGId();
+    if (!model.containsUniqueNamedSBase(id)) {
+      GeneProduct gp;
+      // Check if the old ID exists, if so, retrieve the GeneProduct, otherwise use the new ID.
+      if (containsOldId) {
+        gp = (GeneProduct) model.findUniqueNamedSBase(oldId);
+      } else {
+        gp = (GeneProduct) model.findUniqueNamedSBase(id);
       }
-      // Set the GeneProduct reference in the GeneProductRef.
-      gpr.setGeneProduct(id);
-    });
+      // If the GeneProduct does not exist, create a new one and log a warning.
+      if (gp == null) {
+        logger.info(format(MESSAGES.getString("CREATE_MISSING_GPR"), id, reactionId));
+        FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+        gp = fbcPlug.createGeneProduct(id);
+        gp.setLabel(id);
+      } else {
+        // If the GeneProduct exists, update its ID and log the update.
+        logger.info(format(MESSAGES.getString("UPDATE_GP_ID"), gp.getId(), id));
+        gp.setId(id);
+      }
+    }
+    // Set the GeneProduct reference in the GeneProductRef.
+    gpr.setGeneProduct(id);
     return gpr;
   }
 
@@ -180,13 +180,13 @@ public class GPRParser {
    * @param omitGenericTerms A boolean flag indicating whether generic terms should be omitted during the merging process.
    */
   private static void parseGPR(Reaction r, Association association, boolean omitGenericTerms) {
-    FBCReactionPlugin plugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
-    if (!plugin.isSetGeneProductAssociation()) {
-      GeneProductAssociation gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
+    var reactionPlugin = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
+    if (!reactionPlugin.isSetGeneProductAssociation()) {
+      var gpa = new GeneProductAssociation(r.getLevel(), r.getVersion());
       gpa.setAssociation(association);
-      plugin.setGeneProductAssociation(gpa);
-    } else if (!areEqual(association, plugin.getGeneProductAssociation().getAssociation())) {
-      mergeAssociation(r, association, plugin, omitGenericTerms);
+      reactionPlugin.setGeneProductAssociation(gpa);
+    } else if (!areEqual(association, reactionPlugin.getGeneProductAssociation().getAssociation())) {
+      mergeAssociation(r, association, reactionPlugin, omitGenericTerms);
     }
   }
 

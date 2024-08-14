@@ -1,11 +1,10 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
-import de.zbit.util.Utils;
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import edu.ucsd.sbrg.polishing.PolishingUtils;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -14,10 +13,11 @@ import org.sbml.jsbml.*;
 import org.sbml.jsbml.CVTerm.Qualifier;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static edu.ucsd.sbrg.db.bigg.BiGGDBContract.Constants.TYPE_SPECIES;
@@ -30,9 +30,9 @@ import static java.text.MessageFormat.format;
  * the species' name, SBO term, and additional annotations. It also sets the chemical formula and charge
  * for the species using FBC (Flux Balance Constraints) extensions.
  */
-public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
+public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implements IAnnotateSBases<Species> {
 
-  static final Logger logger = Logger.getLogger(BiGGSpeciesAnnotator.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(BiGGSpeciesAnnotator.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
   private final SBOParameters sboParameters;
@@ -70,13 +70,11 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
   @Override
   public void annotate(Species species) throws SQLException {
     // Retrieve the BiGGId for the species, either from its URI list or its direct ID
-    Optional<BiGGId> biGGId = findBiGGId(species);
-    if (biGGId.isPresent()) {
-      setName(species, biGGId.get()); // Set the species name based on the BiGGId
-      setSBOTerm(species, biGGId.get()); // Assign the appropriate SBO term
-      addAnnotations(species, biGGId.get()); // Add database cross-references and other annotations
-      FBCSetFormulaCharge(species, biGGId.get()); // Set the chemical formula and charge
-    };
+    var biGGId = findBiGGId(species);
+    setName(species, biGGId); // Set the species name based on the BiGGId
+    setSBOTerm(species, biGGId); // Assign the appropriate SBO term
+    addAnnotations(species, biGGId); // Add database cross-references and other annotations
+    FBCSetFormulaCharge(species, biGGId); // Set the chemical formula and charge
   }
 
 
@@ -88,30 +86,35 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * @return An {@link Optional} containing the BiGGId if a valid one is found or created, otherwise {@link Optional#empty()}
    */
   @Override
-  public Optional<BiGGId> findBiGGId(Species species) throws SQLException {
+  public BiGGId findBiGGId(Species species) throws SQLException {
     // Attempt to create a BiGGId from the species ID
-    Optional<BiGGId> metaboliteId = BiGGId.createMetaboliteId(species.getId());
+    var metaboliteId = BiGGId.createMetaboliteId(species.getId());
+
     // Check if the created BiGGId is valid, if not, try to find a BiGGId from annotations
-    if (metaboliteId.isPresent()) {
-      boolean isBiGGid = bigg.isMetabolite(metaboliteId.get().getAbbreviation());
-        if (!isBiGGid) {
-        // Collect all resources from CVTerms that qualify as BQB_IS
-            // Attempt to retrieve a BiGGId from the collected resources
-        return getBiGGIdFromResources(species.getAnnotation().getListOfCVTerms().stream()
-                .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                .flatMap(term -> term.getResources().stream())
-                .toList(), TYPE_SPECIES);
+    boolean isBiGGid = bigg.isMetabolite(metaboliteId.getAbbreviation());
+
+    if (!isBiGGid) {
+      // Collect all resources from CVTerms that qualify as BQB_IS
+      // Attempt to retrieve a BiGGId from the collected resources
+      var biggIdFromResources = getBiGGIdFromResources(
+              species.getAnnotation().getListOfCVTerms()
+                      .stream()
+                      .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+                      .flatMap(term -> term.getResources().stream())
+                      .toList(),
+              TYPE_SPECIES);
+      if (biggIdFromResources.isPresent()) {
+        return biggIdFromResources.get();
       }
-      // Return the found BiGGId or the originally created one if no new ID was found
-      return metaboliteId.map(BiGGId::toBiGGId).map(BiGGId::createMetaboliteId).orElse(metaboliteId);
     }
-    return Optional.empty();
+    return metaboliteId;
   }
 
 
   /**
-   * Updates the name of the species based on data retrieved from the BiGG Knowledgebase. The species name is set only if it
-   * has not been previously set or if the current name follows a default format that combines the BiGGId abbreviation and
+   * Updates the name of the species based on data retrieved from the BiGG Knowledgebase.
+   * The species name is set only if it has not been previously set or if the current name
+   * follows a default format that combines the BiGGId abbreviation and
    * compartment code. This method relies on the availability of a valid {@link BiGGId} for the species.
    *
    * @param biggId The {@link BiGGId} associated with the species, used to fetch the component name from the BiGG database.
@@ -119,7 +122,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
   public void setName(Species species, BiGGId biggId) throws SQLException {
     if (!species.isSetName()
       || species.getName().equals(format("{0}_{1}", biggId.getAbbreviation(), biggId.getCompartmentCode()))) {
-      bigg.getComponentName(biggId).map(PolishingUtils::polishName).ifPresent(species::setName);
+      bigg.getComponentName(biggId).ifPresent(species::setName);
     }
   }
 
@@ -128,7 +131,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
    * Assigns the SBO term to a species based on its component type as determined from the BiGG database.
    * The component type can be a metabolite, protein, or a generic material entity. If the component type is not explicitly
    * identified in the BiGG database, the species is annotated as a generic material entity unless the configuration
-   * explicitly omits such generic terms (controlled by {@link SBOParameters#omitGenericTerms()}).
+   * explicitly omits such generic terms (controlled by {@link SBOParameters#addGenericTerms()}).
    *
    * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
    */
@@ -142,13 +145,13 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
         species.setSBOTerm(SBO.getProtein()); // Assign SBO term for proteins.
         break;
       default:
-        if (!sboParameters.omitGenericTerms()) {
+        if (sboParameters.addGenericTerms()) {
           species.setSBOTerm(SBO.getMaterialEntity()); // Assign SBO term for generic material entities.
         }
         break;
       }
     }, () -> {
-      if (!sboParameters.omitGenericTerms()) {
+      if (sboParameters.addGenericTerms()) {
         species.setSBOTerm(SBO.getMaterialEntity()); // Default SBO term assignment when no specific type is found.
       }
     });
@@ -226,13 +229,7 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
       if ((!isBiGGModel || chemicalFormula.isEmpty()) && compartmentNonEmpty) {
         chemicalFormula = bigg.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
       }
-      chemicalFormula.ifPresent(formula -> {
-        try {
-          fbcSpecPlug.setChemicalFormula(formula);
-        } catch (IllegalArgumentException exc) {
-          logger.severe(format(MESSAGES.getString("CHEM_FORMULA_INVALID"), Utils.getMessage(exc)));
-        }
-      });
+        chemicalFormula.ifPresent(fbcSpecPlug::setChemicalFormula);
     }
     Optional<Integer> chargeFromBiGG = Optional.empty();
     if (isBiGGModel) {
@@ -241,8 +238,11 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> {
       chargeFromBiGG = bigg.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
     }
     if (species.isSetCharge()) {
-      chargeFromBiGG.filter(charge -> charge != species.getCharge()).ifPresent(charge -> logger.warning(
-        format(MESSAGES.getString("CHARGE_CONTRADICTION"), charge, species.getCharge(), species.getId())));
+      chargeFromBiGG
+              .filter(charge -> charge != species.getCharge())
+              .ifPresent(charge ->
+                      logger.debug(format(MESSAGES.getString("CHARGE_CONTRADICTION"),
+                              charge, species.getCharge(), species.getId())));
       species.unsetCharge();
     }
     chargeFromBiGG.filter(charge -> charge != 0).ifPresent(fbcSpecPlug::setCharge);

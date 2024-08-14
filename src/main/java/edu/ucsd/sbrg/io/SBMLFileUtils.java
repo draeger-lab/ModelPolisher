@@ -4,22 +4,19 @@ import de.zbit.io.FileTools;
 import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class SBMLFileUtils {
-    /**
-     * Bundle for ModelPolisher logger messages
-     */
+
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-    /**
-     * A {@link Logger} for this class.
-     */
-    private static final Logger logger = Logger.getLogger(SBMLFileUtils.class.getName());
+
+    private static final Logger logger = LoggerFactory.getLogger(SBMLFileUtils.class);
 
     /**
      * Possible FileTypes of input file
@@ -97,10 +94,7 @@ public class SBMLFileUtils {
         // output is directory
         if (isDirectory(output) && !output.exists()) {
             logger.info(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
-            if (output.mkdirs()) {
-                logger.fine(format(MESSAGES.getString("DIRECTORY_CREATED"), output.getAbsolutePath()));
-            } else {
-                logger.severe(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
+            if (!output.mkdirs()) {
                 // TODO: grace
                 throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
             }
@@ -110,11 +104,7 @@ public class SBMLFileUtils {
             // check if directory of outfile exist and create if required
             if (!output.getParentFile().exists()) {
                 logger.info(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
-                if (output.getParentFile().mkdirs()) {
-                    logger.fine(format(MESSAGES.getString("DIRECTORY_CREATED"), output.getParentFile().getAbsolutePath()));
-                } else {
-                    logger.severe(
-                            format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
+                if (!output.getParentFile().mkdirs()) {
                     // TODO: grace
                     throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));
                 }

@@ -128,7 +128,7 @@
     <entry key="OBJ_MISSING">Keine Zielfunktion für das Model {0} definiert.</entry>
     <entry key="OBJ_NOT_DEFINED">Keine aktive Zielfunktion definiert für Model {0}.</entry>
     <entry key="OBJ_SOLUTION">Das Problem könnte erfolgreich gelöst werden, indem man {0} als die aktive Zielfunktion deklariert.</entry>
-    <entry key="OMIT_GENERIC_TERMS_DESC">Wenn wahr, werden generische Top Level annotationen wie "Prozess" angewendet. Ist diese Option ausgeschaltet, wird die Ausgabedatei kleiner.</entry>
+    <entry key="ADD_GENERIC_TERMS_DESC">Wenn wahr, werden generische Top Level annotationen wie "Prozess" angewendet. Ist diese Option ausgeschaltet, wird die Ausgabedatei kleiner.</entry>
     <entry key="OPEN_ISSUE_ANNOTATION">Please open an issue to see annotation format {0} implemented.</entry>
     <entry key="OPEN_ISSUE_ID_FORMAT">Please open an issue to see parsing for id format {0} implemented.</entry>
     <entry key="OPEN_ISSUE_NOTES_FORMAT">Please open an issue to see notes format {0} implemented.</entry>

@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg.fbc;
 
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
@@ -12,7 +13,7 @@ import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import java.sql.SQLException;
 import java.util.List;
 
-public class BiGGFBCAnnotator extends AbstractBiGGAnnotator<Model> {
+public class BiGGFBCAnnotator extends AbstractBiGGAnnotator implements IAnnotateSBases<Model> {
 
     public BiGGFBCAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
         super(bigg, parameters, registry, observers);

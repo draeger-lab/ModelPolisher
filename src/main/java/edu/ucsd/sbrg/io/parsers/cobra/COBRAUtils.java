@@ -1,6 +1,8 @@
 package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.util.ResourceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.Cell;
 import us.hebi.matlab.mat.types.Char;
@@ -8,16 +10,13 @@ import us.hebi.matlab.mat.types.MatlabType;
 
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class COBRAUtils {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(SpeciesParser.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(COBRAUtils.class);
+
   /**
    * Bundle for ModelPolisher logger messages
    */
@@ -50,7 +49,7 @@ public class COBRAUtils {
     if (id.endsWith(";")) {
       id = id.substring(0, id.length() - 1);
     } else if (id.contains(";")) {
-      logger.warning(MESSAGES.getString("TRUNCATED_ID") + id);
+      logger.debug(MESSAGES.getString("TRUNCATED_ID") + id);
       id = id.substring(0, id.indexOf(";"));
     }
     return id;
@@ -70,28 +69,17 @@ public class COBRAUtils {
   }
 
 
-  /**
-   */
-  public static void logException(Exception exc) {
-    logger.warning(format("{0}: {1}", exc.getClass().getSimpleName(), de.zbit.util.Utils.getMessage(exc)));
-  }
-
-
-  /**
-   */
   public static String asString(Array array) {
     return asString(array, null, -1);
   }
 
 
-  /**
-   */
   public static String asString(Array array, String parentName, int parentIndex) {
     StringBuilder sb = new StringBuilder();
     if (array.getType() == MatlabType.Character) {
       Char string = (Char) array;
       if (string.getDimensions()[0] > 1) {
-        logger.fine(format(MESSAGES.getString("MANY_STRINGS_IN_CELL"), string.asCharSequence()));
+        logger.debug(format(MESSAGES.getString("MANY_STRINGS_IN_CELL"), string.asCharSequence()));
       }
       for (int i = 0; i < string.getDimensions()[0]; i++) {
         if (i > 0) {
@@ -100,7 +88,7 @@ public class COBRAUtils {
         sb.append(string.getRow(i));
       }
     } else if (!Arrays.equals(array.getDimensions(), new int[] {0, 0})) {
-      logger.warning(format(MESSAGES.getString("TYPE_MISMATCH_STRING"), array.getType().toString(), "parentName = %s",
+      logger.debug(format(MESSAGES.getString("TYPE_MISMATCH_STRING"), array.getType().toString(), "parentName = %s",
         parentName, "parentIndex = %s", parentIndex));
     }
     return sb.toString();

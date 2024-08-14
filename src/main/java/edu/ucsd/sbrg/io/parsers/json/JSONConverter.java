@@ -40,22 +40,13 @@ import edu.ucsd.sbrg.io.parsers.json.mapping.Gene;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolites;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Root;
-import edu.ucsd.sbrg.util.GPRParser;
+import edu.ucsd.sbrg.util.ext.fbc.GPRParser;
 
 public class JSONConverter {
-
   private static Map<String, String> compartments = new HashMap<>();
 
-  /**
-   */
-  public static Root convertDocument(SBMLDocument doc) {
-    return convertModel(doc.getModel());
-  }
 
-
-  /**
-   */
-  public static Root convertModel(Model model) {
+  public static Root convertModel(Model model) throws XMLStreamException {
     Root root = new Root();
     root.setId(model.getId());
     root.setName(model.getName());
@@ -78,9 +69,7 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static List<Gene> convertGenes(Model model) {
+  public static List<Gene> convertGenes(Model model) throws XMLStreamException {
     List<Gene> genes = new ArrayList<>();
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     for (GeneProduct g : modelPlug.getListOfGeneProducts()) {
@@ -90,9 +79,7 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static Gene convertGene(GeneProduct g) {
+  public static Gene convertGene(GeneProduct g) throws XMLStreamException {
     Gene gene = new Gene();
     gene.setId(g.getId());
     gene.setName(g.getName());
@@ -106,9 +93,7 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static List<Metabolite> convertMetabolites(Model model) {
+  public static List<Metabolite> convertMetabolites(Model model) throws XMLStreamException {
     List<Metabolite> metabolites = new ArrayList<>();
     for (Species species : model.getListOfSpecies()) {
       metabolites.add(convertMetabolite(species));
@@ -117,20 +102,17 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static Metabolite convertMetabolite(Species species) {
+  public static Metabolite convertMetabolite(Species species) throws XMLStreamException {
     Metabolite metabolite = new Metabolite();
     metabolite.setId(species.getId());
     metabolite.setName(species.getName());
     if (species.isSetCompartment()) {
       String compartment = species.getCompartment();
-      BiGGId.createMetaboliteId(species.getId()).ifPresent(biGGId -> {
-        String compartmentCode = biGGId.getCompartmentCode();
-        if (!compartmentCode.isEmpty() && !compartments.containsKey(compartmentCode)) {
-          compartments.put(compartmentCode, compartment);
-        }
-      });
+      var biGGId = BiGGId.createMetaboliteId(species.getId());
+      String compartmentCode = biGGId.getCompartmentCode();
+      if (!compartmentCode.isEmpty() && !compartments.containsKey(compartmentCode)) {
+        compartments.put(compartmentCode, compartment);
+      }
       metabolite.setCompartment(compartment);
     } else {
       metabolite.setCompartment("");
@@ -150,9 +132,7 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static List<edu.ucsd.sbrg.io.parsers.json.mapping.Reaction> convertReactions(Model model) {
+  public static List<edu.ucsd.sbrg.io.parsers.json.mapping.Reaction> convertReactions(Model model) throws XMLStreamException {
     List<edu.ucsd.sbrg.io.parsers.json.mapping.Reaction> reactions = new ArrayList<>();
     for (Reaction reaction : model.getListOfReactions()) {
       reactions.add(convertReaction(reaction));
@@ -161,9 +141,7 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static edu.ucsd.sbrg.io.parsers.json.mapping.Reaction convertReaction(Reaction r) {
+  public static edu.ucsd.sbrg.io.parsers.json.mapping.Reaction convertReaction(Reaction r) throws XMLStreamException {
     edu.ucsd.sbrg.io.parsers.json.mapping.Reaction reaction = new edu.ucsd.sbrg.io.parsers.json.mapping.Reaction();
     reaction.setId(r.getId());
     reaction.setName(r.getName());
@@ -235,79 +213,20 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  public static String getJSONDocument(SBMLDocument doc) {
+  public static String getJSONDocument(SBMLDocument doc) throws JsonProcessingException, XMLStreamException {
     return getJSONModel(doc.getModel());
   }
 
 
-  /**
-   */
-  public static String getJSONGene(GeneProduct g) {
-    Gene gene = convertGene(g);
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    try {
-      return mapper.writeValueAsString(gene);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
-
-  /**
-   */
-  public static String getJSONMetabolite(Species species) {
-    Metabolite metabolite = convertMetabolite(species);
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    try {
-      return mapper.writeValueAsString(metabolite);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
-
-  /**
-   */
-  public static String getJSONReaction(Reaction r) {
-    edu.ucsd.sbrg.io.parsers.json.mapping.Reaction reaction = convertReaction(r);
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    try {
-      return mapper.writeValueAsString(reaction);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return "";
-  }
-
-
-  /**
-   */
-  public static String getJSONModel(Model model) {
+  public static String getJSONModel(Model model) throws JsonProcessingException, XMLStreamException {
     Root root = convertModel(model);
     ObjectMapper mapper = new ObjectMapper();
     mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    try {
-      return mapper.writeValueAsString(root);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return "";
+    return mapper.writeValueAsString(root);
   }
 
 
-  /**
-   */
   private static Map<String, List<String>> serializeAnnotation(Annotation annotation) {
     Map<String, List<String>> terms = new LinkedHashMap<>();
     for (CVTerm term : annotation.getListOfCVTerms()) {
@@ -317,23 +236,17 @@ public class JSONConverter {
   }
 
 
-  /**
-   */
-  private static List<String> serializeNotes(XMLNode notes) {
+  private static List<String> serializeNotes(XMLNode notes) throws XMLStreamException {
     List<String> convertedNotes = new ArrayList<>();
     int numChildren = notes.getChildCount();
     for (int i = 0; i < numChildren; i++) {
       XMLNode child = notes.getChild(i);
       for (int j = 0; j < child.getChildCount(); j++) {
         XMLNode leaf = child.getChild(j);
-        try {
-          // remove XML tags and whitespace
-          String text = leaf.toXMLString().replaceAll("<.*?>", "").strip();
-          if (!text.isEmpty()) {
-            convertedNotes.add(text);
-          }
-        } catch (XMLStreamException e) {
-          e.printStackTrace();
+        // remove XML tags and whitespace
+        String text = leaf.toXMLString().replaceAll("<.*?>", "").strip();
+        if (!text.isEmpty()) {
+          convertedNotes.add(text);
         }
       }
     }

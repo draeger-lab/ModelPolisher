@@ -1,6 +1,5 @@
 package edu.ucsd.sbrg.parameters;
 
-import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,7 @@ class ParametersParserTest {
 
         assertEquals(ModelPolisherOptions.SBML_VALIDATION.getDefaultValue(), parameters.sbmlValidation());
 
-        assertEquals(ModelPolisherOptions.OMIT_GENERIC_TERMS.getDefaultValue(), parameters.sboTerms().omitGenericTerms());
+        assertEquals(ModelPolisherOptions.ADD_GENERIC_TERMS.getDefaultValue(), parameters.sboTerms().addGenericTerms());
 
         assertEquals(ModelPolisherOptions.CHECK_MASS_BALANCE.getDefaultValue(),
                 parameters.polishing().reactionPolishingParameters().checkMassBalance());

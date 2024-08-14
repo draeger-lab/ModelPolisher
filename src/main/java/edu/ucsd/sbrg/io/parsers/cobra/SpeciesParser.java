@@ -9,24 +9,19 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.Cell;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class SpeciesParser {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(SpeciesParser.class.getName());
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
+  private static final Logger logger = LoggerFactory.getLogger(SpeciesParser.class);
   public static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Model model;
   private final int index;
@@ -42,21 +37,18 @@ public class SpeciesParser {
   }
 
 
-  /**
-   */
   public void parse() {
     matlabFields.getCell(ModelField.mets.name())
-                .map(mets -> COBRAUtils.asString(mets.get(index), ModelField.mets.name(), index + 1))
-                .flatMap(BiGGId::createMetaboliteId).ifPresent(biggId -> {
-                  Species species = model.createSpecies(biggId.toBiGGId());
-                  parseSpeciesFields(species);
-                  parseAnnotation(species);
-                });
+            .map(mets -> COBRAUtils.asString(mets.get(index), ModelField.mets.name(), index + 1))
+            .map(BiGGId::createMetaboliteId)
+            .ifPresent(biggId -> {
+              Species species = model.createSpecies(biggId.toBiGGId());
+              parseSpeciesFields(species);
+              parseAnnotation(species);
+            });
   }
 
 
-  /**
-   */
   private void parseSpeciesFields(Species species) {
     matlabFields.getCell(ModelField.metNames.name()).ifPresent(
       metNames -> species.setName(COBRAUtils.asString(metNames.get(index), ModelField.metNames.name(), index + 1)));
@@ -73,7 +65,7 @@ public class SpeciesParser {
           double charge = metCharge.getDouble(index);
           specPlug.setCharge((int) charge);
           if (charge - ((int) charge) != 0d) {
-            logger.warning(format(MESSAGES.getString("CHARGE_TO_INT_COBRA"), charge, specPlug.getCharge()));
+            logger.debug(format(MESSAGES.getString("CHARGE_TO_INT_COBRA"), charge, specPlug.getCharge()));
           }
         }
       });
@@ -85,7 +77,7 @@ public class SpeciesParser {
           try {
             species.appendNotes("<html:p>SMILES: " + smile + "</html:p>");
           } catch (XMLStreamException exc) {
-            COBRAUtils.logException(exc);
+            throw new RuntimeException(exc);
           }
         }
       }
@@ -96,8 +88,6 @@ public class SpeciesParser {
   }
 
 
-  /**
-   */
   private void parseAnnotation(Species species) {
     CVTerm term = new CVTerm();
     term.setQualifierType(CVTerm.Type.BIOLOGICAL_QUALIFIER);
@@ -138,13 +128,13 @@ public class SpeciesParser {
             resource = new IdentifiersOrgURI(prefix, id).getURI();
           }
           String finalId = id;
-          success = registry.findRegistryUrlForOtherUrl(resource)
+          success = registry.resolveBackwards(resource)
                   .map(res -> {
                     term.addResource(res.getURI());
-                    logger.finest(format(MESSAGES.getString("ADDED_URI_COBRA"), res));
+                    logger.debug(format(MESSAGES.getString("ADDED_URI_COBRA"), res));
                     return true;
                   }).orElseGet(() -> {
-                    logger.severe(format(MESSAGES.getString("ADD_URI_FAILED_COBRA"), namespaceName, finalId));
+                    logger.debug(format(MESSAGES.getString("ADD_URI_FAILED_COBRA"), namespaceName, finalId));
                     return false;
                   });
         }
@@ -186,8 +176,6 @@ public class SpeciesParser {
   }
 
 
-  /**
-   */
   private void addKEGGResources(CVTerm term, int i) {
     // use short circuit evaluation to only run addResource until one of them returns true
     // return type is needed for this to work
@@ -198,8 +186,6 @@ public class SpeciesParser {
   }
 
 
-  /**
-   */
   private void addPubChemResources(CVTerm term, int i) {
     matlabFields.getCell(ModelField.metPubChemID.name())
                 .map(metPubChemID -> addResource(metPubChemID, i, term, "PubChem-compound")

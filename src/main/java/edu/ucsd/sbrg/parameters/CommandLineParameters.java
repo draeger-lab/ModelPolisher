@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.parameters;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.io.IOOptions;
 
 import java.io.File;

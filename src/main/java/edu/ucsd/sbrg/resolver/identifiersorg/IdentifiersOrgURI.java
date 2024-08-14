@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.resolver.identifiersorg;
 
 import edu.ucsd.sbrg.db.bigg.BiGGId;
 import edu.ucsd.sbrg.resolver.RegistryURI;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -77,7 +76,7 @@ public class IdentifiersOrgURI implements RegistryURI, Comparable<IdentifiersOrg
     }
 
     @Override
-    public int compareTo(@NotNull IdentifiersOrgURI uri) {
+    public int compareTo(IdentifiersOrgURI uri) {
         return this.getURI().compareTo(uri.getURI());
     }
 }

@@ -4,12 +4,11 @@ import static java.text.MessageFormat.format;
 
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.io.parsers.cobra.MatlabParser;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BiGGId {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BiGGId.class);
+  private static final Logger logger = LoggerFactory.getLogger(BiGGId.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   /**
    * First part of BiGG ID, either R, M or G
@@ -104,44 +103,26 @@ public class BiGGId {
   }
 
   /**
-   * Creates a BiGG ID for a metabolite with default correction behavior.
-   *
-   * @param id The raw metabolite ID string.
-   * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
-   */
-  public static Optional<BiGGId> createMetaboliteId(String id) {
-    return createMetaboliteId(id, true);
-  }
-
-
-  /**
    * Creates a BiGG ID for a metabolite based on the provided string identifier.
    * This method handles the correction and standardization of the metabolite ID according to BiGG database standards.
    *
    * @param id The raw metabolite ID string.
-   * @param correct A boolean flag indicating whether to correct the ID to conform to BiGG standards.
    * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
    */
-  public static Optional<BiGGId> createMetaboliteId(String id, boolean correct) {
-    // Return empty if the input ID is empty
-    if (id.isEmpty()) {
-      return Optional.empty();
-    }
+  public static BiGGId createMetaboliteId(String id) {
     // Fix the compartment code in the ID
     id = fixCompartmentCode(id);
     // Correct the ID to conform to BiGG standards if required
-    if (correct) {
-      id = makeBiGGConform(id);
-      // Remove leading underscore if present
-      if (id.startsWith("_")) {
-	id = id.substring(1);
-      }
-      // Standardize the prefix for metabolites from 'm_' to 'M_'
-      if (id.startsWith("m_")) {
-	id = id.replaceAll("^m_", "M_");
-      } else if (!id.startsWith("M_")) {
-	id = "M_" + id;
-      }
+    id = makeBiGGConform(id);
+    // Remove leading underscore if present
+    if (id.startsWith("_")) {
+      id = id.substring(1);
+    }
+    // Standardize the prefix for metabolites from 'm_' to 'M_'
+    if (id.startsWith("m_")) {
+      id = id.replaceAll("^m_", "M_");
+    } else if (!id.startsWith("M_")) {
+      id = "M_" + id;
     }
     // Special handling for one-letter abbreviation metabolites not conforming to the specification, but still
     // present in BiGG
@@ -151,22 +132,12 @@ public class BiGGId {
       biggId.setPrefix("M");
       biggId.setAbbreviation(metaboliteSpecialCase.group("abbreviation"));
       biggId.setCompartmentCode(metaboliteSpecialCase.group("compartment"));
-      return Optional.of(biggId);
+      return biggId;
     } else {
-      return Optional.of(new BiGGId(id));
+      return new BiGGId(id);
     }
   }
 
-
-  /**
-   * Creates a BiGG ID for a gene using the default correction behavior.
-   *
-   * @param id The raw gene ID string.
-   * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
-   */
-  public static Optional<BiGGId> createGeneId(String id) {
-    return createGeneId(id, true);
-  }
 
   /**
    * Creates a BiGG ID for a gene, with an option to correct the ID to conform to BiGG standards.
@@ -178,25 +149,19 @@ public class BiGGId {
    * - If the ID does not start with "G_", the prefix "G_" is prepended.
    *
    * @param id The raw gene ID string.
-   * @param correct A boolean flag indicating whether to correct the ID to conform to BiGG standards.
    * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
    */
-  public static Optional<BiGGId> createGeneId(String id, boolean correct) {
-    if (id.isEmpty()) {
-      return Optional.empty();
+  public static BiGGId createGeneId(String id) {
+    id = makeBiGGConform(id);
+    if (id.startsWith("_")) {
+      id = id.substring(1);
     }
-    if (correct) {
-      id = makeBiGGConform(id);
-      if (id.startsWith("_")) {
-	id = id.substring(1);
-      }
-      if (id.startsWith("g_")) {
-	id = id.replaceAll("^g_", "G_");
-      } else if (!id.startsWith("G_")) {
-	id = "G_" + id;
-      }
+    if (id.startsWith("g_")) {
+      id = id.replaceAll("^g_", "G_");
+    } else if (!id.startsWith("G_")) {
+      id = "G_" + id;
     }
-    return Optional.of(new BiGGId(id));
+    return new BiGGId(id);
   }
 
   /**
@@ -207,7 +172,7 @@ public class BiGGId {
    * @param id The raw reaction ID string.
    * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
    */
-  public static Optional<BiGGId> createReactionId(String id) {
+  public static BiGGId createReactionId(String id) {
     String prefixStripped = "";
     // Strip the prefix if it starts with 'R_' or 'r_'
     if (id.startsWith("R_") || id.startsWith("r_")) {
@@ -215,15 +180,15 @@ public class BiGGId {
     }
     // Check if the original ID is a pseudo-reaction
     if (isPseudo(id)) {
-      return createReactionId(id, true, true);
+      return createReactionId(id, true);
     }
     // Check if the ID without the prefix is a pseudo-reaction
     else if (!prefixStripped.isEmpty() && isPseudo(prefixStripped)) {
-      return createReactionId(prefixStripped, true, true);
+      return createReactionId(prefixStripped, true);
     }
     // Handle normal reaction ID
     else {
-      return createReactionId(id, true, false);
+      return createReactionId(id, false);
     }
   }
 
@@ -239,8 +204,8 @@ public class BiGGId {
    */
   private static boolean isPseudo(String reactionId) {
     return IDPattern.ATPM.get().matcher(reactionId).matches() ||
-	   IDPattern.BIOMASS.get().matcher(reactionId).matches() ||
-	   IDPattern.PSEUDO.get().matcher(reactionId).matches();
+            IDPattern.BIOMASS.get().matcher(reactionId).matches() ||
+            IDPattern.PSEUDO.get().matcher(reactionId).matches();
   }
 
 
@@ -249,26 +214,20 @@ public class BiGGId {
    * The method can correct the ID to conform to BiGG standards and adjust the prefix based on whether it is a pseudo-reaction.
    *
    * @param id The raw reaction ID string.
-   * @param correct If true, the ID will be corrected to conform to BiGG standards.
    * @param isPseudo If true, the ID is treated as a pseudo-reaction, affecting the prefix handling.
    * @return An Optional containing the BiGGId if the ID is non-empty, or an empty Optional if the ID is empty.
    */
-  public static Optional<BiGGId> createReactionId(String id, boolean correct, boolean isPseudo) {
-    if (id.isEmpty()) {
-      return Optional.empty();
+  public static BiGGId createReactionId(String id, boolean isPseudo) {
+    id = makeBiGGConform(id);
+    if (id.startsWith("_")) {
+      id = id.substring(1);
     }
-    if (correct) {
-      id = makeBiGGConform(id);
-      if (id.startsWith("_")) {
-	id = id.substring(1);
-      }
-      if (!isPseudo && id.startsWith("r_")) {
-	id = id.replaceAll("^r_", "R_");
-      } else if (!isPseudo && !id.startsWith("R_")) {
-	id = "R_" + id;
-      }
+    if (!isPseudo && id.startsWith("r_")) {
+      id = id.replaceAll("^r_", "R_");
+    } else if (!isPseudo && !id.startsWith("R_")) {
+      id = "R_" + id;
     }
-    return Optional.of(new BiGGId(id));
+    return new BiGGId(id);
   }
 
 

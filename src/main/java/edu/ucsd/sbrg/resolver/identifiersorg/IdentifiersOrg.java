@@ -4,7 +4,6 @@ import static java.text.MessageFormat.format;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +13,8 @@ import edu.ucsd.sbrg.resolver.identifiersorg.mapping.Namespace;
 import edu.ucsd.sbrg.resolver.identifiersorg.mapping.RawIdentifiersOrgRegistry;
 import edu.ucsd.sbrg.resolver.identifiersorg.mapping.Resource;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@code IdentifiersOrg} class serves as a central hub for managing and processing identifiers related to the MIRIAM registry.
@@ -25,7 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 public class IdentifiersOrg implements Registry {
 
-    private static final Logger logger = Logger.getLogger(IdentifiersOrg.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(IdentifiersOrg.class);
 
     private static final Map<String, String> NAMESPACE_NAME_BY_PREFIX;
     private static final Map<String, String> PATTERN_BY_NAMESPACE_NAME;
@@ -86,9 +87,8 @@ public class IdentifiersOrg implements Registry {
      * @return An {@link Optional} containing the processed URL if valid, or empty if the URL should be skipped.
      */
     @Override
-    public Optional<RegistryURI> findRegistryUrlForOtherUrl(String url) {
-        // Remove trailing whitespaces from the URL
-        url = url.stripTrailing();
+    public Optional<RegistryURI> resolveBackwards(String url) {
+        url = url.trim();
 
         if (isValid(url)) {
             return Optional.of(new IdentifiersOrgURI(url));

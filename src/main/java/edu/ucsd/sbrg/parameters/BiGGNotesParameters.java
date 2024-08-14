@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.Option;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.ModelPolisherOptions;
 
 import java.io.File;
 

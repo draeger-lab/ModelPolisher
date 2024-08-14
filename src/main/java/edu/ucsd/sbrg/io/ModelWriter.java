@@ -1,11 +1,9 @@
 package edu.ucsd.sbrg.io;
 
 import de.unirostock.sems.cbarchive.CombineArchiveException;
-import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.parameters.ModelPolisherOptions;
 import edu.ucsd.sbrg.io.parsers.json.JSONConverter;
 import org.jdom2.JDOMException;
-import org.jetbrains.annotations.NotNull;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.TidySBMLWriter;
 import org.slf4j.Logger;
@@ -20,7 +18,7 @@ import java.text.ParseException;
 
 import static java.text.MessageFormat.format;
 
-public class ModelWriter {
+public class ModelWriter implements IWriteModelsToFile, IWriteModels{
     private static final Logger logger = LoggerFactory.getLogger(ModelWriter.class);
     private final ModelPolisherOptions.OutputType outputType;
 
@@ -43,7 +41,6 @@ public class ModelWriter {
 
     public File write(SBMLDocument doc, File output) throws ModelWriterException {
         logger.debug(format("Write document to File: {0}", output.toString()));
-
         try {
             return switch (outputType) {
                 case SBML -> writeSBML(doc, output);
@@ -55,7 +52,7 @@ public class ModelWriter {
         }
     }
 
-    private InputStream writeSBML(SBMLDocument doc) throws IOException, XMLStreamException {
+    private InputStream writeSBML(SBMLDocument doc) throws IOException {
         PipedInputStream result = new PipedInputStream();
         PipedOutputStream pout = new PipedOutputStream(result);
 
@@ -91,12 +88,12 @@ public class ModelWriter {
         try (var writer = new BufferedWriter(new OutputStreamWriter(out))) {
             writer.write(JSONConverter.getJSONDocument(doc));
             return new PipedInputStream(out);
-        } catch (IOException e) {
+        } catch (IOException | XMLStreamException e) {
             throw new ModelWriterException("Error while converting to JSON.", e, doc, null);
         }
     }
 
-    private InputStream writeCOMBINE(SBMLDocument doc) throws IOException, XMLStreamException, ParseException, URISyntaxException, JDOMException, CombineArchiveException, TransformerException, ModelWriterException {
+    private InputStream writeCOMBINE(SBMLDocument doc) throws IOException, XMLStreamException, ParseException, URISyntaxException, JDOMException, CombineArchiveException, TransformerException {
         File f = Files.createTempFile("", ".xml").toFile();
         TidySBMLWriter.write(
                 doc,
@@ -129,7 +126,7 @@ public class ModelWriter {
         return combineArchiveFile;
     }
 
-    private static @NotNull File writeJSON(SBMLDocument doc, File output) throws IOException {
+    private static File writeJSON(SBMLDocument doc, File output) throws IOException, XMLStreamException {
         String out = output.getAbsolutePath().replaceAll("\\.xml", ".json");
         try (var writer = new BufferedWriter(new FileWriter(out))) {
             writer.write(JSONConverter.getJSONDocument(doc));

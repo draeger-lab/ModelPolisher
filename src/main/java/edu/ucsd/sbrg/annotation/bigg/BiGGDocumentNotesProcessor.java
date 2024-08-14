@@ -10,13 +10,11 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class BiGGDocumentNotesProcessor {
 
-    static final Logger logger = Logger.getLogger(BiGGDocumentNotesProcessor.class.getName());
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     private final BiGGAnnotationParameters parameters;

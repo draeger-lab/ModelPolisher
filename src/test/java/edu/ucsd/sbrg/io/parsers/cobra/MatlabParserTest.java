@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -32,8 +31,7 @@ public class MatlabParserTest {
             new MatlabParser(parameters, new IdentifiersOrg()).parse(recon);
             assertTrue(true);
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Parsing Recon3D.mat threw an exception.");
+            fail("Parsing Recon3D.mat threw an exception.", e);
         }
     }
 

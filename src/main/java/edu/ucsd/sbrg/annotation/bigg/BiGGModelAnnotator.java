@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * {@link Compartment}, {@link Species}, {@link Reaction}, and {@link GeneProduct}.
  * The annotations can include taxonomy information, database references, and meta identifiers.
  */
-public class BiGGModelAnnotator extends AbstractBiGGAnnotator<Model> {
+public class BiGGModelAnnotator extends AbstractBiGGAnnotator implements IAnnotateSBases<Model> {
 
   public static final String REF_SEQ_ACCESSION_NUMBER_PATTERN = "^(((AC|AP|NC|NG|NM|NP|NR|NT|NW|XM|XP|XR|YP|ZP)_\\d+)|(NZ_[A-Z]{2,4}\\d+))(\\.\\d+)?$";
   public static final String GENOME_ASSEMBLY_ID_PATTERN = "^GC[AF]_[0-9]{9}\\.[0-9]+$";

@@ -7,7 +7,7 @@ public class DAG {
   private final Node root;
 
 
-  DAG(Term term) {
+  public DAG(Term term) {
     root = new Node(term);
   }
 

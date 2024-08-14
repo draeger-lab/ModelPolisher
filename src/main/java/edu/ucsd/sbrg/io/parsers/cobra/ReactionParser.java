@@ -6,7 +6,6 @@ import static org.sbml.jsbml.util.Pair.pairOf;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
@@ -27,16 +26,16 @@ import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.Cell;
 import us.hebi.matlab.mat.types.Matrix;
 
 public class ReactionParser {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(ReactionParser.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(ReactionParser.class);
+
   /**
    * Bundle for ModelPolisher logger messages
    */
@@ -56,26 +55,22 @@ public class ReactionParser {
   }
 
 
-  /**
-   *
-   */
   public void parse() {
     matlabFields.getCell(ModelField.rxns.name())
-                .map(rxns -> COBRAUtils.asString(rxns.get(index), ModelField.rxns.name(), index + 1)).ifPresent(id -> {
-                  if (!id.isEmpty()) {
-                    Model model = builder.getModel();
-                    BiGGId.createReactionId(id).ifPresent(biggId -> {
-                      Reaction reaction = model.createReaction(biggId.toBiGGId());
-                      setNameAndReversibility(reaction, index);
-                      setReactionBounds(builder, reaction, index);
-                      buildReactantsProducts(model, reaction, index);
-                      parseAnnotations(builder, reaction, id, index);
-                      if (reaction.getCVTermCount() > 0) {
-                        reaction.setMetaId(reaction.getId());
-                      }
-                    });
-                  }
-                });
+            .map(rxns -> COBRAUtils.asString(rxns.get(index), ModelField.rxns.name(), index + 1)).ifPresent(id -> {
+              if (!id.isEmpty()) {
+                Model model = builder.getModel();
+                var biggId = BiGGId.createReactionId(id);
+                Reaction reaction = model.createReaction(biggId.toBiGGId());
+                setNameAndReversibility(reaction, index);
+                setReactionBounds(builder, reaction, index);
+                buildReactantsProducts(model, reaction, index);
+                parseAnnotations(builder, reaction, id, index);
+                if (reaction.getCVTermCount() > 0) {
+                  reaction.setMetaId(reaction.getId());
+                }
+              }
+            });
   }
 
 
@@ -104,22 +99,17 @@ public class ReactionParser {
       for (int i = 0; i < S.getNumRows(); i++) {
         double coeff = S.getDouble(i, index);
         if (coeff != 0d) {
-          try {
-            Optional<Cell> metCell = matlabFields.getCell(ModelField.mets.name());
-            if (metCell.isPresent()) {
-              Cell mets = metCell.get();
-              String id = COBRAUtils.asString(mets.get(i), ModelField.mets.name(), i + 1);
-              BiGGId.createMetaboliteId(id).ifPresent(metId -> {
-                Species species = model.getSpecies(metId.toBiGGId());
-                if (coeff < 0d) { // Reactant
-                  ModelBuilder.buildReactants(reaction, pairOf(-coeff, species));
-                } else if (coeff > 0d) { // Product
-                  ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
-                }
-              });
+          Optional<Cell> metCell = matlabFields.getCell(ModelField.mets.name());
+          if (metCell.isPresent()) {
+            Cell mets = metCell.get();
+            String id = COBRAUtils.asString(mets.get(i), ModelField.mets.name(), i + 1);
+            var metId = BiGGId.createMetaboliteId(id);
+            Species species = model.getSpecies(metId.toBiGGId());
+            if (coeff < 0d) { // Reactant
+              ModelBuilder.buildReactants(reaction, pairOf(-coeff, species));
+            } else if (coeff > 0d) { // Product
+              ModelBuilder.buildProducts(reaction, pairOf(coeff, species));
             }
-          } catch (IllegalArgumentException exc) {
-            logger.warning(format(MESSAGES.getString("REACT_PARTIC_INVALID"), Utils.getMessage(exc)));
           }
         }
       }
@@ -155,11 +145,11 @@ public class ReactionParser {
         Array cell = confidenceScores.get(index);
         if (cell instanceof Matrix) {
           if (cell.getNumElements() == 0) {
-            logger.warning(MESSAGES.getString("CONF_CELL_WRONG_DIMS"));
+            logger.debug(MESSAGES.getString("CONF_CELL_WRONG_DIMS"));
             return;
           }
           double score = ((Matrix) cell).getDouble(0);
-          logger.fine(format(MESSAGES.getString("DISPLAY_CONF_SCORE"), score, reaction.getId()));
+          logger.debug(format(MESSAGES.getString("DISPLAY_CONF_SCORE"), score, reaction.getId()));
           builder.buildParameter("P_confidenceScore_of_" + org.sbml.jsbml.util.SBMLtools.toSId(rId), // id
             format("Confidence score of reaction {0}", reaction.isSetName() ? reaction.getName() : reaction.getId()), // name
             score, // value
@@ -169,7 +159,7 @@ public class ReactionParser {
           // TODO: there should be a specific term for confidence scores.
           // Use "613 - reaction parameter" for now.
         } else {
-          logger.warning(format(MESSAGES.getString("TYPE_MISMATCH_MLDOUBLE"), cell.getClass().getSimpleName()));
+          logger.debug(format(MESSAGES.getString("TYPE_MISMATCH_MLDOUBLE"), cell.getClass().getSimpleName()));
         }
       }
     });
@@ -187,7 +177,7 @@ public class ReactionParser {
         sbase.appendNotes(SBMLtools.toNotesString("<p>" + comment + "</p>"));
       }
     } catch (XMLStreamException exc) {
-      COBRAUtils.logException(exc);
+      throw new RuntimeException(exc);
     }
   }
 
@@ -209,7 +199,7 @@ public class ReactionParser {
       }
     }
     if (!match) {
-      logger.warning(format(MESSAGES.getString("EC_CODES_UNKNOWN"), ec));
+      logger.debug(format(MESSAGES.getString("EC_CODES_UNKNOWN"), ec));
     }
     if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
       reaction.addCVTerm(term);
@@ -307,7 +297,7 @@ public class ReactionParser {
           reaction.appendNotes(SBMLtools.toNotesString("<p>Reference: " + otherCitation + "</p>"));
         }
       } catch (XMLStreamException exc) {
-        COBRAUtils.logException(exc);
+        throw new RuntimeException(exc);
       }
     }
     if ((term.getResourceCount() > 0) && (term.getParent() == null)) {
@@ -340,10 +330,10 @@ public class ReactionParser {
       if (validId(prefix, r)) {
         if (!resource.isEmpty()) {
           if (st.countTokens() > 1) {
-            logger.warning(format(MESSAGES.getString("SKIP_COMMENT"), resource, r, prefix));
+            logger.debug(format(MESSAGES.getString("SKIP_COMMENT"), resource, r, prefix));
           }
           resource = new IdentifiersOrgURI(prefix, r).getURI();
-          logger.finest(format(MESSAGES.getString("ADDED_URI"), resource));
+          logger.debug(format(MESSAGES.getString("ADDED_URI"), resource));
           return term.addResource(resource);
         }
       }
@@ -371,10 +361,10 @@ public class ReactionParser {
     if (!pattern.isEmpty()) {
       validId = Pattern.compile(pattern).matcher(id).matches();
       if (!validId) {
-        logger.warning(format(MESSAGES.getString("PATTERN_MISMATCH"), id, pattern));
+        logger.debug(format(MESSAGES.getString("PATTERN_MISMATCH"), id, pattern));
       }
     } else {
-      logger.severe(format(MESSAGES.getString("COLLECTION_UNKNOWN"), prefix));
+      logger.debug(format(MESSAGES.getString("COLLECTION_UNKNOWN"), prefix));
     }
     return validId;
   }

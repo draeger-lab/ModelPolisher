@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import edu.ucsd.sbrg.annotation.AnnotationException;
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.annotation.AnnotationsSorter;
@@ -23,7 +24,7 @@ import edu.ucsd.sbrg.db.bigg.BiGGDB;
  * @author Thomas Zajac
  *         This code runs only, if ANNOTATE_WITH_BIGG is true
  */
-public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator<SBMLDocument> {
+public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator implements IAnnotateSBases<SBMLDocument> {
 
   private final SBOParameters sboParameters;
 

@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.polishing;
+package edu.ucsd.sbrg.util;
 
 import java.util.regex.Pattern;
 

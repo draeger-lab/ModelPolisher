@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
 
 import static java.text.MessageFormat.format;
 
-public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
+public class SBMLPolisher extends AbstractPolisher implements IPolishSBases<SBMLDocument> {
 
     private static final Logger logger = LoggerFactory.getLogger(SBMLPolisher.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
@@ -58,8 +58,6 @@ public class SBMLPolisher extends AbstractPolisher<SBMLDocument> {
         Model model = doc.getModel();
         new ModelPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model);
 
-        // Process any external resources linked in the document's annotations.
-        diffReport("documentAnnotation", doc.getAnnotation().clone(), doc.getAnnotation());
         new AnnotationPolisher(polishingParameters, registry).polish(doc.getAnnotation());
     }
 

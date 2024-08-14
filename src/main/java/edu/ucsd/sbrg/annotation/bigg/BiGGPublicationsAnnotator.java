@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
+import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.db.bigg.Publication;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
@@ -12,7 +13,7 @@ import org.sbml.jsbml.Model;
 import java.sql.SQLException;
 import java.util.List;
 
-public class BiGGPublicationsAnnotator extends AbstractBiGGAnnotator<Model> {
+public class BiGGPublicationsAnnotator extends AbstractBiGGAnnotator implements IAnnotateSBases<Model> {
 
     public BiGGPublicationsAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry, List<ProgressObserver> observers) {
         super(bigg, parameters, registry, observers);

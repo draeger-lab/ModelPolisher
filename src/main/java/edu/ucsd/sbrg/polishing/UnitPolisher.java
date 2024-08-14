@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
 
-import static java.text.MessageFormat.format;
-
 /**
  * This class is responsible for ensuring that all necessary {@link UnitDefinition}s and {@link Unit}s are correctly
  * defined and present in the SBML model. It handles the creation and verification of units used in the model,
@@ -24,7 +22,7 @@ import static java.text.MessageFormat.format;
  * This ensures that all these components adhere uniformly to the correct unit specifications, 
  * maintaining consistency and accuracy throughout the model's unit definitions.
  */
-public class UnitPolisher extends AbstractPolisher<Model>{
+public class UnitPolisher extends AbstractPolisher implements IPolishSBases<Model> {
 
     public static final CVTerm CV_TERM_DESCRIBED_BY_PUBMED_GROWTH_UNIT = new CVTerm(
             CVTerm.Qualifier.BQB_IS_DESCRIBED_BY,
@@ -60,7 +58,6 @@ public class UnitPolisher extends AbstractPolisher<Model>{
         statusReport("Polishing Unit Definitions (2/9)   ", model);
 
         var unitDefinitions = model.getListOfUnitDefinitions();
-        diffReport("unitDefinitions", unitDefinitions.clone(), unitDefinitions);
 
         // Create or retrieve a growth unit definition
         var growth = createGrowthUnitDefinition(model);

@@ -2,18 +2,19 @@ package edu.ucsd.sbrg.io.parsers.json.mapping;
 
 import static java.text.MessageFormat.format;
 
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({"id", "name", "compartment", "charge", "formula", "bound", "notes", "annotation"})
 public class Metabolite {
 
-  private static final Logger logger = Logger.getLogger(Metabolite.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(Metabolite.class);
   @JsonProperty(required = true)
   private String id;
   @JsonProperty(required = true)
@@ -68,7 +69,7 @@ public class Metabolite {
       }
       this.compartment = compartment;
     } else {
-      logger.finest(format(
+      logger.debug(format(
         "Compartment code {0} in metabolite {1} did not match pattern (C_)?[a-z]'{'1,2'}', trying to extract from id after parsing",
         compartment, id));
     }

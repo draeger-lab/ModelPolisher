@@ -6,14 +6,14 @@ import java.util.Objects;
 
 import org.biojava.nbio.ontology.Term;
 
-class Node {
+public class Node {
 
   private Term term;
   private List<Node> parents;
   private List<Node> children;
 
 
-  Node(Term term) {
+  public Node(Term term) {
     this.term = term;
     parents = new ArrayList<>();
     children = new ArrayList<>();

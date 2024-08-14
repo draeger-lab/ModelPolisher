@@ -2,12 +2,13 @@ package edu.ucsd.sbrg.resolver.identifiersorg;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.ucsd.sbrg.resolver.identifiersorg.mapping.RawIdentifiersOrgRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@code IdentifiersOrgRegistryParser} class is a singleton that provides functionality to parse the MIRIAM registry
@@ -16,10 +17,10 @@ import edu.ucsd.sbrg.resolver.identifiersorg.mapping.RawIdentifiersOrgRegistry;
  */
 public class IdentifiersOrgRegistryParser {
 
-  private static final Logger logger = Logger.getLogger(IdentifiersOrgRegistryParser.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(IdentifiersOrgRegistryParser.class);
 
   public RawIdentifiersOrgRegistry parse(InputStream registry) throws IOException {
-    logger.fine("Parsing MIRIAM registry");
+    logger.trace("Parsing MIRIAM registry");
 
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

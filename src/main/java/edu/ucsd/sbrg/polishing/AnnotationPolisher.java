@@ -5,7 +5,6 @@ import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Annotation;
-import org.sbml.jsbml.CVTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import java.util.Set;
 import static java.text.MessageFormat.format;
 
 
-public class AnnotationPolisher extends AbstractPolisher<Annotation> {
+public class AnnotationPolisher extends AbstractPolisher implements IPolishAnnotations {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationPolisher.class);
 
     public AnnotationPolisher(PolishingParameters polishingParameters, Registry registry) {
@@ -37,18 +36,19 @@ public class AnnotationPolisher extends AbstractPolisher<Annotation> {
      *
      * @param annotation The {@link Annotation} object associated with an SBML entity that contains CV Terms to be processed.
      */
+    @Override
     public void polish(Annotation annotation) {
         logger.trace(format("Polish Annotation: {0}", annotation.toString()));
-        for (CVTerm term : annotation.getListOfCVTerms()) {
+
+        for (var term : annotation.getListOfCVTerms()) {
             Set<String> resources = new HashSet<>();
             for (String resource : term.getResources()) {
-                registry.findRegistryUrlForOtherUrl(resource)
-                        .map(RegistryURI::getURI)
-                        .map(resources::add);
-
-                resource = resource.replaceAll("http://identifiers.org", "https://identifiers.org");
-
-                resources.add(resource);
+                var registryUri = registry.resolveBackwards(resource).map(RegistryURI::getURI);
+                if (registryUri.isPresent()) {
+                    resources.add(registryUri.get());
+                } else {
+                    resources.add(resource);
+                }
             }
             // Remove all existing resources from the CV Term.
             for (int i = 0; i < term.getResourceCount(); i++) {

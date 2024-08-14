@@ -5,16 +5,16 @@ import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreeNode;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class AnnotationsSorter {
-
-    static final Logger logger = Logger.getLogger(AnnotationsSorter.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationsSorter.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
 

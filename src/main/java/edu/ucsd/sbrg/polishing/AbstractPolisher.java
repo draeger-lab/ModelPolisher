@@ -1,14 +1,12 @@
 package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.parameters.PolishingParameters;
-import edu.ucsd.sbrg.reporting.ProgressObserver;
-import edu.ucsd.sbrg.reporting.ProgressUpdate;
-import edu.ucsd.sbrg.reporting.ReportType;
+import edu.ucsd.sbrg.reporting.*;
 import edu.ucsd.sbrg.resolver.Registry;
 
 import java.util.*;
 
-public abstract class AbstractPolisher<SBMLElement> {
+public abstract class AbstractPolisher implements IReportStatus {
 
     protected final PolishingParameters polishingParameters;
     protected final Registry registry;
@@ -27,23 +25,19 @@ public abstract class AbstractPolisher<SBMLElement> {
         this.observers = observers;
     }
 
-    public void polish(List<SBMLElement> elementsToPolish) {
-        throw new UnsupportedOperationException();
-    }
-
-    abstract public void polish(SBMLElement elementToPolish);
-
-    protected void statusReport(String text, Object element) {
+    @Override
+    public void statusReport(String text, Object element) {
         for (var o : observers) {
             o.update(new ProgressUpdate(text, element, ReportType.STATUS));
         }
     }
-
-    protected void diffReport(String elementType, Object element1, Object element2) {
-        for (var o : observers) {
-            o.update(new ProgressUpdate(elementType, List.of(element1, element2), ReportType.DATA));
-        }
-    }
+//
+//    @Override
+//    public void diffReport(String elementType, Object element1, Object element2) {
+//        for (var o : observers) {
+//            o.update(new ProgressUpdate(elementType, List.of(element1, element2), ReportType.DATA));
+//        }
+//    }
 
     public List<ProgressObserver> getObservers() {
         return observers;
@@ -53,7 +47,7 @@ public abstract class AbstractPolisher<SBMLElement> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        AbstractPolisher<?> that = (AbstractPolisher<?>) o;
+        AbstractPolisher that = (AbstractPolisher) o;
         return Objects.equals(polishingParameters, that.polishingParameters);
     }
 

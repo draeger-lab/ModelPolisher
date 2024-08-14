@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.polishing;
+package edu.ucsd.sbrg.polishing.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -7,15 +7,16 @@ import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.fbc.*;
 import org.sbml.jsbml.xml.XMLNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
 public class GeneProductAssociationsProcessor {
 
-    private static final Logger logger = Logger.getLogger(GeneProductAssociationsProcessor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(GeneProductAssociationsProcessor.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
     /**
@@ -101,21 +102,20 @@ public class GeneProductAssociationsProcessor {
                 case "gene":
                     String geneReference = current.getAttributes().getValue("reference");
                     GeneProductRef gpr = new GeneProductRef(level, version);
-                    BiGGId.createGeneId(geneReference).map(BiGGId::toBiGGId).ifPresent(id -> {
-                        if (!model.containsUniqueNamedSBase(id)) {
-                            GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(id);
-                            if (gp == null) {
-                                logger.warning(format("Creating missing gene product {0}", id));
-                                FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-                                gp = fbcPlug.createGeneProduct(id);
-                                gp.setLabel(id);
-                            } else {
-                                logger.info(format(MESSAGES.getString("UPDATE_GP_ID"), gp.getId(), id));
-                                gp.setId(id);
-                            }
+                    var id = BiGGId.createGeneId(geneReference).toBiGGId();
+                    if (!model.containsUniqueNamedSBase(id)) {
+                        GeneProduct gp = (GeneProduct) model.findUniqueNamedSBase(id);
+                        if (gp == null) {
+                            logger.debug(format("Creating missing gene product {0}", id));
+                            FBCModelPlugin fbcPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+                            gp = fbcPlug.createGeneProduct(id);
+                            gp.setLabel(id);
+                        } else {
+                            logger.info(format(MESSAGES.getString("UPDATE_GP_ID"), gp.getId(), id));
+                            gp.setId(id);
                         }
-                        gpr.setGeneProduct(id);
-                    });
+                    }
+                    gpr.setGeneProduct(id);
                     if (gpr.isSetGeneProduct()) {
                         associations.add(gpr);
                     }

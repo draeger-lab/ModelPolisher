@@ -128,7 +128,7 @@
     <entry key="OBJ_MISSING">No objectives defined for model {0}.</entry>
     <entry key="OBJ_NOT_DEFINED">No active objective defined in model {0}.</entry>
     <entry key="OBJ_SOLUTION">The problem could be successfully solved by declaring {0} the active objective.</entry>
-    <entry key="OMIT_GENERIC_TERMS_DESC">Set this option to true if generic top-level annotations, such as 'process' should not be applied. Not using those terms will reduce the size of the resulting output file.</entry>
+    <entry key="ADD_GENERIC_TERMS_DESC">Set this option to true if generic top-level annotations, such as 'process' should not be applied. Not using those terms will reduce the size of the resulting output file.</entry>
     <entry key="OPEN_ISSUE_ANNOTATION">Please open an issue to see annotation format {0} implemented.</entry>
     <entry key="OPEN_ISSUE_ID_FORMAT">Please open an issue to see parsing for id format {0} implemented.</entry>
     <entry key="OPEN_ISSUE_NOTES_FORMAT">Please open an issue to see notes format {0} implemented.</entry>

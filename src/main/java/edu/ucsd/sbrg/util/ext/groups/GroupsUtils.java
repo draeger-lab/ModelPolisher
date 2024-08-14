@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.ucsd.sbrg.util;
+package edu.ucsd.sbrg.util.ext.groups;
 
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.groups.Member;
@@ -14,7 +14,7 @@ import java.util.Set;
  * 
  * @author Andreas Dr&auml;ger
  */
-public class SBMLUtils {
+public class GroupsUtils {
 
   /**
    * Key to link from {@link Reaction} directly to {@link Member}s referencing

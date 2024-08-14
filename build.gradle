@@ -79,17 +79,18 @@ repositories {
     // snapshot versions of artifacts (i.e. dependency JARs)
     // Sonatype is the company behind the Maven Central repository
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-    // resolve dependencies from a local directory
-    flatDir {
-	dirs "lib/de/zbit/SysBio/1390"
+    maven {
+        name "biodata-reposilite"
+        url "https://biodata.informatik.uni-halle.de/maven/releases"
     }
+
 }
 
 /** ==== Dependencies ==== **/
 // variables used in dependency definitions
 def jacksonVersion = "2.17.1"
 def jupiterVersion = "5.10.2"
-def testContainersVersion = "1.19.8"
+def testContainersVersion = "1.20.1"
 
 /*
  - `implementation`: Dependencies required for the main source set.
@@ -99,28 +100,35 @@ def testContainersVersion = "1.19.8"
  - `testRuntimeOnly`: Dependencies required only at test runtime, not at compile time.
  */
 dependencies {
+    // systems biology tools
+    implementation "de.zbit.SysBio:SysBio:1390"
     // reading, writing, and manipulating SBML files
-    implementation "org.sbml.jsbml:jsbml:1.6.1"
-    // local dependency for systems biology tools
-    implementation "de.zbit:SysBio:1390"
-    // official JDBC driver for PostgreSQL
-    implementation "org.postgresql:postgresql:42.7.3"
+    implementation("org.sbml.jsbml:jsbml:1.6.1") {
+        exclude group: "org.apache.logging.log4j", module: "log4j-core"
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+    }
     // ontology support within BioJava
     implementation "org.biojava:biojava-ontology:7.1.1"
+    // handle Combine Archives (packages of biological models)
+    implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
     // interacting with MATLAB files
     implementation 'us.hebi.matlab.mat:mfl-core:0.5.15'
+
+    // JDBC connection pool
+    implementation "com.zaxxer:HikariCP:5.1.0"
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.15.0'
     // JSON processor
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    // data binding for Jackson
+// data binding for Jackson
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     // Java port of HTML Tidy, for cleaning up malformed HTML
     implementation "net.sf.jtidy:jtidy:r938"
-    // handle Combine Archives (packages of biological models)
-    implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
-    // JDBC connection pool
-    implementation "com.zaxxer:HikariCP:5.1.0"
-    
-    implementation 'com.opentable.components:otj-pg-embedded:1.0.1'
+    // official JDBC driver for PostgreSQL
+    implementation "org.postgresql:postgresql:42.7.3"
+
     // Test implementation dependencies
     // API for writing tests with JUnit 5
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterVersion}"
@@ -133,6 +141,7 @@ dependencies {
     // runtime engine for executing tests with JUnit 5
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterVersion}"
+
 }
 
 /** === Configuration for pre-existing Tasks === **/
@@ -162,6 +171,7 @@ tasks.withType(JavaCompile).configureEach {
 
 // config for all test tasks
 tasks.withType(Test).configureEach {
+    environment "TESTCONTAINERS_RYUK_DISABLED",     "true"
     useJUnitPlatform()
     testLogging {
         showStandardStreams = true

@@ -1,8 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
-import edu.ucsd.sbrg.parameters.ParametersParser;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,6 @@ import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.ext.groups.Member;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Set;
@@ -35,7 +32,7 @@ public class BiGGReactionsAnnotatorTest extends BiGGDBContainerTest {
 
     private final SBOParameters sboParameters = new SBOParameters();
 
-    public BiGGReactionsAnnotatorTest() throws IOException {
+    public BiGGReactionsAnnotatorTest() {
     }
 
     @Test

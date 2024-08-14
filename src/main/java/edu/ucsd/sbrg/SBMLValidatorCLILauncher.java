@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * @author Andreas Dr&auml;ger
  */
-public class SBMLValidator {
+public class SBMLValidatorCLILauncher {
 
   /**
    * @param args

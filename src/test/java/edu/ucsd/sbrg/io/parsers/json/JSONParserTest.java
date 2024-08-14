@@ -7,7 +7,6 @@ import edu.ucsd.sbrg.io.parsers.json.mapping.Compartments;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Reaction;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.*;
@@ -40,7 +39,7 @@ public class JSONParserTest {
 
 
   @Test
-  public void parseCompartmentsTest() {
+  public void parseCompartmentsTest() throws JsonProcessingException {
     String compartmentsJSON = """
             {
             "":"",
@@ -52,11 +51,7 @@ public class JSONParserTest {
             """;
     ObjectMapper mapper = new ObjectMapper();
     Compartments compartments = null;
-    try {
-      compartments = mapper.readValue(compartmentsJSON, Compartments.class);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+    compartments = mapper.readValue(compartmentsJSON, Compartments.class);
     assertNotNull(compartments);
     JSONParser parser = new JSONParser(new IdentifiersOrg());
     parser.parseCompartments(builder, compartments.get());
@@ -74,7 +69,7 @@ public class JSONParserTest {
   }
 
   @Test
-  public void parseReactionTest() {
+  public void parseReactionTest() throws JsonProcessingException {
     String reactionJSON = """
             {
             "id":"FAH1",
@@ -95,15 +90,10 @@ public class JSONParserTest {
             }""";
     ObjectMapper mapper = new ObjectMapper();
     Reaction reaction = null;
-    try {
-      reaction = mapper.readValue(reactionJSON, Reaction.class);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+    reaction = mapper.readValue(reactionJSON, Reaction.class);
     assertNotNull(reaction);
     JSONParser parser = new JSONParser(new IdentifiersOrg());
-    BiGGId.createReactionId(reaction.getId()).ifPresentOrElse(id -> assertEquals("R_FAH1", id.toBiGGId()),
-      Assertions::fail);
+    assertEquals("R_FAH1", BiGGId.createReactionId(reaction.getId()).toBiGGId());
     parser.parseReaction(builder, reaction, "R_FAH1");
     // Needs to be fetched no matter what, checking for id equality is thus already done here indirectly
     org.sbml.jsbml.Reaction r = builder.getModel().getReaction("R_FAH1");
@@ -169,7 +159,7 @@ public class JSONParserTest {
 
 
   @Test
-  public void parseSpeciesTest() {
+  public void parseSpeciesTest() throws JsonProcessingException {
     String speciesJSON = """
             {
               "id" : "amp_e",
@@ -181,16 +171,11 @@ public class JSONParserTest {
             """;
     ObjectMapper mapper = new ObjectMapper();
     Metabolite metabolite = null;
-    try {
-      metabolite = mapper.readValue(speciesJSON, Metabolite.class);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+    metabolite = mapper.readValue(speciesJSON, Metabolite.class);
     assertNotNull(metabolite);
-    BiGGId.createMetaboliteId(metabolite.getId()).ifPresentOrElse(id -> assertEquals("M_amp_e", id.toBiGGId()),
-      Assertions::fail);
+    assertEquals("M_amp_e", BiGGId.createMetaboliteId(metabolite.getId()).toBiGGId());
     JSONParser parser = new JSONParser(new IdentifiersOrg());
-    parser.parseMetabolite(builder.getModel(), metabolite, BiGGId.createMetaboliteId(metabolite.getId()).get());
+    parser.parseMetabolite(builder.getModel(), metabolite, BiGGId.createMetaboliteId(metabolite.getId()));
     Species species = builder.getModel().getSpecies("M_amp_e");
     assertNotNull(species);
     assertEquals("AMP", metabolite.getName());
@@ -217,8 +202,7 @@ public class JSONParserTest {
       assertTrue(s.get().getNotesString().contains("H70.5616C44.9625O13.1713S0.2669N12.1054R-1.0"),
               "Formula from the model not retained in notes!");
     } catch (IOException e) {
-      e.printStackTrace();
-        fail("Parsing iJB785.json threw an exception.");
+        fail("Parsing iJB785.json threw an exception.", e);
     }
   }
 }

@@ -9,13 +9,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
+import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.annotation.adb.ADBSBMLAnnotator;
 import edu.ucsd.sbrg.annotation.bigg.BiGGSBMLAnnotator;
@@ -23,12 +21,17 @@ import edu.ucsd.sbrg.io.*;
 import edu.ucsd.sbrg.parameters.CommandLineParameters;
 import edu.ucsd.sbrg.db.adb.AnnotateDB;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.parameters.ModelPolisherOptions;
 import edu.ucsd.sbrg.polishing.SBMLPolisher;
 import edu.ucsd.sbrg.reporting.PolisherProgressBar;
 import edu.ucsd.sbrg.reporting.ProgressInitialization;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
+import edu.ucsd.sbrg.validation.ModelValidator;
+import edu.ucsd.sbrg.validation.ModelValidatorException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
 
@@ -37,11 +40,12 @@ import de.zbit.Launcher;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.logging.LogOptions;
 import de.zbit.util.prefs.KeyProvider;
-import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The ModelPolisher class is the entry point of this application.
@@ -68,7 +72,7 @@ public class ModelPolisherCLILauncher extends Launcher {
 
   private static final ResourceBundle baseBundle = ResourceManager.getBundle("edu.ucsd.sbrg.Messages");
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
-  private static final Logger logger = Logger.getLogger(ModelPolisherCLILauncher.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(ModelPolisherCLILauncher.class);
 
   private CommandLineParameters parameters;
   private Registry registry;
@@ -117,37 +121,39 @@ public class ModelPolisherCLILauncher extends Launcher {
     parameters = new CommandLineParameters(args);
     registry = new IdentifiersOrg();
 
-    if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
-      this.bigg = new BiGGDB(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
-    }
-
-    if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
-      this.adb = new AnnotateDB(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
-    }
-
     try {
-      var input = parameters.input();
-      var output = parameters.output();
+      validateIOParameters();
 
-      // Check if the input exists, throw an exception if it does not
-      if (!input.exists()) {
-        throw new IOException(format(MESSAGES.getString("READ_FILE_ERROR"),
-                input.toString()));
+      if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
+        this.bigg = new BiGGDB(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
       }
 
-      // If the output is not a directory but the input is, log an error and return
-      if (!output.isDirectory() && input.isDirectory()) {
-        throw new IOException(format(MESSAGES.getString("WRITE_DIR_TO_FILE_ERROR"),
-                input.getAbsolutePath(),
-                output.getAbsolutePath()));
+      if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
+        this.adb = new AnnotateDB(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
       }
 
-      // Ensure the output directory or file's parent directory exists
-      SBMLFileUtils.checkCreateOutDir(output);
+      var inputFiles = FileUtils.listFiles(parameters.input(), new String[]{"xml", "sbml", "json", "mat"}, true);
+      List<Pair<File, File>> inputOutputPairs = new ArrayList<>();
 
-      batchProcess(input, parameters.output());
+      if (parameters.input().isDirectory()) {
+        for (var input: inputFiles) {
+          inputOutputPairs.add(Pair.of(input, SBMLFileUtils.getOutputFileName(input, parameters.output())));
+        }
 
-    } catch (ModelReaderException | ModelValidatorException | ModelWriterException | IOException |
+        // TODO: this is a placeholder for a parallel implementation
+        for (var pair: inputOutputPairs) {
+            try {
+                processFile(pair.getLeft(), pair.getRight());
+            } catch (ModelReaderException e) {
+                logger.debug(format("Skipping unreadable file \"{0}\".", pair.getLeft()));
+            }
+        }
+      }
+      else {
+        processFile(parameters.input(), parameters.output());
+      }
+
+    } catch (ModelValidatorException | ModelWriterException | IOException |
              AnnotationException e) {
       // TODO: produce some user-friendly output and log to a file that can be provided for trouble-shooting
       throw new RuntimeException(e);
@@ -157,37 +163,37 @@ public class ModelPolisherCLILauncher extends Launcher {
     } catch (SQLException e) {
       // TODO: produce some user-friendly output and log to a file that can be provided for trouble-shooting
       throw new RuntimeException(e);
+    } catch (ModelReaderException e) {
+        throw new RuntimeException(e);
     }
   }
 
+  private void validateIOParameters() throws IOException {
+    var input = parameters.input();
+    var output = parameters.output();
 
-  /**
-   * Processes the specified input and output paths. If the input is a directory, it recursively processes each file within.
-   *
-   * @param input  Path to the input file or directory to be processed. This should correspond to {@link CommandLineParameters#input()}.
-   * @param output Path to the output file or directory where processed files should be saved. This should correspond to {@link CommandLineParameters#output()}.
-   */
-  private void batchProcess(File input, File output) throws ModelReaderException, ModelWriterException, ModelValidatorException, AnnotationException, SQLException {
-    // If the input is a directory, process each file within it
-    if (input.isDirectory()) {
-      File[] files = input.listFiles();
-
-      if (files == null || files.length < 1) {
-        logger.info(MESSAGES.getString("NO_FILES_ERROR"));
-        return;
-      }
-      // Recursively process each file in the directory
-      for (File file : files) {
-        File target = SBMLFileUtils.getOutputFileName(file, output);
-        batchProcess(file, target);
-      }
-    } else {
-      // NOTE: input is a single file, but output can be a file or a directory
-      // Adjust output file name if the output is a directory
-      var newOutput = output.isDirectory() ? SBMLFileUtils.getOutputFileName(input, output) : output;
-
-      processFile(input, newOutput);
+    // Check if the input exists, throw an exception if it does not
+    if (!input.exists()) {
+      throw new IOException(format(MESSAGES.getString("READ_FILE_ERROR"),
+              input.toString()));
     }
+
+    // If the input is a directory but the output is not, exit with error
+    if (input.isDirectory() && !output.isDirectory()) {
+      throw new IOException(format(MESSAGES.getString("WRITE_DIR_TO_FILE_ERROR"),
+              input.getAbsolutePath(),
+              output.getAbsolutePath()));
+    }
+
+    // If the output is a directory but the input is not, exit with error
+    if (output.isDirectory() && !input.isDirectory()) {
+      throw new IOException(format("Output \"{0}\" is a directory, but Input \"{1}\" is not",
+              output.getAbsolutePath(),
+              input.getAbsolutePath()));
+    }
+
+    // Ensure the output directory or file's parent directory exists
+    SBMLFileUtils.checkCreateOutDir(output);
   }
 
 
@@ -195,14 +201,10 @@ public class ModelPolisherCLILauncher extends Launcher {
     long startTime = System.currentTimeMillis();
 
     SBMLDocument doc = new ModelReader(parameters.sboParameters(), registry).read(input);
-    // TODO: we should be doing better sanity checking here; e.g.: just validate the SBML
-    if (doc == null) return;
+
+    // TODO: hier wäre es jetzt angebracht das Ding zu validieren, geht aber nicht, weil es keinen Validator in JSBML gibt
+
     Model model = doc.getModel();
-    if (model == null) {
-      logger.severe(MESSAGES.getString("MODEL_MISSING"));
-      // TODO: handle this better
-      throw new RuntimeException(MESSAGES.getString("MODEL_MISSING"));
-    }
 
     List<ProgressObserver> polishingObservers = List.of(new PolisherProgressBar());
     int count = getPolishingTaskCount(model);
@@ -240,6 +242,7 @@ public class ModelPolisherCLILauncher extends Launcher {
 
     output = new ModelWriter(parameters.outputType()).write(doc, output);
 
+    // TODO: das ist keine anständige Validierung!
     if (parameters.SBMLValidation()) {
       var mv = new ModelValidator();
       // use offline validation

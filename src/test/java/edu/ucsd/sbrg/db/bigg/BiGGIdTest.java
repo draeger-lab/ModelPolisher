@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -29,14 +28,10 @@ public class BiGGIdTest {
    */
   @BeforeAll
   @SuppressWarnings("unchecked")
-  public static void setUp() {
+  public static void setUp() throws IOException {
     // load all BiGG SBML IDs
     ObjectMapper mapper = new ObjectMapper();
-    try {
-      biggIds = mapper.readValue(BiGGId.class.getResourceAsStream("bigg_models_data_ids.json"), Map.class);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    biggIds = mapper.readValue(BiGGId.class.getResourceAsStream("bigg_models_data_ids.json"), Map.class);
     // metabolites - unique cases from old implementation
     prepareMetaboliteId("h", "c", "h_c");
     prepareMetaboliteId("12dgr_HP", "c", "12dgr_HP_c");
@@ -48,16 +43,16 @@ public class BiGGIdTest {
     prepareMetaboliteId("nadh", "", "nadh");
     prepareMetaboliteId("nadh____", "c", "nadh_____c");
     // reactions
-    prepareReactionId("R", "2AGPE181tipp", "", "2AGPE181tipp");
-    prepareReactionId("R", "24_25DHVITD2tm", "", "24_25DHVITD2tm");
-    prepareReactionId("R", "3DSPHR", "", "3DSPHR");
-    prepareReactionId("", "BIOMASS_Ecoli_core_w_GAM", "", "BIOMASS_Ecoli_core_w_GAM");
-    prepareReactionId("", "BIOMASS_Ecoli_TM", "", "BIOMASS_Ecoli_TM");
-    prepareReactionId("", "BIOMASS_HP_published", "", "BIOMASS_HP_published");
+    prepareReactionId("R", "2AGPE181tipp", "2AGPE181tipp");
+    prepareReactionId("R", "24_25DHVITD2tm", "24_25DHVITD2tm");
+    prepareReactionId("R", "3DSPHR", "3DSPHR");
+    prepareReactionId("", "BIOMASS_Ecoli_core_w_GAM", "BIOMASS_Ecoli_core_w_GAM");
+    prepareReactionId("", "BIOMASS_Ecoli_TM", "BIOMASS_Ecoli_TM");
+    prepareReactionId("", "BIOMASS_HP_published", "BIOMASS_HP_published");
     // We don't handle reaction compartment code for now
-    prepareReactionId("", "EX_h2o_e", "", "EX_h2o_e");
+    prepareReactionId("", "EX_h2o_e", "EX_h2o_e");
     // r reactions - remaining cases
-    prepareReactionId("", "EX_h2o_e", "", "R_EX_h2o_e");
+    prepareReactionId("", "EX_h2o_e", "R_EX_h2o_e");
     // gene products
     prepareGeneProductId("10090_AT1", "10090_AT1");
     prepareGeneProductId("1818", "1818");
@@ -97,21 +92,19 @@ public class BiGGIdTest {
   /**
    * Set up mapping for testIds to their corresponding correct BiGGId, test all four possibilites, i.e. w and w/o
    * prefix, lowercase prefix and prepended underscore
-   * 
-   * @param prefix:
-   *        Reaction prefix, if not pseudoreaction
-   * @param abbreviation:
-   *        Abbreviation part of id with no further semantic meaning
-   * @param compartmentCode:
-   *        CompartmentCode of id
-   * @param id:
-   *        Full id to test
+   *
+   * @param prefix       :
+   *                     Reaction prefix, if not pseudoreaction
+   * @param abbreviation :
+   *                     Abbreviation part of id with no further semantic meaning
+   * @param id           :
+   *                     Full id to test
    */
-  private static void prepareReactionId(String prefix, String abbreviation, String compartmentCode, String id) {
+  private static void prepareReactionId(String prefix, String abbreviation, String id) {
     BiGGId biGGId = new BiGGId();
     biGGId.setPrefix(prefix);
     biGGId.setAbbreviation(abbreviation);
-    biGGId.setCompartmentCode(compartmentCode);
+    biGGId.setCompartmentCode("");
     correctReactionId.put(id, biGGId);
     correctReactionId.put("_" + id, biGGId);
     // skip if pseudoreactions, produces duplicates of "_" + id for those
@@ -146,30 +139,28 @@ public class BiGGIdTest {
   @Test
   public final void geneIdsValid() {
     List<String> ids = biggIds.get("genes");
-    ids.forEach(id -> BiGGId.createGeneId(id).ifPresent(biggId -> {
-      assertTrue(BiGGId.isValid(biggId.toBiGGId()));
-    }));
+    ids.forEach(id -> assertTrue(BiGGId.isValid(BiGGId.createGeneId(id).toBiGGId())));
   }
 
 
   @Test
   public final void metaboliteIdsValid() {
     List<String> ids = biggIds.get("metabolites");
-    ids.forEach(id -> BiGGId.createMetaboliteId(id).ifPresent(biggId -> assertTrue(BiGGId.isValid(biggId.toBiGGId()))));
+    ids.forEach(id -> assertTrue(BiGGId.isValid(BiGGId.createGeneId(id).toBiGGId())));
   }
 
 
   @Test
   public final void reactionIdsValid() {
     List<String> ids = biggIds.get("reactions");
-    ids.forEach(id -> BiGGId.createReactionId(id).ifPresent(biggId -> assertTrue(BiGGId.isValid(biggId.toBiGGId()))));
+    ids.forEach(id -> assertTrue(BiGGId.isValid(BiGGId.createGeneId(id).toBiGGId())));
   }
 
 
   @Test
   public final void testIsSetMetaboliteCompartment() {
     String metabolite = "M_5dglcn_c";
-    BiGGId biggId = BiGGId.createMetaboliteId(metabolite).get();
+    BiGGId biggId = BiGGId.createMetaboliteId(metabolite);
     assertTrue(biggId.isSetCompartmentCode());
     assertEquals("c", biggId.getCompartmentCode());
   }
@@ -190,8 +181,8 @@ public class BiGGIdTest {
   @Test
   public final void testToBiGGIdGeneProducts() {
     for (Map.Entry<String, BiGGId> entry : correctGeneProductId.entrySet()) {
-      BiGGId.createGeneId(entry.getKey())
-            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
+      var id = BiGGId.createGeneId(entry.getKey());
+      assertEquals(id.toBiGGId(), entry.getValue().toBiGGId());
     }
   }
 
@@ -202,8 +193,8 @@ public class BiGGIdTest {
   @Test
   public final void testToBiGGIdMetabolites() {
     for (Map.Entry<String, BiGGId> entry : correctMetaboliteId.entrySet()) {
-      BiGGId.createMetaboliteId(entry.getKey())
-            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
+      var id = BiGGId.createMetaboliteId(entry.getKey());
+      assertEquals(id.toBiGGId(), entry.getValue().toBiGGId());
     }
   }
 
@@ -214,8 +205,8 @@ public class BiGGIdTest {
   @Test
   public final void testToBiGGIdReactions() {
     for (Map.Entry<String, BiGGId> entry : correctReactionId.entrySet()) {
-      BiGGId.createReactionId(entry.getKey())
-            .ifPresentOrElse(id -> assertEquals(id.toBiGGId(), entry.getValue().toBiGGId()), Assertions::fail);
+      var id = BiGGId.createReactionId(entry.getKey());
+      assertEquals(id.toBiGGId(), entry.getValue().toBiGGId());
     }
   }
 

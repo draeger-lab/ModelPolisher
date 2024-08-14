@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.ModelPolisherOptions;
+import edu.ucsd.sbrg.parameters.ModelPolisherOptions;
 import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.BiGGNotesParameters;

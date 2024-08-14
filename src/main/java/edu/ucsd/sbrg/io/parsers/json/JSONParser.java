@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -22,7 +21,7 @@ import javax.xml.stream.XMLStreamException;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
-import edu.ucsd.sbrg.util.SBMLFix;
+import edu.ucsd.sbrg.util.ext.groups.GroupsUtils;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
@@ -53,8 +52,7 @@ import edu.ucsd.sbrg.io.parsers.json.mapping.Gene;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Metabolite;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Reaction;
 import edu.ucsd.sbrg.io.parsers.json.mapping.Root;
-import edu.ucsd.sbrg.util.GPRParser;
-import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.ext.fbc.GPRParser;
 import edu.ucsd.sbrg.io.UpdateListener;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,6 @@ public class JSONParser {
   /**
    * Creates the {@link ModelBuilder}, {@link SBMLDocument} and reads the
    * jsonFile as a tree
-   *
    */
   public SBMLDocument parse(File jsonFile) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
@@ -103,7 +100,6 @@ public class JSONParser {
    * version), generates a basic unit definition (mmol_per_gDW_per_hr) and calls
    * the parse methods for the main fields (compartments, metabolites, genes,
    * reactions)
-   *
    */
   private void parseModel(ModelBuilder builder, Root root) {
     logger.info(MESSAGES.getString("JSON_PARSER_STARTED"));
@@ -128,8 +124,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   public void parseAnnotation(SBase node, Object annotation) {
     if (annotation == null || annotation.equals("")) {
@@ -153,8 +147,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   private Set<String> parseAnnotation(Map.Entry<String, Object> entry) {
     Set<String> annotations = new HashSet<>();
@@ -173,8 +165,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   private Optional<String> checkResource(String providerCode, String id) {
     String resource;
     if (id.startsWith("http")) {
@@ -182,12 +172,10 @@ public class JSONParser {
     } else {
       resource = new IdentifiersOrgURI(providerCode, id).getURI();
     }
-    return registry.findRegistryUrlForOtherUrl(resource).map(RegistryURI::getURI);
+    return registry.resolveBackwards(resource).map(RegistryURI::getURI);
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   public void parseNotes(SBase node, Object notes) {
     Set<String> content = new HashSet<>();
@@ -207,14 +195,14 @@ public class JSONParser {
         try {
           node.appendNotes(SBMLtools.toNotesString(notesContent.toString()));
         } catch (XMLStreamException e) {
-          e.printStackTrace();
+          logger.info("Could not append notes to node.", e);
         }
       }
     } else if (notes instanceof String) {
       try {
         node.appendNotes(SBMLtools.toNotesString("<p>" + notes + "</p>"));
       } catch (XMLStreamException e) {
-        e.printStackTrace();
+        logger.info("Could not append notes to node.", e);
       }
     } else {
       logger.info(format(MESSAGES.getString("OPEN_ISSUE_NOTES_FORMAT"), notes.getClass().getName()));
@@ -222,8 +210,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   private String parseNotes(Map.Entry<String, Object> entry) {
     String note = "";
@@ -242,8 +228,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   public void parseCompartments(ModelBuilder builder, Map<String, String> compartments) {
     int compSize = compartments.size();
     logger.info(format(MESSAGES.getString("NUM_COMPART"), compSize));
@@ -265,27 +249,22 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   private void parseMetabolites(ModelBuilder builder, List<Metabolite> metabolites) {
     int metSize = metabolites.size();
     logger.info(format(MESSAGES.getString("NUM_METABOLITES"), metSize));
     Model model = builder.getModel();
     for (Metabolite metabolite : metabolites) {
       String id = metabolite.getId();
-      BiGGId.createMetaboliteId(id).ifPresent(metId -> {
-        if (model.getSpecies(metId.toBiGGId()) != null) {
-          logger.info(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
-        } else {
-          parseMetabolite(model, metabolite, metId);
-        }
-      });
+      var metId = BiGGId.createMetaboliteId(id);
+      if (model.getSpecies(metId.toBiGGId()) != null) {
+        logger.info(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
+      } else {
+        parseMetabolite(model, metabolite, metId);
+      }
     }
   }
 
 
-  /**
-   */
   public void parseMetabolite(Model model, Metabolite metabolite, BiGGId biggId) {
     Species species = model.createSpecies(biggId.toBiGGId());
     String name = metabolite.getName();
@@ -318,7 +297,7 @@ public class JSONParser {
       try {
         species.appendNotes(SBMLtools.toNotesString("<p>FORMULA: " + formula + "</p>"));
       } catch (XMLStreamException e) {
-        e.printStackTrace();
+        logger.info("Could not append notes to node.", e);
       }
     }
     if (species.isSetAnnotation()) {
@@ -327,28 +306,23 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   private void parseGenes(ModelBuilder builder, List<Gene> genes) {
     int genSize = genes.size();
     logger.info(format(MESSAGES.getString("NUM_GENES"), genSize));
     Model model = builder.getModel();
     for (Gene gene : genes) {
       String id = gene.getId();
-      BiGGId.createGeneId(id).ifPresent(geneId -> {
-        FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
-        if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
-          logger.info(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
-        } else {
-          parseGene(model, gene, geneId.toBiGGId());
-        }
-      });
+      var geneId = BiGGId.createGeneId(id);
+      FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+      if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
+        logger.info(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
+      } else {
+        parseGene(model, gene, geneId.toBiGGId());
+      }
     }
   }
 
 
-  /**
-   */
   public void parseGene(Model model, Gene gene, String id) {
     FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     GeneProduct gp = modelPlug.createGeneProduct(id);
@@ -363,27 +337,22 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   private void parseReactions(ModelBuilder builder, List<Reaction> reactions) {
     int reactSize = reactions.size();
     logger.info(format(MESSAGES.getString("NUM_REACTIONS"), reactSize));
     for (Reaction reaction : reactions) {
       String id = reaction.getId();
       // Add prefix for BiGGId
-      BiGGId.createReactionId(id).ifPresent(reactionId -> {
-        if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
-          logger.info(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
-        } else {
-          parseReaction(builder, reaction, reactionId.toBiGGId());
-        }
-      });
+      var reactionId = BiGGId.createReactionId(id);
+      if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
+        logger.info(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
+      } else {
+        parseReaction(builder, reaction, reactionId.toBiGGId());
+      }
     }
   }
 
 
-  /**
-   */
   public void parseReaction(ModelBuilder builder, Reaction reaction, String id) {
     Model model = builder.getModel();
     org.sbml.jsbml.Reaction r = model.createReaction(id);
@@ -405,8 +374,6 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   private void setReactionFluxBounds(ModelBuilder builder, Reaction reaction, org.sbml.jsbml.Reaction r) {
     FBCReactionPlugin rPlug = (FBCReactionPlugin) r.getPlugin(FBCConstants.shortLabel);
     double lowerBound = reaction.getLowerBound();
@@ -422,35 +389,30 @@ public class JSONParser {
   }
 
 
-  /**
-   */
   @SuppressWarnings("unchecked")
   private void setReactionStoichiometry(Reaction reaction, Model model, org.sbml.jsbml.Reaction r) {
     Map<String, Double> metabolites = reaction.getMetabolites().get();
     for (Map.Entry<String, Double> metabolite : metabolites.entrySet()) {
       // removed mu code, as unused not matching schema
       String id = metabolite.getKey();
-      BiGGId.createMetaboliteId(id).ifPresent(metId -> {
-        double value = metabolite.getValue();
-        if (value != 0d) {
-          Species species = model.getSpecies(metId.toBiGGId());
-          if (species == null) {
-            species = model.createSpecies(metId.toBiGGId());
-            logger.info(format(MESSAGES.getString("SPECIES_UNDEFINED"), metId, r.getId()));
-          }
-          if (value < 0d) {
-            ModelBuilder.buildReactants(r, pairOf(-value, species));
-          } else {
-            ModelBuilder.buildProducts(r, pairOf(value, species));
-          }
+      var metId = BiGGId.createMetaboliteId(id);
+      double value = metabolite.getValue();
+      if (value != 0d) {
+        Species species = model.getSpecies(metId.toBiGGId());
+        if (species == null) {
+          species = model.createSpecies(metId.toBiGGId());
+          logger.info(format(MESSAGES.getString("SPECIES_UNDEFINED"), metId, r.getId()));
         }
-      });
+        if (value < 0d) {
+          ModelBuilder.buildReactants(r, pairOf(-value, species));
+        } else {
+          ModelBuilder.buildProducts(r, pairOf(value, species));
+        }
+      }
     }
   }
 
 
-  /**
-   */
   private void createSubsystem(Model model, Reaction reaction, org.sbml.jsbml.Reaction r) {
     String subsystem = reaction.getSubsystem() != null ? reaction.getSubsystem() : "";
     if (!subsystem.isEmpty()) {
@@ -467,13 +429,11 @@ public class JSONParser {
         group.setName(subsystem);
         group.setKind(Group.Kind.partonomy);
       }
-      SBMLUtils.createSubsystemLink(r, group.createMember());
+      GroupsUtils.createSubsystemLink(r, group.createMember());
     }
   }
 
 
-  /**
-   */
   private void setObjectiveCoefficient(Reaction reaction, Model model, org.sbml.jsbml.Reaction r) {
     FBCModelPlugin fbc = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
     Objective obj = fbc.getObjective(0);

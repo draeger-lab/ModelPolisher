@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg;
+package edu.ucsd.sbrg.validation;
 
 import java.io.File;
 

@@ -2,11 +2,10 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.io.parsers.json.JSONParser;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.Registry;
-import edu.ucsd.sbrg.util.GPRParser;
-import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.ext.fbc.GPRParser;
+import edu.ucsd.sbrg.util.ext.groups.GroupsUtils;
 import edu.ucsd.sbrg.io.UpdateListener;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
@@ -21,6 +20,7 @@ import org.sbml.jsbml.ext.groups.Group;
 import org.sbml.jsbml.ext.groups.GroupsConstants;
 import org.sbml.jsbml.ext.groups.GroupsModelPlugin;
 import org.sbml.jsbml.util.ModelBuilder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.format.Mat5;
 import us.hebi.matlab.mat.format.Mat5File;
@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
@@ -46,7 +45,7 @@ import static java.text.MessageFormat.format;
  */
 public class MatlabParser {
 
-  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MatlabParser.class);
+  private static final Logger logger = LoggerFactory.getLogger(MatlabParser.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private static MatlabFields matlabFields;
   private final SBOParameters sboParameters;
@@ -220,7 +219,7 @@ public class MatlabParser {
         if (model.getReaction(i) == null) {
           logger.info(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
-          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, sboParameters.omitGenericTerms());
+          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, sboParameters.addGenericTerms());
         }
       }
     });
@@ -245,7 +244,7 @@ public class MatlabParser {
             nameToGroup.put(name, group);
           }
           if (model.getReaction(i) != null) {
-            SBMLUtils.createSubsystemLink(model.getReaction(i), group.createMember());
+            GroupsUtils.createSubsystemLink(model.getReaction(i), group.createMember());
           } else {
             logger.info(format(MESSAGES.getString("SUBSYS_LINK_ERROR"), i));
           }

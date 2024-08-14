@@ -9,7 +9,6 @@ import org.sbml.jsbml.*;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Abstract class providing a framework for annotating SBML elements with Controlled Vocabulary (CV) Terms.
@@ -17,7 +16,7 @@ import java.util.Optional;
  * It includes methods to check the validity of BiGG IDs, add annotations to SBML elements, and specifically handle
  * annotations for Species and Reactions using data from BiGG and other databases.
  */
-public abstract class BiGGCVTermAnnotator<T extends AbstractSBase> extends AbstractBiGGAnnotator<T> {
+public abstract class BiGGCVTermAnnotator<T extends SBase> extends AbstractBiGGAnnotator {
 
   public BiGGCVTermAnnotator(BiGGDB bigg, BiGGAnnotationParameters parameters, Registry registry) {
     super(bigg, parameters, registry);
@@ -34,7 +33,7 @@ public abstract class BiGGCVTermAnnotator<T extends AbstractSBase> extends Abstr
    *
    * @return Optional containing the valid BiGG ID or empty if the ID is invalid.
    */
-  protected abstract Optional<BiGGId> findBiGGId(T element) throws SQLException;
+  protected abstract BiGGId findBiGGId(T element) throws SQLException;
 
 //  /**
 //   * Adds annotations to an SBML node (either a Species or a Reaction) using a given BiGGId.

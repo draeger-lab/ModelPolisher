@@ -17,18 +17,14 @@ public class GeneParser {
     this.index = index;
   }
 
-
-  /**
-   *
-   */
   public void parse() {
     Optional<Cell> geneCell = MatlabFields.getInstance().getCell(ModelField.genes.name());
     geneCell.map(genes -> COBRAUtils.asString(genes.get(index), ModelField.genes.name(), index + 1))
-            .ifPresent(id -> BiGGId.createGeneId(id)
-                    .ifPresent(biggId -> {
-                      GeneProduct gp = plugin.createGeneProduct(biggId.toBiGGId());
-      gp.setLabel(id);
-      gp.setName(id);
-    }));
+            .ifPresent(id -> {
+              var biggId = BiGGId.createGeneId(id);
+              GeneProduct gp = plugin.createGeneProduct(biggId.toBiGGId());
+              gp.setLabel(id);
+              gp.setName(id);
+            });
   }
 }

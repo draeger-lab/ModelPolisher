@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.ModelPolisherOptions;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 
 public class BiGGAnnotationParameters {

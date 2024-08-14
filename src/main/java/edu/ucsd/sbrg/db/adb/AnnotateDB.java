@@ -1,9 +1,6 @@
 package edu.ucsd.sbrg.db.adb;
 
-import de.zbit.util.Utils;
-import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
-import edu.ucsd.sbrg.db.bigg.BiGGDB;
 import edu.ucsd.sbrg.parameters.DBParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,19 +1,17 @@
 package edu.ucsd.sbrg.resolver.identifiersorg;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IdentifiersOrgURIUtils {
 
-    public static @NotNull String addJavaRegexCaptureGroup(String pattern) {
+    public static String addJavaRegexCaptureGroup(String pattern) {
         String idPattern = pattern.replaceAll("\\^|\\$", "");
         idPattern = "(?<id>" + idPattern + ")";
         return idPattern;
     }
 
-    public static @NotNull String removeHttpProtocolFromUrl(String query) {
+    public static String removeHttpProtocolFromUrl(String query) {
         if (query.startsWith("http://") || query.startsWith("https://")) {
             Matcher protocolMatcher = Pattern.compile("^https?://").matcher(query);
             if (protocolMatcher.find()) {

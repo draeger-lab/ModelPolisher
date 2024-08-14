@@ -1,4 +1,4 @@
-package edu.ucsd.sbrg.eco;
+package edu.ucsd.sbrg;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,14 +7,19 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.Set;
 
+import edu.ucsd.sbrg.eco.DAG;
+import edu.ucsd.sbrg.eco.Node;
 import org.biojava.nbio.ontology.Ontology;
 import org.biojava.nbio.ontology.Term;
 import org.biojava.nbio.ontology.Triple;
 import org.biojava.nbio.ontology.io.OboParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ECOparser {
+public class ECOParserCLILauncher {
 
   private static Ontology ontology;
+  private static final Logger logger = LoggerFactory.getLogger(ECOParserCLILauncher.class);
 
   /**
    * @see <a href="https://github.com/draeger-lab/ModelPolisher/issues/5">Issue 5</>
@@ -57,8 +62,8 @@ public class ECOparser {
   }
 
 
-  public static void main(String[] args) {
-    ECOparser.parseECO();
+  public static void main(String[] args) throws IOException, ParseException {
+    ECOParserCLILauncher.parseECO();
   }
 
 
@@ -82,18 +87,16 @@ public class ECOparser {
   }
 
 
-  public static void parseECO() {
+  public static void parseECO() throws IOException, ParseException {
     String ecoName = "Evidence and Conclusion Ontology";
     String ecoDesc = "TODO";
     OboParser parser = new OboParser();
-    try (InputStream inputStream = ECOparser.class.getResourceAsStream("eco.obo");
-        BufferedReader oboReader = new BufferedReader(new InputStreamReader(inputStream))) {
+    try (InputStream inputStream = ECOParserCLILauncher.class.getResourceAsStream("eco.obo");
+         BufferedReader oboReader = new BufferedReader(new InputStreamReader(inputStream))) {
       ontology = parser.parseOBO(oboReader, ecoName, ecoDesc);
       Term rootTerm = ontology.getTerm("ECO:0000000");
       DAG ontologyDAG = new DAG(rootTerm);
       traverse(ontologyDAG.getRoot());
-    } catch (IOException | ParseException e) {
-      e.printStackTrace();
     }
   }
 

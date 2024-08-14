@@ -18,7 +18,7 @@ import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
 import edu.ucsd.sbrg.parameters.DBParameters;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
-import edu.ucsd.sbrg.polishing.SBMLPolisher;
+import edu.ucsd.sbrg.polishing.NamePolisher;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.slf4j.Logger;
@@ -284,7 +284,7 @@ public class BiGGDB {
       return Optional.of(results.iterator().next());
     } else {
       if (results.size() > 1) {
-        logger.info(format(MESSAGES.getString("QUERY_MULTIPLE_RESULTS"), param, query));
+        logger.debug(format(MESSAGES.getString("QUERY_MULTIPLE_RESULTS"), param, query));
       }
       return Optional.empty();
     }
@@ -301,7 +301,7 @@ public class BiGGDB {
    */
   public Optional<String> getComponentName(BiGGId biggId) throws SQLException {
     String query = "SELECT " + NAME + " FROM " + COMPONENT + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
-    return singleParamStatement(query, biggId.getAbbreviation());
+    return singleParamStatement(query, biggId.getAbbreviation()).map(name -> new NamePolisher().polish(name));
   }
 
   /**
@@ -472,7 +472,7 @@ public class BiGGDB {
    */
   public Optional<String> getReactionName(String abbreviation) throws SQLException {
     String query = "SELECT " + NAME + " FROM " + REACTION + " WHERE " + BIGG_ID + " = ? AND " + NAME + " <> ''";
-    return singleParamStatement(query, abbreviation);
+    return singleParamStatement(query, abbreviation).map(name -> new NamePolisher().polish(name));
   }
 
   

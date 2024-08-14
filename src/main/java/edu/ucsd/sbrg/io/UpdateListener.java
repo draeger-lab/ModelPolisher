@@ -1,7 +1,7 @@
 package edu.ucsd.sbrg.io;
 
 import de.zbit.util.ResourceManager;
-import edu.ucsd.sbrg.util.SBMLUtils;
+import edu.ucsd.sbrg.util.ext.groups.GroupsUtils;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
 import org.sbml.jsbml.Reaction;
@@ -10,6 +10,8 @@ import org.sbml.jsbml.ext.groups.Member;
 import org.sbml.jsbml.util.TreeNodeChangeEvent;
 import org.sbml.jsbml.util.TreeNodeChangeListener;
 import org.sbml.jsbml.util.TreeNodeRemovedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.tree.TreeNode;
 import java.beans.PropertyChangeEvent;
@@ -19,7 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Logger;
 
 
 /**
@@ -37,10 +38,8 @@ import java.util.logging.Logger;
  */
 public class UpdateListener implements TreeNodeChangeListener {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(UpdateListener.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(UpdateListener.class);
+
   /**
    * Bundle for ModelPolisher logger messages
    */
@@ -85,7 +84,7 @@ public class UpdateListener implements TreeNodeChangeListener {
           // Update reaction references in the FBC model plugin.
           updateReactionRef(oldId, newId, fbcModelPlug);
           // Update subsystem references if any.
-          Set<Member> subsystems = (Set<Member>) r.getUserObject(SBMLUtils.SUBSYSTEM_LINK);
+          Set<Member> subsystems = (Set<Member>) r.getUserObject(GroupsUtils.SUBSYSTEM_LINK);
           if (subsystems != null) {
             for (Member m : subsystems) {
               m.setIdRef(newId);
@@ -104,7 +103,7 @@ public class UpdateListener implements TreeNodeChangeListener {
         } 
         // Log a severe message if the ID change cannot be handled.
         else {
-          logger.severe(
+          logger.debug(
             MessageFormat.format(MESSAGES.getString("ID_CHANGE_WARNING"), nsb.getElementName(), oldId, newId));
         }
       }
@@ -159,7 +158,7 @@ public class UpdateListener implements TreeNodeChangeListener {
       // }
     }
     // Log the addition of the node.
-    logger.fine(node.toString());
+    logger.debug(node.toString());
   }
 
 
@@ -171,6 +170,6 @@ public class UpdateListener implements TreeNodeChangeListener {
    */
   @Override
   public void nodeRemoved(TreeNodeRemovedEvent event) {
-    logger.fine(event.toString());
+    logger.debug(event.toString());
   }
 }

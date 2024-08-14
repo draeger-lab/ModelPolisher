@@ -15,9 +15,10 @@ public abstract class BiGGDBContainerTest {
     @SuppressWarnings("resource")
     static final GenericContainer<?> biggContainer =
             new GenericContainer<>(DockerImageName.parse("schmirgel/bigg_db:1.6"))
-            .withExposedPorts(5432)
-            .withEnv("POSTGRES_PASSWORD", "postgres")
-            .withStartupTimeout(Duration.ofMinutes(5));
+                    .withExposedPorts(5432)
+                    .withReuse(true)
+                    .withEnv("POSTGRES_PASSWORD", "postgres")
+                    .withStartupTimeout(Duration.ofMinutes(5));
 
     protected static final BiGGDB bigg;
 

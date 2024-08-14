@@ -10,7 +10,6 @@ import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
 
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
 
 import static edu.ucsd.sbrg.TestUtils.*;

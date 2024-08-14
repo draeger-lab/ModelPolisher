@@ -1,26 +1,27 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import org.sbml.jsbml.SBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
-public class PolishingUtils {
+public class NamePolisher implements IPolishSBaseAttributes {
 
-    private static final Logger logger = Logger.getLogger(ModelPolisher.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(NamePolisher.class);
 
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-    /**
-     * Processes and polishes a given identifier name by applying a series of string transformations
-     * to make it more readable or compliant with certain standards.
-     *
-     * @param name The original identifier name to be polished.
-     * @return The polished version of the identifier name.
-     */
-    public static String polishName(String name) {
+    @Override
+    public void polish(SBase sbase) {
+        var name = sbase.getName();
+        sbase.setName(polish(name));
+    }
+
+    public String polish(String name) {
         String newName = name;
         // Remove leading "?_" if present
         if (name.startsWith("?_")) {
@@ -40,7 +41,7 @@ public class PolishingUtils {
         newName = newName.replace("_", " ");
         // Log the change if the name was altered
         if (!newName.equals(name)) {
-            logger.fine(format(MESSAGES.getString("CHANGED_NAME"), name, newName));
+            logger.debug(format(MESSAGES.getString("CHANGED_NAME"), name, newName));
         }
         return newName;
     }

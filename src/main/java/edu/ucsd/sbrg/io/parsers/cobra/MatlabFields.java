@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
@@ -18,6 +17,8 @@ import org.sbml.jsbml.Model;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.types.Array;
 import us.hebi.matlab.mat.types.Cell;
 import us.hebi.matlab.mat.types.Char;
@@ -26,15 +27,10 @@ import us.hebi.matlab.mat.types.Matrix;
 import us.hebi.matlab.mat.types.Sparse;
 import us.hebi.matlab.mat.types.Struct;
 
-/**
- *
- */
 class MatlabFields {
 
-  /**
-   * A {@link Logger} for this class.
-   */
-  private static final Logger logger = Logger.getLogger(MatlabFields.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(MatlabFields.class);
+
   /**
    * Bundle for ModelPolisher logger messages
    */
@@ -86,7 +82,7 @@ class MatlabFields {
       if (desc.getDimensions()[0] == 1) {
         model.setName(desc.getRow(0));
       } else {
-        logger.warning(format(MESSAGES.getString("MANY_IDS_IN_DESC"), desc.asCharSequence()));
+        logger.debug(format(MESSAGES.getString("MANY_IDS_IN_DESC"), desc.asCharSequence()));
       }
     } else if (description.getType() == MatlabType.Structure) {
       setDescriptionFromStruct(model, description);
@@ -109,7 +105,7 @@ class MatlabFields {
         try {
           model.appendNotes(SBMLtools.toNotesString("<p>" + COBRAUtils.asString(tmp) + "</p>"));
         } catch (XMLStreamException exc) {
-          COBRAUtils.logException(exc);
+          throw new RuntimeException(exc);
         }
       }
     }

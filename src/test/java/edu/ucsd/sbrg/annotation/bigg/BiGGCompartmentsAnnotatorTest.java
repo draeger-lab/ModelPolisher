@@ -8,7 +8,6 @@ import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.SBO;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import static edu.ucsd.sbrg.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,20 +1,19 @@
 package edu.ucsd.sbrg.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.ucsd.sbrg.ModelPolisherOptions;
 
 public class Parameters {
 
     @JsonProperty("polishing")
-    private PolishingParameters polishing = new PolishingParameters();
+    private final PolishingParameters polishing = new PolishingParameters();
     @JsonProperty("annotation")
-    private AnnotationParameters annotation = new AnnotationParameters();
+    private final AnnotationParameters annotation = new AnnotationParameters();
     @JsonProperty("sbo-terms")
-    private SBOParameters sboTerms = new SBOParameters();
+    private final SBOParameters sboTerms = new SBOParameters();
     @JsonProperty("sbml-validation")
-    protected boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
+    protected final boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
     @JsonProperty("outputType")
-    protected ModelPolisherOptions.OutputType outputType = ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue();
+    protected final ModelPolisherOptions.OutputType outputType = ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue();
 
     public Parameters() {}
 

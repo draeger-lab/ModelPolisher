@@ -3,8 +3,6 @@ package edu.ucsd.sbrg.parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
 
-import java.util.Map;
-
 public class PolishingParameters {
 
   @JsonProperty("reactions")

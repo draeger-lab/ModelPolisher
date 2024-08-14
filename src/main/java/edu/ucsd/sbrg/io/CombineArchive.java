@@ -3,7 +3,6 @@ package edu.ucsd.sbrg.io;
 import de.unirostock.sems.cbarchive.CombineArchiveException;
 import de.zbit.util.ResourceManager;
 import org.jdom2.JDOMException;
-import org.jetbrains.annotations.NotNull;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.SBMLDocument;
@@ -13,6 +12,8 @@ import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.GeneProduct;
 import org.sbml.jsbml.xml.XMLNode;
 import org.sbml.jsbml.xml.parsers.SBMLRDFAnnotationParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.tidy.Tidy;
 
 import javax.xml.stream.XMLStreamException;
@@ -29,7 +30,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import static java.text.MessageFormat.format;
 
@@ -52,7 +52,7 @@ import static java.text.MessageFormat.format;
  */
 public class CombineArchive {
 
-  private static final Logger logger = Logger.getLogger(CombineArchive.class.getName());
+  private static final Logger logger = LoggerFactory.getLogger(CombineArchive.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   public static final String COMBINE_SPECIFICATION = "https://identifiers.org/combine.specifications/sbml";
   public static final String RDF_MEDIATYPE = "https://purl.org/NET/mediatypes/application/rdf+xml";
@@ -96,7 +96,7 @@ public class CombineArchive {
     }
   }
 
-  private @NotNull Tidy tidyParser() {
+  private Tidy tidyParser() {
     Tidy tidy = new Tidy(); // obtain a new Tidy instance
     tidy.setDropEmptyParas(false);
     tidy.setHideComments(false);
@@ -184,7 +184,7 @@ public class CombineArchive {
       // Check if the COMBINE archive file already exists and attempt to delete it
       File caFile = new File(combineArcLocation);
       if (caFile.exists() && !caFile.delete()) {
-        logger.severe(format("Failed to delete existing archive file \"{0}\"", caFile.getPath()));
+        logger.info(format("Failed to delete existing archive file \"{0}\"", caFile.getPath()));
       }
 
       File outputXML = new File(output.getAbsolutePath());

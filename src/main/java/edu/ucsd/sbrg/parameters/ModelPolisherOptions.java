@@ -1,7 +1,7 @@
 /*
  * 
  */
-package edu.ucsd.sbrg;
+package edu.ucsd.sbrg.parameters;
 
 import java.io.File;
 import java.util.ResourceBundle;
@@ -129,8 +129,8 @@ public interface ModelPolisherOptions extends KeyProvider {
    * resulting output file.
    */
   @SuppressWarnings("unchecked")
-  Option<Boolean> OMIT_GENERIC_TERMS =
-    new Option<>("OMIT_GENERIC_TERMS", Boolean.class, MESSAGES.getString("OMIT_GENERIC_TERMS_DESC"), Boolean.FALSE);
+  Option<Boolean> ADD_GENERIC_TERMS =
+    new Option<>("ADD_GENERIC_TERMS", Boolean.class, MESSAGES.getString("ADD_GENERIC_TERMS_DESC"), Boolean.TRUE);
   /**
    * Produce output as a single COMBINE Archive.
    */
