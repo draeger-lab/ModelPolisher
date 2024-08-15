@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 
+import java.util.Objects;
+
 public class ADBAnnotationParameters {
 
     @JsonProperty("annotate-with-adb")
@@ -36,5 +38,26 @@ public class ADBAnnotationParameters {
 
     public DBParameters dbParameters() {
         return dbParameters;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ADBAnnotationParameters that = (ADBAnnotationParameters) o;
+        return annotateWithAdb == that.annotateWithAdb && Objects.equals(dbParameters, that.dbParameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(annotateWithAdb, dbParameters);
+    }
+
+    @Override
+    public String toString() {
+        return "ADBAnnotationParameters{" +
+                "annotateWithAdb=" + annotateWithAdb +
+                ", dbParameters=" + dbParameters +
+                '}';
     }
 }

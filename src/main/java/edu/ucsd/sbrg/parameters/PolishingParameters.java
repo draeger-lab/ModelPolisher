@@ -3,6 +3,8 @@ package edu.ucsd.sbrg.parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
 
+import java.util.Objects;
+
 public class PolishingParameters {
 
   @JsonProperty("reactions")
@@ -29,5 +31,26 @@ public class PolishingParameters {
 
   public FluxObjectivesPolishingParameters fluxObjectivesPolishingParameters() {
     return fluxObjectivesPolishingParameters;
+  }
+
+  @Override
+  public String toString() {
+    return "PolishingParameters{" +
+            "reactionPolishingParameters=" + reactionPolishingParameters +
+            ", fluxObjectivesPolishingParameters=" + fluxObjectivesPolishingParameters +
+            '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PolishingParameters that = (PolishingParameters) o;
+    return Objects.equals(reactionPolishingParameters, that.reactionPolishingParameters) && Objects.equals(fluxObjectivesPolishingParameters, that.fluxObjectivesPolishingParameters);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(reactionPolishingParameters, fluxObjectivesPolishingParameters);
   }
 }

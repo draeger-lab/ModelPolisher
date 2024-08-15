@@ -2,6 +2,8 @@ package edu.ucsd.sbrg.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class Parameters {
 
     @JsonProperty("polishing")
@@ -35,5 +37,29 @@ public class Parameters {
 
     public ModelPolisherOptions.OutputType outputType() {
         return outputType;
+    }
+
+    @Override
+    public String toString() {
+        return "Parameters{" +
+                "polishing=" + polishing +
+                ", annotation=" + annotation +
+                ", sboTerms=" + sboTerms +
+                ", sbmlValidation=" + sbmlValidation +
+                ", outputType=" + outputType +
+            '}';    
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Parameters that = (Parameters) o;
+        return sbmlValidation == that.sbmlValidation && Objects.equals(polishing, that.polishing) && Objects.equals(annotation, that.annotation) && Objects.equals(sboTerms, that.sboTerms) && outputType == that.outputType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(polishing, annotation, sboTerms, sbmlValidation, outputType);
     }
 }

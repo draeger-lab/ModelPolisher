@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
 
+import java.util.Objects;
+
 public class BiGGAnnotationParameters {
 
     @JsonProperty("annotate-with-bigg")
@@ -63,5 +65,30 @@ public class BiGGAnnotationParameters {
 
     public DBParameters dbParameters() {
         return dbParameters;
+    }
+
+    @Override
+    public String toString() {
+        return "BiGGAnnotationParameters{" +
+                "annotateWithBiGG=" + annotateWithBiGG +
+                ", includeAnyURI=" + includeAnyURI +
+                ", documentTitlePattern='" + documentTitlePattern + '\'' +
+                ", notesParameters=" + notesParameters +
+                ", dbParameters=" + dbParameters +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BiGGAnnotationParameters that = (BiGGAnnotationParameters) o;
+        return annotateWithBiGG == that.annotateWithBiGG && includeAnyURI == that.includeAnyURI && Objects.equals(documentTitlePattern, that.documentTitlePattern) && Objects.equals(notesParameters, that.notesParameters) && Objects.equals(dbParameters, that.dbParameters);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(annotateWithBiGG, includeAnyURI, documentTitlePattern, notesParameters, dbParameters);
     }
 }

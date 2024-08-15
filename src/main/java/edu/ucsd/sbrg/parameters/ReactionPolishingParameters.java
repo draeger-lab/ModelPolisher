@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class ReactionPolishingParameters {
 
@@ -28,6 +29,23 @@ public class ReactionPolishingParameters {
         return checkMassBalance;
     }
 
+    @Override
+    public String toString() {
+        return "ReactionPolishingParameters{" +
+                "checkMassBalance=" + checkMassBalance +
+                '}';
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ReactionPolishingParameters that = (ReactionPolishingParameters) o;
+        return checkMassBalance == that.checkMassBalance;
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(checkMassBalance);
+    }
 }
