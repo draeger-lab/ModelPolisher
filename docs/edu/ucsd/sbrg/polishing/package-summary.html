@@ -80,12 +80,12 @@ loadScripts(document, 'script');</script>
 </li>
 <li>
 <div id="class-summary">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab1" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab1', 2)" class="table-tab">Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button></div>
 <div id="class-summary.tabpanel" role="tabpanel" aria-labelledby="class-summary-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;SBMLElement&gt;</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="AnnotationPolisher.html" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
@@ -94,20 +94,22 @@ loadScripts(document, 'script');</script>
 <div class="block">This class is responsible for polishing the properties of a compartment in an SBML model to ensure
  compliance with standards and completeness.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GeneProductAssociationsProcessor.html" title="class in edu.ucsd.sbrg.polishing">GeneProductAssociationsProcessor</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="IPolishAnnotations.html" title="interface in edu.ucsd.sbrg.polishing">IPolishAnnotations</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="IPolishSBaseAttributes.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBaseAttributes</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement extends org.sbml.jsbml.SBase&gt;</div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="IPolishSpeciesReferences.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSpeciesReferences</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">This class provides functionality to polish an SBML (Systems Biology Markup Language) document.</div>
 </div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NamePolisher.html" title="class in edu.ucsd.sbrg.polishing">NamePolisher</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ParametersPolisher.html" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PolishingUtils.html" title="class in edu.ucsd.sbrg.polishing">PolishingUtils</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="ReactionNamePatterns.html" title="enum class in edu.ucsd.sbrg.polishing">ReactionNamePatterns</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
-<div class="block">Defines an enumeration for regex patterns that are used to categorize reactions based on their ID strings.</div>
-</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="ReactionsPolisher.html" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">This class provides methods to polish and validate SBML reactions according to specific rules and patterns.</div>
@@ -115,12 +117,11 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SBMLPolisher.html" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="SpeciesPolisher.html" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SpeciesReferencesPolisher.html" title="class in edu.ucsd.sbrg.polishing">SpeciesReferencesPolisher</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">&nbsp;</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">This class is responsible for polishing <code>Species</code> objects in an SBML model to ensure they conform to
- specific standards and completeness.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">This class is responsible for ensuring that all necessary <code>UnitDefinition</code>s and <code>Unit</code>s are correctly
  defined and present in the SBML model.</div>
 </div>

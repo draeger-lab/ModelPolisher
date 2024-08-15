@@ -68,21 +68,25 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">edu.ucsd.sbrg.annotation.bigg</a></div>
-<h1 title="Class AbstractBiGGAnnotator" class="title">Class AbstractBiGGAnnotator&lt;SBMLElement&gt;</h1>
+<h1 title="Class AbstractBiGGAnnotator" class="title">Class AbstractBiGGAnnotator</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>&lt;SBMLElement&gt;
-<div class="inheritance">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator&lt;SBMLElement&gt;</div>
+<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>
+<div class="inheritance">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</div>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
 <dd><code><a href="BiGGCompartmentsAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCompartmentsAnnotator</a></code>, <code><a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a></code>, <code><a href="fbc/BiGGFBCAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGFBCAnnotator</a></code>, <code><a href="BiGGModelAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGModelAnnotator</a></code>, <code><a href="BiGGPublicationsAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGPublicationsAnnotator</a></code>, <code><a href="BiGGSBMLAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSBMLAnnotator</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractBiGGAnnotator&lt;SBMLElement&gt;</span>
-<span class="extends-implements">extends <a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;SBMLElement&gt;</span></div>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractBiGGAnnotator</span>
+<span class="extends-implements">extends <a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -149,7 +153,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-edu.ucsd.sbrg.annotation.AbstractAnnotator">Methods inherited from class&nbsp;edu.ucsd.sbrg.annotation.<a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></h3>
-<code><a href="../AbstractAnnotator.html#annotate(java.util.List)">annotate</a>, <a href="../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a>, <a href="../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
+<code><a href="../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>

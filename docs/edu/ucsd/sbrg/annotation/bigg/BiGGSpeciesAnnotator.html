@@ -71,8 +71,8 @@ loadScripts(document, 'script');</script>
 <h1 title="Class BiGGSpeciesAnnotator" class="title">Class BiGGSpeciesAnnotator</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>&lt;SBMLElement&gt;
-<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>&lt;T&gt;
+<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>
+<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>
 <div class="inheritance"><a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.Species&gt;
 <div class="inheritance">edu.ucsd.sbrg.annotation.bigg.BiGGSpeciesAnnotator</div>
 </div>
@@ -80,9 +80,14 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Species&gt;</code>, <code><a href="../../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">BiGGSpeciesAnnotator</span>
-<span class="extends-implements">extends <a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.Species&gt;</span></div>
+<span class="extends-implements">extends <a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.Species&gt;
+implements <a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Species&gt;</span></div>
 <div class="block">This class provides functionality to annotate a species in an SBML model using BiGG database identifiers.
  It extends the <a href="BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg"><code>BiGGCVTermAnnotator</code></a> class, allowing it to manage controlled vocabulary (CV) terms
  associated with the species. The class handles various aspects of species annotation including setting
@@ -146,7 +151,7 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">This method annotates a species with various details fetched from the BiGG Knowledgebase.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#findBiGGId(org.sbml.jsbml.Species)" class="member-name-link">findBiGGId</a><wbr>(org.sbml.jsbml.Species&nbsp;species)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Validates the species ID and attempts to retrieve a corresponding BiGGId based on existing annotations.</div>
@@ -215,8 +220,8 @@ loadScripts(document, 'script');</script>
 <div class="block">Delegates annotation processing for all chemical species contained in the <code>Model</code>.
  This method iterates over each species in the model and applies specific annotations.</div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../AbstractAnnotator.html#annotate(java.util.List)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Species&gt;</code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="../IAnnotateSBases.html#annotate(java.util.List)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Species&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
@@ -236,7 +241,7 @@ loadScripts(document, 'script');</script>
  The BiGGId used for these operations is either derived from the species' URI list or directly from its ID if available.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Species&gt;</code></dd>
+<dd><code><a href="../IAnnotateSBases.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Species&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
@@ -245,8 +250,8 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="findBiGGId(org.sbml.jsbml.Species)">
 <h3>findBiGGId</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.Species&nbsp;species)</span>
-                            throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.Species&nbsp;species)</span>
+                  throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Validates the species ID and attempts to retrieve a corresponding BiGGId based on existing annotations.
  This method first tries to create a BiGGId from the species ID. If the species ID does not correspond to a known
  BiGGId in the database, it then searches through the species' annotations to find a valid BiGGId.</div>
@@ -266,8 +271,9 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setName</span><wbr><span class="parameters">(org.sbml.jsbml.Species&nbsp;species,
  <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&nbsp;biggId)</span>
              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
-<div class="block">Updates the name of the species based on data retrieved from the BiGG Knowledgebase. The species name is set only if it
- has not been previously set or if the current name follows a default format that combines the BiGGId abbreviation and
+<div class="block">Updates the name of the species based on data retrieved from the BiGG Knowledgebase.
+ The species name is set only if it has not been previously set or if the current name
+ follows a default format that combines the BiGGId abbreviation and
  compartment code. This method relies on the availability of a valid <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a> for the species.</div>
 <dl class="notes">
 <dt>Parameters:</dt>

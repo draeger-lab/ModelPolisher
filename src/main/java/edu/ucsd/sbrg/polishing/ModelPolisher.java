@@ -17,7 +17,7 @@ package edu.ucsd.sbrg.polishing;
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
-import edu.ucsd.sbrg.polishing.fbc.FBCPolisher;
+import edu.ucsd.sbrg.polishing.ext.fbc.FBCPolisher;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.*;

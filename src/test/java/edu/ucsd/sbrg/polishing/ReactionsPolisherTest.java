@@ -2,15 +2,10 @@ package edu.ucsd.sbrg.polishing;
 
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
-import edu.ucsd.sbrg.polishing.fbc.StrictnessPredicate;
+import edu.ucsd.sbrg.polishing.ext.fbc.StrictnessPredicate;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
-import org.sbml.jsbml.Species;
-import org.sbml.jsbml.SpeciesReference;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 

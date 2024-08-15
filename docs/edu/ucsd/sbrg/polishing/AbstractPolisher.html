@@ -68,19 +68,24 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">edu.ucsd.sbrg.polishing</a></div>
-<h1 title="Class AbstractPolisher" class="title">Class AbstractPolisher&lt;SBMLElement&gt;</h1>
+<h1 title="Class AbstractPolisher" class="title">Class AbstractPolisher</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance">edu.ucsd.sbrg.polishing.AbstractPolisher&lt;SBMLElement&gt;</div>
+<div class="inheritance">edu.ucsd.sbrg.polishing.AbstractPolisher</div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="AnnotationPolisher.html" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a></code>, <code><a href="CompartmentPolisher.html" title="class in edu.ucsd.sbrg.polishing">CompartmentPolisher</a></code>, <code><a href="fbc/FBCPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">FBCPolisher</a></code>, <code><a href="fbc/FluxObjectivesPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">FluxObjectivesPolisher</a></code>, <code><a href="fbc/GeneProductsPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">GeneProductsPolisher</a></code>, <code><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></code>, <code><a href="ParametersPolisher.html" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a></code>, <code><a href="ReactionsPolisher.html" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a></code>, <code><a href="SBMLPolisher.html" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a></code>, <code><a href="SpeciesPolisher.html" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a></code>, <code><a href="UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></code></dd>
+<dd><code><a href="AnnotationPolisher.html" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a></code>, <code><a href="CompartmentPolisher.html" title="class in edu.ucsd.sbrg.polishing">CompartmentPolisher</a></code>, <code><a href="fbc/FBCPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">FBCPolisher</a></code>, <code><a href="fbc/FBCReactionPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">FBCReactionPolisher</a></code>, <code><a href="fbc/GeneProductsPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">GeneProductsPolisher</a></code>, <code><a href="ModelPolisher.html" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></code>, <code><a href="fbc/ObjectivesPolisher.html" title="class in edu.ucsd.sbrg.polishing.fbc">ObjectivesPolisher</a></code>, <code><a href="ParametersPolisher.html" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a></code>, <code><a href="ReactionsPolisher.html" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a></code>, <code><a href="SBMLPolisher.html" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a></code>, <code><a href="SpeciesPolisher.html" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a></code>, <code><a href="UnitPolisher.html" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractPolisher&lt;SBMLElement&gt;</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractPolisher</span>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -125,39 +130,28 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#diffReport(java.lang.String,java.lang.Object,java.lang.Object)" class="member-name-link">diffReport</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;elementType,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element1,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element2)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#equals(java.lang.Object)" class="member-name-link">equals</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;o)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getObservers()" class="member-name-link">getObservers</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getObservers()" class="member-name-link">getObservers</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hashCode()" class="member-name-link">hashCode</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#polish(java.util.List)" class="member-name-link">polish</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="AbstractPolisher.html" title="type parameter in AbstractPolisher">SBMLElement</a>&gt;&nbsp;elementsToPolish)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#polish(SBMLElement)" class="member-name-link">polish</a><wbr>(<a href="AbstractPolisher.html" title="type parameter in AbstractPolisher">SBMLElement</a>&nbsp;elementToPolish)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#statusReport(java.lang.String,java.lang.Object)" class="member-name-link">statusReport</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#statusReport(java.lang.String,java.lang.Object)" class="member-name-link">statusReport</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toString()" class="member-name-link">toString</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -219,30 +213,14 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="polish(java.util.List)">
-<h3>polish</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="AbstractPolisher.html" title="type parameter in AbstractPolisher">SBMLElement</a>&gt;&nbsp;elementsToPolish)</span></div>
-</section>
-</li>
-<li>
-<section class="detail" id="polish(SBMLElement)">
-<h3 id="polish(java.lang.Object)">polish</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(<a href="AbstractPolisher.html" title="type parameter in AbstractPolisher">SBMLElement</a>&nbsp;elementToPolish)</span></div>
-</section>
-</li>
-<li>
 <section class="detail" id="statusReport(java.lang.String,java.lang.Object)">
 <h3>statusReport</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">statusReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">statusReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element)</span></div>
-</section>
-</li>
-<li>
-<section class="detail" id="diffReport(java.lang.String,java.lang.Object,java.lang.Object)">
-<h3>diffReport</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">diffReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;elementType,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element1,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element2)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../reporting/IReportStatus.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code>&nbsp;in interface&nbsp;<code><a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 </section>
 </li>
 <li>

@@ -74,9 +74,14 @@ loadScripts(document, 'script');</script>
 <div class="inheritance">edu.ucsd.sbrg.io.ModelWriter</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="IWriteModels.html" title="interface in edu.ucsd.sbrg.io">IWriteModels</a></code>, <code><a href="IWriteModelsToFile.html" title="interface in edu.ucsd.sbrg.io">IWriteModelsToFile</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">ModelWriter</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="IWriteModelsToFile.html" title="interface in edu.ucsd.sbrg.io">IWriteModelsToFile</a>, <a href="IWriteModels.html" title="interface in edu.ucsd.sbrg.io">IWriteModels</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -88,7 +93,7 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.ModelPolisherOptions.OutputType)" class="member-name-link">ModelWriter</a><wbr>(<a href="../ModelPolisherOptions.OutputType.html" title="enum class in edu.ucsd.sbrg">ModelPolisherOptions.OutputType</a>&nbsp;outputType)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(edu.ucsd.sbrg.parameters.ModelPolisherOptions.OutputType)" class="member-name-link">ModelWriter</a><wbr>(<a href="../parameters/ModelPolisherOptions.OutputType.html" title="enum class in edu.ucsd.sbrg.parameters">ModelPolisherOptions.OutputType</a>&nbsp;outputType)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -129,9 +134,9 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.ModelPolisherOptions.OutputType)">
+<section class="detail" id="&lt;init&gt;(edu.ucsd.sbrg.parameters.ModelPolisherOptions.OutputType)">
 <h3>ModelWriter</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelWriter</span><wbr><span class="parameters">(<a href="../ModelPolisherOptions.OutputType.html" title="enum class in edu.ucsd.sbrg">ModelPolisherOptions.OutputType</a>&nbsp;outputType)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ModelWriter</span><wbr><span class="parameters">(<a href="../parameters/ModelPolisherOptions.OutputType.html" title="enum class in edu.ucsd.sbrg.parameters">ModelPolisherOptions.OutputType</a>&nbsp;outputType)</span></div>
 </section>
 </li>
 </ul>
@@ -148,6 +153,8 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/InputStream.html" title="class or interface in java.io" class="external-link">InputStream</a></span>&nbsp;<span class="element-name">write</span><wbr><span class="parameters">(org.sbml.jsbml.SBMLDocument&nbsp;doc)</span>
                   throws <span class="exceptions"><a href="ModelWriterException.html" title="class in edu.ucsd.sbrg.io">ModelWriterException</a></span></div>
 <dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="IWriteModels.html#write(org.sbml.jsbml.SBMLDocument)">write</a></code>&nbsp;in interface&nbsp;<code><a href="IWriteModels.html" title="interface in edu.ucsd.sbrg.io">IWriteModels</a></code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="ModelWriterException.html" title="class in edu.ucsd.sbrg.io">ModelWriterException</a></code></dd>
 </dl>
@@ -160,6 +167,8 @@ loadScripts(document, 'script');</script>
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;output)</span>
            throws <span class="exceptions"><a href="ModelWriterException.html" title="class in edu.ucsd.sbrg.io">ModelWriterException</a></span></div>
 <dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="IWriteModelsToFile.html#write(org.sbml.jsbml.SBMLDocument,java.io.File)">write</a></code>&nbsp;in interface&nbsp;<code><a href="IWriteModelsToFile.html" title="interface in edu.ucsd.sbrg.io">IWriteModelsToFile</a></code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="ModelWriterException.html" title="class in edu.ucsd.sbrg.io">ModelWriterException</a></code></dd>
 </dl>

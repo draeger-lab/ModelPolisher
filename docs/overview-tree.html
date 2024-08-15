@@ -59,6 +59,9 @@ loadScripts(document, 'script');</script>
 <li><a href="edu/ucsd/sbrg/db/adb/package-tree.html">edu.ucsd.sbrg.db.adb</a>, </li>
 <li><a href="edu/ucsd/sbrg/db/bigg/package-tree.html">edu.ucsd.sbrg.db.bigg</a>, </li>
 <li><a href="edu/ucsd/sbrg/eco/package-tree.html">edu.ucsd.sbrg.eco</a>, </li>
+<li><a href="edu/ucsd/sbrg/fixing/package-tree.html">edu.ucsd.sbrg.fixing</a>, </li>
+<li><a href="edu/ucsd/sbrg/fixing/ext/fbc/package-tree.html">edu.ucsd.sbrg.fixing.ext.fbc</a>, </li>
+<li><a href="edu/ucsd/sbrg/fixing/ext/groups/package-tree.html">edu.ucsd.sbrg.fixing.ext.groups</a>, </li>
 <li><a href="edu/ucsd/sbrg/io/package-tree.html">edu.ucsd.sbrg.io</a>, </li>
 <li><a href="edu/ucsd/sbrg/io/parsers/cobra/package-tree.html">edu.ucsd.sbrg.io.parsers.cobra</a>, </li>
 <li><a href="edu/ucsd/sbrg/io/parsers/json/package-tree.html">edu.ucsd.sbrg.io.parsers.json</a>, </li>
@@ -70,7 +73,10 @@ loadScripts(document, 'script');</script>
 <li><a href="edu/ucsd/sbrg/resolver/package-tree.html">edu.ucsd.sbrg.resolver</a>, </li>
 <li><a href="edu/ucsd/sbrg/resolver/identifiersorg/package-tree.html">edu.ucsd.sbrg.resolver.identifiersorg</a>, </li>
 <li><a href="edu/ucsd/sbrg/resolver/identifiersorg/mapping/package-tree.html">edu.ucsd.sbrg.resolver.identifiersorg.mapping</a>, </li>
-<li><a href="edu/ucsd/sbrg/util/package-tree.html">edu.ucsd.sbrg.util</a></li>
+<li><a href="edu/ucsd/sbrg/util/package-tree.html">edu.ucsd.sbrg.util</a>, </li>
+<li><a href="edu/ucsd/sbrg/util/ext/fbc/package-tree.html">edu.ucsd.sbrg.util.ext.fbc</a>, </li>
+<li><a href="edu/ucsd/sbrg/util/ext/groups/package-tree.html">edu.ucsd.sbrg.util.ext.groups</a>, </li>
+<li><a href="edu/ucsd/sbrg/validation/package-tree.html">edu.ucsd.sbrg.validation</a></li>
 </ul>
 </div>
 <section class="hierarchy">
@@ -78,46 +84,47 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
 <ul>
-<li class="circle">edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/AbstractAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;SBMLElement&gt;
+<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/AbstractADBAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">AbstractADBAnnotator</a>
 <ul>
-<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/AbstractADBAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">AbstractADBAnnotator</a>&lt;SBMLElement&gt;
-<ul>
-<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBReactionsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBReactionsAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBSBMLAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBSBMLAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBSpeciesAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBSpeciesAnnotator</a></li>
+<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBReactionsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBReactionsAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBSBMLAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBSBMLAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.adb.<a href="edu/ucsd/sbrg/annotation/adb/ADBSpeciesAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.adb">ADBSpeciesAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
 </ul>
 </li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/AbstractBiGGAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a>&lt;SBMLElement&gt;
+<li class="circle">edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/AbstractAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a> (implements edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a>, edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a>)
 <ul>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGCompartmentsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCompartmentsAnnotator</a></li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/AbstractBiGGAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a>
+<ul>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGCompartmentsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCompartmentsAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
 <li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGCVTermAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;T&gt;
 <ul>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGGeneProductAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGReactionsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGReactionsAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGSpeciesAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSpeciesAnnotator</a></li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGGeneProductAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGReactionsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGReactionsAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGSpeciesAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSpeciesAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
 </ul>
 </li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGFBCAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGFBCAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGModelAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGModelAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGPublicationsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGPublicationsAnnotator</a></li>
-<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGSBMLAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSBMLAnnotator</a></li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGFBCAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGFBCAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGModelAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGModelAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGPublicationsAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGPublicationsAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGSBMLAnnotator.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSBMLAnnotator</a> (implements edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;)</li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/AbstractPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;SBMLElement&gt;
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/AbstractPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a> (implements edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a>)
 <ul>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/AnnotationPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/CompartmentPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">CompartmentPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/FBCPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">FBCPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/FluxObjectivesPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">FluxObjectivesPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/GeneProductsPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">GeneProductsPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ModelPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ParametersPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ReactionsPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/SBMLPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/SpeciesPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/UnitPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a></li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/AnnotationPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">AnnotationPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishAnnotations.html" title="interface in edu.ucsd.sbrg.polishing">IPolishAnnotations</a>)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/CompartmentPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">CompartmentPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/FBCPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">FBCPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/FBCReactionPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">FBCReactionPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/GeneProductsPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">GeneProductsPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ModelPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ModelPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/ObjectivesPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">ObjectivesPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ParametersPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ParametersPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ReactionsPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">ReactionsPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/SBMLPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">SBMLPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/SpeciesPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">SpeciesPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/UnitPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">UnitPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;)</li>
 </ul>
 </li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ADBAnnotationParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">ADBAnnotationParameters</a></li>
@@ -142,15 +149,18 @@ loadScripts(document, 'script');</script>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/COBRAUtils.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.cobra">COBRAUtils</a></li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/CombineArchive.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">CombineArchive</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/CommandLineParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">CommandLineParameters</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/CompartmentFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">CompartmentFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Compartments.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Compartments</a></li>
 <li class="circle">edu.ucsd.sbrg.eco.<a href="edu/ucsd/sbrg/eco/DAG.html" class="type-name-link" title="class in edu.ucsd.sbrg.eco">DAG</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/DBParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">DBParameters</a></li>
-<li class="circle">edu.ucsd.sbrg.eco.<a href="edu/ucsd/sbrg/eco/ECOparser.html" class="type-name-link" title="class in edu.ucsd.sbrg.eco">ECOparser</a></li>
+<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ECOParserCLILauncher.html" class="type-name-link" title="class in edu.ucsd.sbrg">ECOParserCLILauncher</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/FluxObjectivesPolishingParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">FluxObjectivesPolishingParameters</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Gene.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Gene</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/GeneParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.cobra">GeneParser</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/GeneProductAssociationsProcessor.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">GeneProductAssociationsProcessor</a></li>
-<li class="circle">edu.ucsd.sbrg.util.<a href="edu/ucsd/sbrg/util/GPRParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.util">GPRParser</a></li>
+<li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/GeneProductAssociationsProcessor.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">GeneProductAssociationsProcessor</a></li>
+<li class="circle">edu.ucsd.sbrg.util.ext.fbc.<a href="edu/ucsd/sbrg/util/ext/fbc/GPRParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.util.ext.fbc">GPRParser</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.ext.groups.<a href="edu/ucsd/sbrg/fixing/ext/groups/GroupsFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing.ext.groups">GroupsFixer</a></li>
+<li class="circle">edu.ucsd.sbrg.util.ext.groups.<a href="edu/ucsd/sbrg/util/ext/groups/GroupsUtils.html" class="type-name-link" title="class in edu.ucsd.sbrg.util.ext.groups">GroupsUtils</a></li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.<a href="edu/ucsd/sbrg/resolver/identifiersorg/IdentifiersOrg.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg">IdentifiersOrg</a> (implements edu.ucsd.sbrg.resolver.<a href="edu/ucsd/sbrg/resolver/Registry.html" title="interface in edu.ucsd.sbrg.resolver">Registry</a>)</li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.<a href="edu/ucsd/sbrg/resolver/identifiersorg/IdentifiersOrgRegistryParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg">IdentifiersOrgRegistryParser</a></li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.<a href="edu/ucsd/sbrg/resolver/identifiersorg/IdentifiersOrgURI.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg">IdentifiersOrgURI</a> (implements java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, edu.ucsd.sbrg.resolver.<a href="edu/ucsd/sbrg/resolver/RegistryURI.html" title="interface in edu.ucsd.sbrg.resolver">RegistryURI</a>)</li>
@@ -172,22 +182,27 @@ loadScripts(document, 'script');</script>
 <li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ModelPolisherCLILauncher.html" class="type-name-link" title="class in edu.ucsd.sbrg">ModelPolisherCLILauncher</a></li>
 </ul>
 </li>
+<li class="circle">edu.ucsd.sbrg.fixing.ext.fbc.<a href="edu/ucsd/sbrg/fixing/ext/fbc/ListOfObjectivesFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing.ext.fbc">ListOfObjectivesFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.mapping.<a href="edu/ucsd/sbrg/resolver/identifiersorg/mapping/Location.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg.mapping">Location</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/MatlabParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.cobra">MatlabParser</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Metabolite.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Metabolite</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Metabolites.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Metabolites</a></li>
-<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelReader.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelReader</a></li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ModelValidator.html" class="type-name-link" title="class in edu.ucsd.sbrg">ModelValidator</a></li>
-<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelWriter.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelWriter</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/ModelFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">ModelFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelReader.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelReader</a> (implements edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IReadModelsFromFile.html" title="interface in edu.ucsd.sbrg.io">IReadModelsFromFile</a>)</li>
+<li class="circle">edu.ucsd.sbrg.validation.<a href="edu/ucsd/sbrg/validation/ModelValidator.html" class="type-name-link" title="class in edu.ucsd.sbrg.validation">ModelValidator</a></li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelWriter.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelWriter</a> (implements edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IWriteModels.html" title="interface in edu.ucsd.sbrg.io">IWriteModels</a>, edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IWriteModelsToFile.html" title="interface in edu.ucsd.sbrg.io">IWriteModelsToFile</a>)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/NamePolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">NamePolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBaseAttributes.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBaseAttributes</a>)</li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.mapping.<a href="edu/ucsd/sbrg/resolver/identifiersorg/mapping/Namespace.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg.mapping">Namespace</a></li>
+<li class="circle">edu.ucsd.sbrg.eco.<a href="edu/ucsd/sbrg/eco/Node.html" class="type-name-link" title="class in edu.ucsd.sbrg.eco">Node</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.ext.fbc.<a href="edu/ucsd/sbrg/fixing/ext/fbc/ObjectiveFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing.ext.fbc">ObjectiveFixer</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/Parameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">Parameters</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ParametersParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">ParametersParser</a></li>
 <li class="circle">edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/PolisherProgressBar.html" class="type-name-link" title="class in edu.ucsd.sbrg.reporting">PolisherProgressBar</a> (implements edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>)</li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/PolishingParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">PolishingParameters</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/PolishingUtils.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">PolishingUtils</a></li>
 <li class="circle">edu.ucsd.sbrg.db.<a href="edu/ucsd/sbrg/db/PostgresConnectionPool.html" class="type-name-link" title="class in edu.ucsd.sbrg.db">PostgresConnectionPool</a></li>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.mapping.<a href="edu/ucsd/sbrg/resolver/identifiersorg/mapping/RawIdentifiersOrgRegistry.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg.mapping">RawIdentifiersOrgRegistry</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Reaction.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Reaction</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/ReactionFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">ReactionFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/ReactionParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.cobra">ReactionParser</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ReactionPolishingParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">ReactionPolishingParameters</a></li>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" class="type-name-link external-link" title="class or interface in java.lang">Record</a>
@@ -201,11 +216,14 @@ loadScripts(document, 'script');</script>
 <li class="circle">edu.ucsd.sbrg.resolver.identifiersorg.mapping.<a href="edu/ucsd/sbrg/resolver/identifiersorg/mapping/Resource.html" class="type-name-link" title="class in edu.ucsd.sbrg.resolver.identifiersorg.mapping">Resource</a></li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.json.mapping.<a href="edu/ucsd/sbrg/io/parsers/json/mapping/Root.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.json.mapping">Root</a></li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/SBMLFileUtils.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">SBMLFileUtils</a></li>
-<li class="circle">edu.ucsd.sbrg.util.<a href="edu/ucsd/sbrg/util/SBMLFix.html" class="type-name-link" title="class in edu.ucsd.sbrg.util">SBMLFix</a></li>
-<li class="circle">edu.ucsd.sbrg.util.<a href="edu/ucsd/sbrg/util/SBMLUtils.html" class="type-name-link" title="class in edu.ucsd.sbrg.util">SBMLUtils</a></li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/SBMLValidator.html" class="type-name-link" title="class in edu.ucsd.sbrg">SBMLValidator</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/SBMLFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">SBMLFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
+<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/SBMLFixerCLILauncher.html" class="type-name-link" title="class in edu.ucsd.sbrg">SBMLFixerCLILauncher</a></li>
+<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/SBMLValidatorCLILauncher.html" class="type-name-link" title="class in edu.ucsd.sbrg">SBMLValidatorCLILauncher</a></li>
 <li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/SBOParameters.html" class="type-name-link" title="class in edu.ucsd.sbrg.parameters">SBOParameters</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/SpeciesFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">SpeciesFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;)</li>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/SpeciesParser.html" class="type-name-link" title="class in edu.ucsd.sbrg.io.parsers.cobra">SpeciesParser</a></li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/SpeciesReferenceFixer.html" class="type-name-link" title="class in edu.ucsd.sbrg.fixing">SpeciesReferenceFixer</a> (implements edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSpeciesReferences.html" title="interface in edu.ucsd.sbrg.fixing">IFixSpeciesReferences</a>)</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/SpeciesReferencesPolisher.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing">SpeciesReferencesPolisher</a> (implements edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSpeciesReferences.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSpeciesReferences</a>)</li>
 <li class="circle">edu.ucsd.sbrg.polishing.fbc.<a href="edu/ucsd/sbrg/polishing/fbc/StrictnessPredicate.html" class="type-name-link" title="class in edu.ucsd.sbrg.polishing.fbc">StrictnessPredicate</a> (implements java.util.function.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/function/Predicate.html" title="class or interface in java.util.function" class="external-link">Predicate</a>&lt;T&gt;)</li>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Throwable.html" class="type-name-link external-link" title="class or interface in java.lang">Throwable</a> (implements java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
 <ul>
@@ -216,15 +234,14 @@ loadScripts(document, 'script');</script>
 <li class="circle">edu.ucsd.sbrg.annotation.bigg.<a href="edu/ucsd/sbrg/annotation/bigg/BiGGAnnotationException.html" class="type-name-link" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGAnnotationException</a></li>
 </ul>
 </li>
-<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelReaderException.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelReaderException</a></li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ModelValidatorException.html" class="type-name-link" title="class in edu.ucsd.sbrg">ModelValidatorException</a></li>
+<li class="circle">edu.ucsd.sbrg.validation.<a href="edu/ucsd/sbrg/validation/ModelValidatorException.html" class="type-name-link" title="class in edu.ucsd.sbrg.validation">ModelValidatorException</a></li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelWriterException.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelWriterException</a></li>
 </ul>
 </li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/ModelReaderException.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">ModelReaderException</a></li>
 </ul>
 </li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/UpdateListener.html" class="type-name-link" title="class in edu.ucsd.sbrg.io">UpdateListener</a> (implements org.sbml.jsbml.util.TreeNodeChangeListener)</li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/XHTMLBuilder.html" class="type-name-link" title="class in edu.ucsd.sbrg">XHTMLBuilder</a></li>
 </ul>
 </li>
 </ul>
@@ -232,12 +249,25 @@ loadScripts(document, 'script');</script>
 <section class="hierarchy">
 <h2 title="Interface Hierarchy">Interface Hierarchy</h2>
 <ul>
+<li class="circle">edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IAnnotateSBases.html" class="type-name-link" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;SBMLElement&gt;</li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSBases.html" class="type-name-link" title="interface in edu.ucsd.sbrg.fixing">IFixSBases</a>&lt;SBMLElement&gt;</li>
+<li class="circle">edu.ucsd.sbrg.fixing.<a href="edu/ucsd/sbrg/fixing/IFixSpeciesReferences.html" class="type-name-link" title="interface in edu.ucsd.sbrg.fixing">IFixSpeciesReferences</a></li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishAnnotations.html" class="type-name-link" title="interface in edu.ucsd.sbrg.polishing">IPolishAnnotations</a></li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBaseAttributes.html" class="type-name-link" title="interface in edu.ucsd.sbrg.polishing">IPolishSBaseAttributes</a></li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSBases.html" class="type-name-link" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;SBMLElement&gt;</li>
+<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/IPolishSpeciesReferences.html" class="type-name-link" title="interface in edu.ucsd.sbrg.polishing">IPolishSpeciesReferences</a></li>
+<li class="circle">edu.ucsd.sbrg.annotation.<a href="edu/ucsd/sbrg/annotation/IProcessNotes.html" class="type-name-link" title="interface in edu.ucsd.sbrg.annotation">IProcessNotes</a></li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IReadModelsFromFile.html" class="type-name-link" title="interface in edu.ucsd.sbrg.io">IReadModelsFromFile</a></li>
+<li class="circle">edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/IReportDiffs.html" class="type-name-link" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></li>
+<li class="circle">edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/IReportStatus.html" class="type-name-link" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IWriteModels.html" class="type-name-link" title="interface in edu.ucsd.sbrg.io">IWriteModels</a></li>
+<li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IWriteModelsToFile.html" class="type-name-link" title="interface in edu.ucsd.sbrg.io">IWriteModelsToFile</a></li>
 <li class="circle">de.zbit.util.prefs.KeyProvider
 <ul>
 <li class="circle">edu.ucsd.sbrg.db.adb.<a href="edu/ucsd/sbrg/db/adb/AnnotateDBOptions.html" class="type-name-link" title="interface in edu.ucsd.sbrg.db.adb">AnnotateDBOptions</a></li>
 <li class="circle">edu.ucsd.sbrg.db.bigg.<a href="edu/ucsd/sbrg/db/bigg/BiGGDBOptions.html" class="type-name-link" title="interface in edu.ucsd.sbrg.db.bigg">BiGGDBOptions</a></li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/IOOptions.html" class="type-name-link" title="interface in edu.ucsd.sbrg.io">IOOptions</a></li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ModelPolisherOptions.html" class="type-name-link" title="interface in edu.ucsd.sbrg">ModelPolisherOptions</a></li>
+<li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ModelPolisherOptions.html" class="type-name-link" title="interface in edu.ucsd.sbrg.parameters">ModelPolisherOptions</a></li>
 </ul>
 </li>
 <li class="circle">edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/ProgressObserver.html" class="type-name-link" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a></li>
@@ -253,8 +283,8 @@ loadScripts(document, 'script');</script>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Enum.html" class="type-name-link external-link" title="class or interface in java.lang">Enum</a>&lt;E&gt; (implements java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, java.lang.constant.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/constant/Constable.html" title="class or interface in java.lang.constant" class="external-link">Constable</a>, java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
 <ul>
 <li class="circle">edu.ucsd.sbrg.io.parsers.cobra.<a href="edu/ucsd/sbrg/io/parsers/cobra/ModelField.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.io.parsers.cobra">ModelField</a></li>
-<li class="circle">edu.ucsd.sbrg.<a href="edu/ucsd/sbrg/ModelPolisherOptions.OutputType.html" class="type-name-link" title="enum class in edu.ucsd.sbrg">ModelPolisherOptions.OutputType</a></li>
-<li class="circle">edu.ucsd.sbrg.polishing.<a href="edu/ucsd/sbrg/polishing/ReactionNamePatterns.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.polishing">ReactionNamePatterns</a></li>
+<li class="circle">edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ModelPolisherOptions.OutputType.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.parameters">ModelPolisherOptions.OutputType</a></li>
+<li class="circle">edu.ucsd.sbrg.util.<a href="edu/ucsd/sbrg/util/ReactionNamePatterns.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.util">ReactionNamePatterns</a></li>
 <li class="circle">edu.ucsd.sbrg.reporting.<a href="edu/ucsd/sbrg/reporting/ReportType.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.reporting">ReportType</a></li>
 <li class="circle">edu.ucsd.sbrg.io.<a href="edu/ucsd/sbrg/io/SBMLFileUtils.FileType.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.io">SBMLFileUtils.FileType</a></li>
 </ul>

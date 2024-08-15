@@ -68,19 +68,24 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">edu.ucsd.sbrg.annotation</a></div>
-<h1 title="Class AbstractAnnotator" class="title">Class AbstractAnnotator&lt;SBMLElement&gt;</h1>
+<h1 title="Class AbstractAnnotator" class="title">Class AbstractAnnotator</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance">edu.ucsd.sbrg.annotation.AbstractAnnotator&lt;SBMLElement&gt;</div>
+<div class="inheritance">edu.ucsd.sbrg.annotation.AbstractAnnotator</div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="adb/AbstractADBAnnotator.html" title="class in edu.ucsd.sbrg.annotation.adb">AbstractADBAnnotator</a></code>, <code><a href="bigg/AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a></code></dd>
+<dd><code><a href="bigg/AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractAnnotator&lt;SBMLElement&gt;</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">AbstractAnnotator</span>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a>, <a href="../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -104,19 +109,13 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#annotate(java.util.List)" class="member-name-link">annotate</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="AbstractAnnotator.html" title="type parameter in AbstractAnnotator">SBMLElement</a>&gt;&nbsp;elementsToAnnotate)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#annotate(SBMLElement)" class="member-name-link">annotate</a><wbr>(<a href="AbstractAnnotator.html" title="type parameter in AbstractAnnotator">SBMLElement</a>&nbsp;elementToAnnotate)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#diffReport(java.lang.String,java.lang.Object,java.lang.Object)" class="member-name-link">diffReport</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;elementType,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element1,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element2)</code></div>
@@ -124,7 +123,7 @@ loadScripts(document, 'script');</script>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="../reporting/ProgressObserver.html" title="interface in edu.ucsd.sbrg.reporting">ProgressObserver</a>&gt;</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getObservers()" class="member-name-link">getObservers</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#statusReport(java.lang.String,java.lang.Object)" class="member-name-link">statusReport</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -166,42 +165,26 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="annotate(java.util.List)">
-<h3>annotate</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="AbstractAnnotator.html" title="type parameter in AbstractAnnotator">SBMLElement</a>&gt;&nbsp;elementsToAnnotate)</span>
-              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
-<dl class="notes">
-<dt>Throws:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="annotate(SBMLElement)">
-<h3 id="annotate(java.lang.Object)">annotate</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="AbstractAnnotator.html" title="type parameter in AbstractAnnotator">SBMLElement</a>&nbsp;elementToAnnotate)</span>
-                       throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a>,
-<a href="AnnotationException.html" title="class in edu.ucsd.sbrg.annotation">AnnotationException</a></span></div>
-<dl class="notes">
-<dt>Throws:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
-<dd><code><a href="AnnotationException.html" title="class in edu.ucsd.sbrg.annotation">AnnotationException</a></code></dd>
-</dl>
-</section>
-</li>
-<li>
 <section class="detail" id="statusReport(java.lang.String,java.lang.Object)">
 <h3>statusReport</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">statusReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">statusReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../reporting/IReportStatus.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code>&nbsp;in interface&nbsp;<code><a href="../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="diffReport(java.lang.String,java.lang.Object,java.lang.Object)">
 <h3>diffReport</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">diffReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;elementType,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">diffReport</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;elementType,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element1,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&nbsp;element2)</span></div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../reporting/IReportDiffs.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a></code>&nbsp;in interface&nbsp;<code><a href="../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code></dd>
+</dl>
 </section>
 </li>
 <li>

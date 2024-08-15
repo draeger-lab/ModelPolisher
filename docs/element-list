@@ -7,6 +7,9 @@ edu.ucsd.sbrg.db
 edu.ucsd.sbrg.db.adb
 edu.ucsd.sbrg.db.bigg
 edu.ucsd.sbrg.eco
+edu.ucsd.sbrg.fixing
+edu.ucsd.sbrg.fixing.ext.fbc
+edu.ucsd.sbrg.fixing.ext.groups
 edu.ucsd.sbrg.io
 edu.ucsd.sbrg.io.parsers.cobra
 edu.ucsd.sbrg.io.parsers.json
@@ -19,3 +22,6 @@ edu.ucsd.sbrg.resolver
 edu.ucsd.sbrg.resolver.identifiersorg
 edu.ucsd.sbrg.resolver.identifiersorg.mapping
 edu.ucsd.sbrg.util
+edu.ucsd.sbrg.util.ext.fbc
+edu.ucsd.sbrg.util.ext.groups
+edu.ucsd.sbrg.validation

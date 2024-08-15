@@ -8,7 +8,7 @@ import edu.ucsd.sbrg.annotation.IAnnotateSBases;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.annotation.AnnotationsSorter;
-import edu.ucsd.sbrg.annotation.bigg.fbc.BiGGFBCAnnotator;
+import edu.ucsd.sbrg.annotation.bigg.ext.fbc.BiGGFBCAnnotator;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Model;

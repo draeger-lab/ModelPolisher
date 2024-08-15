@@ -71,8 +71,8 @@ loadScripts(document, 'script');</script>
 <h1 title="Class BiGGGeneProductAnnotator" class="title">Class BiGGGeneProductAnnotator</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>&lt;SBMLElement&gt;
-<div class="inheritance"><a href="../AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>&lt;T&gt;
+<div class="inheritance"><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>
+<div class="inheritance"><a href="../AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>
 <div class="inheritance"><a href="../BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;
 <div class="inheritance">edu.ucsd.sbrg.annotation.bigg.fbc.BiGGGeneProductAnnotator</div>
 </div>
@@ -80,9 +80,14 @@ loadScripts(document, 'script');</script>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code>, <code><a href="../../../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">BiGGGeneProductAnnotator</span>
-<span class="extends-implements">extends <a href="../BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</span></div>
+<span class="extends-implements">extends <a href="../BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGCVTermAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;
+implements <a href="../../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</span></div>
 <div class="block">Provides functionality to annotate gene products in an SBML model using data from the BiGG database.
  This class extends <a href="../BiGGCVTermAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg"><code>BiGGCVTermAnnotator</code></a> and specifically handles the annotation of <code>GeneProduct</code> instances.
  It includes methods to validate gene product IDs, retrieve and set labels, and add annotations based on BiGG IDs.</div>
@@ -151,7 +156,7 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Annotates a gene product by adding relevant metadata and references.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#findBiGGId(org.sbml.jsbml.ext.fbc.GeneProduct)" class="member-name-link">findBiGGId</a><wbr>(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Validates the ID of a <code>GeneProduct</code> against the expected BiGG ID format and attempts to retrieve a
@@ -241,8 +246,8 @@ loadScripts(document, 'script');</script>
  set and then proceeds to annotate each gene product found within the model. The progress bar is updated to reflect
  the number of gene products being annotated.</div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../../AbstractAnnotator.html#annotate(java.util.List)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="../../IAnnotateSBases.html#annotate(java.util.List)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
@@ -260,7 +265,7 @@ loadScripts(document, 'script');</script>
  and sets the gene product's metaId if it has any CV terms. Finally, it sets the gene product's label name.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dd><code><a href="../../IAnnotateSBases.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
@@ -269,8 +274,8 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="findBiGGId(org.sbml.jsbml.ext.fbc.GeneProduct)">
 <h3>findBiGGId</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span>
-                            throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span>
+                  throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Validates the ID of a <code>GeneProduct</code> against the expected BiGG ID format and attempts to retrieve a
  corresponding <a href="../../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg"><code>BiGGId</code></a> from existing annotations if the initial ID does not conform to the BiGG format.
  The method first checks if the gene product's ID matches the BiGG ID pattern. If it does not match, it then

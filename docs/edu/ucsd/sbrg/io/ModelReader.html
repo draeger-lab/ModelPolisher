@@ -74,9 +74,14 @@ loadScripts(document, 'script');</script>
 <div class="inheritance">edu.ucsd.sbrg.io.ModelReader</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="IReadModelsFromFile.html" title="interface in edu.ucsd.sbrg.io">IReadModelsFromFile</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">ModelReader</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>
+implements <a href="IReadModelsFromFile.html" title="interface in edu.ucsd.sbrg.io">IReadModelsFromFile</a></span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -146,6 +151,8 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">org.sbml.jsbml.SBMLDocument</span>&nbsp;<span class="element-name">read</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&nbsp;input)</span>
                                  throws <span class="exceptions"><a href="ModelReaderException.html" title="class in edu.ucsd.sbrg.io">ModelReaderException</a></span></div>
 <dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="IReadModelsFromFile.html#read(java.io.File)">read</a></code>&nbsp;in interface&nbsp;<code><a href="IReadModelsFromFile.html" title="interface in edu.ucsd.sbrg.io">IReadModelsFromFile</a></code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="ModelReaderException.html" title="class in edu.ucsd.sbrg.io">ModelReaderException</a></code></dd>
 </dl>

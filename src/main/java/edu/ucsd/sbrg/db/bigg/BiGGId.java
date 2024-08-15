@@ -102,13 +102,7 @@ public class BiGGId {
     parseBiGGId(id);
   }
 
-  /**
-   * Creates a BiGG ID for a metabolite based on the provided string identifier.
-   * This method handles the correction and standardization of the metabolite ID according to BiGG database standards.
-   *
-   * @param id The raw metabolite ID string.
-   * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
-   */
+
   public static BiGGId createMetaboliteId(String id) {
     // Fix the compartment code in the ID
     id = fixCompartmentCode(id);
@@ -139,18 +133,6 @@ public class BiGGId {
   }
 
 
-  /**
-   * Creates a BiGG ID for a gene, with an option to correct the ID to conform to BiGG standards.
-   * <p>
-   * This method first checks if the provided ID is empty, returning an empty Optional if true.
-   * If the 'correct' parameter is true, the ID is processed to conform to BiGG standards:
-   * - Leading underscores are removed.
-   * - The prefix "g_" is replaced with "G_" to standardize the gene ID format.
-   * - If the ID does not start with "G_", the prefix "G_" is prepended.
-   *
-   * @param id The raw gene ID string.
-   * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
-   */
   public static BiGGId createGeneId(String id) {
     id = makeBiGGConform(id);
     if (id.startsWith("_")) {
@@ -164,14 +146,7 @@ public class BiGGId {
     return new BiGGId(id);
   }
 
-  /**
-   * Creates a BiGG ID for a reaction based on the provided string identifier.
-   * This method handles the prefix stripping and checks if the reaction is a pseudo-reaction.
-   * Depending on these checks, it delegates to the overloaded createReactionId method with appropriate flags.
-   *
-   * @param id The raw reaction ID string.
-   * @return An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.
-   */
+
   public static BiGGId createReactionId(String id) {
     String prefixStripped = "";
     // Strip the prefix if it starts with 'R_' or 'r_'
@@ -250,8 +225,12 @@ public class BiGGId {
       id = "_" + id;
     }
     // Replace problematic characters with specific strings
-    id = id.replaceAll("[-/]", "__").replaceAll("\\.", "__SBML_DOT__").replaceAll("\\(", "_LPAREN_")
-	   .replaceAll("\\)", "_RPAREN_").replaceAll("\\[", "_LBRACKET_").replaceAll("]", "_RBRACKET_");
+    id = id.replaceAll("[-/]", "__")
+            .replaceAll("\\.", "__SBML_DOT__")
+            .replaceAll("\\(", "_LPAREN_")
+            .replaceAll("\\)", "_RPAREN_")
+            .replaceAll("\\[", "_LBRACKET_")
+            .replaceAll("]", "_RBRACKET_");
     // Extract and reformat compartment codes enclosed in parentheses
     Pattern parenCompartment = Pattern.compile("_LPAREN_(?<paren>.*?)_RPAREN_");
     Matcher parenMatcher = parenCompartment.matcher(id);
@@ -353,13 +332,13 @@ public class BiGGId {
    */
   private void handleNormalId(Matcher matcher) {
     String prefix = matcher.group("prefix");
-    setPrefix(prefix);
+    this.setPrefix(prefix);
     String abbreviation = matcher.group("abbreviation");
-    setAbbreviation(abbreviation);
+    this.setAbbreviation(abbreviation);
     String compartment = matcher.group("compartment");
-    setCompartmentCode(compartment);
+    this.setCompartmentCode(compartment);
     String tissueCode = matcher.group("tissueCode");
-    setTissueCode(tissueCode);
+    this.setTissueCode(tissueCode);
   }
 
 
@@ -380,17 +359,17 @@ public class BiGGId {
       id = id.replaceAll("^([Rr]_?)?[Ee][Xx]", "EX");
       id = id.replaceAll("^([Rr]_?)?[Dd][Mm]", "DM");
       id = id.replaceAll("^([Rr]_?)?[Ss]([Ii][Nn])?[Kk]", "SK");
-      setAbbreviation(id);
+      this.setAbbreviation(id);
     } else if (biomassMatcher.matches()) {
       id = id.replaceAll("^([Rr]_?)?[Bb][Ii][Oo][Mm][Aa][Ss][Ss]", "BIOMASS");
-      setAbbreviation(id);
+      this.setAbbreviation(id);
     } else if (atpmMatcher.matches()) {
-      setAbbreviation("ATPM");
+      this.setAbbreviation("ATPM");
     } else if (compartmentMatcher.matches()) {
-      setAbbreviation(id);
+      this.setAbbreviation(id);
     } else {
       logger.info(format(MESSAGES.getString("BIGGID_CONVERSION_FAIL"), id));
-      setAbbreviation(id);
+      this.setAbbreviation(id);
     }
   }
 

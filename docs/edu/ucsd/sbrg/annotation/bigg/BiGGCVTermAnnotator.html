@@ -68,23 +68,27 @@ loadScripts(document, 'script');</script>
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="sub-title"><span class="package-label-in-type">Package</span>&nbsp;<a href="package-summary.html">edu.ucsd.sbrg.annotation.bigg</a></div>
-<h1 title="Class BiGGCVTermAnnotator" class="title">Class BiGGCVTermAnnotator&lt;T extends org.sbml.jsbml.AbstractSBase&gt;</h1>
+<h1 title="Class BiGGCVTermAnnotator" class="title">Class BiGGCVTermAnnotator&lt;T extends org.sbml.jsbml.SBase&gt;</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>&lt;SBMLElement&gt;
-<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>&lt;T&gt;
+<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>
+<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>
 <div class="inheritance">edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator&lt;T&gt;</div>
 </div>
 </div>
 </div>
 <section class="class-description" id="class-description">
 <dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
+<dl class="notes">
 <dt>Direct Known Subclasses:</dt>
 <dd><code><a href="fbc/BiGGGeneProductAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGGeneProductAnnotator</a></code>, <code><a href="BiGGReactionsAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGReactionsAnnotator</a></code>, <code><a href="BiGGSpeciesAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">BiGGSpeciesAnnotator</a></code></dd>
 </dl>
 <hr>
-<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">BiGGCVTermAnnotator&lt;T extends org.sbml.jsbml.AbstractSBase&gt;</span>
-<span class="extends-implements">extends <a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a>&lt;T&gt;</span></div>
+<div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">BiGGCVTermAnnotator&lt;T extends org.sbml.jsbml.SBase&gt;</span>
+<span class="extends-implements">extends <a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a></span></div>
 <div class="block">Abstract class providing a framework for annotating SBML elements with Controlled Vocabulary (CV) Terms.
  This class defines the basic structure and operations for adding annotations to SBML elements based on BiGG IDs.
  It includes methods to check the validity of BiGG IDs, add annotations to SBML elements, and specifically handle
@@ -132,7 +136,7 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>protected abstract <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>protected abstract <a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#findBiGGId(T)" class="member-name-link">findBiGGId</a><wbr>(<a href="BiGGCVTermAnnotator.html" title="type parameter in BiGGCVTermAnnotator">T</a>&nbsp;element)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Abstract method to check the validity of a BiGG ID.</div>
@@ -145,7 +149,7 @@ loadScripts(document, 'script');</script>
 <code><a href="AbstractBiGGAnnotator.html#getBiGGIdFromResources(java.util.List,java.lang.String)">getBiGGIdFromResources</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-edu.ucsd.sbrg.annotation.AbstractAnnotator">Methods inherited from class&nbsp;edu.ucsd.sbrg.annotation.<a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a></h3>
-<code><a href="../AbstractAnnotator.html#annotate(java.util.List)">annotate</a>, <a href="../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a>, <a href="../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
+<code><a href="../AbstractAnnotator.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractAnnotator.html#getObservers()">getObservers</a>, <a href="../AbstractAnnotator.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -187,9 +191,9 @@ loadScripts(document, 'script');</script>
 <ul class="member-list">
 <li>
 <section class="detail" id="findBiGGId(T)">
-<h3 id="findBiGGId(org.sbml.jsbml.AbstractSBase)">findBiGGId</h3>
-<div class="member-signature"><span class="modifiers">protected abstract</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Optional.html" title="class or interface in java.util" class="external-link">Optional</a>&lt;<a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a>&gt;</span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(<a href="BiGGCVTermAnnotator.html" title="type parameter in BiGGCVTermAnnotator">T</a>&nbsp;element)</span>
-                                        throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
+<h3 id="findBiGGId(org.sbml.jsbml.SBase)">findBiGGId</h3>
+<div class="member-signature"><span class="modifiers">protected abstract</span>&nbsp;<span class="return-type"><a href="../../db/bigg/BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">findBiGGId</span><wbr><span class="parameters">(<a href="BiGGCVTermAnnotator.html" title="type parameter in BiGGCVTermAnnotator">T</a>&nbsp;element)</span>
+                              throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <div class="block">Abstract method to check the validity of a BiGG ID. Implementations should return an Optional containing
  the BiGG ID if it is valid, or an empty Optional if not.</div>
 <dl class="notes">

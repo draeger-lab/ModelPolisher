@@ -242,7 +242,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implem
     String abbreviation = biggId.getAbbreviation();
     List<String> geneReactionRules = bigg.getGeneReactionRule(abbreviation, reaction.getModel().getId());
     for (String geneReactionRule : geneReactionRules) {
-      GPRParser.parseGPR(reaction, geneReactionRule, sboParameters.addGenericTerms());
+      GPRParser.setGeneProductAssociation(reaction, geneReactionRule, sboParameters.addGenericTerms());
     }
   }
 

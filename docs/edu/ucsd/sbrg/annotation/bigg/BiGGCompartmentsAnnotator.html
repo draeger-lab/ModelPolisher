@@ -71,16 +71,21 @@ loadScripts(document, 'script');</script>
 <h1 title="Class BiGGCompartmentsAnnotator" class="title">Class BiGGCompartmentsAnnotator</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>&lt;SBMLElement&gt;
-<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>&lt;org.sbml.jsbml.Compartment&gt;
+<div class="inheritance"><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">edu.ucsd.sbrg.annotation.AbstractAnnotator</a>
+<div class="inheritance"><a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">edu.ucsd.sbrg.annotation.bigg.AbstractBiGGAnnotator</a>
 <div class="inheritance">edu.ucsd.sbrg.annotation.bigg.BiGGCompartmentsAnnotator</div>
 </div>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Compartment&gt;</code>, <code><a href="../../reporting/IReportDiffs.html" title="interface in edu.ucsd.sbrg.reporting">IReportDiffs</a></code>, <code><a href="../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">BiGGCompartmentsAnnotator</span>
-<span class="extends-implements">extends <a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a>&lt;org.sbml.jsbml.Compartment&gt;</span></div>
+<span class="extends-implements">extends <a href="AbstractBiGGAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg">AbstractBiGGAnnotator</a>
+implements <a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Compartment&gt;</span></div>
 <div class="block">This class is responsible for annotating a specific compartment within an SBML model using data from the BiGG database.
  It allows for the addition of both BiGG and SBO annotations to a compartment, and can also set the compartment's name
  based on information retrieved from the BiGG database.</div>
@@ -189,8 +194,8 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">annotate</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.Compartment&gt;&nbsp;compartments)</span>
               throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></span></div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../AbstractAnnotator.html#annotate(java.util.List)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Compartment&gt;</code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="../IAnnotateSBases.html#annotate(java.util.List)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Compartment&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>
@@ -206,7 +211,7 @@ loadScripts(document, 'script');</script>
  within the BiGG Knowledgebase.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../AbstractAnnotator.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractAnnotator.html" title="class in edu.ucsd.sbrg.annotation">AbstractAnnotator</a>&lt;org.sbml.jsbml.Compartment&gt;</code></dd>
+<dd><code><a href="../IAnnotateSBases.html#annotate(SBMLElement)">annotate</a></code>&nbsp;in interface&nbsp;<code><a href="../IAnnotateSBases.html" title="interface in edu.ucsd.sbrg.annotation">IAnnotateSBases</a>&lt;org.sbml.jsbml.Compartment&gt;</code></dd>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/SQLException.html" title="class or interface in java.sql" class="external-link">SQLException</a></code></dd>
 </dl>

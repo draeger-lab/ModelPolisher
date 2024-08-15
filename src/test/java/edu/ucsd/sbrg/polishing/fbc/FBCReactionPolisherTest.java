@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.polishing.fbc;
 
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
+import edu.ucsd.sbrg.polishing.ext.fbc.FBCReactionPolisher;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;

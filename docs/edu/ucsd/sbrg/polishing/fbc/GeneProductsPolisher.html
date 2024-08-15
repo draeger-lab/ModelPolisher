@@ -71,15 +71,19 @@ loadScripts(document, 'script');</script>
 <h1 title="Class GeneProductsPolisher" class="title">Class GeneProductsPolisher</h1>
 </div>
 <div class="inheritance" title="Inheritance Tree"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">java.lang.Object</a>
-<div class="inheritance"><a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">edu.ucsd.sbrg.polishing.AbstractPolisher</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;
+<div class="inheritance"><a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">edu.ucsd.sbrg.polishing.AbstractPolisher</a>
 <div class="inheritance">edu.ucsd.sbrg.polishing.fbc.GeneProductsPolisher</div>
 </div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code>, <code><a href="../../reporting/IReportStatus.html" title="interface in edu.ucsd.sbrg.reporting">IReportStatus</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">GeneProductsPolisher</span>
-<span class="extends-implements">extends <a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</span></div>
-<div class="block">This class is responsible for polishing GeneProduct instances by processing their annotations and adjusting their identifiers and names.</div>
+<span class="extends-implements">extends <a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>
+implements <a href="../IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</span></div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -123,15 +127,13 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#polish(org.sbml.jsbml.ext.fbc.GeneProduct)" class="member-name-link">polish</a><wbr>(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Polishes the GeneProduct by processing its annotations, setting its ID and name based on certain conditions.</div>
-</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-edu.ucsd.sbrg.polishing.AbstractPolisher">Methods inherited from class&nbsp;edu.ucsd.sbrg.polishing.<a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a></h3>
-<code><a href="../AbstractPolisher.html#diffReport(java.lang.String,java.lang.Object,java.lang.Object)">diffReport</a>, <a href="../AbstractPolisher.html#equals(java.lang.Object)">equals</a>, <a href="../AbstractPolisher.html#getObservers()">getObservers</a>, <a href="../AbstractPolisher.html#hashCode()">hashCode</a>, <a href="../AbstractPolisher.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a>, <a href="../AbstractPolisher.html#toString()">toString</a></code></div>
+<code><a href="../AbstractPolisher.html#equals(java.lang.Object)">equals</a>, <a href="../AbstractPolisher.html#getObservers()">getObservers</a>, <a href="../AbstractPolisher.html#hashCode()">hashCode</a>, <a href="../AbstractPolisher.html#statusReport(java.lang.String,java.lang.Object)">statusReport</a>, <a href="../AbstractPolisher.html#toString()">toString</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -167,8 +169,8 @@ loadScripts(document, 'script');</script>
 <h3>polish</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;&nbsp;geneProducts)</span></div>
 <dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="../AbstractPolisher.html#polish(java.util.List)">polish</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dt>Specified by:</dt>
+<dd><code><a href="../IPolishSBases.html#polish(java.util.List)">polish</a></code>&nbsp;in interface&nbsp;<code><a href="../IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
 </dl>
 </section>
 </li>
@@ -176,15 +178,9 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="polish(org.sbml.jsbml.ext.fbc.GeneProduct)">
 <h3>polish</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">polish</span><wbr><span class="parameters">(org.sbml.jsbml.ext.fbc.GeneProduct&nbsp;geneProduct)</span></div>
-<div class="block">Polishes the GeneProduct by processing its annotations, setting its ID and name based on certain conditions.
- The method first processes the annotations of the GeneProduct. It then determines a suitable label for the
- GeneProduct based on its existing label or ID. If no suitable label is found, the method returns early.
- If a new BiGG ID is generated and differs from the current ID, it updates the GeneProduct's ID and potentially
- its metaId if CV terms are present. Finally, if the GeneProduct does not have a name or its name is "None",
- it sets the GeneProduct's name to the determined label.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../AbstractPolisher.html#polish(SBMLElement)">polish</a></code>&nbsp;in class&nbsp;<code><a href="../AbstractPolisher.html" title="class in edu.ucsd.sbrg.polishing">AbstractPolisher</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
+<dd><code><a href="../IPolishSBases.html#polish(SBMLElement)">polish</a></code>&nbsp;in interface&nbsp;<code><a href="../IPolishSBases.html" title="interface in edu.ucsd.sbrg.polishing">IPolishSBases</a>&lt;org.sbml.jsbml.ext.fbc.GeneProduct&gt;</code></dd>
 </dl>
 </section>
 </li>

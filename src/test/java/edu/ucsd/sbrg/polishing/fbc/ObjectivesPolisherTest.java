@@ -2,16 +2,14 @@ package edu.ucsd.sbrg.polishing.fbc;
 
 import edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.polishing.ext.fbc.ObjectivesPolisher;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
-import org.sbml.jsbml.ext.fbc.FluxObjective;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 

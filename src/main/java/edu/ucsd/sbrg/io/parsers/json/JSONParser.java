@@ -365,7 +365,7 @@ public class JSONParser {
     setReactionStoichiometry(reaction, model, r);
     String geneReactionRule = reaction.getGeneReactionRule();
     if (!geneReactionRule.isEmpty()) {
-      GPRParser.parseGPR(r, geneReactionRule, false);
+      GPRParser.setGeneProductAssociation(r, geneReactionRule, false);
     }
     createSubsystem(model, reaction, r);
     setObjectiveCoefficient(reaction, model, r);

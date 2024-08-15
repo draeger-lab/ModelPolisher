@@ -219,7 +219,7 @@ public class MatlabParser {
         if (model.getReaction(i) == null) {
           logger.info(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
-          GPRParser.parseGPR(model.getReaction(i), geneReactionRule, sboParameters.addGenericTerms());
+          GPRParser.setGeneProductAssociation(model.getReaction(i), geneReactionRule, sboParameters.addGenericTerms());
         }
       }
     });
