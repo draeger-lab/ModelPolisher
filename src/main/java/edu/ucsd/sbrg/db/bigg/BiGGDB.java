@@ -54,7 +54,13 @@ public class BiGGDB {
   private static Set<String> BiGGDBReactions = new HashSet<>();
 
 
-  public BiGGDB (DBParameters parameters) {
+  public BiGGDB () {}
+
+  private static boolean iStrNotNullOrEmpty(String string) {
+    return !(string == null || string.isEmpty());
+  }
+
+  public static void init(DBParameters parameters) {
     String dbName = parameters.dbName();
     String host = parameters.host();
     String passwd = parameters.passwd();
@@ -67,14 +73,6 @@ public class BiGGDB {
     if (run) {
       init(host, port, user, passwd, dbName);
     }
-  }
-
-  private static boolean iStrNotNullOrEmpty(String string) {
-    return !(string == null || string.isEmpty());
-  }
-
-  public BiGGDB(String host, Integer port, String user, String passwd, String dbName) {
-    init(host, port, user, passwd, dbName);
   }
 
   public static void init(String host, Integer port, String user, String passwd, String dbName) {

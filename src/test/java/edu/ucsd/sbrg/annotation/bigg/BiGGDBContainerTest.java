@@ -24,12 +24,13 @@ public abstract class BiGGDBContainerTest {
 
     static {
         biggContainer.start();
-        bigg = new BiGGDB(
+        BiGGDB.init(
                 biggContainer.getHost(),
                 biggContainer.getFirstMappedPort(),
                 "postgres",
                 "postgres",
                 "bigg");
+        bigg = new BiGGDB();
     }
 
     @AfterClass

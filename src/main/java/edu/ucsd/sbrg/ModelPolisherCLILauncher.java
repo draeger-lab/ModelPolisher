@@ -76,8 +76,6 @@ public class ModelPolisherCLILauncher extends Launcher {
 
   private CommandLineParameters parameters;
   private Registry registry;
-  private BiGGDB bigg;
-  private AnnotateDB adb;
 
   /**
    * Entry point
@@ -125,11 +123,11 @@ public class ModelPolisherCLILauncher extends Launcher {
       validateIOParameters();
 
       if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
-        this.bigg = new BiGGDB(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
+        BiGGDB.init(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
       }
 
       if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
-        this.adb = new AnnotateDB(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
+        AnnotateDB.init(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
       }
 
       var inputFiles = FileUtils.listFiles(parameters.input(), new String[]{"xml", "sbml", "json", "mat"}, true);
@@ -228,12 +226,12 @@ public class ModelPolisherCLILauncher extends Launcher {
     }
 
     if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
-      new BiGGSBMLAnnotator(bigg, parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
+      new BiGGSBMLAnnotator(new BiGGDB(), parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
               registry, annotationObservers).annotate(doc);
     }
 
     if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
-      new ADBSBMLAnnotator(adb, parameters.annotationParameters().adbAnnotationParameters()).annotate(doc);
+      new ADBSBMLAnnotator(new AnnotateDB(), parameters.annotationParameters().adbAnnotationParameters()).annotate(doc);
     }
 
     for (var o : annotationObservers) {

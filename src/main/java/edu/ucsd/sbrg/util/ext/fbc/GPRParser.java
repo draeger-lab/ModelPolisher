@@ -100,7 +100,7 @@ public class GPRParser {
 
     // Normalize the identifier to include "G_" prefix if missing.
     String oldId = astString.startsWith("G_") ? astString : "G_" + astString;
-    boolean containsOldId = !model.containsUniqueNamedSBase(oldId);
+    boolean containsOldId = model.containsUniqueNamedSBase(oldId);
 
     // Attempt to create or find the GeneProduct using a standardized identifier.
     var id = BiGGId.createGeneId(astString).toBiGGId();
