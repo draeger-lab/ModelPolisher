@@ -68,7 +68,7 @@ public class FBCReactionPolisher extends AbstractPolisher implements IPolishSBas
 
         // Check if a flux objective associated with the reaction already exists
         boolean foExists = obj.getListOfFluxObjectives().stream()
-                .anyMatch(fo -> fo.getReactionInstance().equals(reaction));
+                    .anyMatch(fo -> reaction.equals(fo.getReactionInstance())       );
         if (foExists) {
             return;
         }
