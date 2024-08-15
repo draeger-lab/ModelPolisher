@@ -6,8 +6,8 @@ import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 
 public class ADBAnnotationParameters {
 
-    @JsonProperty("add-adb-annotations")
-    protected boolean addADBAnnotations = ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
+    @JsonProperty("annotate-with-adb")
+    protected boolean annotateWithAdb = ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
     @JsonProperty("db-config")
     protected DBParameters dbParameters = new DBParameters(
             AnnotateDBOptions.DBNAME.getDefaultValue(),
@@ -21,7 +21,7 @@ public class ADBAnnotationParameters {
     }
 
     public ADBAnnotationParameters(SBProperties args) {
-        addADBAnnotations = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
+        annotateWithAdb = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
         dbParameters = new DBParameters(
                 args.getProperty(AnnotateDBOptions.DBNAME),
                 args.getProperty(AnnotateDBOptions.HOST),
@@ -30,8 +30,8 @@ public class ADBAnnotationParameters {
                 args.getProperty(AnnotateDBOptions.USER));
     }
 
-    public boolean addADBAnnotations() {
-        return addADBAnnotations;
+    public boolean annotateWithAdb() {
+        return annotateWithAdb;
     }
 
     public DBParameters dbParameters() {

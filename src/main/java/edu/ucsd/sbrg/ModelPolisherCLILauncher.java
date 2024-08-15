@@ -126,7 +126,7 @@ public class ModelPolisherCLILauncher extends Launcher {
         BiGGDB.init(parameters.annotationParameters().biggAnnotationParameters().dbParameters());
       }
 
-      if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
+      if (parameters.annotationParameters().adbAnnotationParameters().annotateWithAdb()) {
         AnnotateDB.init(parameters.annotationParameters().adbAnnotationParameters().dbParameters());
       }
 
@@ -230,7 +230,7 @@ public class ModelPolisherCLILauncher extends Launcher {
               registry, annotationObservers).annotate(doc);
     }
 
-    if (parameters.annotationParameters().adbAnnotationParameters().addADBAnnotations()) {
+    if (parameters.annotationParameters().adbAnnotationParameters().annotateWithAdb()) {
       new ADBSBMLAnnotator(new AnnotateDB(), parameters.annotationParameters().adbAnnotationParameters()).annotate(doc);
     }
 

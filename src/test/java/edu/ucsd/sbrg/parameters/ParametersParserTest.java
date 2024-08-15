@@ -29,7 +29,7 @@ class ParametersParserTest {
                 parameters.polishing().fluxObjectivesPolishingParameters().fluxCoefficients());
 
         assertEquals(ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue(),
-                parameters.annotation().adbAnnotationParameters().addADBAnnotations());
+                parameters.annotation().adbAnnotationParameters().annotateWithAdb());
         assertEquals(AnnotateDBOptions.DBNAME.getDefaultValue(),
                 parameters.annotation().adbAnnotationParameters().dbParameters().dbName());
         assertEquals(AnnotateDBOptions.HOST.getDefaultValue(),
