@@ -182,7 +182,7 @@ public class BiGGDB {
       return Optional.of(results.iterator().next());
     } else {
       if (results.size() > 1) {
-        logger.info(format(MESSAGES.getString("FORMULA_COMPARTMENT_AMBIGUOUS"), componentId, compartmentId));
+        logger.debug(format(MESSAGES.getString("FORMULA_COMPARTMENT_AMBIGUOUS"), componentId, compartmentId));
       }
       return Optional.empty();
     }
@@ -236,7 +236,7 @@ public class BiGGDB {
       return Optional.of(results.iterator().next());
     } else {
       if (results.size() > 1) {
-        logger.info(format(MESSAGES.getString("FORMULA_MODEL_AMBIGUOUS"), componentId, modelId));
+        logger.debug(format(MESSAGES.getString("FORMULA_MODEL_AMBIGUOUS"), componentId, modelId));
       }
       return Optional.empty();
     }
@@ -326,10 +326,12 @@ public class BiGGDB {
    */
   public TreeSet<IdentifiersOrgURI> getGeneIds(String label) throws SQLException {
     TreeSet<IdentifiersOrgURI> results = new TreeSet<>();
-    String query = "SELECT " + URL_PREFIX + ", s." + SYNONYM + "\n" + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, "
-      + GENOME_REGION + " gr\n" + "WHERE d." + ID + " = s." + DATA_SOURCE_ID + " AND\n s." + OME_ID + " = gr." + ID
-      + " AND\n gr." + BIGG_ID + " = ? AND\n d." + BIGG_ID + " != " + OLD_BIGG_ID + " AND\n d." + BIGG_ID + " NOT LIKE "
-      + REFSEQ_PATTERN;
+    String query = "SELECT " + URL_PREFIX + ", s." + SYNONYM + "\n"
+            + "FROM  " + DATA_SOURCE + " d, " + SYNONYM + " s, " + GENOME_REGION + " gr\n"
+            + "WHERE d." + ID + " = s." + DATA_SOURCE_ID + " AND\n s." + OME_ID + " = gr." + ID
+            + " AND\n gr." + BIGG_ID + " = ? AND\n d." + BIGG_ID + " != " + OLD_BIGG_ID
+            + " AND\n d." + BIGG_ID + " NOT LIKE "
+            + REFSEQ_PATTERN;
     try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)){
       pStatement.setString(1, label);
@@ -341,10 +343,10 @@ public class BiGGDB {
           if (prefix != null && id != null) {
             results.add(new IdentifiersOrgURI(prefix, id));
           } else if (prefix == null) {
-            logger.info(MESSAGES.getString("COLLECTION_NULL_GENE"));
+            logger.debug(format(MESSAGES.getString("COLLECTION_NULL_GENE"), label));
             continue;
           } else {
-            logger.info(format(MESSAGES.getString("IDENTIFIER_NULL_GENE"), prefix));
+            logger.debug(format(MESSAGES.getString("IDENTIFIER_NULL_GENE"), prefix));
             continue;
           }
         }
@@ -542,7 +544,7 @@ public class BiGGDB {
       try (ResultSet resultSet = pStatement.executeQuery()) {
         while (resultSet.next()) {
           if (result != null) {
-            logger.info(format(MESSAGES.getString("QUERY_TAXON_MULTIPLE_RESULTS"), abbreviation));
+            logger.debug(format(MESSAGES.getString("QUERY_TAXON_MULTIPLE_RESULTS"), abbreviation));
           } else {
             result = resultSet.getInt(1);
           }
@@ -628,7 +630,7 @@ public class BiGGDB {
       return Optional.of(Integer.parseInt(results.iterator().next()));
     } else {
       if (results.size() > 1) {
-        logger.info(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_COMPARTMENT"), componentId, compartmentId));
+        logger.debug(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_COMPARTMENT"), componentId, compartmentId));
       }
       return Optional.empty();
     }
@@ -681,7 +683,7 @@ public class BiGGDB {
       return Optional.of(Integer.parseInt(results.iterator().next()));
     } else {
       if (results.size() > 1) {
-        logger.info(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_MODEL"), componentId, modelId));
+        logger.debug(format(MESSAGES.getString("CHARGE_NOT_UNIQUE_MODEL"), componentId, modelId));
       }
       return Optional.empty();
     }
@@ -755,7 +757,7 @@ public class BiGGDB {
         }
       }
     } catch (SQLException exc) {
-      logger.info(Utils.getMessage(exc));
+      logger.debug(Utils.getMessage(exc));
     }
 
     return Optional.empty();
@@ -829,7 +831,7 @@ public class BiGGDB {
         }
       }
     } catch (SQLException exc) {
-      logger.info(Utils.getMessage(exc));
+        logger.debug(Utils.getMessage(exc));
     }
     return results;
   }

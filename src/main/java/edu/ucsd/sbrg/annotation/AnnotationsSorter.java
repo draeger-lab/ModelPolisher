@@ -66,12 +66,12 @@ public class AnnotationsSorter {
             } else {
                 if (sbase instanceof Model) {
                     if (!qualifier.isModelQualifier()) {
-                        logger.info(format(MESSAGES.getString("CORRECTING_INVALID_QUALIFIERS"),
+                        logger.debug(format(MESSAGES.getString("CORRECTING_INVALID_QUALIFIERS"),
                                 qualifier.getElementNameEquivalent(), sbase.getId()));
                         qualifier = CVTerm.Qualifier.getModelQualifierFor(qualifier.getElementNameEquivalent());
                     }
                 } else if (!qualifier.isBiologicalQualifier()) {
-                    logger.info(format(MESSAGES.getString("CORRECTING_INVALID_MODEL_QUALIFIER"),
+                    logger.debug(format(MESSAGES.getString("CORRECTING_INVALID_MODEL_QUALIFIER"),
                             qualifier.getElementNameEquivalent(), sbase.getClass().getSimpleName(), sbase.getId()));
                     qualifier = CVTerm.Qualifier.getBiologicalQualifierFor(qualifier.getElementNameEquivalent());
                 }

@@ -41,8 +41,8 @@
     <entry key="CHEM_FORMULA_INVALID">Invalid chemical formula: {0}</entry>
     <entry key="CITATION"><![CDATA["King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, doi:10.1093/nar/gkv1049."]]></entry>
     <entry key="CITATION_HTML"><![CDATA["<dl>\n  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n    <dd>\n      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n      <a href="https://dx.doi.org/10.1093/nar/gkv1049" target="_blank"\n      title="Access the publication about BiGG Models knowledgebase">doi:10.1093/nar/gkv1049</a>\n    </dd>\n  </dt>\n</dl>"]]></entry>
-    <entry key="COLLECTION_NULL_GENE">Collection is null for this gene resource URI.</entry>
-    <entry key="COLLECTION_UNKNOWN">Unknown collection {0}</entry>
+    <entry key="COLLECTION_NULL_GENE">No prefix found for gene resource URI: {0}</entry>
+    <entry key="COLLECTION_UNKNOWN">Unknown prefix: {0}</entry>
     <entry key="COMPART_CODE_INVALID">Invalid compartment code: {0}</entry>
     <entry key="COMPARTMENT_CODE_WRONG_FORMAT">"CompartmentCode {0} does not conform to BiGGId standard"</entry>
     <entry key="COMPART_MISSING">There are no compartments in this model</entry>
