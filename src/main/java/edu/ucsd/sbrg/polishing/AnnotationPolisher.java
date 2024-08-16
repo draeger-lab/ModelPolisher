@@ -50,8 +50,9 @@ public class AnnotationPolisher extends AbstractPolisher implements IPolishAnnot
                     resources.add(resource);
                 }
             }
+
             // Remove all existing resources from the CV Term.
-            for (int i = 0; i < term.getResourceCount(); i++) {
+            for (int i = term.getResourceCount() -1; i >= 0 ; i--) {
                 term.removeResource(i);
             }
             // Add the updated set of resources, sorted alphabetically, back to the CV Term.
