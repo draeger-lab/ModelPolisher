@@ -9,6 +9,7 @@ plugins {
     id "com.github.ben-manes.versions" version "0.51.0"
     id "java"
     id "application"
+    id "maven-publish"
 }
 
 /**  === Core Gradle configuration === **/
@@ -172,7 +173,26 @@ tasks.withType(Jar).configureEach {
                 "Main-Class": "edu.ucsd.sbrg.ModelPolisherCLILauncher"
         )
     }
+    into("META-INF/maven/${project.group}/${project.name}") {
+        from generatePomFileForMavenPublication
+        rename { it.replace('pom-default.xml', 'pom.xml') }
+    }
 }
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'edu.ucsd.sbrg'
+            artifactId = 'ModelPolisher'
+            version = '2.1'
+
+            from components.java
+        }
+    }
+}
+
+
 
 // enable deprecation linter in compilation
 tasks.withType(JavaCompile).configureEach {
