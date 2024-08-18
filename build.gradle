@@ -107,16 +107,25 @@ dependencies {
     implementation("org.sbml.jsbml:jsbml:1.6.1") {
         exclude group: "org.apache.logging.log4j", module: "log4j-core"
         exclude group: "org.apache.logging.log4j", module: "log4j-api"
-        exclude group: "org.apache.logging.log4j", module: "log4j-1.2-api   "
+        exclude group: "org.apache.logging.log4j", module: "log4j-1.2-api"
         exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
         exclude group: "org.apache.commons", module: "logging"
     }
     // ontology support within BioJava
-    implementation "org.biojava:biojava-ontology:7.1.1"
+    implementation("org.biojava:biojava-ontology:7.1.1") {
+	exclude group: "org.apache.logging.log4j", module: "log4j-core"
+	exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+    }
     // handle Combine Archives (packages of biological models)
     implementation "de.uni-rostock.sbi:CombineArchive:1.4.1"
     // interacting with MATLAB files
     implementation 'us.hebi.matlab.mat:mfl-core:0.5.15'
+
+    implementation "org.slf4j:slf4j-api:2.0.9"
+    implementation "org.slf4j:jul-to-slf4j:2.0.9"
+    implementation "org.slf4j:jcl-over-slf4j:2.0.9"
+    implementation "org.slf4j:log4j-over-slf4j:2.0.9"
+    implementation "org.slf4j:osgi-over-slf4j:2.0.9"
 
     // JDBC connection pool
     implementation "com.zaxxer:HikariCP:5.1.0"

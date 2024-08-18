@@ -43,7 +43,8 @@ public class ListOfObjectivesFixerTest {
                 null,
                 new FluxObjectivesPolishingParameters(
                         null,
-                        List.of("objective_reaction1", "objective_reaction2")));
+                        List.of("objective_reaction1", "objective_reaction2")),
+                false);
 
         new ListOfObjectivesFixer(parameters, fbcPlugin).fix(fbcPlugin.getListOfObjectives(), 0);
 

@@ -6,6 +6,8 @@ import java.util.Objects;
 
 public class Parameters {
 
+    @JsonProperty("fixing")
+    private final FixingParameters fixing = new FixingParameters();
     @JsonProperty("polishing")
     private final PolishingParameters polishing = new PolishingParameters();
     @JsonProperty("annotation")
@@ -39,15 +41,8 @@ public class Parameters {
         return outputType;
     }
 
-    @Override
-    public String toString() {
-        return "Parameters{" +
-                "polishing=" + polishing +
-                ", annotation=" + annotation +
-                ", sboTerms=" + sboTerms +
-                ", sbmlValidation=" + sbmlValidation +
-                ", outputType=" + outputType +
-            '}';    
+    public FixingParameters fixing() {
+        return fixing;
     }
 
     @Override
@@ -55,11 +50,24 @@ public class Parameters {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Parameters that = (Parameters) o;
-        return sbmlValidation == that.sbmlValidation && Objects.equals(polishing, that.polishing) && Objects.equals(annotation, that.annotation) && Objects.equals(sboTerms, that.sboTerms) && outputType == that.outputType;
+        return sbmlValidation == that.sbmlValidation && Objects.equals(fixing, that.fixing) && Objects.equals(polishing, that.polishing) && Objects.equals(annotation, that.annotation) && Objects.equals(sboTerms, that.sboTerms) && outputType == that.outputType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(polishing, annotation, sboTerms, sbmlValidation, outputType);
+        return Objects.hash(fixing, polishing, annotation, sboTerms, sbmlValidation, outputType);
     }
+
+    @Override
+    public String toString() {
+        return "Parameters{" +
+                "fixing=" + fixing +
+                ", polishing=" + polishing +
+                ", annotation=" + annotation +
+                ", sboTerms=" + sboTerms +
+                ", sbmlValidation=" + sbmlValidation +
+                ", outputType=" + outputType +
+                '}';
+    }
+
 }

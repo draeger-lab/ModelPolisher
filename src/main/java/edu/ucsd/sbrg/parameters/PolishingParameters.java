@@ -7,6 +7,8 @@ import java.util.Objects;
 
 public class PolishingParameters {
 
+  @JsonProperty("polish-even-if-model-invalid")
+  private boolean polishEvenIfModelInvalid = false;
   @JsonProperty("reactions")
   private ReactionPolishingParameters reactionPolishingParameters = new ReactionPolishingParameters();
   @JsonProperty("flux-objectives")
@@ -15,9 +17,11 @@ public class PolishingParameters {
   public PolishingParameters() {  }
 
   public PolishingParameters(ReactionPolishingParameters reactionPolishingParameters,
-                             FluxObjectivesPolishingParameters fluxObjectivesPolishingParameters) {
+                             FluxObjectivesPolishingParameters fluxObjectivesPolishingParameters,
+                             boolean polishEvenIfModelInvalid) {
     this.reactionPolishingParameters = reactionPolishingParameters;
     this.fluxObjectivesPolishingParameters = fluxObjectivesPolishingParameters;
+    this.polishEvenIfModelInvalid = polishEvenIfModelInvalid;
   }
 
   public PolishingParameters(SBProperties args) throws IllegalArgumentException {
@@ -33,12 +37,8 @@ public class PolishingParameters {
     return fluxObjectivesPolishingParameters;
   }
 
-  @Override
-  public String toString() {
-    return "PolishingParameters{" +
-            "reactionPolishingParameters=" + reactionPolishingParameters +
-            ", fluxObjectivesPolishingParameters=" + fluxObjectivesPolishingParameters +
-            '}';
+  public boolean polishEvenIfModelInvalid() {
+    return polishEvenIfModelInvalid;
   }
 
   @Override
@@ -46,11 +46,21 @@ public class PolishingParameters {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     PolishingParameters that = (PolishingParameters) o;
-    return Objects.equals(reactionPolishingParameters, that.reactionPolishingParameters) && Objects.equals(fluxObjectivesPolishingParameters, that.fluxObjectivesPolishingParameters);
+    return polishEvenIfModelInvalid == that.polishEvenIfModelInvalid && Objects.equals(reactionPolishingParameters, that.reactionPolishingParameters) && Objects.equals(fluxObjectivesPolishingParameters, that.fluxObjectivesPolishingParameters);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(reactionPolishingParameters, fluxObjectivesPolishingParameters);
+    return Objects.hash(polishEvenIfModelInvalid, reactionPolishingParameters, fluxObjectivesPolishingParameters);
   }
+
+  @Override
+  public String toString() {
+    return "PolishingParameters{" +
+            "polishEvenIfModelInvalid=" + polishEvenIfModelInvalid +
+            ", reactionPolishingParameters=" + reactionPolishingParameters +
+            ", fluxObjectivesPolishingParameters=" + fluxObjectivesPolishingParameters +
+            '}';
+  }
+
 }

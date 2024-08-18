@@ -34,7 +34,8 @@ public class ObjectivesPolisherTest {
                 null,
                 new FluxObjectivesPolishingParameters(
                         null,
-                        List.of(" objective_reaction1 ")));
+                        List.of(" objective_reaction1 ")),
+                false);
 
         m.createReaction("objective_reaction1");
         m.createReaction("yadda_Biomass_yadda");
