@@ -2,7 +2,7 @@ package edu.ucsd.sbrg.fixing;
 
 import org.sbml.jsbml.SpeciesReference;
 
-public class SpeciesReferenceFixer implements IFixSpeciesReferences{
+public class SpeciesReferenceFixer implements IFixSpeciesReferences {
 
     @Override
     public void fix(SpeciesReference sr) {

@@ -16,10 +16,6 @@ public class GroupsFixer {
     private static final Logger logger = LoggerFactory.getLogger(GroupsFixer.class);
     private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
 
-    /**
-     * Set group kind where required
-     *
-     */
     public static void fixGroups(Model model) {
         GroupsModelPlugin gPlug = (GroupsModelPlugin) model.getExtension(GroupsConstants.shortLabel);
         if ((gPlug != null) && gPlug.isSetListOfGroups()) {

@@ -2,7 +2,6 @@ package edu.ucsd.sbrg.polishing.ext.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
-import org.sbml.jsbml.Annotation;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.fbc.*;

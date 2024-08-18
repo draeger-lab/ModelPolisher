@@ -9,9 +9,7 @@ import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
 import org.sbml.jsbml.Compartment;
-import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBO;
-import org.sbml.jsbml.Unit;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;

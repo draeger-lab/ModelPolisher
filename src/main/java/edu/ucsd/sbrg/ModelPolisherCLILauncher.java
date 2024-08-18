@@ -148,7 +148,13 @@ public class ModelPolisherCLILauncher extends Launcher {
         }
       }
       else {
+        long startTime = System.currentTimeMillis();
+
         processFile(parameters.input(), parameters.output());
+
+        // Log the time taken to process the file
+        long timeTaken = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
+        logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
       }
 
     } catch (ModelValidatorException | ModelWriterException | IOException |
@@ -196,20 +202,20 @@ public class ModelPolisherCLILauncher extends Launcher {
 
 
   private void processFile(File input, File output) throws ModelReaderException, ModelWriterException, ModelValidatorException, AnnotationException, SQLException {
-    long startTime = System.currentTimeMillis();
-
     SBMLDocument doc = new ModelReader(parameters.sboParameters(), registry).read(input);
 
-    // TODO: hier wäre es jetzt angebracht das Ding zu validieren, geht aber nicht, weil es keinen Validator in JSBML gibt
+    // TODO: validieren und ggf. fixer aufrufen
 
     Model model = doc.getModel();
 
+    // TODO: das sollte sich durch JSBML UpdateListener ersetzen lassen
     List<ProgressObserver> polishingObservers = List.of(new PolisherProgressBar());
     int count = getPolishingTaskCount(model);
     for (var o : polishingObservers) {
       o.initialize(new ProgressInitialization(count));
     }
 
+    // TODO: dispatch abhängig von level und version
     new SBMLPolisher(
             parameters.polishingParameters(),
             parameters.sboParameters(),
@@ -219,17 +225,20 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.finish(null);
     }
 
+    // TODO: das sollte sich durch JSBML UpdateListener ersetzen lassen
     List<ProgressObserver> annotationObservers = List.of(new PolisherProgressBar());
     int annotationTaskCount = getAnnotationTaskCount(model);
     for (var o : annotationObservers) {
       o.initialize(new ProgressInitialization(annotationTaskCount));
     }
 
+    // TODO: dispatch abhängig von level und version
     if (parameters.annotationParameters().biggAnnotationParameters().annotateWithBiGG()) {
       new BiGGSBMLAnnotator(new BiGGDB(), parameters.annotationParameters().biggAnnotationParameters(), parameters.sboParameters(),
               registry, annotationObservers).annotate(doc);
     }
 
+    // TODO: dispatch abhängig von level und version
     if (parameters.annotationParameters().adbAnnotationParameters().annotateWithAdb()) {
       new ADBSBMLAnnotator(new AnnotateDB(), parameters.annotationParameters().adbAnnotationParameters()).annotate(doc);
     }
@@ -246,10 +255,6 @@ public class ModelPolisherCLILauncher extends Launcher {
       // use offline validation
       mv.validate(output);
     }
-
-    // Log the time taken to process the file
-    long timeTaken = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
-    logger.info(String.format(MESSAGES.getString("FINISHED_TIME"), (timeTaken / 60), (timeTaken % 60)));
   }
 
   private int getPolishingTaskCount(Model model) {

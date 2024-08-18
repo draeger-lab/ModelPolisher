@@ -44,8 +44,7 @@ public class SBMLPolisher extends AbstractPolisher implements IPolishSBases<SBML
     @Override
     public void polish(SBMLDocument doc) {
         logger.debug(format("Polish doc: {0}", doc.toString()));
-        // Ensure the document is at the correct SBML level and version
-        if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
+	if (!doc.isSetLevelAndVersion() || (doc.getLevelAndVersion().compareTo(ValuePair.of(3, 1)) < 0)) {
             logger.debug(MESSAGES.getString("TRY_CONV_LVL3_V1"));
             SBMLtools.setLevelAndVersion(doc, 3, 1);
         }

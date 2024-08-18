@@ -12,6 +12,8 @@ public class ReactionFixer implements IFixSBases<Reaction> {
         fixMissingReactionId(reaction, index);
         setFastProperty(reaction);
         setReversibleProperty(reaction);
+        new SpeciesReferenceFixer().fix(reaction.getListOfReactants());
+        new SpeciesReferenceFixer().fix(reaction.getListOfProducts());
     }
 
     private void fixMissingReactionId(Reaction reaction, int index) {
