@@ -98,14 +98,17 @@ public class AnnotateDB {
          PreparedStatement pStatement = connection.prepareStatement(query)) {
       pStatement.setString(1, type);
       pStatement.setString(2, biggId);
+      int i = 0;
       try (ResultSet resultSet = pStatement.executeQuery()) {
         // Process each result and construct the URL
         while (resultSet.next()) {
+          i++;
           String uri = resultSet.getString(URLPATTERN);
           String id = resultSet.getString(TARGET_TERM);
           uri = uri.replace("{$id}", id);
           annotations.add(uri);
         }
+        logger.debug("Added {} annotations from ADB for {} with ID {}", i, type, biggId);
       }
     }
     return annotations;
