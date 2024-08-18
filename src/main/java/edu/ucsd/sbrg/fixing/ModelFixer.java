@@ -12,5 +12,8 @@ public class ModelFixer implements IFixSBases<Model> {
         if(model.isSetListOfSpecies()) {
             new SpeciesFixer().fix(model.getListOfSpecies());
         }
+        if(model.isSetListOfCompartments()) {
+            new CompartmentFixer().fix(model.getListOfCompartments());
+        }
     }
 }
