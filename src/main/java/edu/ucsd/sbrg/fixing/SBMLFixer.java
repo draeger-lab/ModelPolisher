@@ -11,6 +11,11 @@ public class SBMLFixer extends AbstractFixer implements IFixSBases<SBMLDocument>
 
     private final FixingParameters fixingParameters;
 
+    public SBMLFixer(FixingParameters fixingParameters) {
+        super();
+        this.fixingParameters = fixingParameters;
+    }
+
     public SBMLFixer(FixingParameters fixingParameters, List<ProgressObserver> observers) {
         super(observers);
         this.fixingParameters = fixingParameters;

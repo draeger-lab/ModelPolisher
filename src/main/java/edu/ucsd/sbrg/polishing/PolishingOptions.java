@@ -22,6 +22,7 @@ public interface PolishingOptions extends KeyProvider {
 //            new Option<>("CHECK_MASS_BALANCE", Boolean.class, MESSAGES.getString("CHECK_MASS_BALANCE_DESC"),
 //                    Boolean.TRUE);
 
+    @SuppressWarnings("unchecked")
     Option<Boolean> POLISH_EVEN_IF_MODEL_INVALID =
             new Option<>("POLISH_EVEN_IF_MODEL_INVALID",
                     Boolean.class,

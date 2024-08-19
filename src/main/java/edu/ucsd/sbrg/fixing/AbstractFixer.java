@@ -5,6 +5,7 @@ import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.reporting.ProgressUpdate;
 import edu.ucsd.sbrg.reporting.ReportType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractFixer implements IReportStatus {
@@ -13,6 +14,10 @@ public abstract class AbstractFixer implements IReportStatus {
 
     protected AbstractFixer(List<ProgressObserver> observers) {
         this.observers = observers;
+    }
+
+    public AbstractFixer() {
+        observers = new ArrayList<>();
     }
 
     @Override
