@@ -1,6 +1,6 @@
 {
-    "input": "examples/input",
-    "output": "examples/output",
+    "input": "input-dir",
+    "output": "output-dir",
     "output-type": "xml",
     
     "fixing": {
@@ -27,20 +27,20 @@
 	    },
 	    "db-config": {
 		"db-name": "bigg",
-		"host": "localhost",
+		"host": "bigg",
 		"password": "postgres",
 		"user": "postgres",
-		"port": 1310
+		"port": 5432
 	    }
 	},
 	"annotatedb": {
 	    "annotate-with-adb": true,
 	    "db-config": {
 		"db-name": "adb",
-		"host": "localhost",
+		"host": "adb",
 		"password": "postgres",
 		"user": "postgres",
-		"port": 1013
+		"port": 5432
 	    }
 	}
     },

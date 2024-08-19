@@ -1,22 +1,36 @@
+configs:
+  model-polisher-config:
+    # you may want to adapt this your config
+    - file: ./examples/config.json
+  
 services:
-
-  biggdb:
-    image: schmirgel/bigg_db:1.6
-    container_name: modelpolisher_biggdb
-    ports:
-      - 127.0.0.1:1310:5432
-
-  adb:
-    image: schmirgel/annotatedb:0.1.1
-    container_name: modelpolisher_adb
-    ports:
-      - 127.0.0.1:1013:5432
 
   polisher:
     image: mephenor/modelpolisher:2.1-beta
     depends_on:
       - biggdb
       - adb
-    container_name: modelpolisher_java
-    stdin_open: true
-    tty: true
+    configs:
+      - source: model-polisher-config
+        target: /config.json
+    command: ['--config-file', '/config.json']
+    volumes:
+      # you may want to adapt these to your local input
+      # and output directories
+      - "input:/input-dir"
+      - "output:/output-dir"
+
+  biggdb:
+    image: schmirgel/bigg_db:1.6
+    hostname: bigg
+    networks:
+      - dbs
+
+  adb:
+    image: schmirgel/annotatedb:0.1.1
+    hostname: adb
+    networks:
+      - dbs
+
+networks:
+  - dbs
