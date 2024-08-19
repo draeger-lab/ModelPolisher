@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.sbml.util.SBMLtools;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.util.ext.fbc.GPRParser;
@@ -46,7 +47,7 @@ import static java.text.MessageFormat.format;
 public class MatlabParser {
 
   private static final Logger logger = LoggerFactory.getLogger(MatlabParser.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
   private static MatlabFields matlabFields;
   private final SBOParameters sboParameters;
 
@@ -82,12 +83,12 @@ public class MatlabParser {
       }
     }
     if (modelName.isEmpty()) {
-      logger.info("Model name is empty for matlab model, aborting");
+      logger.debug("Model name is empty for matlab model, aborting");
       return new SBMLDocument();
     }
     Struct modelStruct = matFile.getStruct(modelName);
     if (!Arrays.equals(modelStruct.getDimensions(), new int[] {1, 1})) {
-      logger.info("Model struct dimensions are wrong, aborting");
+      logger.debug("Model struct dimensions are wrong, aborting");
       return new SBMLDocument();
     }
     ModelBuilder builder = new ModelBuilder(3, 1);
@@ -112,24 +113,24 @@ public class MatlabParser {
       if (matches.size() == 1) {
         String match = matches.get(0);
         if (match.equals(fieldName)) {
-          logger.info(format("Found known model field {0}", match));
+          logger.debug(format("Found known model field {0}", match));
         } else {
-          logger.info(format("Field name {0} has wrong case, changing to known variant {1}", fieldName, match));
+          logger.debug(format("Field name {0} has wrong case, changing to known variant {1}", fieldName, match));
           Array array = modelStruct.get(fieldName);
           modelStruct.remove(fieldName);
           modelStruct.set(match, array);
         }
       } else {
-        logger.info(format("Unknown field {0}, trying to interpret as prefix of known variant", fieldName));
+        logger.debug(format("Unknown field {0}, trying to interpret as prefix of known variant", fieldName));
         matches = ModelField.getNameForPrefix(fieldName);
         if (matches.size() == 1) {
           String match = matches.get(0);
-          logger.info(format("Changing field name {0} to known variant {1}", fieldName, match));
+          logger.debug(format("Changing field name {0} to known variant {1}", fieldName, match));
           Array array = modelStruct.get(fieldName);
           modelStruct.remove(fieldName);
           modelStruct.set(match, array);
         } else {
-          logger.info(format("Could not resolve field {0} to known variant", fieldName));
+          logger.debug(format("Could not resolve field {0} to known variant", fieldName));
         }
       }
     }
@@ -194,7 +195,7 @@ public class MatlabParser {
         GeneParser geneParser = new GeneParser(modelPlug, i);
         geneParser.parse();
       }
-    }, () -> logger.info(MESSAGES.getString("GENES_MISSING")));
+    }, () -> logger.debug(MESSAGES.getString("GENES_MISSING")));
   }
 
 
@@ -217,7 +218,7 @@ public class MatlabParser {
       for (int i = 0; i < grRules.getNumElements(); i++) {
         String geneReactionRule = COBRAUtils.asString(grRules.get(i), ModelField.grRules.name(), i + 1);
         if (model.getReaction(i) == null) {
-          logger.info(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
+          logger.debug(format(MESSAGES.getString("CREATE_GPR_FAILED"), i));
         } else {
           GPRParser.setGeneProductAssociation(model.getReaction(i), geneReactionRule, sboParameters.addGenericTerms());
         }
@@ -246,7 +247,7 @@ public class MatlabParser {
           if (model.getReaction(i) != null) {
             GroupsUtils.createSubsystemLink(model.getReaction(i), group.createMember());
           } else {
-            logger.info(format(MESSAGES.getString("SUBSYS_LINK_ERROR"), i));
+            logger.debug(format(MESSAGES.getString("SUBSYS_LINK_ERROR"), i));
           }
         }
       }
@@ -263,10 +264,10 @@ public class MatlabParser {
           char c = csense.getChar(0, i);
           // TODO: only 'E' (equality) is supported for now!
           if (c != 'E' && model.getListOfSpecies().size() > i) {
-            logger.info(format(MESSAGES.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
+            logger.debug(format(MESSAGES.getString("NEQ_RELATION_UNSUPPORTED"), model.getSpecies(i).getId()));
           }
         } catch (Exception e) {
-          logger.info(e.toString());
+          logger.debug(e.toString());
           return;
         }
       }
@@ -302,7 +303,7 @@ public class MatlabParser {
         double bVal = b.getDouble(i);
         if (bVal != 0d && model.getListOfSpecies().size() > i) {
           // TODO: this should be incorporated into FBC version 3.
-          logger.info(format(MESSAGES.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
+          logger.debug(format(MESSAGES.getString("B_VALUE_UNSUPPORTED"), bVal, model.getSpecies(i).getId()));
         }
       }
     });

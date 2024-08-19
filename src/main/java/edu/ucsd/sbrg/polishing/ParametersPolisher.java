@@ -20,7 +20,7 @@ public class ParametersPolisher extends AbstractPolisher implements IPolishSBase
     public void polish(List<Parameter> modelParameters) {
         logger.debug("Polish Parameters");
         for (Parameter parameter : modelParameters) {
-            statusReport("Polishing Parameters (9/9)  ", parameter);
+            statusReport("Polishing Parameters (5/9)  ", parameter);
             polish(parameter);
         }
     }

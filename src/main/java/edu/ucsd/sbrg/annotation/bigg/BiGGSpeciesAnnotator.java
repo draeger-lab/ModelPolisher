@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.annotation.IAnnotateSBases;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -33,7 +34,7 @@ import static java.text.MessageFormat.format;
 public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implements IAnnotateSBases<Species> {
 
   private static final Logger logger = LoggerFactory.getLogger(BiGGSpeciesAnnotator.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.BIGG_ANNOTATION_MESSAGES);
 
   private final SBOParameters sboParameters;
 

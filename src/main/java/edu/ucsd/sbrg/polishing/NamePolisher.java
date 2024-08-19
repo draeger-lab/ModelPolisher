@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.SBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ public class NamePolisher implements IPolishSBaseAttributes {
 
     private static final Logger logger = LoggerFactory.getLogger(NamePolisher.class);
 
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
     @Override
     public void polish(SBase sbase) {

@@ -1,6 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import edu.ucsd.sbrg.parameters.ModelPolisherOptions;
+import edu.ucsd.sbrg.annotation.AnnotationOptions;
 import edu.ucsd.sbrg.annotation.AnnotationException;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.BiGGNotesParameters;
@@ -21,7 +21,7 @@ public class BiGGSBMLAnnotatorTest extends BiGGDBContainerTest {
     private final BiGGAnnotationParameters biGGAnnotationParameters = new BiGGAnnotationParameters(
             true,
             true,
-            ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue(),
+            AnnotationOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue(),
             new BiGGNotesParameters(),
             null
     );

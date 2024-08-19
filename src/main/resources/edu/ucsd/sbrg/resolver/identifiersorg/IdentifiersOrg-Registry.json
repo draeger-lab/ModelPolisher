@@ -228,6 +228,62 @@
                 "successor": null
             },
             {
+                "id": 4053,
+                "prefix": "mediadive.medium",
+                "mirId": "MIR:00001078",
+                "name": "MediaDive mediums",
+                "pattern": "^[A-Z]?[0-9]{1,5}[a-z]?$",
+                "description": "MediaDive is a manually curated collection of cultivation media and growth conditions. This namespace specifically references mediums.",
+                "created": "2024-08-19T08:48:10.806+00:00",
+                "modified": "2024-08-19T08:48:10.806+00:00",
+                "resources": [
+                    {
+                        "id": 4004,
+                        "mirId": "MIR:00001077",
+                        "urlPattern": "https://mediadive.dsmz.de/medium/{$id}",
+                        "name": "Leibniz-Institut DSMZ-Deutsche Sammlung von Mikroorganismen und Zellkulturen",
+                        "description": "The mission of the Leibniz Institute DSMZ is the research, provision and use of microbial and cellular biodiversity. The DSMZ is both a research infrastructure used by science and industry for non-commercial purposes and a research institution in the field of microbial biodiversity research.",
+                        "official": true,
+                        "providerCode": "mediadive",
+                        "sampleId": "1011c",
+                        "resourceHomeUrl": "https://www.dsmz.de/",
+                        "institution": {
+                            "id": 1874,
+                            "name": "Leibniz-Institut DSMZ-Deutsche Sammlung von Mikroorganismen und Zellkulturen",
+                            "homeUrl": "https://www.dsmz.de/",
+                            "description": "The mission of the Leibniz Institute DSMZ is the research, provision and use of microbial and cellular biodiversity. The DSMZ is both a research infrastructure used by science and industry for non-commercial purposes and a research institution in the field of microbial biodiversity research.",
+                            "rorId": "https://ror.org/02tyer376",
+                            "location": {
+                                "countryCode": "DE",
+                                "countryName": "Germany"
+                            }
+                        },
+                        "location": {
+                            "countryCode": "DE",
+                            "countryName": "Germany"
+                        },
+                        "deprecated": false,
+                        "deprecationDate": null,
+                        "deprecationOfflineDate": null,
+                        "renderDeprecatedLanding": false,
+                        "deprecationStatement": null,
+                        "protectedUrls": false,
+                        "renderProtectedLanding": false,
+                        "authHelpUrl": null,
+                        "authHelpDescription": null
+                    }
+                ],
+                "sampleId": "1011c",
+                "namespaceEmbeddedInLui": false,
+                "deprecated": false,
+                "deprecationDate": null,
+                "deprecationOfflineDate": null,
+                "renderDeprecatedLanding": false,
+                "deprecationStatement": null,
+                "infoOnPostmortemAccess": null,
+                "successor": null
+            },
+            {
                 "id": 1211,
                 "prefix": "bgee.stage",
                 "mirId": "MIR:00000419",

@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
@@ -13,6 +14,7 @@ import org.sbml.jsbml.util.ValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.Buffer;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -21,7 +23,7 @@ import static java.text.MessageFormat.format;
 public class SBMLPolisher extends AbstractPolisher implements IPolishSBases<SBMLDocument> {
 
     private static final Logger logger = LoggerFactory.getLogger(SBMLPolisher.class);
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
     private final SBOParameters sboParameters;
 
     public SBMLPolisher(PolishingParameters parameters, SBOParameters sboParameters, Registry registry) {

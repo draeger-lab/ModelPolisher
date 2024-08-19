@@ -1,8 +1,8 @@
-edu.ucsd.sbrg
 edu.ucsd.sbrg.annotation
 edu.ucsd.sbrg.annotation.adb
 edu.ucsd.sbrg.annotation.bigg
-edu.ucsd.sbrg.annotation.bigg.fbc
+edu.ucsd.sbrg.annotation.bigg.ext.fbc
+edu.ucsd.sbrg.cli
 edu.ucsd.sbrg.db
 edu.ucsd.sbrg.db.adb
 edu.ucsd.sbrg.db.bigg
@@ -14,9 +14,10 @@ edu.ucsd.sbrg.io
 edu.ucsd.sbrg.io.parsers.cobra
 edu.ucsd.sbrg.io.parsers.json
 edu.ucsd.sbrg.io.parsers.json.mapping
+edu.ucsd.sbrg.logging
 edu.ucsd.sbrg.parameters
 edu.ucsd.sbrg.polishing
-edu.ucsd.sbrg.polishing.fbc
+edu.ucsd.sbrg.polishing.ext.fbc
 edu.ucsd.sbrg.reporting
 edu.ucsd.sbrg.resolver
 edu.ucsd.sbrg.resolver.identifiersorg

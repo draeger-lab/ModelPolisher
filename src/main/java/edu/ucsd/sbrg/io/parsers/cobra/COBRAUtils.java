@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import us.hebi.matlab.mat.types.Array;
@@ -20,7 +21,7 @@ public class COBRAUtils {
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
 
   /**
    * @param string

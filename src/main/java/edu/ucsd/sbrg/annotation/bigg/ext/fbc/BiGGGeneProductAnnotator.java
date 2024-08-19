@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation.bigg.ext.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.annotation.IAnnotateSBases;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.annotation.bigg.BiGGCVTermAnnotator;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -32,7 +33,7 @@ import static java.text.MessageFormat.format;
 public class BiGGGeneProductAnnotator extends BiGGCVTermAnnotator<GeneProduct> implements IAnnotateSBases<GeneProduct> {
 
   private static final Logger logger = LoggerFactory.getLogger(BiGGGeneProductAnnotator.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.BIGG_ANNOTATION_MESSAGES);
   public static final String BIGG_GENE_ID_PATTERN = "^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$";
 
   /**

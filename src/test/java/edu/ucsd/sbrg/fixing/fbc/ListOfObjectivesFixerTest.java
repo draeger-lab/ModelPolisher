@@ -1,14 +1,15 @@
 package edu.ucsd.sbrg.fixing.fbc;
 
 import edu.ucsd.sbrg.fixing.ext.fbc.ListOfObjectivesFixer;
-import edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters;
-import edu.ucsd.sbrg.parameters.PolishingParameters;
+import edu.ucsd.sbrg.parameters.FixingParameters;
+import edu.ucsd.sbrg.parameters.FluxObjectivesFixingParameters;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCModelPlugin;
 import org.sbml.jsbml.ext.fbc.FluxObjective;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,14 +40,13 @@ public class ListOfObjectivesFixerTest {
         m.createReaction("objective_reaction2");
         m.createReaction("yadda_Biomass_yadda");
 
-        var parameters = new PolishingParameters(
-                null,
-                new FluxObjectivesPolishingParameters(
+        var parameters = new FixingParameters(
+                false,
+                new FluxObjectivesFixingParameters(
                         null,
-                        List.of("objective_reaction1", "objective_reaction2")),
-                false);
+                        List.of("objective_reaction1", "objective_reaction2")));
 
-        new ListOfObjectivesFixer(parameters, fbcPlugin).fix(fbcPlugin.getListOfObjectives(), 0);
+        new ListOfObjectivesFixer(parameters, fbcPlugin, new ArrayList<>()).fix(fbcPlugin.getListOfObjectives(), 0);
 
         assertEquals("obj3", fbcPlugin.getActiveObjective());
         assertEquals(2, fbcPlugin.getListOfObjectives()
@@ -84,7 +84,7 @@ public class ListOfObjectivesFixerTest {
         m.createReaction("yadda_Biomass_yadda");
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new ListOfObjectivesFixer(new PolishingParameters(), fbcPlugin).fix(mPlug.getListOfObjectives(), 0);
+        new ListOfObjectivesFixer(new FixingParameters(), fbcPlugin, new ArrayList<>()).fix(mPlug.getListOfObjectives(), 0);
 
         assertEquals("obj2", fbcPlugin.getActiveObjective());
         assertEquals(Set.of("yadda_Biomass_yadda"),
@@ -111,7 +111,7 @@ public class ListOfObjectivesFixerTest {
         // o1.setListOfFluxObjectives(new ListOf<>());
 
         var mPlug = (FBCModelPlugin) m.getPlugin(FBCConstants.shortLabel);
-        new ListOfObjectivesFixer(new PolishingParameters(), fbcPlugin).fix(mPlug.getListOfObjectives(), 0);
+        new ListOfObjectivesFixer(new FixingParameters(), fbcPlugin, new ArrayList<>()).fix(mPlug.getListOfObjectives(), 0);
 
         assertEquals(0, fbcPlugin.getObjectiveCount());
     }

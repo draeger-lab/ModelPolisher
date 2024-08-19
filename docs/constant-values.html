@@ -75,13 +75,13 @@ loadScripts(document, 'script');</script>
 </ul>
 <ul class="block-list">
 <li>
-<div class="caption"><span>edu.ucsd.sbrg.annotation.bigg.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg.fbc">BiGGGeneProductAnnotator</a></span></div>
+<div class="caption"><span>edu.ucsd.sbrg.annotation.bigg.ext.fbc.<a href="edu/ucsd/sbrg/annotation/bigg/ext/fbc/BiGGGeneProductAnnotator.html" title="class in edu.ucsd.sbrg.annotation.bigg.ext.fbc">BiGGGeneProductAnnotator</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Constant Field</div>
 <div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.annotation.bigg.fbc.BiGGGeneProductAnnotator.BIGG_GENE_ID_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/annotation/bigg/fbc/BiGGGeneProductAnnotator.html#BIGG_GENE_ID_PATTERN">BIGG_GENE_ID_PATTERN</a></code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.annotation.bigg.ext.fbc.BiGGGeneProductAnnotator.BIGG_GENE_ID_PATTERN">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/annotation/bigg/ext/fbc/BiGGGeneProductAnnotator.html#BIGG_GENE_ID_PATTERN">BIGG_GENE_ID_PATTERN</a></code></div>
 <div class="col-last even-row-color"><code>"^(G_)?([a-zA-Z][a-zA-Z0-9_]+)(?:_([a-z][a-z0-9]?))?(?:_([A-Z][A-Z0-9]?))?$"</code></div>
 </div>
 </li>
@@ -139,28 +139,35 @@ loadScripts(document, 'script');</script>
 </ul>
 <ul class="block-list">
 <li>
-<div class="caption"><span>edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/FluxObjectivesPolishingParameters.html" title="class in edu.ucsd.sbrg.parameters">FluxObjectivesPolishingParameters</a></span></div>
+<div class="caption"><span>edu.ucsd.sbrg.logging.<a href="edu/ucsd/sbrg/logging/BundleNames.html" title="class in edu.ucsd.sbrg.logging">BundleNames</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Constant Field</div>
 <div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters.FLUX_COEFFICIENTS">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/parameters/FluxObjectivesPolishingParameters.html#FLUX_COEFFICIENTS">FLUX_COEFFICIENTS</a></code></div>
-<div class="col-last even-row-color"><code>"fluxCoefficients"</code></div>
-<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.parameters.FluxObjectivesPolishingParameters.FLUX_OBJECTIVES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/parameters/FluxObjectivesPolishingParameters.html#FLUX_OBJECTIVES">FLUX_OBJECTIVES</a></code></div>
-<div class="col-last odd-row-color"><code>"fluxObjectives"</code></div>
-</div>
-</li>
-<li>
-<div class="caption"><span>edu.ucsd.sbrg.parameters.<a href="edu/ucsd/sbrg/parameters/ReactionPolishingParameters.html" title="class in edu.ucsd.sbrg.parameters">ReactionPolishingParameters</a></span></div>
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Constant Field</div>
-<div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.parameters.ReactionPolishingParameters.CHECK_MASS_BALANCE">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/parameters/ReactionPolishingParameters.html#CHECK_MASS_BALANCE">CHECK_MASS_BALANCE</a></code></div>
-<div class="col-last even-row-color"><code>"checkMassBalance"</code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.ANNOTATION_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#ANNOTATION_MESSAGES">ANNOTATION_MESSAGES</a></code></div>
+<div class="col-last even-row-color"><code>"edu.ucsd.sbrg.annotation.Messages"</code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.BASE_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#BASE_MESSAGES">BASE_MESSAGES</a></code></div>
+<div class="col-last odd-row-color"><code>"edu.ucsd.sbrg.Messages"</code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.BIGG_ANNOTATION_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#BIGG_ANNOTATION_MESSAGES">BIGG_ANNOTATION_MESSAGES</a></code></div>
+<div class="col-last even-row-color"><code>"edu.ucsd.sbrg.annotation.bigg.Messages"</code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.CLI_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#CLI_MESSAGES">CLI_MESSAGES</a></code></div>
+<div class="col-last odd-row-color"><code>"edu.ucsd.sbrg.cli.Messages"</code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.DB_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#DB_MESSAGES">DB_MESSAGES</a></code></div>
+<div class="col-last even-row-color"><code>"edu.ucsd.sbrg.db.Messages"</code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.FIXING_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#FIXING_MESSAGES">FIXING_MESSAGES</a></code></div>
+<div class="col-last odd-row-color"><code>"edu.ucsd.sbrg.fixing.Messages"</code></div>
+<div class="col-first even-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.IO_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#IO_MESSAGES">IO_MESSAGES</a></code></div>
+<div class="col-last even-row-color"><code>"edu.ucsd.sbrg.io.Messages"</code></div>
+<div class="col-first odd-row-color"><code id="edu.ucsd.sbrg.logging.BundleNames.POLISHING_MESSAGES">public&nbsp;static&nbsp;final&nbsp;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="edu/ucsd/sbrg/logging/BundleNames.html#POLISHING_MESSAGES">POLISHING_MESSAGES</a></code></div>
+<div class="col-last odd-row-color"><code>"edu.ucsd.sbrg.polishing.Messages"</code></div>
 </div>
 </li>
 </ul>

@@ -27,7 +27,7 @@ public class GeneProductsPolisher extends AbstractPolisher implements IPolishSBa
     logger.debug("Polish Gene Products");
 
     for (GeneProduct geneProduct : geneProducts) {
-      statusReport("Polishing Gene Products (8/9)  ", geneProduct);
+      statusReport("Polishing Gene Products (9/9)  ", geneProduct);
       polish(geneProduct);
     }
   }

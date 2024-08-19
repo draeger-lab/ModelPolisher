@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.And;
 import org.sbml.jsbml.ext.fbc.Association;
@@ -32,7 +33,7 @@ import static java.text.MessageFormat.format;
 public class GPRParser {
 
   private static final Logger logger = LoggerFactory.getLogger(GPRParser.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
 
   public static void setGeneProductAssociation(Reaction r, String geneReactionRule, boolean addGenericTerms) {
@@ -55,7 +56,7 @@ public class GPRParser {
         mergeAssociation(r, association, reactionPlugin, addGenericTerms);
       }
     } catch (ParseException e) {
-      logger.info(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(e)));
+      logger.debug(format(MESSAGES.getString("PARSE_GPR_ERROR"), geneReactionRule, Utils.getMessage(e)));
     }
   }
 
@@ -143,7 +144,7 @@ public class GPRParser {
           String geneProduct = ((GeneProductRef) current).getGeneProduct();
           if (gprs.contains(geneProduct)) {
             if (!or.removeAssociation(current)) {
-              logger.info(format("Failed to unset duplicate GeneProductReference {0} for reaction {1}",
+              logger.debug(format("Failed to unset duplicate GeneProductReference {0} for reaction {1}",
                       geneProduct, r.getId()));
             }
           } else {

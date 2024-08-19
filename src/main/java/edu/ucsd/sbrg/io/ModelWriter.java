@@ -1,8 +1,8 @@
 package edu.ucsd.sbrg.io;
 
 import de.unirostock.sems.cbarchive.CombineArchiveException;
-import edu.ucsd.sbrg.parameters.ModelPolisherOptions;
 import edu.ucsd.sbrg.io.parsers.json.JSONConverter;
+import edu.ucsd.sbrg.polishing.ModelPolisher;
 import org.jdom2.JDOMException;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.TidySBMLWriter;
@@ -20,9 +20,9 @@ import static java.text.MessageFormat.format;
 
 public class ModelWriter implements IWriteModelsToFile, IWriteModels{
     private static final Logger logger = LoggerFactory.getLogger(ModelWriter.class);
-    private final ModelPolisherOptions.OutputType outputType;
+    private final IOOptions.OutputType outputType;
 
-    public ModelWriter(ModelPolisherOptions.OutputType outputType) {
+    public ModelWriter(IOOptions.OutputType outputType) {
         this.outputType = outputType;
     }
 
@@ -62,7 +62,7 @@ public class ModelWriter implements IWriteModelsToFile, IWriteModels{
                 TidySBMLWriter.write(
                         doc,
                         baos,
-                        getClass().getSimpleName(),
+                        "ModelPolisher",
                         getClass().getPackage().getImplementationVersion(),
                         ' ',
                         (short) 2);
@@ -98,7 +98,7 @@ public class ModelWriter implements IWriteModelsToFile, IWriteModels{
         TidySBMLWriter.write(
                 doc,
                 f,
-                getClass().getSimpleName(),
+                "ModelPolisher",
                 getClass().getPackage().getImplementationVersion(),
                 ' ',
                 (short) 2);
@@ -113,7 +113,7 @@ public class ModelWriter implements IWriteModelsToFile, IWriteModels{
         TidySBMLWriter.write(
                 doc,
                 f,
-                getClass().getSimpleName(),
+                "ModelPolisher",
                 getClass().getPackage().getImplementationVersion(),
                 ' ',
                 (short) 2);
@@ -138,7 +138,7 @@ public class ModelWriter implements IWriteModelsToFile, IWriteModels{
         TidySBMLWriter.write(
                 doc,
                 output,
-                getClass().getSimpleName(),
+                "ModelPolisher",
                 getClass().getPackage().getImplementationVersion(),
                 ' ',
                 (short) 2);

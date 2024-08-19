@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.io.parsers.cobra;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
@@ -22,7 +23,7 @@ import static java.text.MessageFormat.format;
 public class SpeciesParser {
 
   private static final Logger logger = LoggerFactory.getLogger(SpeciesParser.class);
-  public static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  public static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
   private final Model model;
   private final int index;
   private static MatlabFields matlabFields;

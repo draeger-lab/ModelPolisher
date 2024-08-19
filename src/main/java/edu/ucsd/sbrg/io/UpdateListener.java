@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.io;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.util.ext.groups.GroupsUtils;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.NamedSBase;
@@ -43,7 +44,7 @@ public class UpdateListener implements TreeNodeChangeListener {
   /**
    * Bundle for ModelPolisher logger messages
    */
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES  );
   /**
    * A map that maintains associations between gene identifiers and sets of {@link GeneProductRef} objects.
    * This map is used to track which gene products are associated with specific gene identifiers throughout the model.

@@ -1,7 +1,11 @@
 package edu.ucsd.sbrg.parameters;
 
+import edu.ucsd.sbrg.annotation.AnnotationOptions;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 import edu.ucsd.sbrg.db.bigg.BiGGDBOptions;
+import edu.ucsd.sbrg.fixing.FixingOptions;
+import edu.ucsd.sbrg.io.IOOptions;
+import edu.ucsd.sbrg.polishing.PolishingOptions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -17,18 +21,15 @@ class ParametersParserTest {
         var parameters = new ParametersParser()
                 .parse(new ByteArrayInputStream("{}".getBytes()));
 
-        assertEquals(ModelPolisherOptions.SBML_VALIDATION.getDefaultValue(), parameters.sbmlValidation());
+        assertEquals(GeneralOptions.SBML_VALIDATION.getDefaultValue(), parameters.sbmlValidation());
+        assertEquals(GeneralOptions.ADD_GENERIC_TERMS.getDefaultValue(), parameters.sboParameters().addGenericTerms());
 
-        assertEquals(ModelPolisherOptions.ADD_GENERIC_TERMS.getDefaultValue(), parameters.sboTerms().addGenericTerms());
+        assertEquals(Arrays.asList(FixingOptions.FLUX_OBJECTIVES.getDefaultValue()),
+                parameters.fixing().fluxObjectivesPolishingParameters().fluxObjectives());
+        assertEquals(Arrays.asList(FixingOptions.FLUX_COEFFICIENTS.getDefaultValue()),
+                parameters.fixing().fluxObjectivesPolishingParameters().fluxCoefficients());
 
-        assertEquals(ModelPolisherOptions.CHECK_MASS_BALANCE.getDefaultValue(),
-                parameters.polishing().reactionPolishingParameters().checkMassBalance());
-        assertEquals(Arrays.asList(ModelPolisherOptions.FLUX_OBJECTIVES.getDefaultValue()),
-                parameters.polishing().fluxObjectivesPolishingParameters().fluxObjectives());
-        assertEquals(Arrays.asList(ModelPolisherOptions.FLUX_COEFFICIENTS.getDefaultValue()),
-                parameters.polishing().fluxObjectivesPolishingParameters().fluxCoefficients());
-
-        assertEquals(ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue(),
+        assertEquals(AnnotationOptions.ADD_ADB_ANNOTATIONS.getDefaultValue(),
                 parameters.annotation().adbAnnotationParameters().annotateWithAdb());
         assertEquals(AnnotateDBOptions.DBNAME.getDefaultValue(),
                 parameters.annotation().adbAnnotationParameters().dbParameters().dbName());
@@ -41,30 +42,26 @@ class ParametersParserTest {
         assertEquals(AnnotateDBOptions.PASSWD.getDefaultValue(),
                 parameters.annotation().adbAnnotationParameters().dbParameters().passwd());
 
-        assertEquals(ModelPolisherOptions.ANNOTATE_WITH_BIGG.getDefaultValue(),
+        assertEquals(AnnotationOptions.ANNOTATE_WITH_BIGG.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().annotateWithBiGG());
-        assertEquals(ModelPolisherOptions.INCLUDE_ANY_URI.getDefaultValue(),
+        assertEquals(AnnotationOptions.INCLUDE_ANY_URI.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().includeAnyURI());
-        assertEquals(ModelPolisherOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue(),
+        assertEquals(AnnotationOptions.DOCUMENT_TITLE_PATTERN.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().documentTitlePattern());
-        assertEquals(ModelPolisherOptions.NO_MODEL_NOTES.getDefaultValue(),
+        assertEquals(AnnotationOptions.NO_MODEL_NOTES.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().notesParameters().noModelNotes());
-        assertEquals(ModelPolisherOptions.DOCUMENT_NOTES_FILE.getDefaultValue(),
+        assertEquals(AnnotationOptions.DOCUMENT_NOTES_FILE.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().notesParameters().documentNotesFile());
-        assertEquals(ModelPolisherOptions.MODEL_NOTES_FILE.getDefaultValue(),
+        assertEquals(AnnotationOptions.MODEL_NOTES_FILE.getDefaultValue(),
                 parameters.annotation().biggAnnotationParameters().notesParameters().modelNotesFile());
-        assertEquals(BiGGDBOptions.DBNAME.getDefaultValue(),
-                parameters.annotation().biggAnnotationParameters().dbParameters().dbName());
-        assertEquals(BiGGDBOptions.HOST.getDefaultValue(),
-                parameters.annotation().biggAnnotationParameters().dbParameters().host());
-        assertEquals(BiGGDBOptions.PORT.getDefaultValue(),
-                parameters.annotation().biggAnnotationParameters().dbParameters().port());
-        assertEquals(BiGGDBOptions.USER.getDefaultValue(),
-                parameters.annotation().biggAnnotationParameters().dbParameters().user());
-        assertEquals(BiGGDBOptions.PASSWD.getDefaultValue(),
-                parameters.annotation().biggAnnotationParameters().dbParameters().passwd());
 
-        assertEquals(ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue(), parameters.outputType());
+        assertNull(parameters.annotation().biggAnnotationParameters().dbParameters().dbName());
+        assertNull(parameters.annotation().biggAnnotationParameters().dbParameters().host());
+        assertNull(parameters.annotation().biggAnnotationParameters().dbParameters().port());
+        assertNull(parameters.annotation().biggAnnotationParameters().dbParameters().user());
+        assertNull(parameters.annotation().biggAnnotationParameters().dbParameters().passwd());
+
+        assertEquals(IOOptions.OUTPUT_TYPE.getDefaultValue(), parameters.outputType());
     }
 
     @Test
@@ -72,6 +69,6 @@ class ParametersParserTest {
         var parameters = new ParametersParser()
                 .parse(ParametersParserTest.class.getResourceAsStream("parameters.json"));
         assertNotNull(parameters);
-        assertEquals(ModelPolisherOptions.OutputType.COMBINE, parameters.outputType());
+        assertEquals(IOOptions.OutputType.COMBINE, parameters.outputType());
     }
 }

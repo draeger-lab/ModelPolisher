@@ -1,6 +1,7 @@
 package edu.ucsd.sbrg.annotation;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
@@ -15,7 +16,7 @@ import static java.text.MessageFormat.format;
 
 public class AnnotationsSorter {
     private static final Logger logger = LoggerFactory.getLogger(AnnotationsSorter.class);
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.ANNOTATION_MESSAGES);
 
 
     /**
@@ -33,7 +34,7 @@ public class AnnotationsSorter {
             if (doMerge) {
                 sbase.getAnnotation().unsetCVTerms();
                 for (Map.Entry<CVTerm.Qualifier, SortedSet<String>> entry : miriam.entrySet()) {
-                    logger.info(format(MESSAGES.getString("MERGING_MIRIAM_RESOURCES"), entry.getKey(),
+                    logger.debug(format(MESSAGES.getString("MERGING_MIRIAM_RESOURCES"), entry.getKey(),
                             sbase.getClass().getSimpleName(), sbase.getId()));
                     sbase.addCVTerm(new CVTerm(entry.getKey(), entry.getValue().toArray(new String[0])));
                 }

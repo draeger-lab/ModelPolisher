@@ -71,6 +71,10 @@ loadScripts(document, 'script');</script>
 <dt>All Superinterfaces:</dt>
 <dd><code>de.zbit.util.prefs.KeyProvider</code></dd>
 </dl>
+<dl class="notes">
+<dt>All Known Subinterfaces:</dt>
+<dd><code><a href="../cli/CommandLineIOOptions.html" title="interface in edu.ucsd.sbrg.cli">CommandLineIOOptions</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">IOOptions</span><span class="extends-implements">
 extends de.zbit.util.prefs.KeyProvider</span></div>
@@ -81,6 +85,15 @@ extends de.zbit.util.prefs.KeyProvider</span></div>
 <li>
 <section class="nested-class-summary" id="nested-class-summary">
 <h2>Nested Class Summary</h2>
+<div class="caption"><span>Nested Classes</span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Interface</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static enum&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="IOOptions.OutputType.html" class="type-name-link" title="enum class in edu.ucsd.sbrg.io">IOOptions.OutputType</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+</div>
 <div class="inherited-list">
 <h2 id="nested-classes-inherited-from-class-de.zbit.util.prefs.KeyProvider">Nested classes/interfaces inherited from interface&nbsp;de.zbit.util.prefs.KeyProvider</h2>
 <code>de.zbit.util.prefs.KeyProvider.Entry&lt;T extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a>&gt;, de.zbit.util.prefs.KeyProvider.Tools</code></div>
@@ -95,20 +108,14 @@ extends de.zbit.util.prefs.KeyProvider</span></div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static final de.zbit.util.prefs.Option&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&gt;</code></div>
-<div class="col-second even-row-color"><code><a href="#INPUT" class="member-name-link">INPUT</a></code></div>
-<div class="col-last even-row-color">
-<div class="block">Specifies the SBML or MAT input file.</div>
-</div>
-<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ResourceBundle.html" title="class or interface in java.util" class="external-link">ResourceBundle</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#MESSAGES" class="member-name-link">MESSAGES</a></code></div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ResourceBundle.html" title="class or interface in java.util" class="external-link">ResourceBundle</a></code></div>
+<div class="col-second even-row-color"><code><a href="#MESSAGES" class="member-name-link">MESSAGES</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final de.zbit.util.prefs.Option&lt;<a href="IOOptions.OutputType.html" title="enum class in edu.ucsd.sbrg.io">IOOptions.OutputType</a>&gt;</code></div>
+<div class="col-second odd-row-color"><code><a href="#OUTPUT_TYPE" class="member-name-link">OUTPUT_TYPE</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Bundle for ModelPolisher logger messages</div>
-</div>
-<div class="col-first even-row-color"><code>static final de.zbit.util.prefs.Option&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&gt;</code></div>
-<div class="col-second even-row-color"><code><a href="#OUTPUT" class="member-name-link">OUTPUT</a></code></div>
-<div class="col-last even-row-color">
-<div class="block">The path to the file into which the output should be written.</div>
+<div class="block">Decides whether the output file should directly be compressed and if
+ so, which archive type should be used.</div>
 </div>
 </div>
 </section>
@@ -126,26 +133,14 @@ extends de.zbit.util.prefs.KeyProvider</span></div>
 <section class="detail" id="MESSAGES">
 <h3>MESSAGES</h3>
 <div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/ResourceBundle.html" title="class or interface in java.util" class="external-link">ResourceBundle</a></span>&nbsp;<span class="element-name">MESSAGES</span></div>
-<div class="block">Bundle for ModelPolisher logger messages</div>
 </section>
 </li>
 <li>
-<section class="detail" id="INPUT">
-<h3>INPUT</h3>
-<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type">de.zbit.util.prefs.Option&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&gt;</span>&nbsp;<span class="element-name">INPUT</span></div>
-<div class="block">Specifies the SBML or MAT input file. If a directory is given, the
- conversion
- will be recursively performed. MAT files will be converted to SBML prior to
- polishing.</div>
-</section>
-</li>
-<li>
-<section class="detail" id="OUTPUT">
-<h3>OUTPUT</h3>
-<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type">de.zbit.util.prefs.Option&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a>&gt;</span>&nbsp;<span class="element-name">OUTPUT</span></div>
-<div class="block">The path to the file into which the output should be written. If the
- input is a directory, this must also be a directory in order to perform a
- recursive conversion.</div>
+<section class="detail" id="OUTPUT_TYPE">
+<h3>OUTPUT_TYPE</h3>
+<div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type">de.zbit.util.prefs.Option&lt;<a href="IOOptions.OutputType.html" title="enum class in edu.ucsd.sbrg.io">IOOptions.OutputType</a>&gt;</span>&nbsp;<span class="element-name">OUTPUT_TYPE</span></div>
+<div class="block">Decides whether the output file should directly be compressed and if
+ so, which archive type should be used.</div>
 </section>
 </li>
 </ul>

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.Model;
 
 import de.zbit.sbml.util.SBMLtools;
@@ -30,11 +31,8 @@ import us.hebi.matlab.mat.types.Struct;
 class MatlabFields {
 
   private static final Logger logger = LoggerFactory.getLogger(MatlabFields.class);
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
 
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
   private final Map<String, Array> fields;
   private static MatlabFields instance;
 
@@ -59,9 +57,9 @@ class MatlabFields {
   private void initializeFields(Struct struct) {
     List<String> knownFields = Arrays.stream(ModelField.values()).map(Enum::name).toList();
     List<String> fieldsFound = struct.getFieldNames();
-    logger.info(format(MESSAGES.getString("KNOWN_FIELDS_MISSING"),
+    logger.debug(format(MESSAGES.getString("KNOWN_FIELDS_MISSING"),
       knownFields.parallelStream().filter(Predicate.not(fieldsFound::contains)).collect(Collectors.toSet())));
-    logger.info(format(MESSAGES.getString("ADDITIONAL_FIELDS_PRESENT"),
+    logger.debug(format(MESSAGES.getString("ADDITIONAL_FIELDS_PRESENT"),
       fieldsFound.parallelStream().filter(Predicate.not(knownFields::contains)).collect(Collectors.toSet())));
     for (String field : fieldsFound) {
       fields.put(field, struct.get(field));
@@ -73,7 +71,7 @@ class MatlabFields {
    */
   public void setDescriptionFields(Model model) {
     if (!fields.containsKey(ModelField.description.name())) {
-      logger.info(format(MESSAGES.getString("FIELD_MISSING"), ModelField.description));
+      logger.debug(format(MESSAGES.getString("FIELD_MISSING"), ModelField.description));
       return;
     }
     Array description = fields.get(ModelField.description.name());

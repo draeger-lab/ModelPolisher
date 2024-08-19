@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -17,7 +18,7 @@ import static java.text.MessageFormat.format;
 
 public class SpeciesPolisher extends AbstractPolisher implements IPolishSBases<Species> {
   private static final Logger logger = LoggerFactory.getLogger(SpeciesPolisher.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
   public SpeciesPolisher(PolishingParameters parameters, Registry registry) {
       super(parameters, registry);

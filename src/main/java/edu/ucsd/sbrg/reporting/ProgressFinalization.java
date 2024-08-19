@@ -1,4 +1,4 @@
 package edu.ucsd.sbrg.reporting;
 
-public record ProgressFinalization() {
+public record ProgressFinalization(String message) {
 }

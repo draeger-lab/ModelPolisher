@@ -130,19 +130,13 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createGeneId(java.lang.String)" class="member-name-link">createGeneId</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Creates a BiGG ID for a gene, with an option to correct the ID to conform to BiGG standards.</div>
-</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createMetaboliteId(java.lang.String)" class="member-name-link">createMetaboliteId</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Creates a BiGG ID for a metabolite based on the provided string identifier.</div>
-</div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createReactionId(java.lang.String)" class="member-name-link">createReactionId</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Creates a BiGG ID for a reaction based on the provided string identifier.</div>
-</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createReactionId(java.lang.String,boolean)" class="member-name-link">createReactionId</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id,
  boolean&nbsp;isPseudo)</code></div>
@@ -285,48 +279,18 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="createMetaboliteId(java.lang.String)">
 <h3>createMetaboliteId</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">createMetaboliteId</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</span></div>
-<div class="block">Creates a BiGG ID for a metabolite based on the provided string identifier.
- This method handles the correction and standardization of the metabolite ID according to BiGG database standards.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>id</code> - The raw metabolite ID string.</dd>
-<dt>Returns:</dt>
-<dd>An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.</dd>
-</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="createGeneId(java.lang.String)">
 <h3>createGeneId</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">createGeneId</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</span></div>
-<div class="block">Creates a BiGG ID for a gene, with an option to correct the ID to conform to BiGG standards.
- <p>
- This method first checks if the provided ID is empty, returning an empty Optional if true.
- If the 'correct' parameter is true, the ID is processed to conform to BiGG standards:
- - Leading underscores are removed.
- - The prefix "g_" is replaced with "G_" to standardize the gene ID format.
- - If the ID does not start with "G_", the prefix "G_" is prepended.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>id</code> - The raw gene ID string.</dd>
-<dt>Returns:</dt>
-<dd>An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.</dd>
-</dl>
 </section>
 </li>
 <li>
 <section class="detail" id="createReactionId(java.lang.String)">
 <h3>createReactionId</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="BiGGId.html" title="class in edu.ucsd.sbrg.db.bigg">BiGGId</a></span>&nbsp;<span class="element-name">createReactionId</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;id)</span></div>
-<div class="block">Creates a BiGG ID for a reaction based on the provided string identifier.
- This method handles the prefix stripping and checks if the reaction is a pseudo-reaction.
- Depending on these checks, it delegates to the overloaded createReactionId method with appropriate flags.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>id</code> - The raw reaction ID string.</dd>
-<dt>Returns:</dt>
-<dd>An Optional containing the BiGGId if the ID is non-empty and valid, or an empty Optional otherwise.</dd>
-</dl>
 </section>
 </li>
 <li>

@@ -7,9 +7,11 @@ import java.util.List;
 public interface IFixSBases<SBMLElement extends SBase> {
 
     default void fix(List<SBMLElement> elements) {
-        var iterator = elements.listIterator();
-        while (iterator.hasNext()) {
-            fix(iterator.next(), iterator.nextIndex());
+        if (null != elements) {
+            var iterator = elements.listIterator();
+            while (iterator.hasNext()) {
+                fix(iterator.next(), iterator.nextIndex());
+            }
         }
     }
 

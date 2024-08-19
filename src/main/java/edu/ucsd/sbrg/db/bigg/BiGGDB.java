@@ -16,6 +16,7 @@ package edu.ucsd.sbrg.db.bigg;
 
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.DBParameters;
 import edu.ucsd.sbrg.db.PostgresConnectionPool;
 import edu.ucsd.sbrg.polishing.NamePolisher;
@@ -43,7 +44,7 @@ import static java.text.MessageFormat.format;
 public class BiGGDB {
 
   private static final Logger logger = LoggerFactory.getLogger(BiGGDB.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.DB_MESSAGES);
 
   private static PostgresConnectionPool connectionPool;
 
@@ -794,8 +795,6 @@ public class BiGGDB {
    * based on the provided synonym and data source ID. The term "foreign" indicates that the reactions
    * are identified using external data sources, which are then mapped to corresponding entities in the BiGG database.
    *
-   * @param dataSourceId The ID of the data source where the synonym is registered.
-   * @param synonym The synonym used to identify the reaction in the data source.
    * @return A collection of ForeignReaction objects containing the reaction and compartment details.
    */
   public Collection<ForeignReaction> getBiggIdsForReactionForeignId(RegistryURI uri) {

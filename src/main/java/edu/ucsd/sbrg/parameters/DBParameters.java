@@ -9,15 +9,15 @@ import java.util.Objects;
 public class DBParameters {
 
     @JsonProperty("db-name")
-    private String dbName = BiGGDBOptions.DBNAME.getDefaultValue();
+    private String dbName;
     @JsonProperty("host")
-    private String host = BiGGDBOptions.HOST.getDefaultValue();
+    private String host;
     @JsonProperty("password")
-    private String passwd = BiGGDBOptions.PASSWD.getDefaultValue();
+    private String passwd;
     @JsonProperty("port")
-    private Integer port = BiGGDBOptions.PORT.getDefaultValue();
+    private Integer port;
     @JsonProperty("user")
-    private String user = BiGGDBOptions.USER.getDefaultValue();
+    private String user;
 
     public DBParameters() {
     }

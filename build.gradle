@@ -127,15 +127,18 @@ dependencies {
     implementation "org.slf4j:log4j-over-slf4j:2.0.9"
     implementation "org.slf4j:osgi-over-slf4j:2.0.9"
 
+    // TODO: this needs to be fixed - this dependency should only be included in the uberjar
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.7'
+
     // JDBC connection pool
     implementation "com.zaxxer:HikariCP:5.1.0"
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.15.0'
-// JSON processor
+    // JSON processor
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-// data binding for Jackson
+    // data binding for Jackson
     implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     // Java port of HTML Tidy, for cleaning up malformed HTML
     implementation "net.sf.jtidy:jtidy:r938"
@@ -179,13 +182,14 @@ tasks.withType(Jar).configureEach {
                 "Specification-Title": "ModelPolisher",
                 "Implementation-Vendor-Id": "edu.ucsd.sbrg",
                 "Implementation-Vendor": "University of California, San Diego",
-                "Main-Class": "edu.ucsd.sbrg.ModelPolisherCLILauncher"
+                "Main-Class": "edu.ucsd.sbrg.cli.ModelPolisherCLILauncher"
         )
     }
     into("META-INF/maven/${project.group}/${project.name}") {
         from generatePomFileForMavenPublication
         rename { it.replace('pom-default.xml', 'pom.xml') }
     }
+    archiveFileName = "${project.name}-${project.version}.jar"
 }
 
 
@@ -271,6 +275,8 @@ processResources.dependsOn(downloadMIRIAM)
 // not only the project's compiled classes but also all the dependencies' classes
 tasks.register('uberjar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    archiveFileName = "${project.name}-${project.version}-STANDALONE.jar"
 
     from sourceSets.main.output
     dependsOn configurations.runtimeClasspath

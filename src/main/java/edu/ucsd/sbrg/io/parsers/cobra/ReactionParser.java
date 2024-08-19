@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.CVTerm;
@@ -36,10 +37,7 @@ public class ReactionParser {
 
   private static final Logger logger = LoggerFactory.getLogger(ReactionParser.class);
 
-  /**
-   * Bundle for ModelPolisher logger messages
-   */
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
   private final ModelBuilder builder;
   private final int index;
   private static MatlabFields matlabFields;

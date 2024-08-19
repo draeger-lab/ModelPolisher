@@ -1,11 +1,24 @@
 package edu.ucsd.sbrg.fixing;
 
+import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.util.ValuePair;
 
+import java.util.List;
+
 import static java.lang.String.format;
 
-public class ReactionFixer implements IFixSBases<Reaction> {
+public class ReactionFixer extends AbstractFixer implements IFixSBases<Reaction> {
+
+    protected ReactionFixer(List<ProgressObserver> observers) {
+        super(observers);
+    }
+
+    @Override
+    public void fix(List<Reaction> rs) {
+        statusReport("Fixing Reactions (2/6)  ", rs);
+        IFixSBases.super.fix(rs);
+    }
 
     @Override
     public void fix(Reaction reaction, int index) {

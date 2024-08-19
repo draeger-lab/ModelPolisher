@@ -1,43 +1,38 @@
 package edu.ucsd.sbrg.parameters;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.prefs.SBProperties;
-import edu.ucsd.sbrg.io.IOOptions;
+import edu.ucsd.sbrg.cli.CommandLineIOOptions;
+import edu.ucsd.sbrg.logging.BundleNames;
 
 import java.io.File;
 import java.util.*;
 
-public class CommandLineParameters {
+public class CommandLineParameters extends Parameters {
 
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.CLI_MESSAGES);
 
-    private final File input;
-    private final File output;
-    protected boolean sbmlValidation = ModelPolisherOptions.SBML_VALIDATION.getDefaultValue();
-    protected ModelPolisherOptions.OutputType outputType = ModelPolisherOptions.OUTPUT_TYPE.getDefaultValue();
+    @JsonProperty("input")
+    private File input;
+    @JsonProperty("output")
+    private File output;
 
-    private final SBOParameters sboParameters;
-    private final PolishingParameters polishingParameters;
-    private final AnnotationParameters annotationParameters;
-
+    public CommandLineParameters() {}
 
     public CommandLineParameters(SBProperties args) throws IllegalArgumentException {
-        String inPath = args.getProperty(IOOptions.INPUT);
+        super(args);
+        String inPath = args.getProperty(CommandLineIOOptions.INPUT);
         if (inPath == null) {
             throw new IllegalArgumentException(MESSAGES.getString("PARAM_INPUT_MISSING"));
         }
 
-        String outPath = args.getProperty(IOOptions.OUTPUT);
+        String outPath = args.getProperty(CommandLineIOOptions.OUTPUT);
         if (outPath == null) {
             throw new IllegalArgumentException(MESSAGES.getString("PARAM_OUTPUT_MISSING"));
         }
         output = new File(outPath);
         input = new File(inPath);
-        sbmlValidation = args.getBooleanProperty(ModelPolisherOptions.SBML_VALIDATION);
-        outputType = ModelPolisherOptions.OutputType.valueOf(args.getProperty(ModelPolisherOptions.OUTPUT_TYPE));
-        annotationParameters = new AnnotationParameters(args);
-        sboParameters = new SBOParameters(args);
-        polishingParameters = new PolishingParameters(args);
     }
 
     public File input() {
@@ -48,24 +43,5 @@ public class CommandLineParameters {
         return output;
     }
 
-    public boolean SBMLValidation() {
-        return sbmlValidation;
-    }
-
-    public ModelPolisherOptions.OutputType outputType() {
-        return outputType;
-    }
-
-    public AnnotationParameters annotationParameters() {
-        return annotationParameters;
-    }
-
-    public SBOParameters sboParameters() {
-        return sboParameters;
-    }
-
-    public PolishingParameters polishingParameters() {
-        return polishingParameters;
-    }
 
 }

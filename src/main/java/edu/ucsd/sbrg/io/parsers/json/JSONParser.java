@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.RegistryURI;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
@@ -62,7 +63,7 @@ import org.slf4j.LoggerFactory;
 public class JSONParser {
 
   private static final org.slf4j.Logger logger = LoggerFactory.getLogger(JSONParser.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
 
   private final Registry registry;
 
@@ -102,7 +103,7 @@ public class JSONParser {
    * reactions)
    */
   private void parseModel(ModelBuilder builder, Root root) {
-    logger.info(MESSAGES.getString("JSON_PARSER_STARTED"));
+    logger.debug(MESSAGES.getString("JSON_PARSER_STARTED"));
     // get Model and set all informational fields
     Model model = builder.getModel();
     model.setVersion(root.getVersion());
@@ -135,7 +136,7 @@ public class JSONParser {
         annotations.addAll(parseAnnotation(entry));
       }
     } else {
-      logger.info(format(MESSAGES.getString("OPEN_ISSUE_ANNOTATION"), annotation.getClass().getName()));
+      logger.debug(format(MESSAGES.getString("OPEN_ISSUE_ANNOTATION"), annotation.getClass().getName()));
     }
     if (!annotations.isEmpty()) {
       CVTerm term = new CVTerm();
@@ -159,7 +160,7 @@ public class JSONParser {
         checkResource(providerCode, id).map(annotations::add);
       }
     } else {
-      logger.info(format(MESSAGES.getString("OPEN_ISSUE_ID_FORMAT"), ids.getClass().getName()));
+      logger.debug(format(MESSAGES.getString("OPEN_ISSUE_ID_FORMAT"), ids.getClass().getName()));
     }
     return annotations;
   }
@@ -195,17 +196,17 @@ public class JSONParser {
         try {
           node.appendNotes(SBMLtools.toNotesString(notesContent.toString()));
         } catch (XMLStreamException e) {
-          logger.info("Could not append notes to node.", e);
+          logger.debug("Could not append notes to node.", e);
         }
       }
     } else if (notes instanceof String) {
       try {
         node.appendNotes(SBMLtools.toNotesString("<p>" + notes + "</p>"));
       } catch (XMLStreamException e) {
-        logger.info("Could not append notes to node.", e);
+        logger.debug("Could not append notes to node.", e);
       }
     } else {
-      logger.info(format(MESSAGES.getString("OPEN_ISSUE_NOTES_FORMAT"), notes.getClass().getName()));
+      logger.debug(format(MESSAGES.getString("OPEN_ISSUE_NOTES_FORMAT"), notes.getClass().getName()));
     }
   }
 
@@ -222,7 +223,7 @@ public class JSONParser {
       ((List<String>) value).forEach(items::add);
       note = key + ":" + items;
     } else {
-      logger.info(format(MESSAGES.getString("OPEN_ISSUE_NOTES_CONTENT"), value.getClass().getName()));
+      logger.debug(format(MESSAGES.getString("OPEN_ISSUE_NOTES_CONTENT"), value.getClass().getName()));
     }
     return note;
   }
@@ -230,7 +231,7 @@ public class JSONParser {
 
   public void parseCompartments(ModelBuilder builder, Map<String, String> compartments) {
     int compSize = compartments.size();
-    logger.info(format(MESSAGES.getString("NUM_COMPART"), compSize));
+    logger.debug(format(MESSAGES.getString("NUM_COMPART"), compSize));
     Model model = builder.getModel();
     for (Map.Entry<String, String> compartment : compartments.entrySet()) {
       BiGGId.extractCompartmentCode(compartment.getKey()).ifPresentOrElse(compartmentCode -> {
@@ -244,20 +245,20 @@ public class JSONParser {
             comp.setName(compartment.getValue());
           }
         }
-      }, () -> logger.info(format(MESSAGES.getString("INVALID_COMPARTMENT_CODE"), compartment.getKey())));
+      }, () -> logger.debug(format(MESSAGES.getString("INVALID_COMPARTMENT_CODE"), compartment.getKey())));
     }
   }
 
 
   private void parseMetabolites(ModelBuilder builder, List<Metabolite> metabolites) {
     int metSize = metabolites.size();
-    logger.info(format(MESSAGES.getString("NUM_METABOLITES"), metSize));
+    logger.debug(format(MESSAGES.getString("NUM_METABOLITES"), metSize));
     Model model = builder.getModel();
     for (Metabolite metabolite : metabolites) {
       String id = metabolite.getId();
       var metId = BiGGId.createMetaboliteId(id);
       if (model.getSpecies(metId.toBiGGId()) != null) {
-        logger.info(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
+        logger.debug(format(MESSAGES.getString("DUPLICATE_SPECIES_ID"), id));
       } else {
         parseMetabolite(model, metabolite, metId);
       }
@@ -281,7 +282,7 @@ public class JSONParser {
         specPlug.setChemicalFormula(formula);
         validFormula = true;
       } catch (IllegalArgumentException exc) {
-        logger.info(format(MESSAGES.getString("INVALID_SPECIES_FORMULA"), biggId.toBiGGId(), formula));
+        logger.debug(format(MESSAGES.getString("INVALID_SPECIES_FORMULA"), biggId.toBiGGId(), formula));
       }
     }
     specPlug.setCharge(charge);
@@ -297,7 +298,7 @@ public class JSONParser {
       try {
         species.appendNotes(SBMLtools.toNotesString("<p>FORMULA: " + formula + "</p>"));
       } catch (XMLStreamException e) {
-        logger.info("Could not append notes to node.", e);
+        logger.debug("Could not append notes to node.", e);
       }
     }
     if (species.isSetAnnotation()) {
@@ -308,14 +309,14 @@ public class JSONParser {
 
   private void parseGenes(ModelBuilder builder, List<Gene> genes) {
     int genSize = genes.size();
-    logger.info(format(MESSAGES.getString("NUM_GENES"), genSize));
+    logger.debug(format(MESSAGES.getString("NUM_GENES"), genSize));
     Model model = builder.getModel();
     for (Gene gene : genes) {
       String id = gene.getId();
       var geneId = BiGGId.createGeneId(id);
       FBCModelPlugin modelPlug = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
       if (modelPlug.getGeneProduct(geneId.toBiGGId()) != null) {
-        logger.info(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
+        logger.debug(format(MESSAGES.getString("DUPLICATE_GENE_ID"), id));
       } else {
         parseGene(model, gene, geneId.toBiGGId());
       }
@@ -339,13 +340,13 @@ public class JSONParser {
 
   private void parseReactions(ModelBuilder builder, List<Reaction> reactions) {
     int reactSize = reactions.size();
-    logger.info(format(MESSAGES.getString("NUM_REACTIONS"), reactSize));
+    logger.debug(format(MESSAGES.getString("NUM_REACTIONS"), reactSize));
     for (Reaction reaction : reactions) {
       String id = reaction.getId();
       // Add prefix for BiGGId
       var reactionId = BiGGId.createReactionId(id);
       if (builder.getModel().getReaction(reactionId.toBiGGId()) != null) {
-        logger.info(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
+        logger.debug(format(MESSAGES.getString("DUPLICATE_REACTION_ID"), id));
       } else {
         parseReaction(builder, reaction, reactionId.toBiGGId());
       }
@@ -401,7 +402,7 @@ public class JSONParser {
         Species species = model.getSpecies(metId.toBiGGId());
         if (species == null) {
           species = model.createSpecies(metId.toBiGGId());
-          logger.info(format(MESSAGES.getString("SPECIES_UNDEFINED"), metId, r.getId()));
+          logger.debug(format(MESSAGES.getString("SPECIES_UNDEFINED"), metId, r.getId()));
         }
         if (value < 0d) {
           ModelBuilder.buildReactants(r, pairOf(-value, species));

@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.annotation.IAnnotateSBases;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implements IAnnotateSBases<Reaction> {
 
   private static final Logger logger = LoggerFactory.getLogger(BiGGReactionsAnnotator.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.BIGG_ANNOTATION_MESSAGES);
 
   private static boolean triggeredSubsystemWarning = false;
 

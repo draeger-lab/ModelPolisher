@@ -7,14 +7,14 @@ import java.util.Objects;
 
 public class SBOParameters {
 
-    @JsonProperty("omit-generic-terms")
-    protected boolean addGenericTerms = ModelPolisherOptions.ADD_GENERIC_TERMS.getDefaultValue();
+    @JsonProperty("add-generic-terms")
+    protected boolean addGenericTerms = GeneralOptions.ADD_GENERIC_TERMS.getDefaultValue();
 
     public SBOParameters() {
     }
 
     public SBOParameters(SBProperties args) {
-        addGenericTerms = args.getBooleanProperty(ModelPolisherOptions.ADD_GENERIC_TERMS);
+        addGenericTerms = args.getBooleanProperty(GeneralOptions.ADD_GENERIC_TERMS);
     }
 
     public boolean addGenericTerms() {

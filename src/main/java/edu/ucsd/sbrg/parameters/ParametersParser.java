@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.parameters;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,4 +16,13 @@ public class ParametersParser {
 
         return mapper.readValue(parametersJson, Parameters.class);
     }
+
+    public CommandLineParameters parseCLIParameters(File parametersJson) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        return mapper.readValue(parametersJson, CommandLineParameters.class);
+    }
+
 }

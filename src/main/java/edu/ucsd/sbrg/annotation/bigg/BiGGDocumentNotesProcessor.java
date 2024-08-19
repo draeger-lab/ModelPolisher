@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.annotation.bigg;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGDB;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.SBMLDocument;
@@ -15,7 +16,7 @@ import static java.text.MessageFormat.format;
 
 public class BiGGDocumentNotesProcessor {
 
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.BIGG_ANNOTATION_MESSAGES);
 
     private final BiGGAnnotationParameters parameters;
     private final BiGGDB bigg;

@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.io;
 
 import de.unirostock.sems.cbarchive.CombineArchiveException;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.jdom2.JDOMException;
 import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Reaction;
@@ -53,7 +54,7 @@ import static java.text.MessageFormat.format;
 public class CombineArchive {
 
   private static final Logger logger = LoggerFactory.getLogger(CombineArchive.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
   public static final String COMBINE_SPECIFICATION = "https://identifiers.org/combine.specifications/sbml";
   public static final String RDF_MEDIATYPE = "https://purl.org/NET/mediatypes/application/rdf+xml";
 

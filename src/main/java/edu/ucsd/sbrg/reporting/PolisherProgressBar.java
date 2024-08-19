@@ -19,6 +19,7 @@ public class PolisherProgressBar implements ProgressObserver {
 
     @Override
     public void finish(ProgressFinalization finit) {
+        bar.DisplayBar(finit.message());
         bar.finished();
     }
 }

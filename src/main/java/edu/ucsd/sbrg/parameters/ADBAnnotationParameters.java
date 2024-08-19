@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.parameters;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.zbit.util.prefs.SBProperties;
+import edu.ucsd.sbrg.annotation.AnnotationOptions;
 import edu.ucsd.sbrg.db.adb.AnnotateDBOptions;
 
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.Objects;
 public class ADBAnnotationParameters {
 
     @JsonProperty("annotate-with-adb")
-    protected boolean annotateWithAdb = ModelPolisherOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
+    protected boolean annotateWithAdb = AnnotationOptions.ADD_ADB_ANNOTATIONS.getDefaultValue();
     @JsonProperty("db-config")
     protected DBParameters dbParameters = new DBParameters(
             AnnotateDBOptions.DBNAME.getDefaultValue(),
@@ -23,7 +24,7 @@ public class ADBAnnotationParameters {
     }
 
     public ADBAnnotationParameters(SBProperties args) {
-        annotateWithAdb = args.getBooleanProperty(ModelPolisherOptions.ADD_ADB_ANNOTATIONS);
+        annotateWithAdb = args.getBooleanProperty(AnnotationOptions.ADD_ADB_ANNOTATIONS);
         dbParameters = new DBParameters(
                 args.getProperty(AnnotateDBOptions.DBNAME),
                 args.getProperty(AnnotateDBOptions.HOST),

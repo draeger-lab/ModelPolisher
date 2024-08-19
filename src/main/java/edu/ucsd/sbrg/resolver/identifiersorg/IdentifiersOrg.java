@@ -51,6 +51,7 @@ public class IdentifiersOrg implements Registry {
         for (Namespace ns : namespaces) {
             String namespaceName = ns.getName();
             String pattern = ns.getPattern();
+            pattern = fixKnownBrokenPatterns(pattern);
             String prefix = ns.getPrefix();
             namespaceNameByPrefix.put(prefix, namespaceName);
             patternByNamespaceName.put(namespaceName, pattern);
@@ -60,6 +61,13 @@ public class IdentifiersOrg implements Registry {
         NAMESPACE_NAME_BY_PREFIX = Collections.unmodifiableMap(namespaceNameByPrefix);
         PATTERN_BY_NAMESPACE_NAME = Collections.unmodifiableMap(patternByNamespaceName);
         PREFIX_BY_NAMESPACE_NAME = Collections.unmodifiableMap(prefixByNamespaceName);
+    }
+
+    private static String fixKnownBrokenPatterns(String pattern) {
+        if(pattern.equals("https://cn.dataone.org/cn/v2/resolve/{{$id}}")) {
+            return "https://cn.dataone.org/cn/v2/resolve/{$id}";
+        }
+        return pattern;
     }
 
     @Override

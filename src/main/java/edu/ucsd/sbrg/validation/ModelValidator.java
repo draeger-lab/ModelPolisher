@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.validation;
 
 import de.zbit.io.ZIPUtils;
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLError;
 import org.sbml.jsbml.SBMLErrorLog;
@@ -17,7 +18,7 @@ import java.util.ResourceBundle;
 import static java.text.MessageFormat.format;
 
 public class ModelValidator {
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
     private static final Logger logger = LoggerFactory.getLogger(ModelValidator.class);
 
 

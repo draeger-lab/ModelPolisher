@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class BiGGId {
 
   private static final Logger logger = LoggerFactory.getLogger(BiGGId.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.DB_MESSAGES);
   /**
    * First part of BiGG ID, either R, M or G
    */
@@ -368,7 +369,7 @@ public class BiGGId {
     } else if (compartmentMatcher.matches()) {
       this.setAbbreviation(id);
     } else {
-      logger.info(format(MESSAGES.getString("BIGGID_CONVERSION_FAIL"), id));
+      logger.debug(format(MESSAGES.getString("BIGGID_CONVERSION_FAIL"), id));
       this.setAbbreviation(id);
     }
   }

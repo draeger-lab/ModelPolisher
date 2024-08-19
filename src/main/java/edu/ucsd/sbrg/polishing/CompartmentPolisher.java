@@ -5,6 +5,7 @@ import static java.text.MessageFormat.format;
 import java.util.ResourceBundle;
 import java.util.List;
 
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import edu.ucsd.sbrg.resolver.Registry;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CompartmentPolisher extends AbstractPolisher implements IPolishSBases<Compartment> {
   private static final Logger logger = LoggerFactory.getLogger(CompartmentPolisher.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
   public CompartmentPolisher(PolishingParameters polishingParameters, Registry registry, List<ProgressObserver> observers) {
     super(polishingParameters, registry, observers);

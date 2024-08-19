@@ -4,6 +4,7 @@ import de.zbit.io.FileTools;
 import de.zbit.io.filefilter.SBFileFilter;
 import de.zbit.util.ResourceManager;
 import de.zbit.util.Utils;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,7 @@ import static java.text.MessageFormat.format;
 
 public class SBMLFileUtils {
 
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.IO_MESSAGES);
 
     private static final Logger logger = LoggerFactory.getLogger(SBMLFileUtils.class);
 
@@ -60,9 +61,11 @@ public class SBMLFileUtils {
         var fileType = SBMLFileUtils.getFileType(file);
         if (!fileType.equals(FileType.SBML_FILE)) {
             return new File(
-                    Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName()) + ".xml");
+                    Utils.ensureSlash(output.getAbsolutePath()) + FileTools.removeFileExtension(file.getName())
+                            + "_polished.xml");
         } else {
-            return new File(Utils.ensureSlash(output.getAbsolutePath()) + file.getName());
+            return new File(Utils.ensureSlash(output.getAbsolutePath())
+                    + file.getName().replaceAll("\\.xml", "_polished\\.xml"));
         }
     }
 
@@ -89,11 +92,11 @@ public class SBMLFileUtils {
      *        File denoting output location
      */
     public static void checkCreateOutDir(File output) {
-        logger.info(format(MESSAGES.getString("OUTPUT_FILE_DESC"), isDirectory(output) ? "directory" : "file"));
+        logger.debug(format(MESSAGES.getString("OUTPUT_FILE_DESC"), isDirectory(output) ? "directory" : "file"));
         // ModelPolisher.isDirectory() checks if output location contains ., if so it is assumed to be a file
         // output is directory
         if (isDirectory(output) && !output.exists()) {
-            logger.info(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
+            logger.debug(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getAbsolutePath()));
             if (!output.mkdirs()) {
                 // TODO: grace
                 throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getAbsolutePath()));
@@ -103,7 +106,7 @@ public class SBMLFileUtils {
         else {
             // check if directory of outfile exist and create if required
             if (!output.getParentFile().exists()) {
-                logger.info(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
+                logger.debug(format(MESSAGES.getString("CREATING_DIRECTORY"), output.getParentFile().getAbsolutePath()));
                 if (!output.getParentFile().mkdirs()) {
                     // TODO: grace
                     throw new RuntimeException(format(MESSAGES.getString("DIRECTORY_CREATION_FAILED"), output.getParentFile().getAbsolutePath()));

@@ -15,6 +15,7 @@
 package edu.ucsd.sbrg.polishing;
 
 import de.zbit.util.ResourceManager;
+import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.PolishingParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.polishing.ext.fbc.FBCPolisher;
@@ -42,7 +43,7 @@ import static java.text.MessageFormat.format;
 public class ModelPolisher extends AbstractPolisher implements IPolishSBases<Model> {
 
   private static final Logger logger = LoggerFactory.getLogger(ModelPolisher.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
   private final SBOParameters sboParameters;
 
 

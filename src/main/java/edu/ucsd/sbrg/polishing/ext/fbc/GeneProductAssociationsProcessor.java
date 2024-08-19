@@ -2,6 +2,7 @@ package edu.ucsd.sbrg.polishing.ext.fbc;
 
 import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
+import edu.ucsd.sbrg.logging.BundleNames;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.fbc.*;
@@ -16,7 +17,7 @@ import static java.text.MessageFormat.format;
 public class GeneProductAssociationsProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneProductAssociationsProcessor.class);
-    private static final ResourceBundle MESSAGES = ResourceManager.getBundle("edu.ucsd.sbrg.polisher.Messages");
+    private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
     private final Map<String, XMLNode> oldGeneAssociations = new HashMap<>();
 

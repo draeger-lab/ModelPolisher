@@ -54,7 +54,7 @@
             logger.debug("Polish Reactions");
 
             for (var reaction : reactions) {
-                statusReport("Polishing Reactions (5/9)  ", reaction);
+                statusReport("Polishing Reactions (6/9)  ", reaction);
                 polish(reaction);
             }
         }
