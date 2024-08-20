@@ -7,7 +7,7 @@ LABEL maintainer="dario.eltzner@student.uni-tuebingen.de"
 COPY ModelPolisher-2.1.jar /
 
 # Set the container to run the ModelPolisher jar file as the default executable
-ENTRYPOINT ["java", "-jar", "/ModelPolisher-2.1.jar"]
+ENTRYPOINT ["java", "-jar", "/ModelPolisher-2.1-STANDALONE.jar"]
 
 # Set the default command to display the help message of ModelPolisher
 CMD ["--help"]

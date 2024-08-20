@@ -1,7 +1,6 @@
 configs:
   model-polisher-config:
-    # you may want to adapt this your config
-    - file: ./examples/config.json
+    file: ./examples/compose-config.json
   
 services:
 
@@ -17,8 +16,8 @@ services:
     volumes:
       # you may want to adapt these to your local input
       # and output directories
-      - "input:/input-dir"
-      - "output:/output-dir"
+      - "./input:/input-dir"
+      - "./output:/output-dir"
 
   biggdb:
     image: schmirgel/bigg_db:1.6
@@ -33,4 +32,4 @@ services:
       - dbs
 
 networks:
-  - dbs
+  dbs:
