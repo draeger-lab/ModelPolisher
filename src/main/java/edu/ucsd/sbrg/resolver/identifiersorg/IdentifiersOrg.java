@@ -218,7 +218,7 @@ public class IdentifiersOrg implements Registry {
 
     private static String getResourceUrlPattern(Resource resource) {
         return IdentifiersOrgURIUtils.removeHttpProtocolFromUrl(
-                resource.getUrlPattern().replaceAll("\\{\\$id}", "(<id>[)]*)"));
+                resource.getUrlPattern().replaceAll("\\{\\$id\\}", "(<id>)"));
     }
 
 }
