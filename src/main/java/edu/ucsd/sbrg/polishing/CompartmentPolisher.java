@@ -68,7 +68,7 @@ public class CompartmentPolisher extends AbstractPolisher implements IPolishSBas
     // Attempt to remove the 'C_' prefix from the compartment ID, log a warning if the format is incorrect
     BiGGId.extractCompartmentCode(compartment.getId()).ifPresentOrElse(
             compartment::setId,
-            () -> logger.info(format(MESSAGES.getString("COMPARTMENT_CODE_WRONG_FORMAT"), compartment.getId())));
+            () -> logger.debug(format(MESSAGES.getString("COMPARTMENT_CODE_WRONG_FORMAT"), compartment.getId())));
 
 
     // TODO: not good enough

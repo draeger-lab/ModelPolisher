@@ -63,9 +63,12 @@ public class IdentifiersOrg implements Registry {
         PREFIX_BY_NAMESPACE_NAME = Collections.unmodifiableMap(prefixByNamespaceName);
     }
 
-    private static String fixKnownBrokenPatterns(String pattern) {
-        if(pattern.equals("https://cn.dataone.org/cn/v2/resolve/{{$id}}")) {
-            return "https://cn.dataone.org/cn/v2/resolve/{$id}";
+    private static String   fixKnownBrokenPatterns(String pattern) {
+        if(pattern.contains("{{$id}}")) {
+            return pattern.replaceAll("\\{\\{\\$id}}", "{\\$id}");
+        }
+        if(pattern.contains("[]")) {
+            return pattern.replaceAll("\\[]", "\\\\[\\\\]");
         }
         return pattern;
     }
@@ -217,8 +220,9 @@ public class IdentifiersOrg implements Registry {
 
 
     private static String getResourceUrlPattern(Resource resource) {
-        return IdentifiersOrgURIUtils.removeHttpProtocolFromUrl(
-                resource.getUrlPattern().replaceAll("\\{\\$id\\}", "(<id>)"));
+	var resourceString = fixKnownBrokenPatterns(resource.getUrlPattern());
+	resourceString = resourceString.replaceAll("\\{\\$id}", "\\(<id>\\)");
+	return IdentifiersOrgURIUtils.removeHttpProtocolFromUrl(resourceString);
     }
 
 }
