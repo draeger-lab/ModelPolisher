@@ -17,7 +17,7 @@ plugins {
 defaultTasks "clean", "uberJar"
 // base name for the archive files created (e.g., JAR files).
 base.archivesName = "ModelPolisher"
-version = "2.1"
+version = "2.1-pre-release"
 
 /** === License Report plugin configuration === **/
 licenseReport {

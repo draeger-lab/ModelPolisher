@@ -1,6 +1,6 @@
 {
-    "input": "input-dir",
-    "output": "output-dir",
+    "input": "/input-dir",
+    "output": "/output-dir",
     "output-type": "xml",
     
     "fixing": {

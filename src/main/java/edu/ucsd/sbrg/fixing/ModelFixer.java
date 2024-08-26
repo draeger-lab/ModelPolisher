@@ -1,5 +1,6 @@
 package edu.ucsd.sbrg.fixing;
 
+import edu.ucsd.sbrg.fixing.ext.fbc.FBCSpeciesFixer;
 import edu.ucsd.sbrg.fixing.ext.fbc.ListOfObjectivesFixer;
 import edu.ucsd.sbrg.fixing.ext.groups.GroupsFixer;
 import edu.ucsd.sbrg.parameters.FixingParameters;
@@ -44,6 +45,7 @@ public class ModelFixer extends AbstractFixer implements IFixSBases<Model> {
 
         if(model.isSetPlugin(FBCConstants.shortLabel)) {
             FBCModelPlugin plugin = (FBCModelPlugin) model.getPlugin(FBCConstants.shortLabel);
+            new FBCSpeciesFixer().fix(model.getListOfSpecies()  );
             new ListOfObjectivesFixer(fixingParameters, plugin, getObservers()).fix(plugin.getListOfObjectives(), 0);
         }
     }

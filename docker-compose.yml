@@ -1,35 +1,30 @@
-configs:
-  model-polisher-config:
-    file: ./examples/compose-config.json
-  
 services:
-
-  polisher:
-    image: mephenor/modelpolisher:2.1-beta
-    depends_on:
-      - biggdb
-      - adb
-    configs:
-      - source: model-polisher-config
-        target: /config.json
-    command: ['--config-file', '/config.json']
-    volumes:
-      # you may want to adapt these to your local input
-      # and output directories
-      - "./input:/input-dir"
-      - "./output:/output-dir"
 
   biggdb:
     image: schmirgel/bigg_db:1.6
     hostname: bigg
-    networks:
-      - dbs
+    ports:
+      - 127.0.0.1:1001:5432
 
   adb:
     image: schmirgel/annotatedb:0.1.1
     hostname: adb
-    networks:
-      - dbs
+    ports:
+      - 127.0.0.1:1002:5432
 
-networks:
-  dbs:
+
+  validator:
+    restart: unless-stopped
+    # port 8000
+    image: schmirgel/sbmlvalidator:1.0.0
+    hostname: sbmlvalidator
+    ports:
+      - 127.0.0.1:8000:8000
+    configs:
+      - source: validator-server-config
+        target: /app/gunicorn.conf.py
+
+
+configs:
+  validator-server-config:
+    file: ./validator-server-config.py

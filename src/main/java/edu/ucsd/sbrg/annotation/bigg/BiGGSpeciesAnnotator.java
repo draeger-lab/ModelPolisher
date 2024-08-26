@@ -1,8 +1,6 @@
 package edu.ucsd.sbrg.annotation.bigg;
 
-import de.zbit.util.ResourceManager;
 import edu.ucsd.sbrg.annotation.IAnnotateSBases;
-import edu.ucsd.sbrg.logging.BundleNames;
 import edu.ucsd.sbrg.parameters.BiGGAnnotationParameters;
 import edu.ucsd.sbrg.parameters.SBOParameters;
 import edu.ucsd.sbrg.db.bigg.BiGGId;
@@ -12,10 +10,6 @@ import edu.ucsd.sbrg.resolver.Registry;
 import edu.ucsd.sbrg.resolver.identifiersorg.IdentifiersOrgURI;
 import org.sbml.jsbml.*;
 import org.sbml.jsbml.CVTerm.Qualifier;
-import org.sbml.jsbml.ext.fbc.FBCConstants;
-import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -32,9 +26,6 @@ import static java.text.MessageFormat.format;
  * for the species using FBC (Flux Balance Constraints) extensions.
  */
 public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implements IAnnotateSBases<Species> {
-
-  private static final Logger logger = LoggerFactory.getLogger(BiGGSpeciesAnnotator.class);
-  private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.BIGG_ANNOTATION_MESSAGES);
 
   private final SBOParameters sboParameters;
 
@@ -64,7 +55,6 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
    * 1. Sets the species name based on the BiGGId. If the species does not have a name, it uses the BiGGId as the name.
    * 2. Assigns an SBO (Systems Biology Ontology) term to the species based on the BiGGId.
    * 3. Adds additional annotations to the species, such as database cross-references.
-   * 4. Sets the chemical formula and charge for the species using FBC (Flux Balance Constraints) extensions.
    * <p>
    * The BiGGId used for these operations is either derived from the species' URI list or directly from its ID if available.
    */
@@ -75,7 +65,6 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
     setName(species, biGGId); // Set the species name based on the BiGGId
     setSBOTerm(species, biGGId); // Assign the appropriate SBO term
     addAnnotations(species, biGGId); // Add database cross-references and other annotations
-    FBCSetFormulaCharge(species, biGGId); // Set the chemical formula and charge
   }
 
 
@@ -203,51 +192,5 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
       species.setMetaId(species.getId());
     }
   }
-
-  /**
-   * Sets the chemical formula and charge for a species based on the provided BiGGId.
-   * This method first checks if the species belongs to a BiGG model and retrieves the compartment code.
-   * It then attempts to set the chemical formula if it has not been set already. The formula is fetched
-   * from the BiGG database either based on the model ID or the compartment code if the model ID fetch fails.
-   * If the formula is successfully retrieved, it is set using the FBCSpeciesPlugin.
-   * Similarly, the charge is fetched and set if the species does not already have a charge set.
-   * If a charge is fetched and if it contradicts an existing charge, log a warning and unset the existing charge.
-   *
-   * @param biggId: {@link BiGGId} from species id
-   */
-  @SuppressWarnings("deprecation")
-  private void FBCSetFormulaCharge(Species species, BiGGId biggId) throws SQLException {
-    boolean isBiGGModel = species.getModel() !=null && bigg.isModel(species.getModel().getId());
-
-    String compartmentCode = biggId.getCompartmentCode();
-    FBCSpeciesPlugin fbcSpecPlug = (FBCSpeciesPlugin) species.getPlugin(FBCConstants.shortLabel);
-    boolean compartmentNonEmpty = compartmentCode != null && !compartmentCode.isEmpty();
-    if (!fbcSpecPlug.isSetChemicalFormula()) {
-      Optional<String> chemicalFormula = Optional.empty();
-      if (isBiGGModel) {
-        chemicalFormula = bigg.getChemicalFormula(biggId.getAbbreviation(), species.getModel().getId());
-      }
-      if ((!isBiGGModel || chemicalFormula.isEmpty()) && compartmentNonEmpty) {
-        chemicalFormula = bigg.getChemicalFormulaByCompartment(biggId.getAbbreviation(), compartmentCode);
-      }
-        chemicalFormula.ifPresent(fbcSpecPlug::setChemicalFormula);
-    }
-    Optional<Integer> chargeFromBiGG = Optional.empty();
-    if (isBiGGModel) {
-      chargeFromBiGG = bigg.getCharge(biggId.getAbbreviation(), species.getModel().getId());
-    } else if (compartmentNonEmpty) {
-      chargeFromBiGG = bigg.getChargeByCompartment(biggId.getAbbreviation(), biggId.getCompartmentCode());
-    }
-    if (species.isSetCharge()) {
-      chargeFromBiGG
-              .filter(charge -> charge != species.getCharge())
-              .ifPresent(charge ->
-                      logger.debug(format(MESSAGES.getString("CHARGE_CONTRADICTION"),
-                              charge, species.getCharge(), species.getId())));
-      species.unsetCharge();
-    }
-    chargeFromBiGG.filter(charge -> charge != 0).ifPresent(fbcSpecPlug::setCharge);
-  }
-
 
 }

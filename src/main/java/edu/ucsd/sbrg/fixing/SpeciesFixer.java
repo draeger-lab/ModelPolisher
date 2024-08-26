@@ -3,6 +3,7 @@ package edu.ucsd.sbrg.fixing;
 import edu.ucsd.sbrg.reporting.ProgressObserver;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.Species;
+import org.sbml.jsbml.util.ValuePair;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class SpeciesFixer extends AbstractFixer implements IFixSBases<Species> {
             species.setHasOnlySubstanceUnits(true);
         }
 
-        if (!species.isSetConstant()) {
+        if (!species.isSetConstant() && species.getLevel() >= 3) {
             species.setConstant(false);
         }
 
