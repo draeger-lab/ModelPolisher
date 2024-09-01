@@ -99,7 +99,9 @@ java -jar "<path>/ModelPolisher/target/ModelPolisher-2.1.jar" --config-file conf
 Note: ModelPolisher requires Java `version >= 17`.
 
 # Using ModelPolisher as a Java library
-ModelPolisher and all its dependencies are hosted on [Maven Central](). You can see our [GitHub Pages](http://draeger-lab.github.io/ModelPolisher/) for its Javadocs.
+ModelPolisher and some of its dependencies are currently hosted in a [Maven repository](https://biodata.informatik.uni-halle.de/maven/#/releases/edu/ucsd/sbrg/ModelPolisher) by the BioDatA working group of the University of Halle. We intend to move this to Maven Central in due time.
+
+You can see our [GitHub Pages](http://draeger-lab.github.io/ModelPolisher/) for its Javadocs.
 
 # How to cite ModelPolisher
 The online version of ModelPolisher is described in this article: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0149263
