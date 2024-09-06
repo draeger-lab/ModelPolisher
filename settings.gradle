@@ -1,0 +1,18 @@
+rootProject.name = 'ModelPolisher'
+
+include('app')
+include('lib')
+
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        // snapshot versions of artifacts (i.e. dependency JARs)
+        // Sonatype is the company behind the Maven Central repository
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        maven {
+            name "biodata-reposilite"
+            url "https://biodata.informatik.uni-halle.de/maven/releases"
+        }
+    }
+}

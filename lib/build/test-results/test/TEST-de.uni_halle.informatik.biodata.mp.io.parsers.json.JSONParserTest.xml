@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.uni_halle.informatik.biodata.mp.io.parsers.json.JSONParserTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:42" hostname="rick" time="0.434">
+  <properties/>
+  <testcase name="parseSpeciesTest()" classname="de.uni_halle.informatik.biodata.mp.io.parsers.json.JSONParserTest" time="0.008"/>
+  <testcase name="parseReactionTest()" classname="de.uni_halle.informatik.biodata.mp.io.parsers.json.JSONParserTest" time="0.014"/>
+  <testcase name="iJB785isParsedWithoutError()" classname="de.uni_halle.informatik.biodata.mp.io.parsers.json.JSONParserTest" time="0.408"/>
+  <testcase name="parseCompartmentsTest()" classname="de.uni_halle.informatik.biodata.mp.io.parsers.json.JSONParserTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

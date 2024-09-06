@@ -61,14 +61,14 @@ ModelPolisher can also be run locally.
 If you want to process a large number of models, or you don't feel comfortable using the Python API client package, this is the recommendend usage.
 
 ### Parameters
-Parameters can be passed via a [json file](examples/config.json) or as command line arguments.
+Parameters can be passed via a [json file](app/examples/config.json) or as command line arguments.
 
 See [the Wiki](https://github.com/draeger-lab/ModelPolisher/wiki/Parameters) for more information.
 
 ### Using Docker
 ModelPolisher is provided as a Docker image.
 
-This repository contains a [`docker-compose.yml`](./docker-compose.yml) which also sets up BiGG DB and AnnotateDB as Docker containers, to support the [annotation functionality](https://github.com/draeger-lab/ModelPolisher/wiki/Annotation).
+This repository contains a [`docker-compose.yml`](app/docker-compose.yml) which also sets up BiGG DB and AnnotateDB as Docker containers, to support the [annotation functionality](https://github.com/draeger-lab/ModelPolisher/wiki/Annotation).
 
 For a single model file, you can use
 ``` shell

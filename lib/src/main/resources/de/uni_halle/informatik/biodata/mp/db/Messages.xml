@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="BIGGID_CONVERSION_FAIL">Cannot convert to BiGGId, setting as abbreviation: {0}</entry>
+    <entry key="CHARGE_NOT_UNIQUE_COMPARTMENT">Could not retrieve unique charge for component {0} and compartment {1}</entry>
+    <entry key="CHARGE_NOT_UNIQUE_MODEL">Could not retrieve unique charge for component {0} and model {1}</entry>
+    <entry key="COLLECTION_NULL_GENE">No prefix found for gene resource URI: {0}</entry>
+    <entry key="FORMULA_COMPARTMENT_AMBIGUOUS">Could not retrieve unique chemical formula for component {0} and compartment {1}</entry>
+    <entry key="FORMULA_MODEL_AMBIGUOUS">Could not retrieve unique chemical formula for component {0} and model {1}</entry>
+    <entry key="IDENTIFIER_NULL_GENE">Identifier was null for collection {0} and this gene resource URI </entry>
+    <entry key="QUERY_MULTIPLE_RESULTS">Query returned multiple results for parameter {0}
+        Query: {1}</entry>
+    <entry key="QUERY_TAXON_MULTIPLE_RESULTS">Taxon id query returned multiple results for abbreviation: {0}</entry>
+
+
+</properties>

@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <title>${title}</title>
+  </head>
+  
+  <!-- NOTES:                                                           -->
+  <!-- * Do not remove the XML namespace declaration from the BODY tag! -->
+  <!-- * The content here must be strict XHTML 1.0!                     -->
+  <!-- * The SBML file can only contain what is in the BODY tag, every- -->
+  <!--   thing else will be deleted. We can therefore not define fancy  -->
+  <!--   styles in the header                                           -->
+  
+  <body xmlns="http://www.w3.org/1999/xhtml" style="margin:0 auto; width: 970px; font-size: 14px; height: 100%; color: #444444; font-family:Helvetica, sans-serif;">
+        <h2>Description</h2>
+    
+        <div class="dc:description">
+          <p>
+            This is a metabolism model of ${organism} in
+            <a href="http://sbml.org" target="_blank" title="Access the definition of the SBML file format.">SBML</a>&#160;format.
+          </p>
+        </div>
+    
+        <div class="dc:provenance">
+          The content of this model has been carefully created in a manual research
+          effort.
+          This file has been exported from the software
+          <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about COBRApy." target="_blank">COBRApy</a>&#160;and further processed with the
+          <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about JSBML." target="_blank">JSBML</a>-based <a href="http://github.com/SBRG/ModelPolisher/" target="_blank" title="Access ModelPolisher on Github">ModelPolisher</a>&#160;application.
+        </div>
+    
+        <div class="dc:publisher">
+          This file has been produced by the 
+          <a href="http://systemsbiology.ucsd.edu" title="Website of the Systems Biology Research Group" target="_blank">Systems Biology Research Group</a>&#160;using
+          <a href="http://bigg.ucsd.edu" title="Access BiGG Models knowledge-base." target="_blank">BiGG Models knowledge-base</a>&#160;version of ${bigg.timestamp},
+          where it is currently hosted and identified by: 
+          <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG Models knowledge-base." target="_blank">${bigg_id}</a>.
+        </div>
+
+    <h2>Terms of use</h2>
+        <div class="dc:rightsHolder">
+          Copyright &#169; ${year} The Regents of the University of California.
+        </div>
+        <div class="dc:license">
+          <p>
+            Redistribution and use of any part of this model from BiGG Models knowledge-base,
+            with or without modification, are permitted provided that the
+            following conditions are met:
+            <ol>
+              <li>Redistributions of this SBML file must retain the above copyright
+                  notice, this list of conditions and the following disclaimer.</li>
+              <li>Redistributions in a different form must reproduce the above
+                  copyright notice, this list of conditions and the following
+                  disclaimer in the documentation and/or other materials
+                  provided with the distribution.</li>
+            </ol>
+            This model is distributed in the hope that it will be useful, but
+            WITHOUT ANY WARRANTY; without even the implied warranty of
+            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+          </p><p>
+            For specific licensing terms about this particular model and regulations of
+            commercial use, see <a href="http://identifiers.org/bigg.model/${bigg_id}" title="Access to this model via BiGG Models knowledge-base." target="_blank">this model in BiGG Models knowledge-base</a>.
+          </p>
+        </div>
+          
+        <h2>References</h2>
+
+        When using content from BiGG Models knowledge-base in your research works, please cite
+        <dl>
+          <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA,
+              Ebrahim A, Palsson BO, and Lewis NE. (2015).
+              <dd>
+                BiGG Models: A platform for integrating, standardizing, and
+                sharing genome-scale models. <i>Nucl Acids Res</i>.
+                 <a href="https://dx.doi.org/10.1093/nar/gkv1049" target="_blank"
+    title="Access the publication about BiGG Models knowledge-base">doi:10.1093/nar/gkv1049</a>
+              </dd>
+          </dt>
+          <!--
+          <dt>Schellenberger, J., Park, J. O., Conrad, T. C., and Palsson, B. &#216;.
+            (2010).
+            <dd><a href="http://dx.doi.org/10.1186/1471-2105-11-213" target="_blank" title="Access publication about: BiGG Models knowledge-base">
+            BiGG: a Biochemical Genetic and Genomic knowledge-base of large scale
+            metabolic reconstructions</a>, <i>BMC Bioinformatics</i>, 11:213.</dd>
+          </dt>
+          <dt>Ebrahim A., Lerman J. A., Palsson B. &#216;., and Hyduke D. R. (2013).<dd>
+            <a href="http://dx.doi.org/10.1186/1752-0509-7-74" title="Access publication about: COBRApy" target="_blank">COBRApy: COnstraints-Based Reconstruction and Analysis for Python</a>,
+            <i>BMC Systems Biology</i>. 2013 Aug 8;7:74</dd></dt>
+          <dt>Rodriguez N., Thomas A., Watanabe L., Vazirabad I.Y., Kofia V., G&#243;mez HF,
+            Mittag F., Matthes J., Rodolph J., Wrzodek F., Netz E., Diamantikos A., Eichner J.,
+            Keller R., Wrzodek C., Fr&#246;hlich S., Lewis N.E., Myers C.J., Le Nov&#232;re N.,
+            Palsson B.&#216;., Hucka M., and Dr&#228;ger A. (2015).<dd>
+            <a href="http://dx.doi.org/10.1093/bioinformatics/btv341" title="Access publication about: JSBML" target="_blank">JSBML 1.0: providing a smorgasbord of options to encode systems biology models</a>,
+            <i>Bioinformatics</i>. 2015 May 29.</dd>
+          </dt>
+          -->
+        </dl>
+        
+        ${species_table}
+  </body>
+  
+</html>

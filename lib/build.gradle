@@ -1,0 +1,173 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
+plugins {
+    id "java"
+    id "maven-publish"
+}
+
+group = "de.uni-halle.informatik.biodata"
+version = "2.1"
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
+    }
+    test {
+        java {
+            srcDirs = ["src/test/java"]
+        }
+        resources {
+            srcDirs = ["src/test/resources"]
+        }
+    }
+}
+
+dependencies {
+    implementation(libs.sysbio)
+    implementation(libs.jsbml) {
+        exclude group: "org.apache.logging.log4j", module: "log4j-core"
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+        exclude group: "org.apache.commons", module: "logging"
+    }
+    implementation(libs.biojavaOntology) {
+        exclude group: "org.apache.logging.log4j", module: "log4j-core"
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+    }
+    implementation(libs.combineArchive)
+    implementation(libs.matlab)
+
+    // JDBC connection pool
+    implementation(libs.hikariCP)
+    // JSON processor
+    implementation(libs.jacksonCore)
+    // data binding for Jackson
+    implementation(libs.jacksonDatabinding)
+    implementation(libs.commonsLang)
+    // Java port of HTML Tidy, for cleaning up malformed HTML
+    implementation(libs.jtidy)
+    // official JDBC driver for PostgreSQL
+    implementation(libs.postgres)
+
+    testImplementation(libs.logback)
+    // Test implementation dependencies
+    // API for writing tests with JUnit 5
+    testImplementation(libs.jupiter)
+    // runtime engine for executing tests with JUnit 5
+    testRuntimeOnly(libs.jupiterEngine)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+
+    // for integration testing with Docker containers
+    testImplementation(libs.testContainers)
+    // integration of Testcontainers with JUnit Jupiter
+    testImplementation(libs.testContainersJupiter)
+}
+
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-Xlint:deprecation'
+}
+
+tasks.withType(Jar).configureEach {
+    dependsOn test
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    destinationDirectory = file("$rootDir/target")
+    manifest {
+        attributes(
+                "Version": project.version,
+                "Implementation-Title": "ModelPolisher",
+                "Implementation-Version": project.version,
+                "Specification-Vendor": "Martin-Luther-Universität Halle-Wittenberg, BioDatA Arbeitsgruppe",
+                "Specification-Title": "ModelPolisher",
+                "Implementation-Vendor-Id": "de.uni-halle.informatik.biodata",
+                "Implementation-Vendor": "Martin-Luther-Universität Halle-Wittenberg, BioDatA Arbeitsgruppe"
+        )
+    }
+
+    into("META-INF/maven/${project.group}/${rootProject.name}") {
+        from { generatePomFileForModelPolisherLibraryPublication }
+        rename { it.replace('pom-default.xml', 'pom.xml') }
+    }
+
+    archiveFileName = "${rootProject.name}-${project.version}.jar"
+
+    from sourceSets.main.output
+}
+
+
+publishing {
+    publications {
+        modelPolisherLibrary(MavenPublication) {
+            from components.java
+
+            artifactId = 'ModelPolisher'
+        }
+    }
+    // https://reposilite.com/guide/gradle
+    repositories {
+        maven {
+            name = "reposilite"
+            url = "https://biodata.informatik.uni-halle.de/maven/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    environment "TESTCONTAINERS_RYUK_DISABLED", "true"
+    testLogging {
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+        exceptionFormat TestExceptionFormat.FULL
+        showCauses true
+        showExceptions true
+        showStackTraces true
+    }
+}
+
+tasks.javadoc {
+    classpath = sourceSets.main.runtimeClasspath
+    source = sourceSets.main.allJava
+    options.addBooleanOption('Xdoclint:none', true)
+    file(new File(rootProject.projectDir.toString() + "/docs")).mkdirs()
+    destinationDir = new File(rootProject.projectDir.toString() + "/docs")
+}
+
+// get latest version of IdentifiersOrg registry
+tasks.register('downloadIdentifiersOrg') {
+    doLast {
+        def registryUrl = 'https://registry.api.identifiers.org/resolutionApi/getResolverDataset'
+        def parentDir = file('src/main/resources/de/uni_halle/informatik/biodata/mp/resolver/identifiersorg')
+        def registryFile = file("${parentDir}/IdentifiersOrg-Registry.json")
+
+        if (!parentDir.exists()) {
+            parentDir.mkdirs()
+        }
+
+        def registry = new URL(registryUrl).text
+        def jsonParser = new JsonSlurper()
+        def parsedJson = jsonParser.parseText(registry)
+        def prettyJson = JsonOutput.prettyPrint(JsonOutput.toJson(parsedJson))
+        registryFile.text = prettyJson
+    }
+}
+
+// ensure downloadIdentifiersOrg task is executed before processResources task
+// processResources is inbuilt in the Java plugin and
+// copies resources from src/main/resources to build/resources/main
+processResources.dependsOn(downloadIdentifiersOrg)
+
+clean.doFirst {
+    file(".gradle").deleteDir()
+    file("target").deleteDir()
+}

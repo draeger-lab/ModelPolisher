@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGModelAnnotatorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:29" hostname="rick" time="0.033">
+  <properties/>
+  <testcase name="basicModelAnnotation()" classname="de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGModelAnnotatorTest" time="0.033"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Version: 2.1
+Implementation-Title: ModelPolisher
+Implementation-Version: 2.1
+Specification-Vendor: Martin-Luther-Universität Halle-Wittenberg, BioDa
+ tA Arbeitsgruppe
+Specification-Title: ModelPolisher
+Implementation-Vendor-Id: de.uni-halle.informatik.biodata
+Implementation-Vendor: Martin-Luther-Universität Halle-Wittenberg, BioD
+ atA Arbeitsgruppe
+

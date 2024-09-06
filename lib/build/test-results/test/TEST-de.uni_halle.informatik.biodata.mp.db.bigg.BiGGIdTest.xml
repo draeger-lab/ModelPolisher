@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:30" hostname="rick" time="0.884">
+  <properties/>
+  <testcase name="testToBiGGIdMetabolites()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.003"/>
+  <testcase name="testToBiGGIdGeneProducts()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.002"/>
+  <testcase name="reactionIdsValid()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.26"/>
+  <testcase name="testToBiGGIdReactions()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.0"/>
+  <testcase name="testIsSetMetaboliteCompartment()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.0"/>
+  <testcase name="testHashCode()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.001"/>
+  <testcase name="metaboliteIdsValid()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.099"/>
+  <testcase name="geneIdsValid()" classname="de.uni_halle.informatik.biodata.mp.db.bigg.BiGGIdTest" time="0.515"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

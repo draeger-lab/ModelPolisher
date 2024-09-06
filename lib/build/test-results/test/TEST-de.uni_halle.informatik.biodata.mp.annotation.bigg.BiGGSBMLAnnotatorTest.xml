@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGSBMLAnnotatorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:30" hostname="rick" time="0.074">
+  <properties/>
+  <testcase name="annotatePublication()" classname="de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGSBMLAnnotatorTest" time="0.074"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

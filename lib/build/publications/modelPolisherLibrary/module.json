@@ -1,0 +1,163 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "de.uni-halle.informatik.biodata",
+    "module": "ModelPolisher",
+    "version": "2.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.10"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "ModelPolisher-2.1.jar",
+          "url": "ModelPolisher-2.1.jar",
+          "size": 836549,
+          "sha512": "66dd93e0ef1a6cab8a4387476adf391e0ed0a4fb14c24c253e56d37ede891101ee40862aa6682e385e4890c72e56cf1c31f9da7cbebf3429f1050d6998952d7d",
+          "sha256": "965b9bc84fc80cd79b7a5f2b4ee50656459a39a413414f65fc47f14dacf2ac74",
+          "sha1": "113edd2990c79649404dd3a24510eea0848c27e6",
+          "md5": "e76e4ec4f3a33999b034166ddf44719e"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "de.zbit.SysBio",
+          "module": "SysBio",
+          "version": {
+            "requires": "1390"
+          }
+        },
+        {
+          "group": "org.sbml.jsbml",
+          "module": "jsbml",
+          "version": {
+            "requires": "1.6.1"
+          },
+          "excludes": [
+            {
+              "group": "org.apache.logging.log4j",
+              "module": "log4j-slf4j-impl"
+            },
+            {
+              "group": "org.apache.logging.log4j",
+              "module": "log4j-core"
+            },
+            {
+              "group": "org.apache.commons",
+              "module": "logging"
+            }
+          ]
+        },
+        {
+          "group": "org.biojava",
+          "module": "biojava-ontology",
+          "version": {
+            "requires": "7.1.1"
+          },
+          "excludes": [
+            {
+              "group": "org.apache.logging.log4j",
+              "module": "log4j-slf4j-impl"
+            },
+            {
+              "group": "org.apache.logging.log4j",
+              "module": "log4j-core"
+            }
+          ]
+        },
+        {
+          "group": "de.uni-rostock.sbi",
+          "module": "CombineArchive",
+          "version": {
+            "requires": "1.4.1"
+          }
+        },
+        {
+          "group": "us.hebi.matlab.mat",
+          "module": "mfl-core",
+          "version": {
+            "requires": "0.5.15"
+          }
+        },
+        {
+          "group": "com.zaxxer",
+          "module": "HikariCP",
+          "version": {
+            "requires": "5.1.0"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-core",
+          "version": {
+            "requires": "2.17.1"
+          }
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "2.17.1"
+          }
+        },
+        {
+          "group": "org.apache.commons",
+          "module": "commons-lang3",
+          "version": {
+            "requires": "3.15.0"
+          }
+        },
+        {
+          "group": "net.sf.jtidy",
+          "module": "jtidy",
+          "version": {
+            "requires": "r938"
+          }
+        },
+        {
+          "group": "org.postgresql",
+          "module": "postgresql",
+          "version": {
+            "requires": "42.7.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "ModelPolisher-2.1.jar",
+          "url": "ModelPolisher-2.1.jar",
+          "size": 836549,
+          "sha512": "66dd93e0ef1a6cab8a4387476adf391e0ed0a4fb14c24c253e56d37ede891101ee40862aa6682e385e4890c72e56cf1c31f9da7cbebf3429f1050d6998952d7d",
+          "sha256": "965b9bc84fc80cd79b7a5f2b4ee50656459a39a413414f65fc47f14dacf2ac74",
+          "sha1": "113edd2990c79649404dd3a24510eea0848c27e6",
+          "md5": "e76e4ec4f3a33999b034166ddf44719e"
+        }
+      ]
+    }
+  ]
+}

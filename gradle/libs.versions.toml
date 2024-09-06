@@ -1,0 +1,35 @@
+[versions]
+jackson = "2.17.1"
+slf4j = "2.0.16"
+jupiter = "5.10.2"
+testContainers = "1.20.1"
+
+[libraries]
+sysbio = { module = "de.zbit.SysBio:SysBio", version = "1390" }
+jsbml = { module = "org.sbml.jsbml:jsbml", version = "1.6.1"}
+biojavaOntology = { module = "org.biojava:biojava-ontology", version = "7.1.1"}
+combineArchive = { module = "de.uni-rostock.sbi:CombineArchive", version = "1.4.1"}
+jtidy = { module = "net.sf.jtidy:jtidy", version = "r938" }
+matlab = { module = 'us.hebi.matlab.mat:mfl-core', version = '0.5.15' }
+
+postgres = { module = "org.postgresql:postgresql", version = "42.7.3" }
+hikariCP = { module = "com.zaxxer:HikariCP", version = "5.1.0"}
+jacksonCore = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson"}
+jacksonDatabinding = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+commonsIO = { module = 'commons-io:commons-io', version = '2.16.1' }
+commonsLang = { module = 'org.apache.commons:commons-lang3', version = '3.15.0' }
+
+slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+julToSlf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
+jclOverSlf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
+log4jOverSlf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
+osgiOverSlf4j = { module = "org.slf4j:osgi-over-slf4j", version.ref = "slf4j" }
+logback = { module = 'ch.qos.logback:logback-classic', version = '1.5.7' }
+
+jupiter = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
+jupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jupiter"}
+junitPlatformLauncher = { module = 'org.junit.platform:junit-platform-launcher', version = '1.10.2' }
+
+testContainers = { module = "org.testcontainers:testcontainers", version.ref = "testContainers" }
+testContainersJupiter = {module = "org.testcontainers:junit-jupiter", version.ref = "testContainers" }
+

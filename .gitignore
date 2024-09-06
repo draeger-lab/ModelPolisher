@@ -9,8 +9,6 @@
 /.vscode/
 /bin
 /build/
-/gradle
-/lib
 /minimalSysBio.xml
 /model_polisher.log
 /out
