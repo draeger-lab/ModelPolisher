@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.uni_halle.informatik.biodata.mp.io.parsers.cobra.MatlabParserTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:31" hostname="rick" time="10.595">
-  <properties/>
-  <testcase name="parsingDoesNotThrowErrors()" classname="de.uni_halle.informatik.biodata.mp.io.parsers.cobra.MatlabParserTest" time="10.595"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

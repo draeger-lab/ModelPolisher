@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.uni_halle.informatik.biodata.mp.fixing.fbc.ListOfObjectivesFixerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:31" hostname="rick" time="0.01">
-  <properties/>
-  <testcase name="argumentsAreUsedToInferFluxObjectives()" classname="de.uni_halle.informatik.biodata.mp.fixing.fbc.ListOfObjectivesFixerTest" time="0.006"/>
-  <testcase name="biomassIsUsedToInferFluxObjectives()" classname="de.uni_halle.informatik.biodata.mp.fixing.fbc.ListOfObjectivesFixerTest" time="0.003"/>
-  <testcase name="emptyObjectivesAreRemoved()" classname="de.uni_halle.informatik.biodata.mp.fixing.fbc.ListOfObjectivesFixerTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

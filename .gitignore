@@ -20,3 +20,5 @@ ModelPolisher.iml
 jsbml.log
 src/main/resources/edu/ucsd/sbrg/identifiersOrgRegistry/IdentifiersOrg-Registry.json
 /input/
+/app/build/
+/lib/build/

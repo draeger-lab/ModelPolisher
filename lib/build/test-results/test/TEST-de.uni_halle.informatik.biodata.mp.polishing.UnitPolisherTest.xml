@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="de.uni_halle.informatik.biodata.mp.polishing.UnitPolisherTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-09-05T17:21:42" hostname="rick" time="0.013">
-  <properties/>
-  <testcase name="modelWithNoUnitDefinitions()" classname="de.uni_halle.informatik.biodata.mp.polishing.UnitPolisherTest" time="0.006"/>
-  <testcase name="existingSubstanceAndTimeAreUnchanged()" classname="de.uni_halle.informatik.biodata.mp.polishing.UnitPolisherTest" time="0.003"/>
-  <testcase name="existingGrowthDefinitionIsPreservedButSuperseded()" classname="de.uni_halle.informatik.biodata.mp.polishing.UnitPolisherTest" time="0.002"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
