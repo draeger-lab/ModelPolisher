@@ -27,7 +27,6 @@ import de.uni_halle.informatik.biodata.mp.db.adb.AnnotateDB;
 import de.uni_halle.informatik.biodata.mp.db.bigg.BiGGDB;
 import de.uni_halle.informatik.biodata.mp.parameters.GeneralOptions;
 import de.uni_halle.informatik.biodata.mp.parameters.ParametersException;
-import de.uni_halle.informatik.biodata.mp.parameters.ParametersParser;
 import de.uni_halle.informatik.biodata.mp.polishing.PolishingOptions;
 import de.uni_halle.informatik.biodata.mp.polishing.SBMLPolisher;
 import de.uni_halle.informatik.biodata.mp.reporting.PolisherProgressBar;

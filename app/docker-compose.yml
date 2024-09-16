@@ -4,13 +4,13 @@ services:
     image: schmirgel/bigg_db:1.6
     hostname: bigg
     ports:
-      - 127.0.0.1:1001:5432
+      - "127.0.0.1:1001:5432"
 
   adb:
     image: schmirgel/annotatedb:0.1.1
     hostname: adb
     ports:
-      - 127.0.0.1:1002:5432
+      - "127.0.0.1:1002:5432"
 
 
   validator:
@@ -19,7 +19,7 @@ services:
     image: schmirgel/sbmlvalidator:1.0.0
     hostname: sbmlvalidator
     ports:
-      - 127.0.0.1:8000:8000
+      - "127.0.0.1:8000:8000"
     configs:
       - source: validator-server-config
         target: /app/gunicorn.conf.py
