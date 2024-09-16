@@ -93,7 +93,7 @@ public class AnnotateDB {
     // SQL query to fetch annotations
     String query = "SELECT m." + TARGET_TERM + ", ac." + URLPATTERN + " FROM " + MAPPING_VIEW + " m, " + ADB_COLLECTION
       + " ac WHERE m." + SOURCE_NAMESPACE + " = ? AND m." + SOURCE_TERM + " = ? AND ac." + NAMESPACE + " = m."
-      + TARGET_NAMESPACE;
+      + TARGET_NAMESPACE + " AND ac.urlpattern != '{$id}'";
     try (Connection connection = connectionPool.getConnection();
          PreparedStatement pStatement = connection.prepareStatement(query)) {
       pStatement.setString(1, type);

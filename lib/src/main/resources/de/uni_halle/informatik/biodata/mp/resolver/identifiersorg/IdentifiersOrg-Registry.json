@@ -452,6 +452,62 @@
                 "successor": null
             },
             {
+                "id": 4103,
+                "prefix": "biodeep",
+                "mirId": "MIR:00001080",
+                "name": "BioDeep Database",
+                "pattern": "^BioDeep_\\d{11}$",
+                "description": "The BioDeep database is a comprehensive database of metabolite information in living organisms: by aggregating metabolite information from multiple public databases and large-scale natural language text mining work, we have built a large scale knowledge network for biological knowledge interpretation. By using the BioDeep database, it is possible to query such large scale metabolic knowledge network.",
+                "created": "2024-09-10T12:45:00.382+00:00",
+                "modified": "2024-09-10T12:45:00.382+00:00",
+                "resources": [
+                    {
+                        "id": 4054,
+                        "mirId": "MIR:00001079",
+                        "urlPattern": "https://query.biodeep.cn/metabolite/{$id}",
+                        "name": "PANOMIX",
+                        "description": "PANOMIX Biomedical Tech Co., LTD (abbreviation: PANOMIX) was established in Suzhou Industrial Park in 2013. The company has more than 80 world-leading mass spectrometry equipment, can provide more than 100 detection and analysis services and more than 20 clinical detection products. The business segment covers scientific research services, industrial services, new drug services, clinical detection services, clinical products and health management, with a layout of universities, research institutes, hospitals and enterprises in 34 provinces, municipalities and autonomous regions, serving more than 1,000 customers. PANOMIX focuses on the research and clinical application development of cutting-edge metabolomics technology, and is committed to becoming a complete solution provider of metabolomics precision medicine and precision nutrition, helping you support a healthy metabolism.",
+                        "official": true,
+                        "providerCode": "biodeep",
+                        "sampleId": "BioDeep_00000000001",
+                        "resourceHomeUrl": "https://en.panomix.com/",
+                        "institution": {
+                            "id": 4008,
+                            "name": "PANOMIX",
+                            "homeUrl": "https://en.panomix.com/",
+                            "description": "PANOMIX Biomedical Tech Co., LTD (abbreviation: PANOMIX) was established in Suzhou Industrial Park in 2013. The company has more than 80 world-leading mass spectrometry equipment, can provide more than 100 detection and analysis services and more than 20 clinical detection products. The business segment covers scientific research services, industrial services, new drug services, clinical detection services, clinical products and health management, with a layout of universities, research institutes, hospitals and enterprises in 34 provinces, municipalities and autonomous regions, serving more than 1,000 customers. PANOMIX focuses on the research and clinical application development of cutting-edge metabolomics technology, and is committed to becoming a complete solution provider of metabolomics precision medicine and precision nutrition, helping you support a healthy metabolism.",
+                            "rorId": null,
+                            "location": {
+                                "countryCode": "CN",
+                                "countryName": "China"
+                            }
+                        },
+                        "location": {
+                            "countryCode": "CN",
+                            "countryName": "China"
+                        },
+                        "deprecated": false,
+                        "deprecationDate": null,
+                        "deprecationOfflineDate": null,
+                        "renderDeprecatedLanding": false,
+                        "deprecationStatement": null,
+                        "protectedUrls": false,
+                        "renderProtectedLanding": false,
+                        "authHelpUrl": null,
+                        "authHelpDescription": null
+                    }
+                ],
+                "sampleId": "BioDeep_00000000001",
+                "namespaceEmbeddedInLui": false,
+                "deprecated": false,
+                "deprecationDate": null,
+                "deprecationOfflineDate": null,
+                "renderDeprecatedLanding": false,
+                "deprecationStatement": null,
+                "infoOnPostmortemAccess": null,
+                "successor": null
+            },
+            {
                 "id": 169,
                 "prefix": "signaling-gateway",
                 "mirId": "MIR:00000045",
@@ -723,6 +779,62 @@
                 ],
                 "sampleId": "0000027",
                 "namespaceEmbeddedInLui": true,
+                "deprecated": false,
+                "deprecationDate": null,
+                "deprecationOfflineDate": null,
+                "renderDeprecatedLanding": false,
+                "deprecationStatement": null,
+                "infoOnPostmortemAccess": null,
+                "successor": null
+            },
+            {
+                "id": 4104,
+                "prefix": "ice.chem",
+                "mirId": "MIR:00001082",
+                "name": "Integrated Chemical Environment - Chemical data",
+                "pattern": "\\d{2,7}-\\d{2}-\\d|DTXSID\\d{7,9}|[A-Z]{14}-[A-Z]{8}[SN][A-Z]-[A-Z]$",
+                "description": "The Integrated Chemical Environment (ICE) provides high-quality curated data and appropriate tools to support development and evaluation of new, revised, and alternative methods. ICE provides free online access to curated in vivo and in vitro test data, in silico toxicity predictions and chemical property data, reference chemical lists, and computational tools for chemical characterization and predicting toxicity.\nICE supports the following: (i) Data integration: brings together available data, including data on formulations; (ii) Results exploration: enables dynamic, graphical exploration with publication-quality graphics; (iii) Data analysis: allows characterization of data using online workflows, and (iv) FAIR data access: data are findable, accessible, interoperable, and reusable.",
+                "created": "2024-09-10T12:53:16.243+00:00",
+                "modified": "2024-09-10T12:53:16.243+00:00",
+                "resources": [
+                    {
+                        "id": 4055,
+                        "mirId": "MIR:00001081",
+                        "urlPattern": "https://ice.ntp.niehs.nih.gov/api/v1/search?chemid={$id}",
+                        "name": "National Institute of Environmental Health Sciences",
+                        "description": "At EMBL-EBI, we make the world\u2019s public biological data freely available to the scientific community via a range of services and tools, perform basic research and provide professional training in bioinformatics. \nWe are part of the European Molecular Biology Laboratory (EMBL), an international, innovative and interdisciplinary research organisation funded by 26 member states and two associate member states.",
+                        "official": true,
+                        "providerCode": "niehs",
+                        "sampleId": "DTXSID7032004",
+                        "resourceHomeUrl": "https://ice.ntp.niehs.nih.gov",
+                        "institution": {
+                            "id": 4009,
+                            "name": "National Institute of Environmental Health Sciences",
+                            "homeUrl": "https://www.niehs.nih.gov/",
+                            "description": "At EMBL-EBI, we make the world\u2019s public biological data freely available to the scientific community via a range of services and tools, perform basic research and provide professional training in bioinformatics. \nWe are part of the European Molecular Biology Laboratory (EMBL), an international, innovative and interdisciplinary research organisation funded by 26 member states and two associate member states.",
+                            "rorId": null,
+                            "location": {
+                                "countryCode": "US",
+                                "countryName": "United States"
+                            }
+                        },
+                        "location": {
+                            "countryCode": "US",
+                            "countryName": "United States"
+                        },
+                        "deprecated": false,
+                        "deprecationDate": null,
+                        "deprecationOfflineDate": null,
+                        "renderDeprecatedLanding": false,
+                        "deprecationStatement": null,
+                        "protectedUrls": false,
+                        "renderProtectedLanding": false,
+                        "authHelpUrl": null,
+                        "authHelpDescription": null
+                    }
+                ],
+                "sampleId": "DTXSID7032004",
+                "namespaceEmbeddedInLui": false,
                 "deprecated": false,
                 "deprecationDate": null,
                 "deprecationOfflineDate": null,
@@ -52780,7 +52892,7 @@
                             "name": "National Human Genome Research Institute",
                             "homeUrl": "https://www.genome.gov/",
                             "description": "NHGRI offers access to reliable and timely information about genomics research and the human genome. Our resources and partnerships help spark scientific curiosity, improve genomic literacy, and foster engagement among learners in different communities.",
-                            "rorId": null,
+                            "rorId": "https://ror.org/00baak391",
                             "location": {
                                 "countryCode": "US",
                                 "countryName": "United States"
