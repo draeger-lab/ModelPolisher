@@ -220,4 +220,32 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
         assertEquals(29, s2.getCVTerm(0).getNumResources());
     }
 
+    @Test
+    public void duplicatePatterns() throws SQLException {
+        var m = new Model(3, 2);
+        var s = m.createSpecies("big_chungus");
+
+        var cvTerm = new CVTerm();
+        cvTerm.setQualifier(CVTerm.Qualifier.BQB_IS);
+        cvTerm.addResource("https://identifiers.org/bigg.metabolite:10fthf"         );
+        s.addCVTerm(cvTerm);
+
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
+
+        assertEquals("big_chungus", s.getId());
+        assertEquals("ATP C10H12N5O13P3", s.getName());
+        assertEquals("SBO:0000240", s.getSBOTermID());
+        assertEquals(1, s.getCVTermCount());
+        assertEquals(30, s.getCVTerm(0).getNumResources());
+        assertCVTermIsPresent(s,
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                "http://identifiers.org/reactome.compound/113592");
+        assertCVTermsArePresent(s,
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                expectedATPAnnotations,
+                "Expected uris are not present.");
+    }
+
 }
