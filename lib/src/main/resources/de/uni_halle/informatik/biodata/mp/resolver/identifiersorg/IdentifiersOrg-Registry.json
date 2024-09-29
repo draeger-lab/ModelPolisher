@@ -1047,6 +1047,62 @@
                 "successor": null
             },
             {
+                "id": 4105,
+                "prefix": "lw",
+                "mirId": "MIR:00001084",
+                "name": "LifeWatch Metadata Catalogue",
+                "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                "description": "The LifeWatch Metadata Catalogues plays a crucial role in managing metadata for digital objects, including Datasets, Services, Workflows and Virtual Research Environments. This catalogue serves as the central repository, ensuring that resources are accessible and reusable by stakeholders.",
+                "created": "2024-09-24T12:09:20.220+00:00",
+                "modified": "2024-09-24T12:09:20.220+00:00",
+                "resources": [
+                    {
+                        "id": 4056,
+                        "mirId": "MIR:00001083",
+                        "urlPattern": "https://metadatacatalogue.lifewatch.eu/srv/eng/catalog.search#/metadata/{$id}",
+                        "name": "LifeWatch ERIC",
+                        "description": "LifeWatch ERIC is a European Research Infrastructure Consortium dedicated to advancing e-Science in biodiversity and ecosystem studies and unites diverse scientific communities and connects distributed observatories and research centres into unified, accessible online platforms. ",
+                        "official": true,
+                        "providerCode": "lw_eric",
+                        "sampleId": "6e3b1371-59d7-481a-9db4-cd0d0de98436",
+                        "resourceHomeUrl": "https://metadatacatalogue.lifewatch.eu/",
+                        "institution": {
+                            "id": 4010,
+                            "name": "LifeWatch ERIC",
+                            "homeUrl": "https://metadatacatalogue.lifewatch.eu/",
+                            "description": "LifeWatch ERIC is a European Research Infrastructure Consortium dedicated to advancing e-Science in biodiversity and ecosystem studies and unites diverse scientific communities and connects distributed observatories and research centres into unified, accessible online platforms. ",
+                            "rorId": null,
+                            "location": {
+                                "countryCode": "ES",
+                                "countryName": "Spain"
+                            }
+                        },
+                        "location": {
+                            "countryCode": "ES",
+                            "countryName": "Spain"
+                        },
+                        "deprecated": false,
+                        "deprecationDate": null,
+                        "deprecationOfflineDate": null,
+                        "renderDeprecatedLanding": false,
+                        "deprecationStatement": null,
+                        "protectedUrls": false,
+                        "renderProtectedLanding": false,
+                        "authHelpUrl": null,
+                        "authHelpDescription": null
+                    }
+                ],
+                "sampleId": "6e3b1371-59d7-481a-9db4-cd0d0de98436",
+                "namespaceEmbeddedInLui": false,
+                "deprecated": false,
+                "deprecationDate": null,
+                "deprecationOfflineDate": null,
+                "renderDeprecatedLanding": false,
+                "deprecationStatement": null,
+                "infoOnPostmortemAccess": null,
+                "successor": null
+            },
+            {
                 "id": 261,
                 "prefix": "macie",
                 "mirId": "MIR:00000077",
