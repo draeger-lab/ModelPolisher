@@ -137,26 +137,8 @@
 
 
         private void setSBOTerm(Reaction reaction) {
-            setSBOTermFromPattern(reaction, BiGGId.createReactionId(reaction.getId()));
+            String abbrev = BiGGId.createReactionId(reaction.getId()).getAbbreviation();
 
-            if (!reaction.isSetSBOTerm()) {
-                if (reaction.getReactantCount() != 0 && reaction.getProductCount() == 0 && !reaction.isReversible()) {
-                    reaction.setSBOTerm(632);
-                }
-                else if (reaction.getReactantCount() == 0 && reaction.getProductCount() != 0 && !reaction.isReversible()) {
-                    reaction.setSBOTerm(628);
-                }
-            }
-        }
-
-        /**
-         * Sets the Systems Biology Ontology (SBO) term for a reaction based on the abbreviation of its BiGG ID.
-         * The method matches the abbreviation against predefined patterns to determine the appropriate SBO term.
-         *
-         * @param id The BiGGId object containing the abbreviation to be checked.
-         */
-        private void setSBOTermFromPattern(Reaction reaction, BiGGId id) {
-            String abbrev = id.getAbbreviation();
             if (ReactionNamePatterns.BIOMASS_CASE_INSENSITIVE.getPattern().matcher(abbrev).matches()) {
                 reaction.setSBOTerm(629); // Set SBO term for biomass production
             } else if (ReactionNamePatterns.DEMAND_REACTION.getPattern().matcher(abbrev).matches()) {
@@ -167,6 +149,16 @@
                 reaction.setSBOTerm(630); // Set SBO term for ATP maintenance
             } else if (ReactionNamePatterns.SINK_REACTION.getPattern().matcher(abbrev).matches()) {
                 reaction.setSBOTerm(632); // Set SBO term for sink reaction
+            }
+
+            if (!reaction.isSetSBOTerm()) {
+                if (reaction.getReactantCount() != 0 && reaction.getProductCount() == 0 && !reaction.isReversible()) {
+                    reaction.setSBOTerm(632);
+                } else if (reaction.getReactantCount() == 0 && reaction.getProductCount() != 0 && !reaction.isReversible()) {
+                    reaction.setSBOTerm(628);
+                } else if (sboParameters.addGenericTerms()) {
+                    reaction.setSBOTerm(375); // generic process
+                }
             }
         }
 

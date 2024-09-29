@@ -177,8 +177,6 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implem
     if (!reaction.isSetSBOTerm()) {
       if (bigg.isPseudoreaction(abbreviation)) {
         reaction.setSBOTerm(631);
-      } else if (sboParameters.addGenericTerms()) {
-        reaction.setSBOTerm(375); // generic process
       }
     }
   }

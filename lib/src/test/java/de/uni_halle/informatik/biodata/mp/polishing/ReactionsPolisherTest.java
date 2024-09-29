@@ -1,19 +1,33 @@
 package de.uni_halle.informatik.biodata.mp.polishing;
 
+import de.uni_halle.informatik.biodata.mp.io.ModelReader;
+import de.uni_halle.informatik.biodata.mp.io.ModelReaderException;
 import de.uni_halle.informatik.biodata.mp.parameters.PolishingParameters;
 import de.uni_halle.informatik.biodata.mp.parameters.SBOParameters;
 import de.uni_halle.informatik.biodata.mp.polishing.ext.fbc.StrictnessPredicate;
 import de.uni_halle.informatik.biodata.mp.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
 import org.sbml.jsbml.Model;
+import org.sbml.jsbml.Reaction;
+import org.sbml.jsbml.SBMLDocument;
+
+import java.io.File;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ReactionsPolisherTest {
 
-    public final SBOParameters sboParameters = new SBOParameters();
+    private final SBOParameters sboParameters = new SBOParameters();
     private final PolishingParameters polishingParameters = new PolishingParameters();
 
+    private SBMLDocument model1507180049 = new ModelReader(sboParameters, new IdentifiersOrg()).read(
+            new File(ReactionsPolisherTest.class.getClassLoader().getResource("de/uni_halle/informatik/biodata/mp/models/MODEL1507180049.xml").getFile()));
+
+    public ReactionsPolisherTest() throws ModelReaderException {
+    }
 
     /**
      * Relevant defaults are set.
@@ -167,6 +181,20 @@ public class ReactionsPolisherTest {
 
         assertEquals(2, r.getListOfReactants().size());
         assertEquals(cytosol, r.getCompartmentInstance());
+    }
+
+    @Test
+    public void sboParametersAreSet() {
+        var model = model1507180049.getModel();
+
+        Function<List<Reaction>, Integer> unsetSBOTermCount = (rs) ->
+            Math.toIntExact(rs.stream().filter(Predicate.not(Reaction::isSetSBOTerm)).count());
+
+        assertEquals(971, unsetSBOTermCount.apply(model.getListOfReactions()));
+
+        new ReactionsPolisher(polishingParameters, sboParameters, new IdentifiersOrg()).polish(model.getListOfReactions());
+
+        assertEquals(0, unsetSBOTermCount.apply(model.getListOfReactions()));
     }
 
 }
