@@ -163,6 +163,11 @@ public class IdentifiersOrg implements Registry {
         return urlMatcher.matches();
     }
 
+    @Override
+    public boolean identifiesBiGG(String prefix) {
+        return prefix.startsWith("bigg.");
+    }
+
     public static IdentifiersOrgURI fixIdentifiersOrgUri(IdentifiersOrgURI uri) {
         if (uri.getPrefix().equalsIgnoreCase("ncbigi")) {
             return new IdentifiersOrgURI("ncbigene", uri.getId());

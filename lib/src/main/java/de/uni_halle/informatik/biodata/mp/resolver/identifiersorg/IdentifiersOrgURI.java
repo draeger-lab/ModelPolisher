@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class IdentifiersOrgURI implements RegistryURI, Comparable<IdentifiersOrgURI> {
 
-    public static final String IDENTIFIERS_ORG_ID_PATTERN = "(https?://)?(www\\.)?identifiers\\.org/(?<prefix>.*?)/(?<id>.*)";
+    public static final String IDENTIFIERS_ORG_ID_PATTERN = "(https?://)?(www\\.)?identifiers\\.org/(?<prefix>.*?)[:/](?<id>.*)";
 
     private String prefix;
     private String id;

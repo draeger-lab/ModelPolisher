@@ -64,10 +64,14 @@ public abstract class AbstractBiGGAnnotator extends AbstractAnnotator {
                 .filter(registry::validRegistryUrlPrefix);
 
         var uris = Stream.concat(identifiersOrgUrisStream, resolvedIdentifiersOrgUrisStream).toList();
-        for (var uri : uris ) {
-            var biggId = getBiggIdFromParts(uri, type);
-            if (biggId.isPresent()) {
-                return biggId;
+        for (var uri : uris) {
+            if (registry.identifiesBiGG(uri.getPrefix())) {
+                return Optional.of(new BiGGId(uri.getId()));
+            } else {
+                var biggId = getBiggIdFromParts(uri, type);
+                if (biggId.isPresent()) {
+                    return biggId;
+                }
             }
         }
         return Optional.empty();

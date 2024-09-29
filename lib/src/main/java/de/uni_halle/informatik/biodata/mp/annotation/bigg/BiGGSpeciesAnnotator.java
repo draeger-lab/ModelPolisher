@@ -86,13 +86,12 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
     if (!isBiGGid) {
       // Collect all resources from CVTerms that qualify as BQB_IS
       // Attempt to retrieve a BiGGId from the collected resources
-      var biggIdFromResources = getBiGGIdFromResources(
-              species.getAnnotation().getListOfCVTerms()
-                      .stream()
-                      .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
-                      .flatMap(term -> term.getResources().stream())
-                      .toList(),
-              TYPE_SPECIES);
+      List<String> resources = species.getAnnotation().getListOfCVTerms()
+              .stream()
+              .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
+              .flatMap(term -> term.getResources().stream())
+              .toList();
+      var biggIdFromResources = getBiGGIdFromResources(resources, TYPE_SPECIES);
       if (biggIdFromResources.isPresent()) {
         return biggIdFromResources.get();
       }
@@ -168,8 +167,9 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
     boolean isBiGGMetabolite = bigg.isMetabolite(biggId.getAbbreviation());
     // using BiGG Database
     if (isBiGGMetabolite) {
-      annotations.add(new IdentifiersOrgURI("bigg.metabolite", biggId).getURI());
-
+      if (cvTerm.getResources().stream().noneMatch(resource -> resource.contains("bigg.metabolite"))) {
+          annotations.add(new IdentifiersOrgURI("bigg.metabolite", biggId).getURI());
+      }
       Set<String> biggAnnotations = bigg.getResources(biggId, biGGAnnotationParameters.includeAnyURI(), false)
               .stream()
               .map(IdentifiersOrgURI::getURI)

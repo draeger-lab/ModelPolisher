@@ -15,4 +15,6 @@ public interface Registry {
     boolean validRegistryUrlPrefix(RegistryURI uri);
 
     boolean isValid(String url);
+
+    boolean identifiesBiGG(String prefix);
 }

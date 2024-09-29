@@ -223,29 +223,59 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
     @Test
     public void duplicatePatterns() throws SQLException {
         var m = new Model(3, 2);
-        var s = m.createSpecies("big_chungus");
+        var s1 = m.createSpecies("big_chungus1");
+        var s2 = m.createSpecies("big_chungus2");
 
-        var cvTerm = new CVTerm();
-        cvTerm.setQualifier(CVTerm.Qualifier.BQB_IS);
-        cvTerm.addResource("https://identifiers.org/bigg.metabolite:10fthf"         );
-        s.addCVTerm(cvTerm);
+        var cvTerm1 = new CVTerm();
+        cvTerm1.setQualifier(CVTerm.Qualifier.BQB_IS);
+        cvTerm1.addResource("https://identifiers.org/bigg.metabolite:10fthf");
+        s1.addCVTerm(cvTerm1);
 
-        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s);
+        var cvTerm2 = new CVTerm();
+        cvTerm2.setQualifier(CVTerm.Qualifier.BQB_IS);
+        cvTerm2.addResource("https://identifiers.org/bigg.metabolite/10fthf");
+        s2.addCVTerm(cvTerm2);
 
-        assertEquals("big_chungus", s.getId());
-        assertEquals("ATP C10H12N5O13P3", s.getName());
-        assertEquals("SBO:0000240", s.getSBOTermID());
-        assertEquals(1, s.getCVTermCount());
-        assertEquals(30, s.getCVTerm(0).getNumResources());
-        assertCVTermIsPresent(s,
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s1);
+        new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, new IdentifiersOrg()).annotate(s2);
+
+        assertEquals("big_chungus1", s1.getId());
+        assertEquals("10-Formyltetrahydrofolate", s1.getName());
+        assertEquals("SBO:0000240", s1.getSBOTermID());
+        assertEquals(1, s1.getCVTermCount());
+        assertEquals(15, s1.getCVTerm(0).getNumResources());
+        assertCVTermIsPresent(s1,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
-                "http://identifiers.org/reactome.compound/113592");
-        assertCVTermsArePresent(s,
+                "https://identifiers.org/bigg.metabolite:10fthf");
+        assertCVTermIsPresent(s1,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
-                expectedATPAnnotations,
-                "Expected uris are not present.");
+                "https://identifiers.org/reactome/R-ALL-419151");
+        assertEquals(1,
+                s1.getCVTerm(0).getResources()
+                        .stream()
+                        .filter(resource -> resource.contains("bigg.metabolite"))
+                        .count());
+
+        assertEquals("big_chungus2", s2.getId());
+        assertEquals("10-Formyltetrahydrofolate", s2.getName());
+        assertEquals("SBO:0000240", s2.getSBOTermID());
+        assertEquals(1, s2.getCVTermCount());
+        assertEquals(15, s2.getCVTerm(0).getNumResources());
+        assertCVTermIsPresent(s2,
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                "https://identifiers.org/bigg.metabolite/10fthf");
+        assertCVTermIsPresent(s2,
+                CVTerm.Type.BIOLOGICAL_QUALIFIER,
+                CVTerm.Qualifier.BQB_IS,
+                "https://identifiers.org/reactome/R-ALL-419151");
+        assertEquals(1,
+                s2.getCVTerm(0).getResources()
+                        .stream()
+                        .filter(resource -> resource.contains("bigg.metabolite"))
+                        .count());
     }
 
 }
