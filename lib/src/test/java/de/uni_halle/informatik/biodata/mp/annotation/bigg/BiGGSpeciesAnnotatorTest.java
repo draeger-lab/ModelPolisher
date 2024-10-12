@@ -1,14 +1,20 @@
 package de.uni_halle.informatik.biodata.mp.annotation.bigg;
 
+import de.uni_halle.informatik.biodata.mp.io.ModelReader;
+import de.uni_halle.informatik.biodata.mp.io.ModelReaderException;
 import de.uni_halle.informatik.biodata.mp.parameters.BiGGAnnotationParameters;
 import de.uni_halle.informatik.biodata.mp.parameters.SBOParameters;
+import de.uni_halle.informatik.biodata.mp.polishing.ReactionsPolisherTest;
 import de.uni_halle.informatik.biodata.mp.resolver.identifiersorg.IdentifiersOrg;
 import org.junit.jupiter.api.Test;
-import org.sbml.jsbml.CVTerm;
-import org.sbml.jsbml.Model;
+import org.sbml.jsbml.*;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
+import org.sbml.jsbml.ext.fbc.FBCReactionPlugin;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.ext.fbc.GeneProductRef;
 
+import javax.xml.stream.XMLStreamException;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Set;
 
@@ -20,6 +26,13 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
     private final BiGGAnnotationParameters biGGAnnotationParameters = new BiGGAnnotationParameters();
     private final SBOParameters sboParameters = new SBOParameters();
+
+
+    private SBMLDocument modelGCF_000021565() throws ModelReaderException {
+        return new ModelReader(sboParameters, new IdentifiersOrg()).read(
+                new File(ReactionsPolisherTest.class.getClassLoader().getResource("de/uni_halle/informatik/biodata/mp/models/GCF_000021565.1.xml").getFile()));
+    }
+
 
     @Test
     public void basicAnnotationTest() throws SQLException {
@@ -276,6 +289,27 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
                         .stream()
                         .filter(resource -> resource.contains("bigg.metabolite"))
                         .count());
+    }
+
+    @Test
+    public void annotationsArePulled() throws SQLException, ModelReaderException {
+        var doc = modelGCF_000021565();
+        var m = doc.getModel();
+
+        Species M_10fthf_c = m.getSpecies("M_10fthf_c");
+
+        assertEquals("10-Formyltetrahydrofolate", M_10fthf_c.getName());
+        assertEquals(1, M_10fthf_c.getAnnotation().getNumCVTerms());
+        assertEquals(14, M_10fthf_c.getCVTerm(0).getNumResources());
+        new BiGGSpeciesAnnotator(
+                bigg,
+                biGGAnnotationParameters,
+                sboParameters,
+                new IdentifiersOrg())
+                .annotate(doc.getModel().getListOfSpecies());
+
+        assertEquals(1, M_10fthf_c.getAnnotation().getNumCVTerms());
+        assertEquals(15, M_10fthf_c.getCVTerm(0).getNumResources());
     }
 
 }

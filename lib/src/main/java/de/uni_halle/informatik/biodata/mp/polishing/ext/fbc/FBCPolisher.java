@@ -40,7 +40,7 @@ public class FBCPolisher extends AbstractPolisher implements IPolishSBases<Model
         // Polish the list of objectives if set
         if (modelPlug.isSetListOfObjectives()) {
             if (modelPlug.getObjectiveCount() == 0) {
-                logger.info(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
+                logger.debug(format(MESSAGES.getString("OBJ_MISSING"), modelPlug.getParent().getId()));
             } else {
                 new ObjectivesPolisher(modelPlug, polishingParameters, registry, getObservers())
                         .polish(modelPlug.getListOfObjectives());

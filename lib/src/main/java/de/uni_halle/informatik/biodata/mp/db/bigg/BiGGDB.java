@@ -342,6 +342,12 @@ public class BiGGDB {
           String prefix = resultSet.getString(1);
           String id = resultSet.getString(2);
           if (prefix != null && id != null) {
+
+            if (prefix.startsWith("http://identifiers.org/")) {
+              String[] segments = prefix.split("/");
+              prefix =  segments[segments.length - 1];
+            }
+
             results.add(new IdentifiersOrgURI(prefix, id));
           } else if (prefix == null) {
             logger.debug(format(MESSAGES.getString("COLLECTION_NULL_GENE"), label));

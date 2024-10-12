@@ -29,6 +29,7 @@ public class SpeciesPolisherTest {
         new SpeciesPolisher(parameters, sboParameters, new IdentifiersOrg(), new ArrayList<>()).polish(s);
 
         assertEquals("c", s.getCompartment());
+        assertEquals("SBO:0000247", s.getSBOTermID());
         assertEquals("stuff_c", s.getId());
         assertEquals("", m.getListOfCompartments().get(0).getName());
         assertEquals("c", m.getListOfCompartments().get(0).getId());
@@ -53,6 +54,7 @@ public class SpeciesPolisherTest {
         new SpeciesPolisher(parameters, sboParameters, new IdentifiersOrg(), new ArrayList<>()).polish(s);
 
         assertEquals("c", s.getCompartment());
+        assertEquals("SBO:0000247", s.getSBOTermID());
         assertEquals("stuff_c", s.getId());
         assertEquals("", m.getListOfCompartments().get(0).getName());
         assertEquals("c", m.getListOfCompartments().get(0).getId());

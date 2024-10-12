@@ -89,14 +89,6 @@ public class IdentifiersOrg implements Registry {
         return PATTERN_BY_NAMESPACE_NAME.getOrDefault(namespaceName, "");
     }
 
-    /**
-     * Checks and processes a given resource URL to ensure it conforms to expected formats and corrections.
-     * This method handles specific cases such as URLs containing "omim", "ncbigi", and "reactome".
-     * It also processes general identifiers.org URLs and other alternative formats.
-     *
-     * @param url The URL to be checked and potentially modified.
-     * @return An {@link Optional} containing the processed URL if valid, or empty if the URL should be skipped.
-     */
     @Override
     public Optional<RegistryURI> resolveBackwards(String url) {
         url = url.trim();
