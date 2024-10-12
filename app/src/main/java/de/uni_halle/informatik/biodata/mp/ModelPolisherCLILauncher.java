@@ -216,6 +216,9 @@ public class ModelPolisherCLILauncher extends Launcher {
       throw new ParametersException(format(MESSAGES.getString("READ_FILE_ERROR"), input), parameters);
     }
 
+    // Ensure the output directory or file's parent directory exists
+    SBMLFileUtils.checkCreateOutDir(output);
+
     // If the input is a directory but the output is not, exit with error
     if (input.isDirectory() && !output.isDirectory()) {
       throw new ParametersException(format(MESSAGES.getString("WRITE_DIR_TO_FILE_ERROR"),
@@ -232,8 +235,6 @@ public class ModelPolisherCLILauncher extends Launcher {
               parameters);
     }
 
-    // Ensure the output directory or file's parent directory exists
-    SBMLFileUtils.checkCreateOutDir(output);
   }
 
 
