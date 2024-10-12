@@ -81,7 +81,7 @@ public class ModelPolisher extends AbstractPolisher implements IPolishSBases<Mod
 
     new CompartmentPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfCompartments());
 
-    new SpeciesPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfSpecies());
+    new SpeciesPolisher(polishingParameters, sboParameters, registry, getObservers()).polish(model.getListOfSpecies());
 
     new ParametersPolisher(polishingParameters, registry, getObservers()).polish(model.getListOfParameters());
 

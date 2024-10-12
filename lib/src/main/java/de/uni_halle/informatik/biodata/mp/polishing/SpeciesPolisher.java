@@ -1,5 +1,6 @@
 package de.uni_halle.informatik.biodata.mp.polishing;
 
+import de.uni_halle.informatik.biodata.mp.parameters.SBOParameters;
 import de.zbit.util.ResourceManager;
 import de.uni_halle.informatik.biodata.mp.db.bigg.BiGGId;
 import de.uni_halle.informatik.biodata.mp.logging.BundleNames;
@@ -20,14 +21,12 @@ public class SpeciesPolisher extends AbstractPolisher implements IPolishSBases<S
   private static final Logger logger = LoggerFactory.getLogger(SpeciesPolisher.class);
   private static final ResourceBundle MESSAGES = ResourceManager.getBundle(BundleNames.POLISHING_MESSAGES);
 
-  public SpeciesPolisher(PolishingParameters parameters, Registry registry) {
+  private final SBOParameters sboParameters;
+
+  public SpeciesPolisher(PolishingParameters parameters, SBOParameters sboParameters, Registry registry, List<ProgressObserver> observers) {
       super(parameters, registry);
+    this.sboParameters = sboParameters;
   }
-
-  public SpeciesPolisher(PolishingParameters parameters, Registry registry, List<ProgressObserver> observers) {
-      super(parameters, registry, observers);
-  }
-
 
   @Override
   public void polish(List<Species> species) {
@@ -46,6 +45,8 @@ public class SpeciesPolisher extends AbstractPolisher implements IPolishSBases<S
       species.setMetaId(species.getId());
     }
 
+    setSBOTerm(species);
+
     setBoundaryConditions(species);
 
     var biggId = BiGGId.createMetaboliteId(species.getId());
@@ -53,6 +54,12 @@ public class SpeciesPolisher extends AbstractPolisher implements IPolishSBases<S
     setCompartmentFromBiggId(species, biggId);
 
     ensureCompartmentCodeFromBiggIdReferencesCompartment(species, biggId);
+  }
+
+  private void setSBOTerm(Species species) {
+    if (!species.isSetSBOTerm() && sboParameters.addGenericTerms()) {
+      species.setSBOTerm(SBO.getSimpleMolecule());
+    }
   }
 
   private void setBoundaryConditions(Species species) {

@@ -63,7 +63,6 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
     // Retrieve the BiGGId for the species, either from its URI list or its direct ID
     var biGGId = findBiGGId(species);
     setName(species, biGGId); // Set the species name based on the BiGGId
-    setSBOTerm(species, biGGId); // Assign the appropriate SBO term
     addAnnotations(species, biGGId); // Add database cross-references and other annotations
   }
 
@@ -116,40 +115,8 @@ public class BiGGSpeciesAnnotator extends BiGGCVTermAnnotator<Species> implement
   }
 
 
-  /**
-   * Assigns the SBO term to a species based on its component type as determined from the BiGG database.
-   * The component type can be a metabolite, protein, or a generic material entity. If the component type is not explicitly
-   * identified in the BiGG database, the species is annotated as a generic material entity unless the configuration
-   * explicitly omits such generic terms (controlled by {@link SBOParameters#addGenericTerms()}).
-   *
-   * @param biggId The {@link BiGGId} associated with the species, used to determine the component type from the BiGG database.
-   */
-  private void setSBOTerm(Species species, BiGGId biggId) throws SQLException {
-    bigg.getComponentType(biggId).ifPresentOrElse(type -> {
-      switch (type) {
-      case "metabolite":
-        species.setSBOTerm(SBO.getSimpleMolecule()); // Assign SBO term for simple molecules (metabolites).
-        break;
-      case "protein":
-        species.setSBOTerm(SBO.getProtein()); // Assign SBO term for proteins.
-        break;
-      default:
-        if (sboParameters.addGenericTerms()) {
-          species.setSBOTerm(SBO.getMaterialEntity()); // Assign SBO term for generic material entities.
-        }
-        break;
-      }
-    }, () -> {
-      if (sboParameters.addGenericTerms()) {
-        species.setSBOTerm(SBO.getMaterialEntity()); // Default SBO term assignment when no specific type is found.
-      }
-    });
-  }
-
-
   void addAnnotations(Species species, BiGGId biggId) throws IllegalArgumentException, SQLException {
 
-    // TODO: ???
     CVTerm cvTerm = null;
     for (CVTerm term : species.getAnnotation().getListOfCVTerms()) {
       if (term.getQualifier() == Qualifier.BQB_IS) {
