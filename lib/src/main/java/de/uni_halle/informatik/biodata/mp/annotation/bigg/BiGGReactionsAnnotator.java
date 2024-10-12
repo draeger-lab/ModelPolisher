@@ -14,6 +14,7 @@ import de.uni_halle.informatik.biodata.mp.util.ext.fbc.GPRParser;
 import de.uni_halle.informatik.biodata.mp.util.ext.groups.GroupsUtils;
 import org.sbml.jsbml.CVTerm;
 import org.sbml.jsbml.CVTerm.Qualifier;
+import org.sbml.jsbml.Compartment;
 import org.sbml.jsbml.Model;
 import org.sbml.jsbml.Reaction;
 import org.sbml.jsbml.ext.groups.Group;
@@ -100,7 +101,7 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implem
     boolean isBiGGid = bigg.isReaction(id);
     if (!isBiGGid) {
       // Extract BiGG IDs from annotations if the direct ID check fails
-      Set<String> ids = reaction.getAnnotation().getListOfCVTerms()
+      var ids = reaction.getAnnotation().getListOfCVTerms()
               .stream()
               .filter(cvTerm -> cvTerm.getQualifier() == Qualifier.BQB_IS)
               .flatMap(term -> term.getResources().stream())
@@ -140,14 +141,18 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implem
             && (null != foreignReaction.compartmentId
             || null != foreignReaction.compartmentName)) {
       return false;
-    } else if (reaction.isSetCompartment()) {
-      return reaction.getCompartment()
-              .equals(foreignReaction.compartmentId);
     } else if (reaction.isSetCompartmentInstance()
-            && reaction.getCompartmentInstance().isSetName()) {
-      return reaction.getCompartmentInstance().getName()
-              .equals(foreignReaction.compartmentName);
-    } else
+            && reaction.getCompartmentInstance().isSetName()
+    && foreignReaction.compartmentName != null) {
+      String reactionCompartmentName = reaction.getCompartmentInstance().getName().toLowerCase();
+      String foreignReactionCompartmentName = foreignReaction.compartmentName.toLowerCase();
+      return reactionCompartmentName.equals(foreignReactionCompartmentName)
+              || reactionCompartmentName.contains(foreignReactionCompartmentName)
+              || foreignReactionCompartmentName.contains(reactionCompartmentName);
+    } else if (reaction.isSetCompartment()) {
+      return reaction.getCompartment().equals(foreignReaction.compartmentId);
+    }
+    else
       return false;
   }
 
@@ -182,7 +187,6 @@ public class BiGGReactionsAnnotator extends BiGGCVTermAnnotator<Reaction> implem
   }
 
   void addAnnotations(Reaction node, BiGGId biggId) throws SQLException {
-    // TODO: ???
     CVTerm cvTerm = null;
     for (CVTerm term : node.getAnnotation().getListOfCVTerms()) {
       if (term.getQualifier() == Qualifier.BQB_IS) {

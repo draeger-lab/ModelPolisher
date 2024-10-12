@@ -83,9 +83,25 @@
 
             setCompartmentFromReactionParticipants(reaction);
 
+            setCompartmentFromId(reaction);
+
             removeCopySuffix(reaction);
 
             setSBOTerm(reaction);
+        }
+
+        private void setCompartmentFromId(Reaction reaction) {
+            var biggId = BiGGId.createReactionId(reaction.getId());
+            if ((reaction.getCompartment() == null || reaction.getCompartment().isEmpty())
+            && biggId.isSetCompartmentCode()) {
+                var compartmentFromId = reaction.getModel().getListOfCompartments()
+                        .stream()
+                        .filter(c -> c.getId().equals(biggId.getCompartmentCode()))
+                        .findFirst();
+                if (compartmentFromId.isPresent()) {
+                    reaction.setCompartment(biggId.getCompartmentCode());
+                }
+            }
         }
 
         private void setMetaId(Reaction reaction) {
