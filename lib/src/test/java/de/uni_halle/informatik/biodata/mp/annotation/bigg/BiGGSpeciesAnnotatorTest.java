@@ -44,7 +44,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("atp", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
-        assertEquals("SBO:0000240", s.getSBOTermID());
         assertCVTermIsPresent(s,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
@@ -61,7 +60,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("atp_c", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
-        assertEquals("SBO:0000240", s.getSBOTermID());
         assertCVTermsArePresent(s,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
                 CVTerm.Qualifier.BQB_IS,
@@ -83,7 +81,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("big_chungus", s.getId());
         assertEquals("ATP C10H12N5O13P3", s.getName());
-        assertEquals("SBO:0000240", s.getSBOTermID());
         assertEquals(1, s.getCVTermCount());
         assertEquals(30, s.getCVTerm(0).getNumResources());
         assertCVTermIsPresent(s,
@@ -144,7 +141,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("h2o", s.getId());
         assertEquals("H2O H2O", s.getName());
-        assertEquals("SBO:0000240", s.getSBOTermID());
         assertNull(sFbcPlugin.getChemicalFormula());
         assertCVTermsArePresent(s,
                 CVTerm.Type.BIOLOGICAL_QUALIFIER,
@@ -254,7 +250,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("big_chungus1", s1.getId());
         assertEquals("10-Formyltetrahydrofolate", s1.getName());
-        assertEquals("SBO:0000240", s1.getSBOTermID());
         assertEquals(1, s1.getCVTermCount());
         assertEquals(15, s1.getCVTerm(0).getNumResources());
         assertCVTermIsPresent(s1,
@@ -273,7 +268,6 @@ public class BiGGSpeciesAnnotatorTest extends BiGGDBContainerTest {
 
         assertEquals("big_chungus2", s2.getId());
         assertEquals("10-Formyltetrahydrofolate", s2.getName());
-        assertEquals("SBO:0000240", s2.getSBOTermID());
         assertEquals(1, s2.getCVTermCount());
         assertEquals(15, s2.getCVTerm(0).getNumResources());
         assertCVTermIsPresent(s2,

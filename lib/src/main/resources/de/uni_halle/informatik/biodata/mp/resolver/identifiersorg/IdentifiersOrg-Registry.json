@@ -41406,7 +41406,7 @@
                         "official": false,
                         "providerCode": "CURATOR_REVIEW",
                         "sampleId": "ENCSR163RYW",
-                        "resourceHomeUrl": "www.encodeproject.org",
+                        "resourceHomeUrl": "https://www.encodeproject.org",
                         "institution": {
                             "id": 1837,
                             "name": "ENCODE Consortium",

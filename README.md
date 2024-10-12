@@ -17,14 +17,12 @@ You can find documentation on what ModelPolisher does in [our Wiki](https://gith
 
 Furthermore, it can, on a best effort basis, attempt to perform minimal fixes on a model to make it valid with regards to the [SBMLValidator](https://sbml.org/jsbml/files/doc/api/1.6.1/org/sbml/jsbml/validator/SBMLValidator.html).
 
-Again, you find comprehensive documentation on this in [our Wiki](https://github.com/draeger-lab/ModelPolisher/wiki).
-
 Currently supported versions of the SBML standard are:
 
 - Version 3 Level 1
   - FBC Version 2
 
-You can use ModelPolisher as a tool via its [Python API client](https://github.com/draeger-lab/MPClient) to our HTTP server, or locally using Docker or as a Standalone JAR.
+You can use ModelPolisher as a tool via its [Python API client](https://github.com/draeger-lab/MPClient) to our HTTP server, using Docker, or as a Standalone JAR.
 
 ModelPolisher can also be used as a Java library, building on the [JSBML](https://sbml.org/software/jsbml/) project.
 
@@ -51,7 +49,7 @@ However, ModelPolisher can also be run [from the ModelPolisher `Jar`](#using-jar
 ## Using the Python API client package
 If you don't want to process large numbers of models and have an internet connection available, this is the recommended usage.
 
-ModelPolisher is hosted as an HTTP server at [biodata.informatik.uni-halle.de/modelling/polisher](biodata.informatik.uni-halle.de/modelling/polisher).
+ModelPolisher is hosted as an HTTP server at [biodata.informatik.uni-halle.de/modelling/polisher](https://biodata.informatik.uni-halle.de/modelling/polisher).
 
 We provide a [Python API client package](https://github.com/draeger-lab/MPClient) (available on PyPI) for interaction with the server. All documentation regarding usage of the API client can be found in that repository.
 
@@ -82,8 +80,6 @@ docker-compose run \
 ```
 
 Output will be produced in directory `<absolute_path_to_directory_containing_models>/output`.
-
-*Note*: It is always recommended to [run Docker as your current user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user) and not as root. Running as root will produce root-owned output. Users can use `-u <username_or_uid>` with `docker-compose run` to generate output with correct ownership in this case.
 
 ### Using ModelPolisher Jar
 You can run ModelPolisher using its `Jar `.
