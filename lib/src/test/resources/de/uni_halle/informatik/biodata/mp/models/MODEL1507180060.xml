@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" level="3" metaid="_3663975d-2ff5-4529-8593-4ad137a40169" fbc:required="false" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" sboTerm="SBO:0000624" version="1">
+  <model id="MODEL1507180060" fbc:strict="true" name="Reed2003 - Genome-scale metabolic network of Escherichia coli (iJR904)" metaid="_2ee65dff-6a0b-4d14-ba58-a1c2c75d878f">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <div class="dc:title">Reed2003 - Genome-scale metabolic network of
+Escherichia coli (iJR904)</div>
+<div class="dc:bibliographicCitation">
+  <p>This model is described in the article:</p>
+  <div class="bibo:title">
+    <a href="http://identifiers.org/pubmed/12952533" title="Access to this publication">An expanded genome-scale
+    model of Escherichia coli K-12 (iJR904 GSM/GPR).</a>
+  </div>
+  <div class="bibo:authorList">Reed JL, Vo TD, Schilling CH,
+  Palsson BO.</div>
+  <div class="bibo:Journal">Genome Biol. 2003; 4(9): R54</div>
+  <p>Abstract:</p>
+  <div class="bibo:abstract">
+    <p>BACKGROUND: Diverse datasets, including genomic,
+    transcriptomic, proteomic and metabolomic data, are becoming
+    readily available for specific organisms. There is currently a
+    need to integrate these datasets within an in silico modeling
+    framework. Constraint-based models of Escherichia coli K-12
+    MG1655 have been developed and used to study the bacterium's
+    metabolism and phenotypic behavior. The most comprehensive E.
+    coli model to date (E. coli iJE660a GSM) accounts for 660 genes
+    and includes 627 unique biochemical reactions. RESULTS: An
+    expanded genome-scale metabolic model of E. coli (iJR904
+    GSM/GPR) has been reconstructed which includes 904 genes and
+    931 unique biochemical reactions. The reactions in the expanded
+    model are both elementally and charge balanced. Network gap
+    analysis led to putative assignments for 55 open reading frames
+    (ORFs). Gene to protein to reaction associations (GPR) are now
+    directly included in the model. Comparisons between predictions
+    made by iJR904 and iJE660a models show that they are generally
+    similar but differ under certain circumstances. Analysis of
+    genome-scale proton balancing shows how the flux of protons
+    into and out of the medium is important for maximizing cellular
+    growth. CONCLUSIONS: E. coli iJR904 has improved capabilities
+    over iJE660a. iJR904 is a more complete and chemically accurate
+    description of E. coli metabolism than iJE660a. Perhaps most
+    importantly, iJR904 can be used for analyzing and integrating
+    the diverse datasets. iJR904 will help to outline the
+    genotype-phenotype relationship for E. coli K-12, as it can
+    account for genomic, transcriptomic, proteomic and fluxomic
+    data simultaneously.</p>
+  </div>
+</div>
+<div class="dc:publisher">
+  <p>This model is hosted on 
+  <a href="http://www.ebi.ac.uk/biomodels/">BioModels Database</a>
+  and identified by: 
+  <a href="http://identifiers.org/biomodels.db/MODEL1507180060">MODEL1507180060</a>.</p>
+  <p>To cite BioModels Database, please use: 
+  <a href="http://identifiers.org/pubmed/20587024" title="Latest BioModels Database publication">BioModels Database:
+  An enhanced, curated and annotated resource for published
+  quantitative kinetic models</a>.</p>
+</div>
+<div class="dc:license">
+  <p>To the extent possible under law, all copyright and related or
+  neighbouring rights to this encoded model have been dedicated to
+  the public domain worldwide. Please refer to 
+  <a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0
+  Public Domain Dedication</a> for more information.</p>
+</div>
+</body>
+    </notes>
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+	<rdf:Description rdf:about="#_2ee65dff-6a0b-4d14-ba58-a1c2c75d878f">
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1507180060"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	</rdf:Description>
+	</rdf:RDF>
+	</annotation>
+      <fbc:listOfObjectives xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" fbc:activeObjective="obj">
+      <fbc:objective fbc:type="maximize" metaid="_8136b4ed-bbb4-41a8-a282-0d4b74e88f64" fbc:id="obj">
+        <fbc:listOfFluxObjectives>
+          <fbc:fluxObjective fbc:reaction="R_BiomassEcoli" metaid="_972dc26d-d433-41a1-a1c2-f18eab242c3e" fbc:coefficient="1"/>
+        </fbc:listOfFluxObjectives>
+      </fbc:objective>
+    </fbc:listOfObjectives>
+    <fbc:listOfGeneProducts xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2">
+      <fbc:geneProduct fbc:name="b0002" metaid="_930e32ce-0e7e-42e0-94a4-9c4cab4e1d63" fbc:label="b0002" fbc:id="G_b0002"/>
+
+    </fbc:listOfGeneProducts>
+    <listOfUnitDefinitions>
+      <unitDefinition id="mmol_per_gDW_per_hr" metaid="fa30ad7c-9c73-413a-8948-0f14c70a6dfe">
+        <listOfUnits>
+          <unit scale="-3" exponent="1" metaid="_08bc9fc8-5d7f-4169-9c58-d04849ebcc28" multiplier="1" kind="mole"/>
+          <unit scale="0" exponent="-1" metaid="d5858ffb-eb4c-4cb1-b9ab-b65fe999ec72" multiplier="1" kind="gram"/>
+          <unit scale="0" exponent="-1" metaid="_28401f11-c4d6-43d3-b568-9b3664e5923b" multiplier="3600" kind="second"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="c" constant="true" name="Cytosol" metaid="c3c69fac-2b91-448a-a6f2-6de71cd23457"/>
+      <compartment id="e" constant="true" name="Extraorganism" metaid="_0bead826-4136-4fe5-b77b-fae6db8a668c"/>
+    </listOfCompartments>
+    <listOfSpecies>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="cobra_default_lb" constant="true" metaid="_61f14944-cfbc-4ee2-9a36-0d62651cc80f" value="-999999" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr"/>
+      <parameter id="cobra_default_ub" constant="true" metaid="ab679fde-48c3-4125-a740-cf27bf89de1f" value="999999" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr"/>
+      <parameter id="cobra_0_bound" constant="true" metaid="_57ef5b51-dc29-476a-850a-00a4756d7253" value="0" sboTerm="SBO:0000626" units="mmol_per_gDW_per_hr"/>
+      <parameter id="R_ATPM_upper_bound" constant="true" metaid="_3de63902-16be-4e2c-9fdc-29866fd4b8d9" value="7.6" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr"/>
+      <parameter id="R_ATPM_lower_bound" constant="true" metaid="eb7b67ed-3ca9-41f5-a1a7-d4bc2ccd1e35" value="7.6" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr"/>
+      <parameter id="R_EX_glc_DASH_D_e_lower_bound" constant="true" metaid="e254cabe-775f-40e6-aa0d-52234c5b9b35" value="-10" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr"/>
+      <parameter id="R_EX_o2_e_lower_bound" constant="true" metaid="_62c0e11e-f92f-4936-997f-7e4381897d50" value="-20" sboTerm="SBO:0000625" units="mmol_per_gDW_per_hr"/>
+    </listOfParameters>
+    <listOfReactions>
+    </listOfReactions>
+  </model>
+</sbml>

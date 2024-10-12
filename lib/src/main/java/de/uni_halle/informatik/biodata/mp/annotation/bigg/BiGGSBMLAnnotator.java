@@ -48,13 +48,7 @@ public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator implements IAnnotat
    */
   @Override
   public void annotate(SBMLDocument doc) throws SQLException, AnnotationException {
-    // TODO: these sanity checks need to be improved
     Model model = doc.getModel();
-    String modelId = model.getId();
-    if (!bigg.isModel(modelId)) {
-      return;
-    }
-    // model.isSetMetaId()
 
     new BiGGModelAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model);
 
@@ -65,7 +59,7 @@ public class BiGGSBMLAnnotator extends AbstractBiGGAnnotator implements IAnnotat
 
     new BiGGSpeciesAnnotator(bigg, biGGAnnotationParameters, sboParameters, registry, getObservers()).annotate(model.getListOfSpecies());
 
-    new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, registry, getObservers()).annotate(model.getListOfReactions());
+    new BiGGReactionsAnnotator(bigg, biGGAnnotationParameters, sboParameters, registry).annotate(model.getListOfReactions());
 
     new BiGGFBCAnnotator(bigg, biGGAnnotationParameters, registry, getObservers()).annotate(model);
 
