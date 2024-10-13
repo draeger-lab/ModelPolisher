@@ -1,0 +1,53 @@
+{
+    "input": "examples/input",
+    "output": "examples/output",
+    "output-type": "xml",
+    
+    "fixing": {
+	"dont-fix": false,
+	"fix-flux-objectives": {
+	    "flux-coefficients": [],
+	    "flux-objectives": []
+	}
+    },
+    
+    "polishing": {
+	"polish-even-if-model-invalid": false
+    },
+    
+    "annotation": {
+	"bigg": {
+	    "annotate-with-bigg": true,
+	    "include-any-uri": true,
+	    "document-title-pattern": "[biggId] - [organism]",
+	    "notes": {
+		"no-model-notes": true,
+		"model-notes-file": null,
+		"document-notes-file": null
+	    },
+	    "db-config": {
+		"db-name": "bigg",
+		"host": "localhost",
+		"password": "postgres",
+		"user": "postgres",
+		"port": 1310
+	    }
+	},
+	"annotatedb": {
+	    "annotate-with-adb": true,
+	    "db-config": {
+		"db-name": "adb",
+		"host": "localhost",
+		"password": "postgres",
+		"user": "postgres",
+		"port": 1013
+	    }
+	}
+    },
+    
+    "sbo-terms": {
+	"add-generic-terms": false
+    },
+    
+    "sbml-validation": false
+}

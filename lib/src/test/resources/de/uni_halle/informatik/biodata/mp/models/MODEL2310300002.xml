@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" fbc:required="false" groups:required="false" level="3" version="1" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="http://www.sbml.org/sbml/level3/version1/groups/version1">
+  <model fbc:strict="true" id="M_cam" metaid="camgem_mar12.xml" name="NothaGEM iSM1809">
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+        <rdf:Description rdf:about="#camgem_mar12.xml">
+          <bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000009"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/doi:10.3389/fpls.2023.1207218"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	</rdf:Description>
+	
+	
+	</rdf:RDF>
+	</annotation>
+      <listOfCompartments>
+          <compartment constant="false" id="c0" metaid="c0" name="Cytosol_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="d0" metaid="d0" name="Stroma_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="e0" metaid="e0" name="Extracellular_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="g0" metaid="g0" name="Golgi_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="j0" metaid="j0" name="Mitochondria_IMMem_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="m0" metaid="m0" name="Mitochondria_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="n0" metaid="n0" name="Nucleus_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="r0" metaid="r0" name="Endoplasmic_Reticulum_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="v0" metaid="v0" name="Vacuole_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="w0" metaid="w0" name="Cell_Wall_0" sboTerm="SBO:0000290" />
+          <compartment constant="false" id="x0" metaid="x0" name="Peroxisome_0" sboTerm="SBO:0000290" />
+      </listOfCompartments>
+    <listOfReactions>
+      <reaction fast="false" fbc:lowerFluxBound="FB8N0" fbc:upperFluxBound="FB9N1000" id="R_rxn00101_c0" metaid="R_rxn00101_c0" name="Urea_amidohydrolase_c0" reversible="false" sboTerm="SBO:0000176">
+        <notes>
+          <body xmlns="http://www.w3.org/1999/xhtml">
+            <p>PROTEIN_ASSOCIATION:(Cac_g030951.t1 or Cac_g024922.t1 or Cac_g020093.t1 or Cac_g020537.t1 or Cac_g030951.t2)</p>
+          </body>
+        </notes>
+        <annotation xmlns:sbml="http://www.sbml.org/sbml/level3/version1/core">
+          <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:vCard4="http://www.w3.org/2006/vcard/ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+            <rdf:Description rdf:about="#R_rxn00101_c0">
+              <bqbiol:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/seed.reaction/rxn00101"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.reaction/R00131"/>
+	</rdf:Bag>
+	</bqbiol:is>
+	</rdf:Description>
+	
+	
+	
+          </rdf:RDF>
+        </annotation>
+        <listOfReactants>
+        </listOfReactants>
+        <listOfProducts>
+        </listOfProducts>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

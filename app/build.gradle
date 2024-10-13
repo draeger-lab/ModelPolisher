@@ -1,0 +1,126 @@
+import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+
+plugins {
+    id 'com.github.jk1.dependency-license-report' version '2.0'
+    id "java"
+    id "application"
+    id "maven-publish"
+}
+
+group = "de.uni-halle.informatik.biodata"
+version = "2.1"
+
+
+application {
+    mainClass.set('de.uni_halle.informatik.biodata.mp.ModelPolisherCLILauncher')
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java"]
+        }
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
+    }
+}
+
+dependencies {
+    implementation(libs.sysbio)
+    implementation(libs.jsbml) {
+        exclude group: "org.apache.logging.log4j", module: "log4j-core"
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+        exclude group: "org.apache.commons", module: "logging"
+    }
+
+    implementation(libs.biojavaOntology) {
+        exclude group: "org.apache.logging.log4j", module: "log4j-core"
+        exclude group: "org.apache.logging.log4j", module: "log4j-slf4j-impl"
+    }
+
+    implementation(libs.jacksonDatabinding)
+
+    implementation(libs.commonsIO)
+    implementation(libs.commonsLang)
+
+    implementation(libs.slf4j)
+    implementation(libs.julToSlf4j)
+    implementation(libs.jclOverSlf4j)
+    implementation(libs.log4jOverSlf4j)
+    implementation(libs.osgiOverSlf4j)
+
+    implementation(libs.logback)
+
+    implementation project(':lib')
+}
+
+// config for all jar tasks
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    destinationDirectory = file("$rootDir/target")
+    manifest {
+        attributes("Version": project.version,
+                "Implementation-Title": "ModelPolisher",
+                "Implementation-Version": project.version,
+                "Specification-Vendor": "Martin-Luther-Universität Halle-Wittenberg, BioDatA Arbeitsgruppe",
+                "Specification-Title": "ModelPolisher",
+                "Implementation-Vendor-Id": "de.uni-halle.informatik.biodata",
+                "Implementation-Vendor": "Martin-Luther-Universität Halle-Wittenberg, BioDatA Arbeitsgruppe",
+                "Main-Class": "de.uni_halle.informatik.biodata.mp.ModelPolisherCLILauncher")
+    }
+
+    into("META-INF/maven/${project.group}/${rootProject.name}") {
+        from { generatePomFileForModelPolisherStandalonePublication }
+        rename { it.replace('pom-default.xml', 'pom.xml') }
+    }
+
+    archiveFileName = "${rootProject.name}-${project.version}-STANDALONE.jar"
+
+    from sourceSets.main.output
+
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+}
+
+
+publishing {
+    publications {
+        modelPolisherStandalone(MavenPublication) {
+            from components.java
+
+            artifactId = 'ModelPolisher'
+            version = "2.1-STANDALONE"
+        }
+    }
+    // https://reposilite.com/guide/gradle
+    repositories {
+        maven {
+            name = "reposilite"
+            url = "https://biodata.informatik.uni-halle.de/maven/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
+
+licenseReport {
+    filters = [new LicenseBundleNormalizer(),
+               new ExcludeTransitiveDependenciesFilter()]
+}
+
+tasks.withType(Javadoc).configureEach {
+    enabled = false
+}
+
+clean.doFirst {
+    file(".gradle").deleteDir()
+    file("target").deleteDir()
+}

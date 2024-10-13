@@ -1,0 +1,22 @@
+services:
+
+  biggdb:
+    image: schmirgel/bigg_db:1.6
+    container_name: modelpolisher_biggdb
+    ports:
+      - 127.0.0.1:1310:5432
+
+  adb:
+    image: schmirgel/annotatedb:0.1.1
+    container_name: modelpolisher_adb
+    ports:
+      - 127.0.0.1:1013:5432
+
+  polisher:
+    build: ../Dockerfile
+    container_name: modelpolisher_java    
+    depends_on:
+      - biggdb
+      - adb
+    stdin_open: true
+    tty: true

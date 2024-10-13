@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="CITATION"><![CDATA["King ZA, Lu JS, Dräger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015). BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. Nucl Acids Res, doi:10.1093/nar/gkv1049."]]></entry>
+    <entry key="CITATION_HTML"><![CDATA["<dl>\n  <dt>King ZA, Lu JS, Dr&#228;ger A, Miller PC, Federowicz S, Lerman JA, Ebrahim A, Palsson BO, and Lewis NE. (2015).\n    <dd>\n      BiGG Models: A platform for integrating, standardizing, and sharing genome-scale models. <i>Nucl Acids Res</i>.\n      <a href="https://dx.doi.org/10.1093/nar/gkv1049" target="_blank"\n      title="Access the publication about BiGG Models knowledgebase">doi:10.1093/nar/gkv1049</a>\n    </dd>\n  </dt>\n</dl>"]]></entry>
+    <entry key="FINISHED_TIME">Done after %02d:%02d min.</entry>
+    <entry key="INPUT_FILE_DESCRIPTION">SBML, MAT or JSON files, or directories.</entry>
+    <entry key="OUTPUT_FILE_DESCRIPTION">Output SBML file.</entry>
+    <entry key="PARAM_INPUT_MISSING">--input is missing, but needs to be provided, aborting.</entry>
+    <entry key="PARAM_OUTPUT_MISSING">--output is missing, but needs to be provided, aborting.</entry>
+    <entry key="READ_FILE_ERROR">Could not open file at {0}.</entry>
+    <entry key="WRITE_DIR_TO_FILE_ERROR">Cannot write inputs from directory {0} to a output file {1}. Skipping directory.</entry>
+
+</properties>

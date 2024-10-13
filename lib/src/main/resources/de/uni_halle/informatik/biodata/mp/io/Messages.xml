@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="ADD_URI_FAILED_COBRA">Could not obtain resource URI for collection {0} and id {1}.</entry>
+    <entry key="ADDED_URI">Added resource {0}</entry>
+    <entry key="ADDED_URI_COBRA">Added resource URI {0} to provided CVTerm</entry>
+    <entry key="ADDITIONAL_FIELDS_PRESENT">Found additional, unknown fields: {0}</entry>
+    <entry key="B_VALUE_UNSUPPORTED">Skipping unsupported non-zero b-value of {0,number,######.####} for metabolite {1}</entry>
+    <entry key="CHARGE_TO_INT_COBRA">Non-integer charge {0,number} was truncated to {1}.</entry>
+    <entry key="COLLECTION_UNKNOWN">Unknown prefix: {0}</entry>
+    <entry key="OUTPUT_TYPE_DESCRIPTION">Decides which format the outputs should be in.</entry>
+    <entry key="CONF_CELL_WRONG_DIMS">Cell containing confidence score had 0x0 dimensions</entry>
+    <entry key="CREATE_GPR_FAILED">Could not create GPR for reaction with index {0}.</entry>
+    <entry key="CREATING_DIRECTORY">Creating directory {0}.</entry>
+    <entry key="DELETE_FILE">Deleting file: {0}, successful: {1}</entry>
+    <entry key="DIRECTORY_CREATION_FAILED">Could not create directory {0}.</entry>
+    <entry key="DISPLAY_CONF_SCORE">Reaction {1} has confidence score {0,number,##}.</entry>
+    <entry key="DUPLICATE_GENE_ID">Skipping duplicate gene with id: {0}</entry>
+    <entry key="DUPLICATE_REACTION_ID">Skipping duplicate reaction with id: {0}</entry>
+    <entry key="DUPLICATE_SPECIES_ID">Skipping duplicate species with id: {0}</entry>
+    <entry key="EC_CODES_UNKNOWN">Could not recognize any of the EC codes from {0}.</entry>
+    <entry key="FIELD_MISSING">Missing field: {0}</entry>
+    <entry key="GENES_MISSING">There are no genes in this model</entry>
+    <entry key="ID_CHANGE_WARNING">Change of identifier of type {0} from {1} to {2} can have unpredictable consequences...</entry>
+    <entry key="INVALID_COMPARTMENT_CODE">Invalid compartment code {0}, skipping.</entry>
+    <entry key="INVALID_SPECIES_FORMULA">Invalid formula for metabolite {0} : {1}. Setting in notes</entry>
+    <entry key="JSON_PARSER_STARTED">Started JSONparser</entry>
+    <entry key="KNOWN_FIELDS_MISSING">Known fields missing in this model: {0}</entry>
+    <entry key="MANY_IDS_IN_DESC">Found more than one identifier in cell {0}</entry>
+    <entry key="MANY_STRINGS_IN_CELL">Found more than one string in cell {0}</entry>
+    <entry key="NEQ_RELATION_UNSUPPORTED">Unsupported nonequality relationship for metabolite with id {0}.</entry>
+    <entry key="NUM_COMPART">There are {0} compartments in this model.</entry>
+    <entry key="NUM_GENES">There are {0} genes in this model.</entry>
+    <entry key="NUM_METABOLITES">There are {0} metabolites in this model.</entry>
+    <entry key="NUM_REACTIONS">There are {0} reactions in this model.</entry>
+    <entry key="OPEN_ISSUE_ANNOTATION">Please open an issue to see annotation format {0} implemented.</entry>
+    <entry key="OPEN_ISSUE_ID_FORMAT">Please open an issue to see parsing for id format {0} implemented.</entry>
+    <entry key="OPEN_ISSUE_NOTES_FORMAT">Please open an issue to see notes format {0} implemented.</entry>
+    <entry key="OPEN_ISSUE_NOTES_CONTENT">Please open an issue to see parsing for notes content format {0} implemented.</entry>
+    <entry key="OUTPUT_COMBINE">Produce output as a single COMBINE Archive including polished model and glossary rdf file. NOTE: Output file name is taken from input to option --output.</entry>
+    <entry key="OUTPUT_FILE_DESC">Output is {0}.</entry>
+    <entry key="PATTERN_MISMATCH">Identifier {0} did not match the pattern {1}</entry>
+    <entry key="SKIP_COMMENT">Skipping comment for resource: {0}, only keeping reference {1} to {2}.</entry>
+    <entry key="SPECIES_UNDEFINED">Species {0} in reaction {1} is not defined!</entry>
+    <entry key="SUBSYS_LINK_ERROR">Reaction at index {0} is null. Could not create subsystem link.</entry>
+    <entry key="TRUNCATED_ID">Given id String possibly contained more than one id. Only the first one is used: </entry>
+    <entry key="TYPE_MISMATCH_MLDOUBLE">Expected MLDouble, but received {0}.</entry>
+    <entry key="TYPE_MISMATCH_STRING">Expected character string in data field {1}{2}, but received data type {0}.</entry>
+    <entry key="WRITE_RDF_FILE_INFO">Writing output RDF glossary file {0}</entry>
+
+</properties>
