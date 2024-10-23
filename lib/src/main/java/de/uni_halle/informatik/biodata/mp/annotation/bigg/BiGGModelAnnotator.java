@@ -86,8 +86,7 @@ public class BiGGModelAnnotator extends AbstractBiGGAnnotator implements IAnnota
   private void addNCBIReferenceAnnotation(Model model, String accession) {
     // Prepare a pattern matcher for RefSeq accession numbers
     Matcher refseqMatcher = Pattern.compile(REF_SEQ_ACCESSION_NUMBER_PATTERN).matcher(accession);
-    // Create a CVTerm for versioning annotation
-    CVTerm term = new CVTerm(CVTerm.Qualifier.BQB_IS_VERSION_OF);
+    CVTerm term = new CVTerm(CVTerm.Qualifier.BQB_IS_ENCODED_BY);
     // Check if the accession matches the RefSeq pattern
     if (refseqMatcher.matches()) {
       // Add a RefSeq resource to the CVTerm
