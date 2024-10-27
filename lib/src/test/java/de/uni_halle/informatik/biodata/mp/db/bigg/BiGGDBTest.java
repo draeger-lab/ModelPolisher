@@ -1,6 +1,6 @@
 package de.uni_halle.informatik.biodata.mp.db.bigg;
 
-import de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGDBContainerTest;
+import de.uni_halle.informatik.biodata.mp.annotation.BiGGDBContainerTest;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Testcontainers;
 

@@ -19,7 +19,7 @@ import de.zbit.util.Utils;
 import de.uni_halle.informatik.biodata.mp.logging.BundleNames;
 import de.uni_halle.informatik.biodata.mp.parameters.DBParameters;
 import de.uni_halle.informatik.biodata.mp.db.PostgresConnectionPool;
-import de.uni_halle.informatik.biodata.mp.polishing.NamePolisher;
+import de.uni_halle.informatik.biodata.mp.polishing.v3_1.NamePolisher;
 import de.uni_halle.informatik.biodata.mp.resolver.RegistryURI;
 import de.uni_halle.informatik.biodata.mp.resolver.identifiersorg.IdentifiersOrgURI;
 import org.slf4j.Logger;

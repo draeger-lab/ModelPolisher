@@ -14,13 +14,11 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import de.uni_halle.informatik.biodata.mp.annotation.*;
+import de.uni_halle.informatik.biodata.mp.fixing.SBMLFixerFactory;
+import de.uni_halle.informatik.biodata.mp.polishing.SBMLPolisherFactory;
 import de.zbit.util.prefs.SBProperties;
-import de.uni_halle.informatik.biodata.mp.annotation.AnnotationException;
-import de.uni_halle.informatik.biodata.mp.annotation.AnnotationOptions;
-import de.uni_halle.informatik.biodata.mp.annotation.adb.ADBSBMLAnnotator;
-import de.uni_halle.informatik.biodata.mp.annotation.bigg.BiGGSBMLAnnotator;
 import de.uni_halle.informatik.biodata.mp.fixing.FixingOptions;
-import de.uni_halle.informatik.biodata.mp.fixing.SBMLFixer;
 import de.uni_halle.informatik.biodata.mp.io.*;
 import de.uni_halle.informatik.biodata.mp.logging.BundleNames;
 import de.uni_halle.informatik.biodata.mp.db.adb.AnnotateDB;
@@ -28,7 +26,6 @@ import de.uni_halle.informatik.biodata.mp.db.bigg.BiGGDB;
 import de.uni_halle.informatik.biodata.mp.parameters.GeneralOptions;
 import de.uni_halle.informatik.biodata.mp.parameters.ParametersException;
 import de.uni_halle.informatik.biodata.mp.polishing.PolishingOptions;
-import de.uni_halle.informatik.biodata.mp.polishing.SBMLPolisher;
 import de.uni_halle.informatik.biodata.mp.reporting.PolisherProgressBar;
 import de.uni_halle.informatik.biodata.mp.reporting.ProgressFinalization;
 import de.uni_halle.informatik.biodata.mp.reporting.ProgressInitialization;
@@ -245,7 +242,6 @@ public class ModelPolisherCLILauncher extends Launcher {
     int count = getPolishingTaskCount(model);
 
 
-
     if (!parameters.fixing().dontFix()) {
       // TODO: das sollte sich durch JSBML UpdateListener ersetzen lassen
       List<ProgressObserver> fixingObservers = List.of(new PolisherProgressBar());
@@ -253,7 +249,8 @@ public class ModelPolisherCLILauncher extends Launcher {
         o.initialize(new ProgressInitialization(count));
       }
 
-      new SBMLFixer(parameters.fixing(), fixingObservers).fix(doc, 0);
+      var sbmlFixer = SBMLFixerFactory.createSBMLFixer(doc, parameters.fixing());
+      sbmlFixer.fix(doc, 0);
 
       for (var o : fixingObservers) {
         o.finish(new ProgressFinalization("Fixing Done."));
@@ -266,11 +263,11 @@ public class ModelPolisherCLILauncher extends Launcher {
       o.initialize(new ProgressInitialization(count));
     }
 
-    // TODO: dispatch abhängig von level und version
-    new SBMLPolisher(
+    var sbmlPolisher = SBMLPolisherFactory.createSBMLPolisher(doc,
             parameters.polishing(),
             parameters.sboParameters(),
-            registry, polishingObservers).polish(doc);
+            registry);
+    sbmlPolisher.polish(doc);
 
     for (var o : polishingObservers) {
       o.finish(new ProgressFinalization("Polishing Done."));
@@ -286,15 +283,20 @@ public class ModelPolisherCLILauncher extends Launcher {
         o.initialize(new ProgressInitialization(annotationTaskCount));
       }
 
-      // TODO: dispatch abhängig von level und version
       if (parameters.annotation().biggAnnotationParameters().annotateWithBiGG()) {
-        new BiGGSBMLAnnotator(new BiGGDB(), parameters.annotation().biggAnnotationParameters(), parameters.sboParameters(),
-                registry, annotationObservers).annotate(doc);
+        var biggAnnotator = BiGGSBMLAnnotatorFactory.createBiGGAnnotator(doc,
+                new BiGGDB(),
+                parameters.annotation().biggAnnotationParameters(),
+                parameters.sboParameters(),
+                registry);
+        biggAnnotator.annotate(doc);
       }
 
-      // TODO: dispatch abhängig von level und version
       if (parameters.annotation().adbAnnotationParameters().annotateWithAdb()) {
-        new ADBSBMLAnnotator(new AnnotateDB(), parameters.annotation().adbAnnotationParameters()).annotate(doc);
+        var adbAnnotator = ADBSBMLAnnotatorFactory.createADBAnnotator(doc,
+                new AnnotateDB(),
+                parameters.annotation().adbAnnotationParameters());
+        adbAnnotator.annotate(doc);
       }
 
       for (var o : annotationObservers) {
