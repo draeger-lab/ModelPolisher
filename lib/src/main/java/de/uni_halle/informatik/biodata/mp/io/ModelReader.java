@@ -43,7 +43,8 @@ public class ModelReader implements IReadModelsFromFile {
                                 .collect(Collectors.joining(", ")));
             };
             if (sbmlDocument == null) {
-                throw new ModelReaderException("Error while reading input document.", input);
+                throw new ModelReaderException("Error while reading input document: returned SBMLDocument is null.",
+                        input);
             }
             return sbmlDocument;
 
