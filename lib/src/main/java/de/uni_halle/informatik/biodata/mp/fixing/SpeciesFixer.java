@@ -28,7 +28,7 @@ public class SpeciesFixer extends AbstractFixer implements IFixSBases<Species> {
 
         // Set default values for mandatory attributes if they are not already set
         if (!species.isSetHasOnlySubstanceUnits()) {
-            species.setHasOnlySubstanceUnits(true);
+            species.setHasOnlySubstanceUnits(false);
         }
 
         if (!species.isSetConstant() && species.getLevel() >= 3) {
