@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "de.uni-halle.informatik.biodata"
-version = "2.1"
+version = "2.1.1"
 
 sourceSets {
     main {

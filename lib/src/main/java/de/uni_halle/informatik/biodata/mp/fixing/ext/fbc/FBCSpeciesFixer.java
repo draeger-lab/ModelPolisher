@@ -2,9 +2,11 @@ package de.uni_halle.informatik.biodata.mp.fixing.ext.fbc;
 
 import de.uni_halle.informatik.biodata.mp.fixing.AbstractFixer;
 import de.uni_halle.informatik.biodata.mp.fixing.IFixSBases;
+import org.sbml.jsbml.JSBML;
 import org.sbml.jsbml.Species;
 import org.sbml.jsbml.ext.fbc.FBCConstants;
 import org.sbml.jsbml.ext.fbc.FBCSpeciesPlugin;
+import org.sbml.jsbml.xml.XMLNode;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

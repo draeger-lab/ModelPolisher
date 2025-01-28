@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" fbc:required="false" groups:required="false" level="3" version="1" xmlns:fbc="http://www.sbml.org/sbml/level3/version1/fbc/version2" xmlns:groups="http://www.sbml.org/sbml/level3/version1/groups/version1">
+  <model fbc:strict="true" id="model" metaid="model">
+      <listOfCompartments>
+          <compartment constant="false" id="c" metaid="c" name="Cytosol" sboTerm="SBO:0000290" />
+      </listOfCompartments>
+      <listOfSpecies>
+          <species metaid="some" id="some" compartment="c" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false" fbc:charge="0" fbc:chemicalFormula="C21H25N7O14P2*">
+          </species>
+      </listOfSpecies>
+  </model>
+</sbml>
